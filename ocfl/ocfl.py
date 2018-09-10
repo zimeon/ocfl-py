@@ -8,6 +8,7 @@ import logging
 from shutil import copyfile
 
 from .digest import *
+from .validator import OCFLValidator
 
 
 class OCFL(object):
@@ -17,6 +18,7 @@ class OCFL(object):
         """Initialize OCFL builder."""
         self.digest_type = digest_type
         self.skips = set() if skips is None else set(skips)
+        self.validation_codes = None
 
     def parse_version_directory(self, dirname):
         """Get version number from version directory name."""
@@ -112,8 +114,8 @@ class OCFL(object):
         invfile = os.path.join(dstdir, invfilename)
         with open(invfile, 'w') as fh:
             json.dump(inventory, fh, sort_keys=True, indent=2)
-        sidecar = os.path.join(dstdir, invfilename + '.sha512')
-        digest = sha512digest(invfile)
+        sidecar = os.path.join(dstdir, invfilename + '.' + self.digest_type)
+        digest = file_digest(invfile, self.digest_type)
         with open(sidecar, 'w') as fh:
             fh.write(digest + ' ' + invfilename + '\n')
 
@@ -142,3 +144,13 @@ class OCFL(object):
                 if not os.path.exists(dstpath):
                     os.makedirs(dstpath)
                 copyfile(srcfile, dstfile)
+
+    def validate(self, path):
+        """Validate OCFL object at path."""
+        validator = OCFLValidator()
+        passed = validator.validate(path)
+        if passed:
+            print("OCFL object at %s is VALID" % (path))
+        else:
+            print("OCFL object at %s is INVALID" % (path))
+        print(str(validator))

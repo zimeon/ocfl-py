@@ -1,0 +1,40 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "id": "@id",
+    "type": "@type",
+    "@base": "https://ocfl.io/terms/validation/",
+    "ocflv": "https://ocfl.io/terms/validation/",
+    "Error": "ocflv:Error",
+    "Warning": "ocflv:Warning",
+    "Info": "ocflv:Info",
+    "codes": {"@id": "ocflv:code", "@container": "@id"},
+    "section": "ocfl:section",
+    "description": { "@id": "ocflv:description", "@container": "@language" }
+  },
+  "id": "ocflv:validation_codes",
+  "codes": {
+    "E001": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#object-conformance-declaration",
+      "description": {
+         "en": "Missing OCFL Namaste file",
+         "zz": "Description in language zz"
+      }
+    },
+    "E002": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#object-conformance-declaration",
+      "description": {
+         "en": "Namaste file name does not match OCFL Version"
+      }
+    },
+    "E003": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#object-conformance-declaration",
+      "description": {
+         "en": "OCFL Object Conformance Declaration is not zero size"
+      }
+    }
+  }
+}
