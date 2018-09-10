@@ -51,7 +51,7 @@ class OCFLValidator(object):
         # No check for E002 as we only know about 1.0
         elif os.path.getsize(namastefile) > 0:
             self.error('E003')
-        # Inventory 
+        # Inventory
         invfile = os.path.join(path, 'inventory.jsonld')
         if not os.path.exists(invfile):
             self.error('E004')
@@ -66,10 +66,9 @@ class OCFLValidator(object):
         #
         return self.errors == 0
 
-
     def validate_inventory(self, invfile):
+        """Validate a given inventory file."""
         pass
-
 
     def __str__(self):
         """String of validator status."""
