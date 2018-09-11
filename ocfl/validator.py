@@ -70,6 +70,10 @@ class OCFLValidator(object):
         """Validate a given inventory file."""
         pass
 
+    def validate_inventory_digest(self, invfile, invdigest):
+        """Validate a given inventory digest for a give inventory file."""
+        pass
+
     def __str__(self):
         """String of validator status."""
         s = ''
