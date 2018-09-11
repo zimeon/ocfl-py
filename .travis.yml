@@ -3,6 +3,12 @@ python:
   - "2.7"
   - "3.5"
   - "3.6"
+# Install sub-module using public HTTPS not SSH 
+git:
+  submodules: false
+before_install:
+  - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+  - git submodule update --init --recursive
 install:
   - pip install coveralls pep8 pep257
   - python setup.py install
