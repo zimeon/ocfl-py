@@ -53,7 +53,7 @@ setup(
                  "Libraries :: Python Modules"],
     url='https://github.com/zimeon/ocfl-py',
     description='ocfl-py - A Python implementation of OCFL',
-    long_description=open('README.md').read(),
+    long_description=open('README').read(),
     install_requires=[
     ],
     test_suite="tests",
