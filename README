@@ -1,4 +1,6 @@
-= ocfl-py - An OCFL implementation in Python
+==========================================
+ocfl-py - An OCFL implementation in Python
+==========================================
 
 .. image:: https://travis-ci.org/zimeon/ocfl-py.svg?branch=master
   :target: https://travis-ci.org/zimeon/ocfl-py
