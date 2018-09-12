@@ -1,4 +1,6 @@
 .cache
 .coverage
+__pycache__
+*.pyc
 htmlcov/
 ocfl_py.egg-info/
