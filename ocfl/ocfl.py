@@ -31,7 +31,8 @@ class OCFL(object):
         """Digest for file filename."""
         return file_digest(filename, self.digest_type)
 
-    def add_version(self, inventory, path, vdir, forward_delta=True, dedupe=True, rename=True):
+    def add_version(self, inventory, path, vdir,
+                    forward_delta=True, dedupe=True, rename=True, fixity=None):
         """Add to inventory data for new version based on files in path/vdir."""
         this_version = {'version': vdir,
                         'type': 'Version'}
@@ -72,8 +73,20 @@ class OCFL(object):
                 else:
                     for p in paths:
                         manifest[digest].append(p)
+            # Add extra fixity entries if required
+            if fixity is not None:
+                for fixity_type in fixity:
+                    for digest, paths in digests_in_version.items():
+                        fixities = inventory['fixity'][fixity_type]
+                        for p in paths:
+                            fixity_digest = file_digest(os.path.join(path, p), fixity_type)
+                            if fixity_digest not in fixities:
+                                fixities[fixity_digest] = paths
+                            else:
+                                fixities[fixity_digest].append(p)
 
-    def build_inventory(self, path, forward_delta=True, dedupe=True, rename=True):
+    def build_inventory(self, path, forward_delta=True, dedupe=True, rename=True,
+                        fixity=None):
         """Generator for building an OCFL inventory.
 
         Yields (vdir, inventory) for each version in sequence, where vdir is
@@ -87,6 +100,13 @@ class OCFL(object):
             'versions': [],
             'manifest': {}
         }
+        # Add fixity section if requested
+        if fixity is not None and len(fixity) > 0:
+            inventory['fixity'] = {}
+            for fixity_type in fixity:
+                inventory['fixity'][fixity_type] = {}
+        else:
+            fixity = None
         # Find the versions
         versions = {}
         for vdir in os.listdir(path):
@@ -97,7 +117,7 @@ class OCFL(object):
         # Go through versions in order building versions array, deduping if selected
         for vn in sorted(versions.keys()):
             vdir = versions[vn]
-            self.add_version(inventory, path, vdir, forward_delta, dedupe, rename)
+            self.add_version(inventory, path, vdir, forward_delta, dedupe, rename, fixity)
             yield (vdir, inventory)
 
     def write_object_declaration(self, dstdir):
@@ -119,11 +139,16 @@ class OCFL(object):
         with open(sidecar, 'w') as fh:
             fh.write(digest + ' ' + invfilename + '\n')
 
-    def write_ocfl_object(self, srcdir, forward_delta=True, dedupe=True, rename=True, dstdir=None):
-        """Write out OCFL object to dst if set, else print inventory."""
+    def write_ocfl_object(self, srcdir, forward_delta=True, dedupe=True, rename=True,
+                          fixity=None, dstdir=None):
+        """Write out OCFL object to dst if set, else print inventory.
+
+        Parameters:
+          fixity - list of fixity types to add as fixity section
+        """
         if dstdir is not None:
             os.makedirs(dstdir)
-        for (vdir, inventory) in self.build_inventory(srcdir, forward_delta=True, dedupe=True, rename=True):
+        for (vdir, inventory) in self.build_inventory(srcdir, forward_delta=True, dedupe=True, rename=True, fixity=fixity):
             if dstdir is None:
                 print("\n\n### Inventory for %s\n" % (vdir))
                 print(json.dumps(inventory, sort_keys=True, indent=2))
