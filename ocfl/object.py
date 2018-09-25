@@ -1,4 +1,4 @@
-"""Core of OCFL library."""
+"""Core of OCFL Object library."""
 import hashlib
 import json
 import os
@@ -12,13 +12,13 @@ from .validator import OCFLValidator
 
 
 class ObjectException(Exception):
+    """Exception class for OCFL Object."""
 
     pass
 
 
-
-class OCFL(object):
-    """Class for handling OCFL data and operations."""
+class Object(object):
+    """Class for handling OCFL Object data and operations."""
 
     def __init__(self, digest_type='sha512', skips=None):
         """Initialize OCFL builder."""

@@ -24,7 +24,7 @@ parser.add_argument('--dstdir', '--dst',
 args = parser.parse_args()
 
 srcdir = args.path[0]
-ocfl = ocfl.OCFL(digest_type=args.digest, skips=args.skip)
+ocfl = ocfl.Object(digest_type=args.digest, skips=args.skip)
 
 ocfl.write_ocfl_object(srcdir=srcdir,
                        forward_delta=not args.no_forward_delta,

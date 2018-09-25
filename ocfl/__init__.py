@@ -1,6 +1,6 @@
 """Python implementation of OCFL."""
 import sys
-from .ocfl import *
+from .object import *
 from .store import *
 from .digest import *
 

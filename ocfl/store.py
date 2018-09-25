@@ -12,12 +12,13 @@ from .digest import *
 
 
 class StoreException(Exception):
+    """Exception class for OCFL Store."""
 
     pass
 
 
 class Store(object):
-    """Class for handling OCFL data and operations."""
+    """Class for handling OCFL Object Stores."""
 
     def __init__(self, root=None, disposition=None, default_disposition=None):
         """Initialize OCFL Object Store."""
@@ -43,7 +44,7 @@ class Store(object):
         # Create root declaration
         with open(self.declaration_file, 'w') as fh:
             fh.close()
-        # Create disposition declaration 
+        # Create disposition declaration
         if self.disposition is not None:
             with open(self.disposition_file, 'w') as fh:
                 fh.close()
@@ -64,5 +65,3 @@ class Store(object):
     def list(self):
         """List contents of storage."""
         self.check_root()
-
-    
