@@ -65,3 +65,7 @@ class Store(object):
     def list(self):
         """List contents of storage."""
         self.check_root()
+        num_objects = 0
+        # FIXME - do some stuff in here
+        logging.info("Found %d OCFL Objects under root %s" % (num_objects, self.root))
+
