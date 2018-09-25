@@ -1,6 +1,7 @@
 """Python implementation of OCFL."""
 import sys
 from .ocfl import *
+from .store import *
 from .digest import *
 
 __version__ = '0.0.1'

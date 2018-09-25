@@ -11,6 +11,12 @@ from .digest import *
 from .validator import OCFLValidator
 
 
+class ObjectException(Exception):
+
+    pass
+
+
+
 class OCFL(object):
     """Class for handling OCFL data and operations."""
 
