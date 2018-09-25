@@ -1,5 +1,6 @@
 .cache
 .coverage
+tmp
 __pycache__
 *.pyc
 htmlcov/
