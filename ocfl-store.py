@@ -4,7 +4,8 @@ import argparse
 import logging
 import ocfl
 
-parser = argparse.ArgumentParser(description='Manpulate an OCFL Object Store.')
+parser = argparse.ArgumentParser(description='Manpulate an OCFL Object Store.',
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--root', required=True,
                     help='OCFL Storage Root for this object store')
 parser.add_argument('--disposition', '-d', default=None,
@@ -16,12 +17,31 @@ commands.add_argument('--list', action='store_true',
                       help='List contents of object store')
 commands.add_argument('--add', action='store_true',
                       help='Add object to object store')
-parser.add_argument('--default-disposition', '--dd', default='pairtree',
-                    help='default disposiion of objects')
+commands.add_argument('--purge', action='store_true',
+                      help='Purge (delete) an object from object store')
+
+# Object property settings
+parser.add_argument('--id', default=None,
+                    help='identifier of object')
+parser.add_argument('--src', default=None,
+                    help='source path of object or version')
 parser.add_argument('--digest', default='sha512',
                     help='digest type to use')
 parser.add_argument('--fixity', action='append',
                     help='add fixity type to add')
+parser.add_argument('--created', default=None,
+                    help='creation time to be used with version(s) added, else '
+                         'current time will be recorded')
+parser.add_argument('--message', default='',
+                    help='message to be recorded with version(s) added')
+parser.add_argument('--name', default='someone',
+                    help='name of user adding version(s) to object')
+parser.add_argument('--address', default='somewhere',
+                    help='address of user adding version(s) to object')
+
+
+parser.add_argument('--default-disposition', '--dd', default='pairtree',
+                    help='default disposiion of objects')
 parser.add_argument('--skip', action='append', default=['README.md'],
                     help='directories and files to ignore')
 parser.add_argument('--no-forward-delta', action='store_true',
@@ -48,6 +68,8 @@ try:
         store.create()
     elif args.list:
         store.list()
+    elif args.add:
+        store.add(id=args.id, object_path=args.src)
     else:
         logging.warn("Nuttin' happenin' 'round ere.")
 except (ocfl.StoreException, ocfl.ObjectException) as e:

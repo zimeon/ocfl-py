@@ -9,6 +9,7 @@ from shutil import copyfile
 
 from .digest import *
 from .validator import OCFLValidator
+from .w3c_datetime import datetime_to_str
 
 
 class ObjectException(Exception):
@@ -20,11 +21,17 @@ class ObjectException(Exception):
 class Object(object):
     """Class for handling OCFL Object data and operations."""
 
-    def __init__(self, digest_type='sha512', skips=None):
+    def __init__(self, digest_type='sha512', skips=None, ocfl_version='draft'):
         """Initialize OCFL builder."""
         self.digest_type = digest_type
         self.skips = set() if skips is None else set(skips)
+        self.ocfl_version = ocfl_version
         self.validation_codes = None
+
+    @property
+    def context_uri(self):
+        """JSON-LD context URI for appropriate version."""
+        return 'https://ocfl.io/' + self.ocfl_version + '/context.jsonld'
 
     def parse_version_directory(self, dirname):
         """Get version number from version directory name."""
@@ -38,10 +45,15 @@ class Object(object):
         return file_digest(filename, self.digest_type)
 
     def add_version(self, inventory, path, vdir,
+                    created=None, message='', name='someone', address='somewhere',
                     forward_delta=True, dedupe=True, rename=True, fixity=None):
         """Add to inventory data for new version based on files in path/vdir."""
         this_version = {'version': vdir,
-                        'type': 'Version'}
+                        'type': 'Version',
+                        'created': created if created else datetime_to_str(),
+                        'message': message,
+                        'user': {'name': name, 'address': address}
+                       }
         inventory['versions'].append(this_version)
         state = {}
         this_version['state'] = state
@@ -90,9 +102,13 @@ class Object(object):
                                 fixities[fixity_digest] = paths
                             else:
                                 fixities[fixity_digest].append(p)
+        # Set head to this latest version
+        inventory['head'] = vdir
 
-    def build_inventory(self, path, forward_delta=True, dedupe=True, rename=True,
-                        fixity=None):
+
+    def build_inventory(self, path,
+                        created=None, message='', name='someone', address='somewhere',
+                        forward_delta=True, dedupe=True, rename=True, fixity=None):
         """Generator for building an OCFL inventory.
 
         Yields (vdir, inventory) for each version in sequence, where vdir is
@@ -100,9 +116,9 @@ class Object(object):
         version.
         """
         inventory = {
-            '@context': 'https://ocfl.io/1.0/context.jsonld',
-            'type': 'OCFLObject',
-            'digest': self.digest_type,
+            '@context': self.context_uri,
+            'type': 'Object',
+            'digestAlgorithm': self.digest_type,
             'versions': [],
             'manifest': {}
         }
@@ -123,7 +139,11 @@ class Object(object):
         # Go through versions in order building versions array, deduping if selected
         for vn in sorted(versions.keys()):
             vdir = versions[vn]
-            self.add_version(inventory, path, vdir, forward_delta, dedupe, rename, fixity)
+            self.add_version(inventory, path, vdir,
+                             created=created, message=message,
+                             name=name, address=address,
+                             forward_delta=forward_delta, dedupe=dedupe,
+                             rename=rename, fixity=fixity)
             yield (vdir, inventory)
 
     def write_object_declaration(self, dstdir):
@@ -145,7 +165,9 @@ class Object(object):
         with open(sidecar, 'w') as fh:
             fh.write(digest + ' ' + invfilename + '\n')
 
-    def write_ocfl_object(self, srcdir, forward_delta=True, dedupe=True, rename=True,
+    def write_ocfl_object(self, srcdir,
+                          created=None, message='', name='someone', address='somewhere',
+                          forward_delta=True, dedupe=True, rename=True,
                           fixity=None, dstdir=None):
         """Write out OCFL object to dst if set, else print inventory.
 
@@ -154,7 +176,11 @@ class Object(object):
         """
         if dstdir is not None:
             os.makedirs(dstdir)
-        for (vdir, inventory) in self.build_inventory(srcdir, forward_delta=True, dedupe=True, rename=True, fixity=fixity):
+        for (vdir, inventory) in self.build_inventory(srcdir,
+                                                      created=created, message=message,
+                                                      name=name, address=address,
+                                                      forward_delta=True, dedupe=True,
+                                                      rename=True, fixity=fixity):
             if dstdir is None:
                 print("\n\n### Inventory for %s\n" % (vdir))
                 print(json.dumps(inventory, sort_keys=True, indent=2))
