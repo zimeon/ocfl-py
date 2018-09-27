@@ -92,4 +92,3 @@ class Store(object):
                     dirnames = []
         # FIXME - do some stuff in here
         logging.info("Found %d OCFL Objects under root %s" % (num_objects, self.root))
-

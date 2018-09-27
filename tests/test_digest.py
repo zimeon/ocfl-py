@@ -5,7 +5,7 @@ from ocfl.digest import file_digest
 
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
- 
+
     def test01_empty(self):
         """Create Digest object."""
         self.assertEqual(file_digest('tests/testdata/files/empty', 'md5'),

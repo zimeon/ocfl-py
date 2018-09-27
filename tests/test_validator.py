@@ -6,7 +6,7 @@ from ocfl.validator import OCFLValidator
 
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
- 
+
     def test01_bad(self):
         """Check bad objects fail."""
         v = OCFLValidator()

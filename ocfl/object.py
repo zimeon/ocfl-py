@@ -54,8 +54,7 @@ class Object(object):
                         'type': 'Version',
                         'created': created if created else datetime_to_str(),
                         'message': message,
-                        'user': {'name': name, 'address': address}
-                       }
+                        'user': {'name': name, 'address': address}}
         inventory['versions'].append(this_version)
         state = {}
         this_version['state'] = state
@@ -106,7 +105,6 @@ class Object(object):
                                 fixities[fixity_digest].append(p)
         # Set head to this latest version
         inventory['head'] = vdir
-
 
     def build_inventory(self, path,
                         created=None, message='', name='someone', address='somewhere',
@@ -223,6 +221,6 @@ class Object(object):
         with open(inv_file) as fh:
             inventory = json.load(fh)
         # Sanity checks
-        if not 'id' in inventory:
+        if 'id' not in inventory:
             raise ObjectException("Inventory %s has no id property" % (inv_file))
         return inventory
