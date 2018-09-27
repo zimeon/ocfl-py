@@ -11,6 +11,8 @@ parser.add_argument('--digest', default='sha512',
                     help='digest type to use')
 parser.add_argument('--fixity', action='append',
                     help='add fixity type to add')
+parser.add_argument('--id', default=None,
+                    help='identifier of object')
 parser.add_argument('--created', default=None,
                     help='creation time to be used with version(s) added, else '
                          'current time will be recorded')
@@ -36,7 +38,9 @@ parser.add_argument('--ocfl-version', default='draft',
 args = parser.parse_args()
 
 srcdir = args.path[0]
-ocfl = ocfl.Object(digest_type=args.digest,
+
+ocfl = ocfl.Object(identifier=args.id,
+                   digest_type=args.digest,
                    skips=args.skip,
                    ocfl_version=args.ocfl_version)
 

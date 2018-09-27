@@ -21,8 +21,10 @@ class ObjectException(Exception):
 class Object(object):
     """Class for handling OCFL Object data and operations."""
 
-    def __init__(self, digest_type='sha512', skips=None, ocfl_version='draft'):
+    def __init__(self, identifier=None,
+                 digest_type='sha512', skips=None, ocfl_version='draft'):
         """Initialize OCFL builder."""
+        self.identifier = identifier
         self.digest_type = digest_type
         self.skips = set() if skips is None else set(skips)
         self.ocfl_version = ocfl_version
@@ -117,6 +119,7 @@ class Object(object):
         """
         inventory = {
             '@context': self.context_uri,
+            'id': self.identifier,
             'type': 'Object',
             'digestAlgorithm': self.digest_type,
             'versions': [],
@@ -174,6 +177,8 @@ class Object(object):
         Parameters:
           fixity - list of fixity types to add as fixity section
         """
+        if self.identifier is None:
+            raise ObjectException("Identifier is not set!")
         if dstdir is not None:
             os.makedirs(dstdir)
         for (vdir, inventory) in self.build_inventory(srcdir,
@@ -211,3 +216,13 @@ class Object(object):
         else:
             print("OCFL object at %s is INVALID" % (path))
         print(str(validator))
+
+    def parse_inventory(self, path):
+        """Read JSON-LD top-level inventory file for object at path."""
+        inv_file = os.path.join(path, 'inventory.jsonld')
+        with open(inv_file) as fh:
+            inventory = json.load(fh)
+        # Sanity checks
+        if not 'id' in inventory:
+            raise ObjectException("Inventory %s has no id property" % (inv_file))
+        return inventory

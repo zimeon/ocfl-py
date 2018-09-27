@@ -9,6 +9,7 @@ from shutil import copyfile
 import urllib.parse
 
 from .digest import *
+from .object import *
 
 
 class StoreException(Exception):
@@ -66,6 +67,29 @@ class Store(object):
         """List contents of storage."""
         self.check_root()
         num_objects = 0
+        for (dirpath, dirnames, filenames) in os.walk(self.root, followlinks=True):
+            # Ignore files in root
+            if dirpath != self.root:
+                # Is this directory an OCFL object (or root?). Look for any 0= file.
+                zero_eqs = list(filter(lambda x: x.startswith('0='), filenames))
+                if len(zero_eqs) > 1:
+                    logging.error("Multiple 0= declaration files in %s, not descending" % (dirpath))
+                    dirnames = []
+                elif len(zero_eqs) == 1:
+                    declaration = zero_eqs[0]
+                    match = re.match(r'''0=ocfl_object_(\d+\.\d+)''', declaration)
+                    if match and match.group(1) == '1.0':
+                        # Parse inventory to extract id
+                        o = Object()
+                        inventory = o.parse_inventory(dirpath)
+                        print("%s -- id=%s" % (os.path.relpath(dirpath, self.root), inventory['id']))
+                        num_objects += 1
+                    elif match:
+                        logging.error("Object with unknown version %s in %s, ignoring" % (match.group(1), dirpath))
+                    else:
+                        logging.error("Object with unrecognized declaration %s in %s, ignoring" % (declaration, dirpath))
+                    # don't descend
+                    dirnames = []
         # FIXME - do some stuff in here
         logging.info("Found %d OCFL Objects under root %s" % (num_objects, self.root))
 
