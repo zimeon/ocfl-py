@@ -17,7 +17,7 @@ class Dispositor(object):
         """Encode identifier to get rid of unsafe chars."""
         return urllib.parse.quote_plus(identifier)
 
-    def decode(self, indentifier):
+    def decode(self, identifier):
         """Decode identifier to put back unsafe chars."""
         return urllib.parse.unquote(identifier)
 
