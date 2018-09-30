@@ -29,6 +29,8 @@ parser.add_argument('--digest', default='sha512',
                     help='digest type to use')
 parser.add_argument('--fixity', action='append',
                     help='add fixity type to add')
+
+# Version metadata settings
 parser.add_argument('--created', default=None,
                     help='creation time to be used with version(s) added, else '
                          'current time will be recorded')
@@ -69,7 +71,7 @@ try:
     elif args.list:
         store.list()
     elif args.add:
-        store.add(id=args.id, object_path=args.src)
+        store.add(object_path=args.src)
     else:
         logging.warn("Nuttin' happenin' 'round ere.")
 except (ocfl.StoreException, ocfl.ObjectException) as e:

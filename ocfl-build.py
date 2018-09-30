@@ -13,6 +13,8 @@ parser.add_argument('--fixity', action='append',
                     help='add fixity type to add')
 parser.add_argument('--id', default=None,
                     help='identifier of object')
+
+# Version metadata settings
 parser.add_argument('--created', default=None,
                     help='creation time to be used with version(s) added, else '
                          'current time will be recorded')
@@ -24,6 +26,8 @@ parser.add_argument('--address', default='somewhere',
                     help='address of user adding version(s) to object')
 parser.add_argument('--skip', action='append', default=['README.md'],
                     help='directories and files to ignore')
+
+# Versioning strategy settings
 parser.add_argument('--no-forward-delta', action='store_true',
                     help='do not use forward deltas')
 parser.add_argument('--no-dedupe', '--no-dedup', action='store_true',
@@ -31,6 +35,7 @@ parser.add_argument('--no-dedupe', '--no-dedup', action='store_true',
 parser.add_argument('--no-rename', action='store_true',
                     help='include files in new version if they did not exist with '
                          'same path in previous version')
+
 parser.add_argument('--dstdir', '--dst',
                     help='write OCFL object to a new directory dst')
 parser.add_argument('--ocfl-version', default='draft',
@@ -40,7 +45,7 @@ args = parser.parse_args()
 srcdir = args.path[0]
 
 ocfl = ocfl.Object(identifier=args.id,
-                   digest_type=args.digest,
+                   digest_algorithm=args.digest,
                    skips=args.skip,
                    ocfl_version=args.ocfl_version)
 

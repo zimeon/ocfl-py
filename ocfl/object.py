@@ -22,10 +22,10 @@ class Object(object):
     """Class for handling OCFL Object data and operations."""
 
     def __init__(self, identifier=None,
-                 digest_type='sha512', skips=None, ocfl_version='draft'):
+                 digest_algorithm='sha512', skips=None, ocfl_version='draft'):
         """Initialize OCFL builder."""
         self.identifier = identifier
-        self.digest_type = digest_type
+        self.digest_algorithm = digest_algorithm
         self.skips = set() if skips is None else set(skips)
         self.ocfl_version = ocfl_version
         self.validation_codes = None
@@ -44,7 +44,7 @@ class Object(object):
 
     def digest(self, filename):
         """Digest for file filename."""
-        return file_digest(filename, self.digest_type)
+        return file_digest(filename, self.digest_algorithm)
 
     def add_version(self, inventory, path, vdir,
                     created=None, message='', name='someone', address='somewhere',
@@ -119,7 +119,7 @@ class Object(object):
             '@context': self.context_uri,
             'id': self.identifier,
             'type': 'Object',
-            'digestAlgorithm': self.digest_type,
+            'digestAlgorithm': self.digest_algorithm,
             'versions': [],
             'manifest': {}
         }
@@ -161,8 +161,8 @@ class Object(object):
         invfile = os.path.join(dstdir, invfilename)
         with open(invfile, 'w') as fh:
             json.dump(inventory, fh, sort_keys=True, indent=2)
-        sidecar = os.path.join(dstdir, invfilename + '.' + self.digest_type)
-        digest = file_digest(invfile, self.digest_type)
+        sidecar = os.path.join(dstdir, invfilename + '.' + self.digest_algorithm)
+        digest = file_digest(invfile, self.digest_algorithm)
         with open(sidecar, 'w') as fh:
             fh.write(digest + ' ' + invfilename + '\n')
 

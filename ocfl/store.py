@@ -10,6 +10,7 @@ import urllib.parse
 
 from .digest import *
 from .object import *
+from .disposition import *
 
 
 class StoreException(Exception):
@@ -92,3 +93,14 @@ class Store(object):
                     dirnames = []
         # FIXME - do some stuff in here
         logging.info("Found %d OCFL Objects under root %s" % (num_objects, self.root))
+
+    def add(self, object_path):
+        """Add pre-constructed object from object_path."""
+        o = Object()
+        inventory = o.parse_inventory(object_path)
+        identifier = inventory['id']
+        dispositor = get_dispositor(disposition=self.disposition)
+        path = dispositor.identifier_to_path(identifier)
+        logging.info("Will copy from %s to %s under root" % (object_path, path))
+
+

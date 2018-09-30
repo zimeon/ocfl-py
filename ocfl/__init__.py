@@ -3,6 +3,7 @@ import sys
 from .object import *
 from .store import *
 from .digest import *
+from .disposition import get_dispositor
 
 __version__ = '0.0.1'
 
