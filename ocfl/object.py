@@ -9,7 +9,7 @@ from shutil import copyfile
 
 from .digest import *
 from .validator import OCFLValidator
-from .w3c_datetime import datetime_to_str
+from .version import VersionMetadata
 
 
 class ObjectException(Exception):
@@ -46,15 +46,10 @@ class Object(object):
         """Digest for file filename."""
         return file_digest(filename, self.digest_algorithm)
 
-    def add_version(self, inventory, path, vdir,
-                    created=None, message='', name='someone', address='somewhere',
+    def add_version(self, inventory, path, vdir, metadata=None,
                     forward_delta=True, dedupe=True, rename=True, fixity=None):
         """Add to inventory data for new version based on files in path/vdir."""
-        this_version = {'version': vdir,
-                        'type': 'Version',
-                        'created': created if created else datetime_to_str(),
-                        'message': message,
-                        'user': {'name': name, 'address': address}}
+        this_version = metadata.as_dict(version=vdir)
         inventory['versions'].append(this_version)
         state = {}
         this_version['state'] = state
@@ -106,8 +101,7 @@ class Object(object):
         # Set head to this latest version
         inventory['head'] = vdir
 
-    def build_inventory(self, path,
-                        created=None, message='', name='someone', address='somewhere',
+    def build_inventory(self, path, metadata=None,
                         forward_delta=True, dedupe=True, rename=True, fixity=None):
         """Generator for building an OCFL inventory.
 
@@ -140,9 +134,7 @@ class Object(object):
         # Go through versions in order building versions array, deduping if selected
         for vn in sorted(versions.keys()):
             vdir = versions[vn]
-            self.add_version(inventory, path, vdir,
-                             created=created, message=message,
-                             name=name, address=address,
+            self.add_version(inventory, path, vdir, metadata=metadata,
                              forward_delta=forward_delta, dedupe=dedupe,
                              rename=rename, fixity=fixity)
             yield (vdir, inventory)
@@ -166,8 +158,7 @@ class Object(object):
         with open(sidecar, 'w') as fh:
             fh.write(digest + ' ' + invfilename + '\n')
 
-    def write_ocfl_object(self, srcdir,
-                          created=None, message='', name='someone', address='somewhere',
+    def write_ocfl_object(self, srcdir, metadata=None,
                           forward_delta=True, dedupe=True, rename=True,
                           fixity=None, dstdir=None):
         """Write out OCFL object to dst if set, else print inventory.
@@ -179,9 +170,7 @@ class Object(object):
             raise ObjectException("Identifier is not set!")
         if dstdir is not None:
             os.makedirs(dstdir)
-        for (vdir, inventory) in self.build_inventory(srcdir,
-                                                      created=created, message=message,
-                                                      name=name, address=address,
+        for (vdir, inventory) in self.build_inventory(srcdir, metadata=metadata,
                                                       forward_delta=True, dedupe=True,
                                                       rename=True, fixity=fixity):
             if dstdir is None:

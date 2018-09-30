@@ -11,8 +11,8 @@ parser.add_argument('--root', required=True,
 parser.add_argument('--disposition', '-d', default=None,
                     help='Disposition of objects under roor')
 commands = parser.add_mutually_exclusive_group(required=True)
-commands.add_argument('--create', action='store_true',
-                      help='Create and initialize an object store')
+commands.add_argument('--init', action='store_true',
+                      help='Initialize an object store at specified --root')
 commands.add_argument('--list', action='store_true',
                       help='List contents of object store')
 commands.add_argument('--add', action='store_true',

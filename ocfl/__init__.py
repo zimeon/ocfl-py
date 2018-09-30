@@ -1,6 +1,7 @@
 """Python implementation of OCFL."""
 import sys
 from .object import *
+from .version import *
 from .store import *
 from .digest import *
 from .disposition import get_dispositor

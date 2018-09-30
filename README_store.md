@@ -9,7 +9,7 @@ Clear out any existing store
 Create new store:
 
 ```
-> ./ocfl-store.py --root tmp/s --create -v
+> ./ocfl-store.py --root tmp/s --init -v
 INFO:root:Created OCFL storage root tmp/s
 ```
 
