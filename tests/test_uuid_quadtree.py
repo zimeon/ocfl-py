@@ -45,5 +45,3 @@ class TestAll(unittest.TestCase):
                           '6ba7/b810/9dad/11d1/80b4/00c0/4fd4/30cg')
         self.assertRaises(Exception, uuqt.path_to_identifier,
                           '6ba7/b810/9dad/11d1/80b4/00c0/4fd4/30c8/aaaa')
-
-       

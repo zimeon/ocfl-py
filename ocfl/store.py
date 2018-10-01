@@ -102,5 +102,3 @@ class Store(object):
         dispositor = get_dispositor(disposition=self.disposition)
         path = dispositor.identifier_to_path(identifier)
         logging.info("Will copy from %s to %s under root" % (object_path, path))
-
-

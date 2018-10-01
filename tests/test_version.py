@@ -11,9 +11,14 @@ class TestAll(unittest.TestCase):
         """Test addition of argparse args."""
         p = argparse.ArgumentParser(description='Hello!')
         add_version_metadata_args(p)
-        ## FIXME - what to test?
+        args = p.parse_args(['--created=a', '--message=b', '--name=c', '--address=d'])
+        self.assertEqual(args.created, 'a')
+        self.assertEqual(args.message, 'b')
+        self.assertEqual(args.name, 'c')
+        self.assertEqual(args.address, 'd')
 
-    def test02_VersionMetedata(self): 
+    def test02_VersionMetedata(self):
+        """Test VersionMetadata class."""
         args = argparse.Namespace(created='a',
                                   message='b',
                                   name='c',

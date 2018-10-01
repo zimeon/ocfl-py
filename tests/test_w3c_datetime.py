@@ -1,14 +1,16 @@
+"""Tests for w3c_datatime modules (copied from resync code)."""
 import unittest
 import re
 from ocfl.w3c_datetime import str_to_datetime, datetime_to_str
 
 
 def rt(dts):
-    """ Do simple round-trip """
+    """Do simple round-trip."""
     return(datetime_to_str(str_to_datetime(dts)))
 
 
 class TestW3cDatetime(unittest.TestCase):
+    """Class for W3C ISO8601 style datetime strings."""
 
     def test01_datetime_to_str(self):
         """Writing."""

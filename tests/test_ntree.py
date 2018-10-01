@@ -67,5 +67,3 @@ class TestAll(unittest.TestCase):
         self.assertEqual(nt.path_to_identifier('abc/def/ghi/abcdefghi'), 'abcdefghi')
         # Bad ones
         self.assertRaises(Exception, nt.path_to_identifier, 'abc/def/g/a-diff-g')
-
-       

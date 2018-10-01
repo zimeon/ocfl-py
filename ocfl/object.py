@@ -25,7 +25,7 @@ class Object(object):
                  digest_algorithm='sha512', skips=None, ocfl_version='draft',
                  fixity=None):
         """Initialize OCFL builder.
-        
+
         fixity - list of fixity types to add as fixity section
         """
         self.identifier = identifier
@@ -55,9 +55,9 @@ class Object(object):
                     forward_delta=True, dedupe=True, rename=True):
         """Add to inventory data for new version based on files in srcdir.
 
-          srcdir - the directory path where the files for this version exist,
-                   including any version directory that might be present
-          vdir - the version directory that these files are being added in
+        srcdir - the directory path where the files for this version exist,
+                 including any version directory that might be present
+        vdir - the version directory that these files are being added in
         """
         this_version = metadata.as_dict(version=vdir)
         inventory['versions'].append(this_version)
@@ -264,6 +264,7 @@ class Object(object):
             raise ObjectException("Inventory %s has no id property" % (inv_file))
         return inventory
 
+
 def remove_first_directory(path):
     """Remove first directory from input path.
 
@@ -282,4 +283,3 @@ def remove_first_directory(path):
             path = head
             rpath = tail if rpath == '' else os.path.join(tail, rpath)
     return rpath
-
