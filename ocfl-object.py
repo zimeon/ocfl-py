@@ -46,26 +46,23 @@ parser.add_argument('--ocfl-version', default='draft',
 args = parser.parse_args()
 metadata = ocfl.VersionMetadata(args)
 
-ocfl = ocfl.Object(identifier=args.id,
-                   digest_algorithm=args.digest,
-                   skips=args.skip,
-                   ocfl_version=args.ocfl_version)
+obj = ocfl.Object(identifier=args.id,
+                  digest_algorithm=args.digest,
+                  skips=args.skip,
+                  ocfl_version=args.ocfl_version,
+                  fixity=args.fixity)
 if args.create:
-    ocfl.write_ocfl_object(srcdir=args.srcdir,
-                           metadata=metadata,
-                           forward_delta=not args.no_forward_delta,
-                           dedupe=not args.no_dedupe,
-                           rename=not args.no_rename,
-                           fixity=args.fixity,
-                           dstdir=args.dstdir)
+    obj.create(srcdir=args.srcdir,
+               metadata=metadata,
+               dedupe=not args.no_dedupe,
+               dstdir=args.dstdir)
 elif args.build:
-    ocfl.write_ocfl_object(srcdir=args.srcdir,
-                           metadata=metadata,
-                           forward_delta=not args.no_forward_delta,
-                           dedupe=not args.no_dedupe,
-                           rename=not args.no_rename,
-                           fixity=args.fixity,
-                           dstdir=args.dstdir)
+    obj.write(srcdir=args.srcdir,
+              metadata=metadata,
+              forward_delta=not args.no_forward_delta,
+              dedupe=not args.no_dedupe,
+              rename=not args.no_rename,
+              dstdir=args.dstdir)
 elif args.show:
     pass
 elif args.validate:
