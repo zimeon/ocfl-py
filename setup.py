@@ -40,7 +40,7 @@ setup(
     author='Simeon Warner',
     author_email='simeon.warner@cornell.edu',
     packages=['ocfl'],
-    scripts=['ocfl-build.py'],
+    scripts=['ocfl-object.py', 'ocfl-store.py'],
     classifiers=["Development Status :: 2 - Pre-Alpha",
                  "Intended Audience :: Developers",
                  "Operating System :: OS Independent",
@@ -55,6 +55,7 @@ setup(
     description='ocfl-py - A Python implementation of OCFL',
     long_description=open('README').read(),
     install_requires=[
+        'pairtree>=0.8.1'
     ],
     test_suite="tests",
     cmdclass={

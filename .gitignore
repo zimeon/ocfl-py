@@ -3,5 +3,7 @@
 tmp
 __pycache__
 *.pyc
+build/
+dist/
 htmlcov/
 ocfl_py.egg-info/
