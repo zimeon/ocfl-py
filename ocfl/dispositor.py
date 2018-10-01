@@ -1,5 +1,8 @@
 """Base class for Dispositor objects."""
-import urllib.parse
+try:
+    from urllib.parse import quote_plus, unquote_plus  # py3
+except:
+    from urllib import quote_plus, unquote_plus  # py2
 
 
 class Dispositor(object):
@@ -15,11 +18,11 @@ class Dispositor(object):
 
     def encode(self, identifier):
         """Encode identifier to get rid of unsafe chars."""
-        return urllib.parse.quote_plus(identifier)
+        return quote_plus(identifier)
 
     def decode(self, identifier):
         """Decode identifier to put back unsafe chars."""
-        return urllib.parse.unquote(identifier)
+        return unquote_plus(identifier)
 
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to root."""

@@ -24,7 +24,7 @@ class Ntree(Dispositor):
 
     def __init__(self, n=2, encapsulate=True):
         """Initialize Dispositor."""
-        super(Ntree).__init__()
+        super(Ntree, self).__init__()
         self.n = n
         self.encapsulate = encapsulate
 

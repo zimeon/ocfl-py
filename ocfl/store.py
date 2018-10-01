@@ -6,8 +6,10 @@ import os.path
 import re
 import logging
 from shutil import copyfile
-import urllib.parse
-
+try:
+    from urllib.parse import quote_plus  # py3
+except:
+    from urllib import quote_plus  # py2
 from .digest import *
 from .object import *
 from .disposition import *
@@ -35,7 +37,7 @@ class Store(object):
     @property
     def disposition_file(self):
         """Path of storage root disposition file."""
-        return os.path.join(self.root, '1=' + urllib.parse.quote_plus(self.disposition))
+        return os.path.join(self.root, '1=' + quote_plus(self.disposition))
 
     def create(self):
         """Create object store."""

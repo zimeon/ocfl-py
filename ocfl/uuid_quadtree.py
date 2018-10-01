@@ -14,7 +14,7 @@ class UUIDQuadtree(Dispositor):
 
     def __init__(self, prefix='urn:uuid:'):
         """Initialize Dispositor."""
-        super(UUIDQuadtree).__init__()
+        super(UUIDQuadtree, self).__init__()
         self.prefix = prefix
 
     def encode(self, identifier):
