@@ -48,7 +48,6 @@ class VersionMetadata(object):
                 break
         if version is None:
             raise Exception("No version block for %s in inventory %s" % (vdir, inventory_file))
-        print(str(version))
         if 'created' in version:
             self.created = version['created']
         if 'message' in version:
