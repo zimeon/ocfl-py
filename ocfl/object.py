@@ -59,19 +59,20 @@ class Object(object):
                  including any version directory that might be present
         vdir - the version directory that these files are being added in
         """
-        this_version = metadata.as_dict(version=vdir)
-        inventory['versions'].append(this_version)
         state = {}
-        this_version['state'] = state
         manifest = inventory['manifest']
+        digests_in_version = {}
+        vfilepath_to_srcfile = {}
         # Go through all files to find new files in manifest and state for each version
         for (dirpath, dirnames, filenames) in os.walk(srcdir, followlinks=True):
             # Go through filenames, in sort order so the it is deterministic
             # which file is included and which is/are referenced in the case
             # of multiple additions with the same digest
-            digests_in_version = {}
-            vfilepath_to_srcfile = {}
             for filename in sorted(filenames):
+                if filename == "inventory.jsonld":
+                    # Read metadata for this version
+                    metadata.init_from_inventory(os.path.join(dirpath, filename), vdir)
+                    continue
                 filepath = os.path.join(dirpath, filename)
                 sfilepath = os.path.relpath(filepath, srcdir)  # path relative to this version
                 vfilepath = os.path.join(vdir, sfilepath)  # path relative to root, inc v#
@@ -92,26 +93,29 @@ class Object(object):
                     elif not dedupe:
                         digests_in_version[digest].append(vfilepath)
                     vfilepath_to_srcfile[vfilepath] = filepath
-            # Add any new digests in this version to the manifest
-            for digest, paths in digests_in_version.items():
-                if digest not in manifest:
-                    manifest[digest] = paths
-                else:
-                    for p in paths:
-                        manifest[digest].append(p)
-            # Add extra fixity entries if required
-            if self.fixity is not None:
-                for fixity_type in self.fixity:
-                    for digest, vfilepaths in digests_in_version.items():
-                        fixities = inventory['fixity'][fixity_type]
-                        for vfilepath in vfilepaths:
-                            fixity_digest = file_digest(vfilepath_to_srcfile[vfilepath], fixity_type)
-                            if fixity_digest not in fixities:
-                                fixities[fixity_digest] = paths
-                            else:
-                                fixities[fixity_digest].append(p)
-        # Set head to this latest version
+        # Add any new digests in this version to the manifest
+        for digest, paths in digests_in_version.items():
+            if digest not in manifest:
+                manifest[digest] = paths
+            else:
+                for p in paths:
+                    manifest[digest].append(p)
+        # Add extra fixity entries if required
+        if self.fixity is not None:
+            for fixity_type in self.fixity:
+                fixities = inventory['fixity'][fixity_type]
+                for digest, vfilepaths in digests_in_version.items():
+                    for vfilepath in vfilepaths:
+                        fixity_digest = file_digest(vfilepath_to_srcfile[vfilepath], fixity_type)
+                        if fixity_digest not in fixities:
+                            fixities[fixity_digest] = [vfilepath]
+                        else:
+                            fixities[fixity_digest].append(vfilepath)
+        # Set head to this latest version, and add this version to inventory
         inventory['head'] = vdir
+        this_version = metadata.as_dict(version=vdir)
+        this_version['state'] = state
+        inventory['versions'].append(this_version)
 
     def start_inventory(self, metadata):
         """Create inventory start with metadata etc."""

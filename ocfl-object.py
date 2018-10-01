@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """OCFL Object and Inventory Builder."""
 import argparse
+import logging
 import ocfl
 
 parser = argparse.ArgumentParser(description='Build an OCFL inventory.',
@@ -27,7 +28,7 @@ commands.add_argument('--validate', action='store_true',
 # Version metadata settings
 ocfl.add_version_metadata_args(parser)
 
-parser.add_argument('--skip', action='append', default=['README.md'],
+parser.add_argument('--skip', action='append', default=['README.md', '.DS_Store'],
                     help='directories and files to ignore')
 
 # Versioning strategy settings
@@ -43,8 +44,12 @@ parser.add_argument('--dstdir', '--dst',
                     help='write OCFL object to a new directory dst')
 parser.add_argument('--ocfl-version', default='draft',
                     help='OCFL specification version')
+parser.add_argument('--verbose', '-v', action='store_true',
+                    help="be more verbose")
 args = parser.parse_args()
 metadata = ocfl.VersionMetadata(args)
+
+logging.basicConfig(level=logging.INFO if args.verbose else logging.WARN)
 
 obj = ocfl.Object(identifier=args.id,
                   digest_algorithm=args.digest,
