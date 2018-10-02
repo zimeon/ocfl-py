@@ -3,6 +3,8 @@
 tmp
 __pycache__
 *.pyc
+minimal.txt
+full.txt
 build/
 dist/
 htmlcov/
