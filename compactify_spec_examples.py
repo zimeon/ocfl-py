@@ -12,4 +12,3 @@ txt = re.sub(r'''\s+],''', ' ],', txt, flags=re.MULTILINE)
 txt = re.sub(r'''(\[[^\n,\]]+,)\s+''', r'''\1 ''', txt, flags=re.MULTILINE)
 
 print(txt)
-
