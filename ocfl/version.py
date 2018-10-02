@@ -51,7 +51,7 @@ class VersionMetadata(object):
         if 'created' in version:
             self.created = version['created']
         if 'message' in version:
-            self.message= version['message']
+            self.message = version['message']
         if 'user' in version:
             if 'name' in version['user']:
                 self.name = version['user']['name']
