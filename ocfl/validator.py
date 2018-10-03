@@ -19,7 +19,7 @@ class OCFLValidator(object):
         self.warnings = 0
         self.info = 0
         if self.validation_codes is None:
-            with open(os.path.join(os.path.dirname(__file__), 'data/validation-errors.jsonld'), 'r') as fh:
+            with open(os.path.join(os.path.dirname(__file__), 'data/validation-errors.json'), 'r') as fh:
                 self.validation_codes = json.load(fh)['codes']
 
     def error(self, code, **args):
@@ -52,12 +52,12 @@ class OCFLValidator(object):
         elif os.path.getsize(namastefile) > 0:
             self.error('E003')
         # Inventory
-        invfile = os.path.join(path, 'inventory.jsonld')
+        invfile = os.path.join(path, 'inventory.json')
         if not os.path.exists(invfile):
             self.error('E004')
         else:
             self.validate_inventory(invfile)
-        invdigest = os.path.join(path, 'inventory.jsonld.sha512')  # FIXME - support other digests
+        invdigest = os.path.join(path, 'inventory.json.sha512')  # FIXME - support other digests
         if not os.path.exists(invdigest):
             self.error('E005')
         else:

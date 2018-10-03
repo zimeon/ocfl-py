@@ -9,7 +9,6 @@
 
 ```
 {
-  "@context": "https://ocfl.io/draft/context.jsonld",
   "digestAlgorithm": "sha512",
   "head": "v1",
   "id": "http://example.org/minimal",
@@ -47,7 +46,6 @@ to get:
 
 ```
 {
-  "@context": "https://ocfl.io/draft/context.jsonld",
   "digestAlgorithm": "sha512",
   "fixity": {
     "md5": {
@@ -94,7 +92,6 @@ to get:
 
 ```
 {
-  "@context": "https://ocfl.io/draft/context.jsonld",
   "digestAlgorithm": "sha512",
   "fixity": {
     "md5": {
@@ -158,7 +155,6 @@ to get:
 
 ```
 {
-  "@context": "https://ocfl.io/draft/context.jsonld",
   "digestAlgorithm": "sha512",
   "fixity": {
     "md5": {

@@ -35,11 +35,6 @@ class Object(object):
         self.fixity = fixity
         self.validation_codes = None
 
-    @property
-    def context_uri(self):
-        """JSON-LD context URI for appropriate version."""
-        return 'https://ocfl.io/' + self.ocfl_version + '/context.jsonld'
-
     def parse_version_directory(self, dirname):
         """Get version number from version directory name."""
         m = re.match(r'''v(\d{1,5})$''', dirname)
@@ -69,7 +64,7 @@ class Object(object):
             # which file is included and which is/are referenced in the case
             # of multiple additions with the same digest
             for filename in sorted(filenames):
-                if filename == "inventory.jsonld":
+                if filename == "inventory.json":
                     # Read metadata for this version
                     metadata.init_from_inventory(os.path.join(dirpath, filename), vdir)
                     continue
@@ -120,7 +115,6 @@ class Object(object):
     def start_inventory(self, metadata):
         """Create inventory start with metadata etc."""
         inventory = {
-            '@context': self.context_uri,
             'id': self.identifier,
             'type': 'Object',
             'digestAlgorithm': self.digest_algorithm,
@@ -169,7 +163,7 @@ class Object(object):
 
     def write_inventory_and_sidecar(self, dstdir, inventory):
         """Write inventory and sidecar to dstdir."""
-        invfilename = 'inventory.jsonld'
+        invfilename = 'inventory.json'
         if not os.path.exists(dstdir):
             os.makedirs(dstdir)
         invfile = os.path.join(dstdir, invfilename)
@@ -259,8 +253,8 @@ class Object(object):
         print(str(validator))
 
     def parse_inventory(self, path):
-        """Read JSON-LD top-level inventory file for object at path."""
-        inv_file = os.path.join(path, 'inventory.jsonld')
+        """Read JSON top-level inventory file for object at path."""
+        inv_file = os.path.join(path, 'inventory.json')
         with open(inv_file) as fh:
             inventory = json.load(fh)
         # Sanity checks
