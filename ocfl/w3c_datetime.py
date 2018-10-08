@@ -27,11 +27,11 @@ def datetime_to_str(dt='now', no_fractions=False):
     - Returns datetime str for now if no parameter given.
     - Returns None if None is supplied.
     """
-    if (dt is None):
+    if dt is None:
         return None
-    elif (dt == 'now'):
+    elif dt == 'now':
         dt = time.time()
-    if (no_fractions):
+    if no_fractions:
         dt = int(dt)
     else:
         dt += 0.0000001  # improve rounding to microseconds
@@ -73,25 +73,25 @@ def str_to_datetime(s, context='datetime'):
     as 00.0 seconds.
     """
     t = None
-    if (s is None):
+    if s is None:
         return(t)
-    if (s == ''):
+    if s == '':
         raise ValueError('Attempt to set empty %s' % (context))
     # Make a date into a full datetime
     m = re.match(r"\d\d\d\d(\-\d\d(\-\d\d)?)?$", s)
-    if (m is not None):
-        if (m.group(1) is None):
+    if m is not None:
+        if m.group(1) is None:
             s += '-01-01'
-        elif (m.group(2) is None):
+        elif m.group(2) is None:
             s += '-01'
         s += 'T00:00:00Z'
     # Now have datetime with timezone info
     m = re.match(r"(.*\d{2}:\d{2}:\d{2})(\.\d+)([^\d].*)?$", s)
     # Chop out fractional seconds if present
     fractional_seconds = 0
-    if (m is not None):
+    if m is not None:
         s = m.group(1)
-        if (m.group(3) is not None):
+        if m.group(3) is not None:
             s += m.group(3)
         fractional_seconds = float(m.group(2))
     # Now check that only allowed formats supplied (the parse
@@ -103,18 +103,18 @@ def str_to_datetime(s, context='datetime'):
     # between python 2.6 and 2.7... so do here for now
     m = re.match(r"(\d\d\d\d\-\d\d\-\d\dT\d\d:\d\d(:\d\d)?)(Z|([+-])"
                  "(\d\d):(\d\d))$", s)
-    if (m is None):
+    if m is None:
         raise ValueError("Bad datetime format (%s)" % s)
     str = m.group(1) + 'Z'
     dt = dateutil_parser.parse(str)
     offset_seconds = 0
-    if (m.group(3) != 'Z'):
+    if m.group(3) != 'Z':
         hh = int(m.group(5))
         mm = int(m.group(6))
-        if (hh > 23 or mm > 59):
+        if hh > 23 or mm > 59:
             raise ValueError("Bad timezone offset (%s)" % s)
         offset_seconds = hh * 3600 + mm * 60
-        if (m.group(4) == '-'):
+        if m.group(4) == '-':
             offset_seconds = -offset_seconds
     # timetuple() ignores timezone information so we have to add in
     # the offset here, and any fractional component of the seconds

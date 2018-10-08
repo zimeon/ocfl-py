@@ -58,6 +58,11 @@ class TestW3cDatetime(unittest.TestCase):
         self.assertEqual(datetime_to_str(0.200001, no_fractions=True),
                          "1970-01-01T00:00:00Z")
 
+        # Special cases
+        self.assertEqual(datetime_to_str(None), None)
+        nt = datetime_to_str('now', no_fractions=True)
+        self.assertTrue(re.match(r'''\d\d\d\d\-\d\d\-\d\dT\d\d:\d\d:\d\dZ''', nt))
+
     def test02_str_to_datetime(self):
         """Reading."""
         self.assertEqual(str_to_datetime("1970-01-01T00:00:00Z"), 0)
@@ -69,6 +74,8 @@ class TestW3cDatetime(unittest.TestCase):
         self.assertEqual(str_to_datetime("1970-01-01T00:00:00.100000Z"), 0.1)
         # Random other datetime
         self.assertEqual(str_to_datetime("2009-02-13T23:31:30Z"), 1234567890)
+        # Special case
+        self.assertEqual(str_to_datetime(None), None)
 
     def test03_same(self):
         """Datetime values that are the same."""
