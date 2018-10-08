@@ -1,8 +1,8 @@
 """Base class for Dispositor objects."""
 try:
     from urllib.parse import quote_plus, unquote_plus  # py3
-except:
-    from urllib import quote_plus, unquote_plus  # py2
+except:                                                # pragma: no cover -- py2
+    from urllib import quote_plus, unquote_plus        # pragma: no cover -- py2
 
 
 class Dispositor(object):

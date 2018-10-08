@@ -8,8 +8,8 @@ import logging
 from shutil import copyfile
 try:
     from urllib.parse import quote_plus  # py3
-except:
-    from urllib import quote_plus  # py2
+except:                                  # pragma: no cover -- py2
+    from urllib import quote_plus        # pragma: no cover -- py2
 from .digest import *
 from .object import *
 from .disposition import *
