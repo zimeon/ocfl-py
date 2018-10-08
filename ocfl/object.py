@@ -7,7 +7,7 @@ import re
 import logging
 from shutil import copyfile
 
-from .digest import *
+from .digest import file_digest
 from .validator import OCFLValidator
 from .version import VersionMetadata
 
@@ -44,8 +44,11 @@ class Object(object):
         """Get version number from version directory name."""
         m = re.match(r'''v(\d{1,5})$''', dirname)
         if not m:
-            raise Exception("Bad directory name: %s" % (dirname))
-        return int(m.group(1))
+            raise Exception("Bad version directory name: %s" % (dirname))
+        v = int(m.group(1))
+        if v == 0:
+            raise Exception("Bad version directory name: %s, v0 no allowed" % (dirname))
+        return v
 
     def digest(self, filename):
         """Digest for file filename."""

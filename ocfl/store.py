@@ -10,9 +10,10 @@ try:
     from urllib.parse import quote_plus  # py3
 except:                                  # pragma: no cover -- py2
     from urllib import quote_plus        # pragma: no cover -- py2
-from .digest import *
-from .object import *
-from .disposition import *
+
+from .digest import file_digest
+from .disposition import get_dispositor
+from .object import Object
 
 
 class StoreException(Exception):
