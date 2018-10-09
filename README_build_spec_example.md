@@ -3,7 +3,7 @@
 ## Minimal example
 
 ```
-> ./ocfl-object.py --build --src fixtures/content/spec-ex-minimal --id http://example.org/minimal --digest sha512-spec-ex --created "2018-10-02T12:00:00Z" --message "One file" --name "Alice" --address "alice@example.org" -v | ./compactify_spec_examples.py > minimal.txt
+> ./ocfl-object.py --build --src fixtures/content/spec-ex-minimal --id http://example.org/minimal --digest sha512 --created "2018-10-02T12:00:00Z" --message "One file" --name "Alice" --address "alice@example.org" -v | ./compactify_spec_examples.py > minimal.txt
 ```
 ### Inventory for v1
 
@@ -38,7 +38,7 @@
 ## Full example
 
 ```
-./ocfl-object.py --build --src fixtures/content/spec-ex-full --id ark:/12345/bcd987 --fixity md5 --fixity sha1 --digest sha512-spec-ex -v | ./compactify_spec_examples.py > full.txt
+./ocfl-object.py --build --src fixtures/content/spec-ex-full --id ark:/12345/bcd987 --fixity md5 --fixity sha1 --digest sha512 -v | ./compactify_spec_examples.py > full.txt
 ```
 
 to get:
