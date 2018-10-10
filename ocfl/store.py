@@ -29,6 +29,7 @@ class Store(object):
         """Initialize OCFL Object Store."""
         self.root = root
         self.disposition = disposition
+        self.dispositor = None
 
     @property
     def declaration_file(self):
@@ -40,8 +41,15 @@ class Store(object):
         """Path of storage root disposition file."""
         return os.path.join(self.root, '1=' + quote_plus(self.disposition))
 
-    def create(self):
-        """Create object store."""
+    def object_path(self, identifier):
+        """Path to OCFL object with given identifier."""
+        if not self.dispositor:
+            self.dispositor = get_dispositor(disposition=self.disposition)
+        path = self.dispositor.identifier_to_path(identifier)
+        return path
+
+    def initialize(self):
+        """Initialize an object store."""
         if os.path.exists(self.root):
             raise StoreException("OCFL Object Store root %s already exists, aborting!" % (self.root))
         os.makedirs(self.root)
@@ -102,6 +110,5 @@ class Store(object):
         o = Object()
         inventory = o.parse_inventory(object_path)
         identifier = inventory['id']
-        dispositor = get_dispositor(disposition=self.disposition)
-        path = dispositor.identifier_to_path(identifier)
+        path = self.object_path(identifier)
         logging.info("Will copy from %s to %s under root" % (object_path, path))

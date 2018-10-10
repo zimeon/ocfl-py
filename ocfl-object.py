@@ -17,9 +17,9 @@ parser.add_argument('--id', default=None,
 
 commands = parser.add_mutually_exclusive_group(required=True)
 commands.add_argument('--create', action='store_true',
-                      help='Create an new object with version 1 from dstdir')
+                      help='Create an new object with version 1 from objdir')
 commands.add_argument('--build', action='store_true',
-                      help='Build an new object from version directories in dstdir')
+                      help='Build an new object from version directories in objdir')
 commands.add_argument('--show', action='store_true',
                       help='Show versions and files in an OCFL object')
 commands.add_argument('--validate', action='store_true',
@@ -40,8 +40,8 @@ parser.add_argument('--no-rename', action='store_true',
                     help='include files in new version if they did not exist with '
                          'same path in previous version')
 
-parser.add_argument('--dstdir', '--dst',
-                    help='write OCFL object to a new directory dst')
+parser.add_argument('--objdir', '--obj',
+                    help='read from or write to OCFL object directory objdir')
 parser.add_argument('--ocfl-version', default='draft',
                     help='OCFL specification version')
 parser.add_argument('--verbose', '-v', action='store_true',
@@ -60,17 +60,17 @@ if args.create:
     obj.create(srcdir=args.srcdir,
                metadata=metadata,
                dedupe=not args.no_dedupe,
-               dstdir=args.dstdir)
+               objdir=args.objdir)
 elif args.build:
     obj.write(srcdir=args.srcdir,
               metadata=metadata,
               forward_delta=not args.no_forward_delta,
               dedupe=not args.no_dedupe,
               rename=not args.no_rename,
-              dstdir=args.dstdir)
+              objdir=args.objdir)
 elif args.show:
-    pass
+    obj.show(path=args.objdir)
 elif args.validate:
-    pass
+    obj.validate(path=args.objdir)
 else:
     raise Exception("Command argument not supported!")

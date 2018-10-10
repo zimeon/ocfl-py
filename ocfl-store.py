@@ -10,7 +10,9 @@ parser.add_argument('--root', required=True,
                     help='OCFL Storage Root for this object store')
 parser.add_argument('--disposition', '-d', default=None,
                     help='Disposition of objects under roor')
+
 commands = parser.add_mutually_exclusive_group(required=True)
+# These commands are actions on the store
 commands.add_argument('--init', action='store_true',
                       help='Initialize an object store at specified --root')
 commands.add_argument('--list', action='store_true',
@@ -19,6 +21,15 @@ commands.add_argument('--add', action='store_true',
                       help='Add object to object store')
 commands.add_argument('--purge', action='store_true',
                       help='Purge (delete) an object from object store')
+# and these commands act on an object in the store
+commands.add_argument('--create', action='store_true',
+                      help='Create an new object with version 1 from objdir')
+commands.add_argument('--build', action='store_true',
+                      help='Build an new object from version directories in objdir')
+commands.add_argument('--show', action='store_true',
+                      help='Show versions and files in an OCFL object')
+commands.add_argument('--validate', action='store_true',
+                      help='Validate an OCFL object')
 
 # Object property settings
 parser.add_argument('--id', default=None,
@@ -53,8 +64,8 @@ parser.add_argument('--no-dedupe', '--no-dedup', action='store_true',
 parser.add_argument('--no-rename', action='store_true',
                     help='include files in new version if they did not exist with '
                          'same path in previous version')
-parser.add_argument('--dstdir', '--dst',
-                    help='write OCFL object to a new directory dst')
+parser.add_argument('--objdir', '--obj',
+                    help='read from or write to OCFL object directory objdir')
 parser.add_argument('--verbose', '-v', action='store_true',
                     help="be more verbose")
 # parser.add_argument('path', type=str, nargs=1,
@@ -66,12 +77,26 @@ logging.basicConfig(level=logging.INFO if args.verbose else logging.WARN)
 try:
     store = ocfl.Store(root=args.root, disposition=args.disposition,
                        default_disposition=args.default_disposition)
-    if args.create:
-        store.create()
+    if args.init:
+        store.initialize()
     elif args.list:
         store.list()
     elif args.add:
         store.add(object_path=args.src)
+    elif args.purge:
+        logging.error("purge not implemented")
+    elif args.create or args.build or args.show or args.validate:
+        if not args.id:
+            raise ocfl.StoreException("Must specify id to act on an object in the store")
+        obj = ocfl.Object(identifier=args.id,
+                          digest_algorithm=args.digest,
+                          skips=args.skip,
+                          ocfl_version=args.ocfl_version,
+                          fixity=args.fixity)
+        if args.show:
+            obj.show(store.object_path(args.id))
+        else:
+            logging.error("create/build/validate not implemented")
     else:
         logging.warn("Nuttin' happenin' 'round ere.")
 except (ocfl.StoreException, ocfl.ObjectException) as e:

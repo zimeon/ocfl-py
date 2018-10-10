@@ -158,92 +158,97 @@ class Object(object):
                              rename=rename)
             yield (vdir, inventory)
 
-    def write_object_declaration(self, dstdir):
-        """Write NAMASTE object declaration to dstdir."""
-        namastefile = os.path.join(dstdir, '0=ocfl_object_1.0')
+    def write_object_declaration(self, objdir):
+        """Write NAMASTE object declaration to objdir."""
+        namastefile = os.path.join(objdir, '0=ocfl_object_1.0')
         with open(namastefile, 'w') as fh:
             pass  # empty file
 
-    def write_inventory_and_sidecar(self, dstdir, inventory):
-        """Write inventory and sidecar to dstdir."""
+    def write_inventory_and_sidecar(self, objdir, inventory):
+        """Write inventory and sidecar to objdir."""
         invfilename = 'inventory.json'
-        if not os.path.exists(dstdir):
-            os.makedirs(dstdir)
-        invfile = os.path.join(dstdir, invfilename)
+        if not os.path.exists(objdir):
+            os.makedirs(objdir)
+        invfile = os.path.join(objdir, invfilename)
         with open(invfile, 'w') as fh:
             json.dump(inventory, fh, sort_keys=True, indent=2)
-        sidecar = os.path.join(dstdir, invfilename + '.' + self.digest_algorithm)
+        sidecar = os.path.join(objdir, invfilename + '.' + self.digest_algorithm)
         digest = file_digest(invfile, self.digest_algorithm)
         with open(sidecar, 'w') as fh:
             fh.write(digest + ' ' + invfilename + '\n')
 
     def write(self, srcdir, metadata=None,
               forward_delta=True, dedupe=True, rename=True,
-              dstdir=None):
+              objdir=None):
         """Write out OCFL object to dst if set, else print inventory.
 
         Parameters:
         """
         if self.identifier is None:
             raise ObjectException("Identifier is not set!")
-        if dstdir is not None:
-            os.makedirs(dstdir)
+        if objdir is not None:
+            os.makedirs(objdir)
         for (vdir, inventory) in self.build_inventory(srcdir, metadata=metadata,
                                                       forward_delta=True, dedupe=True,
                                                       rename=True):
-            if dstdir is None:
+            if objdir is None:
                 print("\n\n### Inventory for %s\n" % (vdir))
                 print(json.dumps(inventory, sort_keys=True, indent=2))
             else:
-                self.write_inventory_and_sidecar(os.path.join(dstdir, vdir), inventory)
-        if dstdir is None:
+                self.write_inventory_and_sidecar(os.path.join(objdir, vdir), inventory)
+        if objdir is None:
             return
         # Write NAMASTE, inventory and sidecar
-        self.write_object_declaration(dstdir)
-        self.write_inventory_and_sidecar(dstdir, inventory)
+        self.write_object_declaration(objdir)
+        self.write_inventory_and_sidecar(objdir, inventory)
         # Write version files
         for digest, paths in inventory['manifest'].items():
             for path in paths:
                 srcfile = os.path.join(srcdir, path)
-                dstfile = os.path.join(dstdir, path)
+                dstfile = os.path.join(objdir, path)
                 dstpath = os.path.dirname(dstfile)
                 if not os.path.exists(dstpath):
                     os.makedirs(dstpath)
                 copyfile(srcfile, dstfile)
 
     def create(self, srcdir, metadata=None,
-               dedupe=True, dstdir=None):
+               dedupe=True, objdir=None):
         """Create an OCFL object with v1 content from srcdir.
 
         Write to dst if set, else just print inventory.
         """
         if self.identifier is None:
             raise ObjectException("Identifier is not set!")
-        if dstdir is not None:
-            os.makedirs(dstdir)
+        if objdir is not None:
+            os.makedirs(objdir)
         inventory = self.start_inventory(metadata)
         vdir = 'v1'
         self.add_version(inventory, srcdir, vdir, metadata=metadata,
                          dedupe=dedupe)
-        if dstdir is None:
+        if objdir is None:
             print("\n\n### Inventory for %s\n" % (vdir))
             print(json.dumps(inventory, sort_keys=True, indent=2))
             return
         # Else write out object
-        self.write_inventory_and_sidecar(os.path.join(dstdir, vdir), inventory)
+        self.write_inventory_and_sidecar(os.path.join(objdir, vdir), inventory)
         # Write NAMASTE, inventory and sidecar
-        self.write_object_declaration(dstdir)
-        self.write_inventory_and_sidecar(dstdir, inventory)
+        self.write_object_declaration(objdir)
+        self.write_inventory_and_sidecar(objdir, inventory)
         # Write version files
         for digest, paths in inventory['manifest'].items():
             for path in paths:
                 path_without_vdir = remove_first_directory(path)
                 srcfile = os.path.join(srcdir, path_without_vdir)
-                dstfile = os.path.join(dstdir, path)
+                dstfile = os.path.join(objdir, path)
                 dstpath = os.path.dirname(dstfile)
                 if not os.path.exists(dstpath):
                     os.makedirs(dstpath)
                 copyfile(srcfile, dstfile)
+
+    def show(self, path):
+        """Show OCFL object at path."""
+        import subprocess
+        subprocess.call(["tree", path])  # FIXME - do something sensible!
 
     def validate(self, path):
         """Validate OCFL object at path."""
