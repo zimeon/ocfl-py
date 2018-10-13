@@ -73,7 +73,7 @@ class VersionMetadata(object):
                 self.address = version['user']['address']
 
     def as_dict(self, **kwargs):
-        """Dictionary object with versin metedata."""
+        """Dictionary object with version metedata."""
         m = {}
         self.add_to_dict(m, **kwargs)
         return m

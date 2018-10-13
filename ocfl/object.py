@@ -49,6 +49,24 @@ class Object(object):
         """Digest for file filename."""
         return file_digest(filename, self.digest_algorithm)
 
+    def start_inventory(self):
+        """Create inventory start with metadata from self."""
+        inventory = {
+            'id': self.identifier,
+            'type': 'Object',
+            'digestAlgorithm': self.digest_algorithm,
+            'versions': [],
+            'manifest': {}
+        }
+        # Add fixity section if requested
+        if self.fixity is not None and len(self.fixity) > 0:
+            inventory['fixity'] = {}
+            for fixity_type in self.fixity:
+                inventory['fixity'][fixity_type] = {}
+        else:
+            fixity = None
+        return inventory
+
     def add_version(self, inventory, srcdir, vdir, metadata=None,
                     forward_delta=True, dedupe=True, rename=True):
         """Add to inventory data for new version based on files in srcdir.
@@ -115,24 +133,6 @@ class Object(object):
         this_version['state'] = state
         inventory['versions'].append(this_version)
 
-    def start_inventory(self, metadata):
-        """Create inventory start with metadata etc."""
-        inventory = {
-            'id': self.identifier,
-            'type': 'Object',
-            'digestAlgorithm': self.digest_algorithm,
-            'versions': [],
-            'manifest': {}
-        }
-        # Add fixity section if requested
-        if self.fixity is not None and len(self.fixity) > 0:
-            inventory['fixity'] = {}
-            for fixity_type in self.fixity:
-                inventory['fixity'][fixity_type] = {}
-        else:
-            fixity = None
-        return inventory
-
     def build_inventory(self, path, metadata=None,
                         forward_delta=True, dedupe=True, rename=True):
         """Generator for building an OCFL inventory.
@@ -141,7 +141,7 @@ class Object(object):
         the version directory name and inventory is the inventory for that
         version.
         """
-        inventory = self.start_inventory(metadata)
+        inventory = self.start_inventory()
         # Find the versions
         versions = {}
         for vdir in os.listdir(path):
@@ -221,7 +221,7 @@ class Object(object):
             raise ObjectException("Identifier is not set!")
         if objdir is not None:
             os.makedirs(objdir)
-        inventory = self.start_inventory(metadata)
+        inventory = self.start_inventory()
         vdir = 'v1'
         self.add_version(inventory, srcdir, vdir, metadata=metadata,
                          dedupe=dedupe)

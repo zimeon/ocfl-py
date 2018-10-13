@@ -16,7 +16,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(d.identifier_to_path('abcde'), 'abcd/e/abcde')
         d = get_dispositor('uuid_quadtree')
         self.assertEqual(d.identifier_to_path('urn:uuid:6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
-                        '6ba7/b810/9dad/11d1/80b4/00c0/4fd4/30c8')
+                         '6ba7/b810/9dad/11d1/80b4/00c0/4fd4/30c8')
         # Errors
         self.assertRaises(Exception, get_dispositor)
         self.assertRaises(Exception, get_dispositor, None)

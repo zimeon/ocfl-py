@@ -13,8 +13,8 @@ install:
   - pip install coveralls pep8 pep257
   - python setup.py install
 script:
-  - pep8 --ignore=E501 ocfl/*.py *.py
-  - pep257 ocfl/*.py *.py
+  - pep8 --ignore=E501 ocfl/*.py tests/*.py *.py
+  - pep257 ocfl/*.py tests/*.py *.py
   - python setup.py test
 after_success:
   - python setup.py coverage
