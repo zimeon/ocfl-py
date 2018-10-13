@@ -17,7 +17,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(args.name, 'c')
         self.assertEqual(args.address, 'd')
 
-    def test02_VersionMetedata(self):
+    def test02_VersionMetedata_init(self):
         """Test VersionMetadata class."""
         args = argparse.Namespace(created='a',
                                   message='b',
@@ -30,3 +30,22 @@ class TestAll(unittest.TestCase):
         self.assertEqual(d['message'], 'b')
         self.assertEqual(d['user'], {'name': 'c', 'address': 'd'})
         self.assertEqual(d['extra'], 'x')
+        # with load from file
+        m = VersionMetadata(inventory_file='tests/testdata/inventories/inv_1_good.json')
+        self.assertEqual(m.version, 'v1')
+
+    def test03_VersionMetedata_from_inventory_file(self):
+        """Test VersionMetadata from_inventory_file."""
+        m = VersionMetadata()
+        m.from_inventory_file('tests/testdata/inventories/inv_1_good.json')
+        self.assertEqual(m.created, '2018-10-02T12:00:00Z')
+        # Failures
+        m = VersionMetadata()
+        self.assertRaises(Exception, m.from_inventory,
+                          inventory={})
+        self.assertRaises(Exception, m.from_inventory,
+                          inventory={'versions': {}})
+        self.assertRaises(Exception, m.from_inventory,
+                          inventory={'versions': {}}, vdir='v1')
+        self.assertRaises(Exception, m.from_inventory,
+                          inventory={'head': 'v1', 'versions': {}}, vdir='v1')

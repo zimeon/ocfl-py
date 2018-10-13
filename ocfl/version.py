@@ -31,23 +31,37 @@ class VersionMetadata(object):
             self.message = args.message
             self.name = args.name
             self.address = args.address
-        elif inventory_filename is not None:
-            self.init_from_inventory(inventory_file, vdir)
+        elif inventory_file is not None:
+            self.from_inventory_file(inventory_file, vdir)
 
-    def init_from_inventory(self, inventory_file, vdir):
+    def from_inventory_file(self, inventory_file, vdir=None):
         """Initialize from an inventory file."""
         logging.info("Reading metadata for %s from %s" % (vdir, inventory_file))
         with open(inventory_file, 'r') as fh:
             inventory = json.load(fh)
+        return self.from_inventory(inventory, vdir)
+
+    def from_inventory(self, inventory, vdir=None):
+        """Initialize from an inventory object.
+
+        Look for specific version directory vdir if specified, else
+        return the head version.
+        """
         if 'versions' not in inventory:
             raise Exception("No versions object in inventory %s" % (inventory_file))
         version = None
+        if vdir is None:
+            if 'head' not in inventory:
+                raise Exception("No head version specified in inventory %s" % (inventory_file))
+            vdir = inventory['head']
+        # Now find version metadata
         for v in inventory['versions']:
             if 'version' in v and v['version'] == vdir:
                 version = v
                 break
         if version is None:
             raise Exception("No version block for %s in inventory %s" % (vdir, inventory_file))
+        self.version = version['version']
         if 'created' in version:
             self.created = version['created']
         if 'message' in version:

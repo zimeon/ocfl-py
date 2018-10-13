@@ -69,7 +69,7 @@ class Object(object):
             for filename in sorted(filenames):
                 if filename == "inventory.json":
                     # Read metadata for this version
-                    metadata.init_from_inventory(os.path.join(dirpath, filename), vdir)
+                    metadata.from_inventory_file(os.path.join(dirpath, filename), vdir)
                     continue
                 filepath = os.path.join(dirpath, filename)
                 sfilepath = os.path.relpath(filepath, srcdir)  # path relative to this version
