@@ -94,14 +94,14 @@ class TestAll(unittest.TestCase):
                           'd41d8cd98f00b204e9800998ecf8427e': ['v1/empty.txt']})
         self.assertEqual(inventory['versions'][1],
                          {'created': '2018-02-02T02:02:02Z',
-                           'message': 'Fix bar.xml, remove image.tiff, add empty2.txt',
-                           'state': {
-                               '2673a7b11a70bc7ff960ad8127b4adeb': ['foo/bar.xml'],
-                               'd41d8cd98f00b204e9800998ecf8427e': ['empty.txt', 'empty2.txt']},
-                             'type': 'Version',
-                             'user': {'address': 'bob@example.com', 'name': 'Bob'},
-                             'version': 'v2'})
-         # Now with fixity
+                          'message': 'Fix bar.xml, remove image.tiff, add empty2.txt',
+                          'state': {
+                              '2673a7b11a70bc7ff960ad8127b4adeb': ['foo/bar.xml'],
+                              'd41d8cd98f00b204e9800998ecf8427e': ['empty.txt', 'empty2.txt']},
+                          'type': 'Version',
+                          'user': {'address': 'bob@example.com', 'name': 'Bob'},
+                          'version': 'v2'})
+        # Now with fixity
         oo = Object(digest_algorithm="md5", fixity=['sha1'])
         inventory = {'manifest': {}, 'versions': [], 'fixity': {'sha1': {}}}
         oo.add_version(inventory, 'fixtures/content/spec-ex-full/v1', vdir='v1',
