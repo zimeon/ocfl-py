@@ -282,7 +282,7 @@ class Object(object):
                 note += '<--- ???'
             # for (dirpath, dirnames, filenames) in os.walk(, followlinks=True):
             self.prnt(self._show_indent(level, (n == len(dirs))) + d + '   ' + note)
-   
+
     def validate(self, path):
         """Validate OCFL object at path."""
         validator = OCFLValidator()
@@ -315,6 +315,7 @@ class Object(object):
             self.fhout.write(s)
         else:
             self.fhout.write(s.decode('utf-8'))
+
 
 def remove_first_directory(path):
     """Remove first directory from input path.
