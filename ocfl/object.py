@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Core of OCFL Object library."""
 import hashlib
 import json
@@ -204,8 +205,8 @@ class Object(object):
                                                       forward_delta=True, dedupe=True,
                                                       rename=True):
             if objdir is None:
-                print("\n\n### Inventory for %s\n" % (vdir), file=self.fhout)
-                print(json.dumps(inventory, sort_keys=True, indent=2), file=self.fhout)
+                self.prnt("\n\n### Inventory for %s\n" % (vdir))
+                self.prnt(json.dumps(inventory, sort_keys=True, indent=2))
             else:
                 self.write_inventory_and_sidecar(os.path.join(objdir, vdir), inventory)
         if objdir is None:
@@ -238,8 +239,8 @@ class Object(object):
         self.add_version(inventory, srcdir, vdir, metadata=metadata,
                          dedupe=dedupe)
         if objdir is None:
-            print("\n\n### Inventory for %s\n" % (vdir), file=self.fhout)
-            print(json.dumps(inventory, sort_keys=True, indent=2), file=self.fhout)
+            self.prnt("\n\n### Inventory for %s\n" % (vdir))
+            self.prnt(json.dumps(inventory, sort_keys=True, indent=2))
             return
         # Else write out object
         self.write_inventory_and_sidecar(os.path.join(objdir, vdir), inventory)
@@ -257,20 +258,40 @@ class Object(object):
                     os.makedirs(dstpath)
                 copyfile(srcfile, dstfile)
 
+    def _show_indent(self, level, last=False):
+        tree_next = '├── '
+        tree_last = '└── '
+        tree_indent = '    '
+        return tree_indent * level + (tree_last if last else tree_next)
+
     def show(self, path):
         """Show OCFL object at path."""
-        import subprocess
-        subprocess.call(["tree", path])  # FIXME - do something sensible!
-
+        level = 0
+        dirs = sorted(os.listdir(path))
+        self.prnt('[' + path + ']')
+        n = 0
+        for d in dirs:
+            n += 1
+            note = ''
+            if re.match(r'''v\d+$''', d):
+                num_files = 0
+                for (dirpath, dirnames, filenames) in os.walk(os.path.join(path, d), followlinks=True):
+                    num_files += len(filenames)
+                note += '(%d files)' % num_files
+            elif d not in ('0=ocfl_object_1.0', 'inventory.json', 'inventory.json.sha512'):
+                note += '<--- ???'
+            # for (dirpath, dirnames, filenames) in os.walk(, followlinks=True):
+            self.prnt(self._show_indent(level, (n == len(dirs))) + d + '   ' + note)
+   
     def validate(self, path):
         """Validate OCFL object at path."""
         validator = OCFLValidator()
         passed = validator.validate(path)
         if passed:
-            print("OCFL object at %s is VALID" % (path), file=self.fhout)
+            self.prnt("OCFL object at %s is VALID" % (path))
         else:
-            print("OCFL object at %s is INVALID" % (path), file=self.fhout)
-        print(str(validator), file=self.fhout)
+            self.prnt("OCFL object at %s is INVALID" % (path))
+        self.prnt(str(validator))
         return passed
 
     def parse_inventory(self, path):
@@ -283,6 +304,17 @@ class Object(object):
             raise ObjectException("Inventory %s has no id property" % (inv_file))
         return inventory
 
+    def prnt(self, *objects):
+        """Print method that uses object fhout property.
+
+        Avoid using Python 3 print function so we can run on 2.7 still.
+        Can't call this print in 2.7, hence prnt
+        """
+        s = ' '.join(str(o) for o in objects) + '\n'
+        if sys.version_info > (3, 0):
+            self.fhout.write(s)
+        else:
+            self.fhout.write(s.decode('utf-8'))
 
 def remove_first_directory(path):
     """Remove first directory from input path.

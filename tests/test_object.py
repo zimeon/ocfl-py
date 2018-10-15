@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
 """Digest tests."""
+import io
 import json
 import os
+import sys
 import tempfile
 import unittest
 from ocfl.object import Object, ObjectException, remove_first_directory
@@ -149,7 +152,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(j, {'abc': 'def'})
         with open(os.path.join(tempdir, 'inventory.json.sha512')) as fh:
             digest = fh.read()
-        self.assertRegex(digest, r'''[0-9a-f]{128} inventory.json\n''')
+        self.assertRegexpMatches(digest, r'''[0-9a-f]{128} inventory.json\n''')
         # and now makind directory
         oo = Object()
         invdir = os.path.join(tempdir, 'xxx')
@@ -193,9 +196,15 @@ class TestAll(unittest.TestCase):
 
     def test11_show(self):
         """Test show method."""
-        oo = Object()
+        s = io.StringIO()
+        oo = Object(fhout=s)
         oo.show(path='fixtures/objects/of1')
-        # FIXME - add tests when show() does something
+        out = s.getvalue()
+        if sys.version_info < (3, 0):
+            out = out.encode('utf8')
+        self.assertTrue(out.startswith('[fixtures/objects/of1]'))
+        self.assertTrue('├── 0=ocfl_object_1.0' in out)
+        # FIXME - need real tests in here when there is real output
 
     def test12_validate(self):
         """Test validate method."""
