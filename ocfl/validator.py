@@ -52,13 +52,13 @@ class OCFLValidator(object):
         elif os.path.getsize(namastefile) > 0:
             self.error('E003')
         # Inventory
-        invfile = os.path.join(path, 'inventory.json')
-        if not os.path.exists(invfile):
+        inv_file = os.path.join(path, 'inventory.json')
+        if not os.path.exists(inv_file):
             self.error('E004')
         else:
-            self.validate_inventory(invfile)
-        invdigest = os.path.join(path, 'inventory.json.sha512')  # FIXME - support other digests
-        if not os.path.exists(invdigest):
+            self.validate_inventory(inv_file)
+        inv_digest = os.path.join(path, 'inventory.json.sha512')  # FIXME - support other digests
+        if not os.path.exists(inv_digest):
             self.error('E005')
         else:
             # FIXME - check digest against inventory
@@ -66,11 +66,15 @@ class OCFLValidator(object):
         #
         return self.errors == 0
 
-    def validate_inventory(self, invfile):
+    def validate_inventory(self, inv_file):
         """Validate a given inventory file."""
-        pass
+        with open(inv_file) as fh:
+            inventory = json.load(fh)
+        # Sanity checks
+        if 'id' not in inventory:
+            self.error("E100")
 
-    def validate_inventory_digest(self, invfile, invdigest):
+    def validate_inventory_digest(self, inv_file, inv_digest):
         """Validate a given inventory digest for a give inventory file."""
         pass
 

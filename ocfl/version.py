@@ -39,13 +39,18 @@ class VersionMetadata(object):
         logging.info("Reading metadata for %s from %s" % (vdir, inventory_file))
         with open(inventory_file, 'r') as fh:
             inventory = json.load(fh)
-        return self.from_inventory(inventory, vdir)
+        return self.from_inventory(inventory, vdir, inventory_file)
 
-    def from_inventory(self, inventory, vdir=None):
+    def from_inventory(self, inventory, vdir=None, inventory_file=''):
         """Initialize from an inventory object.
 
         Look for specific version directory vdir if specified, else
         return the head version.
+
+        Parameters:
+            inventory - inventory object (dict)
+            vdir - explicit version directory, else taken from inventory head
+            inventory_file - file name used in error reporting (else '')
         """
         if 'versions' not in inventory:
             raise Exception("No versions object in inventory %s" % (inventory_file))

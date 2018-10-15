@@ -6,6 +6,7 @@ import os.path
 import re
 import logging
 from shutil import copyfile
+import sys
 
 from .digest import file_digest
 from .validator import OCFLValidator
@@ -23,7 +24,7 @@ class Object(object):
 
     def __init__(self, identifier=None,
                  digest_algorithm='sha512', skips=None, ocfl_version='draft',
-                 fixity=None):
+                 fixity=None, fhout=sys.stdout):
         """Initialize OCFL builder.
 
         fixity - list of fixity types to add as fixity section
@@ -34,6 +35,7 @@ class Object(object):
         self.ocfl_version = ocfl_version
         self.fixity = fixity
         self.validation_codes = None
+        self.fhout = fhout
 
     def parse_version_directory(self, dirname):
         """Get version number from version directory name."""
@@ -183,6 +185,16 @@ class Object(object):
         """Write out OCFL object to dst if set, else print inventory.
 
         Parameters:
+          srcdir - source directory with version sub-directories
+          metadata - VersionMetadata object applied to all versions
+          forward_delta - set False to turn off foward delta
+          dedupe - set False to turn off dedupe within versions
+          rename - set False to write an extra copy in versions that rename
+          objdir - output directory for object (must not already exist), if not 
+              set then will just write out inventories that would have been
+              created
+          fhout - optional overwrite of STDOUT output location for inventory
+              output if objdir is not set
         """
         if self.identifier is None:
             raise ObjectException("Identifier is not set!")
@@ -192,8 +204,8 @@ class Object(object):
                                                       forward_delta=True, dedupe=True,
                                                       rename=True):
             if objdir is None:
-                print("\n\n### Inventory for %s\n" % (vdir))
-                print(json.dumps(inventory, sort_keys=True, indent=2))
+                print("\n\n### Inventory for %s\n" % (vdir), file=self.fhout)
+                print(json.dumps(inventory, sort_keys=True, indent=2), file=self.fhout)
             else:
                 self.write_inventory_and_sidecar(os.path.join(objdir, vdir), inventory)
         if objdir is None:
@@ -226,8 +238,8 @@ class Object(object):
         self.add_version(inventory, srcdir, vdir, metadata=metadata,
                          dedupe=dedupe)
         if objdir is None:
-            print("\n\n### Inventory for %s\n" % (vdir))
-            print(json.dumps(inventory, sort_keys=True, indent=2))
+            print("\n\n### Inventory for %s\n" % (vdir), file=self.fhout)
+            print(json.dumps(inventory, sort_keys=True, indent=2), file=self.fhout)
             return
         # Else write out object
         self.write_inventory_and_sidecar(os.path.join(objdir, vdir), inventory)
@@ -255,10 +267,11 @@ class Object(object):
         validator = OCFLValidator()
         passed = validator.validate(path)
         if passed:
-            print("OCFL object at %s is VALID" % (path))
+            print("OCFL object at %s is VALID" % (path), file=self.fhout)
         else:
-            print("OCFL object at %s is INVALID" % (path))
-        print(str(validator))
+            print("OCFL object at %s is INVALID" % (path), file=self.fhout)
+        print(str(validator), file=self.fhout)
+        return passed
 
     def parse_inventory(self, path):
         """Read JSON top-level inventory file for object at path."""

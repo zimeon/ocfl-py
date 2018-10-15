@@ -1,8 +1,9 @@
 """Digest tests."""
+import json
 import os
 import tempfile
 import unittest
-from ocfl.object import Object, remove_first_directory
+from ocfl.object import Object, ObjectException, remove_first_directory
 from ocfl.version import VersionMetadata
 
 
@@ -138,17 +139,81 @@ class TestAll(unittest.TestCase):
 
     def test08_write_inventory_and_sidecar(self):
         """Test write_object_and_sidecar."""
-        tempdir = tempfile.mkdtemp(prefix='test_write_object_and_sidecar')
+        tempdir = tempfile.mkdtemp(prefix='test_write_inventory_and_sidecar')
         oo = Object()
-        oo.write_inventory_and_sidecar(tempdir, {})
+        oo.write_inventory_and_sidecar(tempdir, {'abc': 'def'})
         self.assertEqual(set(os.listdir(tempdir)),
                          set(['inventory.json', 'inventory.json.sha512']))
         with open(os.path.join(tempdir, 'inventory.json')) as fh:
-            j = fh.read()
-        self.assertEqual(j, '{}')
+            j = json.load(fh)
+        self.assertEqual(j, {'abc': 'def'})
         with open(os.path.join(tempdir, 'inventory.json.sha512')) as fh:
             digest = fh.read()
-        self.assertEqual(digest, '27c74670adb75075fad058d5ceaf7b20c4e7786c83bae8a32f626f9782af34c9a33c2046ef60fd2a7878d378e29fec851806bbd9a67878f3a9f1cda4830763fd inventory.json\n')
+        self.assertRegex(digest, r'''[0-9a-f]{128} inventory.json\n''')
+        # and now makind directory
+        oo = Object()
+        invdir = os.path.join(tempdir, 'xxx')
+        oo.write_inventory_and_sidecar(invdir, {'gh': 'ik'})
+        self.assertEqual(set(os.listdir(invdir)),
+                         set(['inventory.json', 'inventory.json.sha512']))
+        with open(os.path.join(invdir, 'inventory.json')) as fh:
+            j = json.load(fh)
+        self.assertEqual(j, {'gh': 'ik'})
+
+    def test09_write(self):
+        """Test write method."""
+        tempdir = tempfile.mkdtemp(prefix='test_write')
+        oo = Object()
+        self.assertRaises(ObjectException, oo.write, srcdir='fixtures/content/spec-ex-full')
+        oo.identifier = 'uri:firkin'
+        objdir = os.path.join(tempdir, '1')
+        oo.write(srcdir='fixtures/content/spec-ex-full',
+                 metadata=VersionMetadata(),
+                 objdir=objdir)
+        self.assertEqual(set(os.listdir(objdir)),
+                         set(['0=ocfl_object_1.0',
+                              'inventory.json', 'inventory.json.sha512',
+                              'v1', 'v2', 'v3']))
+        # FIXME - extra tests for outputs created and special cases
+
+    def test10_create(self):
+        """Test create method."""
+        tempdir = tempfile.mkdtemp(prefix='test_create')
+        oo = Object()
+        self.assertRaises(ObjectException, oo.create, srcdir='fixtures/content/spec-ex-full/v1')
+        oo.identifier = 'uri:kliderkin'
+        objdir = os.path.join(tempdir, '1')
+        oo.create(srcdir='fixtures/content/spec-ex-full/v1',
+                 metadata=VersionMetadata(),
+                 objdir=objdir)
+        self.assertEqual(set(os.listdir(objdir)),
+                         set(['0=ocfl_object_1.0',
+                              'inventory.json', 'inventory.json.sha512',
+                              'v1']))
+
+    def test11_show(self):
+        """Test show method."""
+        oo = Object()
+        oo.show(path='fixtures/objects/of1')
+        # FIXME - add tests when show() does something
+
+    def test12_validate(self):
+        """Test validate method."""
+        oo = Object()
+        self.assertTrue(oo.validate(path='fixtures/objects/of1'))
+        # Error cases
+        self.assertFalse(oo.validate(path='fixtures/bad-objects/bad00_no_files'))
+        self.assertFalse(oo.validate(path='fixtures/bad-objects/bad01_no_decl'))
+        self.assertFalse(oo.validate(path='fixtures/bad-objects/bad02_no_id'))
+
+    def test13_parse_inventory(self):
+        """Test parse_inventory method."""
+        oo = Object()
+        self.assertTrue(oo.parse_inventory(path='fixtures/objects/of1'))
+        # Error cases
+        self.assertRaises(ObjectException, oo.parse_inventory, path='fixtures/bad-objects/bad02_no_id')
+
+
 
     def test90_remove_first_directory(self):
         """Test encode."""
