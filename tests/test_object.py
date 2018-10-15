@@ -184,8 +184,8 @@ class TestAll(unittest.TestCase):
         oo.identifier = 'uri:kliderkin'
         objdir = os.path.join(tempdir, '1')
         oo.create(srcdir='fixtures/content/spec-ex-full/v1',
-                 metadata=VersionMetadata(),
-                 objdir=objdir)
+                  metadata=VersionMetadata(),
+                  objdir=objdir)
         self.assertEqual(set(os.listdir(objdir)),
                          set(['0=ocfl_object_1.0',
                               'inventory.json', 'inventory.json.sha512',
@@ -212,8 +212,6 @@ class TestAll(unittest.TestCase):
         self.assertTrue(oo.parse_inventory(path='fixtures/objects/of1'))
         # Error cases
         self.assertRaises(ObjectException, oo.parse_inventory, path='fixtures/bad-objects/bad02_no_id')
-
-
 
     def test90_remove_first_directory(self):
         """Test encode."""

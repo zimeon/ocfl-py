@@ -27,7 +27,9 @@ class Object(object):
                  fixity=None, fhout=sys.stdout):
         """Initialize OCFL builder.
 
-        fixity - list of fixity types to add as fixity section
+        Parameters:
+           fixity - list of fixity types to add as fixity section
+           fhout - optional overwrite of STDOUT for print outputs
         """
         self.identifier = identifier
         self.digest_algorithm = digest_algorithm
@@ -190,11 +192,9 @@ class Object(object):
           forward_delta - set False to turn off foward delta
           dedupe - set False to turn off dedupe within versions
           rename - set False to write an extra copy in versions that rename
-          objdir - output directory for object (must not already exist), if not 
+          objdir - output directory for object (must not already exist), if not
               set then will just write out inventories that would have been
               created
-          fhout - optional overwrite of STDOUT output location for inventory
-              output if objdir is not set
         """
         if self.identifier is None:
             raise ObjectException("Identifier is not set!")
