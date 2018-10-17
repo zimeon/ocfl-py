@@ -79,15 +79,14 @@ class TestAll(unittest.TestCase):
                           'd41d8cd98f00b204e9800998ecf8427e': ['v1/empty.txt']})
         self.assertEqual(inventory['versions'],
                          {"v1":
-                              {'created': '2018-01-01T01:01:01Z',
-                               'message': 'Initial import',
-                               'state': {
-                                   '184f84e28cbe75e050e9c25ea7f2e939': ['foo/bar.xml'],
-                                   'c289c8ccd4bab6e385f5afdd89b5bda2': ['image.tiff'],
-                                   'd41d8cd98f00b204e9800998ecf8427e': ['empty.txt']},
-                                'type': 'Version',
-                                'user': {'address': 'alice@example.com', 'name': 'Alice'}
-                               }})
+                          {'created': '2018-01-01T01:01:01Z',
+                           'message': 'Initial import',
+                           'state': {
+                               '184f84e28cbe75e050e9c25ea7f2e939': ['foo/bar.xml'],
+                               'c289c8ccd4bab6e385f5afdd89b5bda2': ['image.tiff'],
+                               'd41d8cd98f00b204e9800998ecf8427e': ['empty.txt']},
+                           'type': 'Version',
+                           'user': {'address': 'alice@example.com', 'name': 'Alice'}}})
         self.assertNotIn('fixity', inventory)
         # Now add second version to check forward delta
         oo.add_version(inventory, 'fixtures/content/spec-ex-full/v2', vdir='v2',
