@@ -60,13 +60,10 @@ class VersionMetadata(object):
                 raise Exception("No head version specified in inventory %s" % (inventory_file))
             vdir = inventory['head']
         # Now find version metadata
-        for v in inventory['versions']:
-            if 'version' in v and v['version'] == vdir:
-                version = v
-                break
-        if version is None:
+        if vdir not in inventory['versions']:
             raise Exception("No version block for %s in inventory %s" % (vdir, inventory_file))
-        self.version = version['version']
+        version = inventory['versions'][vdir]
+        self.version = vdir
         if 'created' in version:
             self.created = version['created']
         if 'message' in version:

@@ -1,11 +1,13 @@
+
+
+### Inventory for v1
+
 {
   "digestAlgorithm": "sha512",
   "head": "v1",
   "id": "http://example.org/minimal",
   "manifest": {
-    "7545b8720a601235067473f2c87f43461f5c147fb622d51bfcdcda05e0773c96e9f922f4d88d371bb7f87793b655b9e1c3b8bbca35f2950c5c87eda955179f67": [
-      "v1/file.txt"
-    ]
+    "7545b...f67": [ "v1/file.txt" ]
   },
   "type": "Object",
   "versions": {
@@ -13,9 +15,7 @@
       "created": "2018-10-02T12:00:00Z",
       "message": "One file",
       "state": {
-        "7545b8720a601235067473f2c87f43461f5c147fb622d51bfcdcda05e0773c96e9f922f4d88d371bb7f87793b655b9e1c3b8bbca35f2950c5c87eda955179f67": [
-          "file.txt"
-        ]
+        "7545b...f67": [ "file.txt" ]
       },
       "type": "Version",
       "user": {
@@ -25,3 +25,4 @@
     }
   }
 }
+

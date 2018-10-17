@@ -60,7 +60,7 @@ class Object(object):
             'id': self.identifier,
             'type': 'Object',
             'digestAlgorithm': self.digest_algorithm,
-            'versions': [],
+            'versions': {},
             'manifest': {}
         }
         # Add fixity section if requested
@@ -134,9 +134,7 @@ class Object(object):
                             fixities[fixity_digest].append(vfilepath)
         # Set head to this latest version, and add this version to inventory
         inventory['head'] = vdir
-        this_version = metadata.as_dict(version=vdir)
-        this_version['state'] = state
-        inventory['versions'].append(this_version)
+        inventory['versions'][vdir] = metadata.as_dict(state=state)
 
     def build_inventory(self, path, metadata=None,
                         forward_delta=True, dedupe=True, rename=True):
@@ -308,6 +306,7 @@ class Object(object):
         """Print method that uses object fhout property.
 
         Avoid using Python 3 print function so we can run on 2.7 still.
+
         Can't call this print in 2.7, hence prnt
         """
         s = ' '.join(str(o) for o in objects) + '\n'

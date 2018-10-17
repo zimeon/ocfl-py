@@ -57,7 +57,7 @@ class TestAll(unittest.TestCase):
         inventory = oo.start_inventory()
         self.assertEqual(inventory['id'], "info:a")
         self.assertEqual(inventory['digestAlgorithm'], "sha256")
-        self.assertEqual(inventory['versions'], [])
+        self.assertEqual(inventory['versions'], {})
         self.assertEqual(inventory['manifest'], {})
         self.assertNotIn('fixity', inventory)
         oo = Object(identifier="info:b", digest_algorithm="sha256",
@@ -67,8 +67,9 @@ class TestAll(unittest.TestCase):
 
     def test05_add_version(self):
         """Test add_version method."""
+        self.maxDiff = None
         oo = Object(digest_algorithm="md5")
-        inventory = {'manifest': {}, 'versions': []}
+        inventory = {'manifest': {}, 'versions': {}}
         oo.add_version(inventory, 'fixtures/content/spec-ex-full/v1', vdir='v1',
                        metadata=VersionMetadata())
         self.assertEqual(inventory['head'], 'v1')
@@ -77,15 +78,16 @@ class TestAll(unittest.TestCase):
                           'c289c8ccd4bab6e385f5afdd89b5bda2': ['v1/image.tiff'],
                           'd41d8cd98f00b204e9800998ecf8427e': ['v1/empty.txt']})
         self.assertEqual(inventory['versions'],
-                         [{'created': '2018-01-01T01:01:01Z',
-                           'message': 'Initial import',
-                           'state': {
-                               '184f84e28cbe75e050e9c25ea7f2e939': ['foo/bar.xml'],
-                               'c289c8ccd4bab6e385f5afdd89b5bda2': ['image.tiff'],
-                               'd41d8cd98f00b204e9800998ecf8427e': ['empty.txt']},
-                             'type': 'Version',
-                             'user': {'address': 'alice@example.com', 'name': 'Alice'},
-                             'version': 'v1'}])
+                         {"v1":
+                              {'created': '2018-01-01T01:01:01Z',
+                               'message': 'Initial import',
+                               'state': {
+                                   '184f84e28cbe75e050e9c25ea7f2e939': ['foo/bar.xml'],
+                                   'c289c8ccd4bab6e385f5afdd89b5bda2': ['image.tiff'],
+                                   'd41d8cd98f00b204e9800998ecf8427e': ['empty.txt']},
+                                'type': 'Version',
+                                'user': {'address': 'alice@example.com', 'name': 'Alice'}
+                               }})
         self.assertNotIn('fixity', inventory)
         # Now add second version to check forward delta
         oo.add_version(inventory, 'fixtures/content/spec-ex-full/v2', vdir='v2',
@@ -96,18 +98,17 @@ class TestAll(unittest.TestCase):
                           '2673a7b11a70bc7ff960ad8127b4adeb': ['v2/foo/bar.xml'],
                           'c289c8ccd4bab6e385f5afdd89b5bda2': ['v1/image.tiff'],
                           'd41d8cd98f00b204e9800998ecf8427e': ['v1/empty.txt']})
-        self.assertEqual(inventory['versions'][1],
+        self.assertEqual(inventory['versions']['v2'],
                          {'created': '2018-02-02T02:02:02Z',
                           'message': 'Fix bar.xml, remove image.tiff, add empty2.txt',
                           'state': {
                               '2673a7b11a70bc7ff960ad8127b4adeb': ['foo/bar.xml'],
                               'd41d8cd98f00b204e9800998ecf8427e': ['empty.txt', 'empty2.txt']},
                           'type': 'Version',
-                          'user': {'address': 'bob@example.com', 'name': 'Bob'},
-                          'version': 'v2'})
+                          'user': {'address': 'bob@example.com', 'name': 'Bob'}})
         # Now with fixity
         oo = Object(digest_algorithm="md5", fixity=['sha1'])
-        inventory = {'manifest': {}, 'versions': [], 'fixity': {'sha1': {}}}
+        inventory = {'manifest': {}, 'versions': {}, 'fixity': {'sha1': {}}}
         oo.add_version(inventory, 'fixtures/content/spec-ex-full/v1', vdir='v1',
                        metadata=VersionMetadata())
 
