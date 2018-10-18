@@ -5,6 +5,8 @@ import os.path
 import re
 import logging
 
+from .digest import file_digest
+
 
 class OCFLValidator(object):
     """Class for OCFL Validator."""
@@ -57,12 +59,14 @@ class OCFLValidator(object):
             self.error('E004')
         else:
             self.validate_inventory(inv_file)
-        inv_digest = os.path.join(path, 'inventory.json.sha512')  # FIXME - support other digests
-        if not os.path.exists(inv_digest):
+        inv_digest_file = os.path.join(path, 'inventory.json.sha512')  # FIXME - support other digests
+        if not os.path.exists(inv_digest_file):
             self.error('E005')
         else:
-            # FIXME - check digest against inventory
-            pass
+            try:
+                self.validate_inventory_digest(inv_file, inv_digest_file)
+            except Exception as e:
+                self.error(str(e))
         #
         return self.errors == 0
 
@@ -74,9 +78,31 @@ class OCFLValidator(object):
         if 'id' not in inventory:
             self.error("E100")
 
-    def validate_inventory_digest(self, inv_file, inv_digest):
+    def validate_inventory_digest(self, inv_file, inv_digest_file):
         """Validate a given inventory digest for a give inventory file."""
-        pass
+        m = re.match(r'''.*\.(\w+)$''', inv_digest_file)
+        if not m:
+            raise Exception("Cannot extract digest type from inventory digest file name %s" % (inv_digest_file))
+        digest_algorithm = m.group(1)
+        digest_recorded = self.read_inventory_digest(inv_digest_file)
+        digest_actual = file_digest(inv_file, digest_algorithm)
+        if digest_actual != digest_recorded:
+            raise Exception("Mismatch between actual and recorded inventory digests for %s (calcuated %s but read %s from %s)" % (inv_file, digest_actual, digest_recorded, inv_digest_file))
+
+    def read_inventory_digest(self, inv_digest_file):
+        """Read inventory digest from sidecar file.
+
+        Raise exception if there is an error, else return digest.
+        """
+        with open(inv_digest_file, 'r') as fh:
+            line = fh.readline()
+            # we ignore any following lines, could raise exception
+        m = re.match(r'''(\w+)\s+(\S+)\s*$''', line)
+        if not m:
+            raise Exception("Bad inventory digest file %s, wrong format" % (inv_digest_file))
+        elif m.group(2) != 'inventory.json':
+            raise Exception("Bad inventory name in inventory digest file %s" % (inv_digest_file))
+        return m.group(1)
 
     def __str__(self):
         """String of validator status."""
