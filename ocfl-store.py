@@ -61,9 +61,6 @@ parser.add_argument('--no-forward-delta', action='store_true',
                     help='do not use forward deltas')
 parser.add_argument('--no-dedupe', '--no-dedup', action='store_true',
                     help='do not use deduplicate files within a version')
-parser.add_argument('--no-rename', action='store_true',
-                    help='include files in new version if they did not exist with '
-                         'same path in previous version')
 parser.add_argument('--objdir', '--obj',
                     help='read from or write to OCFL object directory objdir')
 parser.add_argument('--verbose', '-v', action='store_true',
@@ -90,6 +87,8 @@ try:
             raise ocfl.StoreException("Must specify id to act on an object in the store")
         obj = ocfl.Object(identifier=args.id,
                           digest_algorithm=args.digest,
+                          forward_delta=not args.no_forward_delta,
+                          dedupe=not args.no_dedupe,
                           skips=args.skip,
                           ocfl_version=args.ocfl_version,
                           fixity=args.fixity)
@@ -98,6 +97,6 @@ try:
         else:
             logging.error("create/build/validate not implemented")
     else:
-        logging.warn("Nuttin' happenin' 'round ere.")
+        logging.warn("Nuttin' happenin' 'round 'ere.")
 except (ocfl.StoreException, ocfl.ObjectException) as e:
     logging.error(str(e))

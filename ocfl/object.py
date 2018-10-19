@@ -24,17 +24,22 @@ class Object(object):
     """Class for handling OCFL Object data and operations."""
 
     def __init__(self, identifier=None,
-                 digest_algorithm='sha512', skips=None, ocfl_version='draft',
-                 fixity=None, fhout=sys.stdout):
+                 digest_algorithm='sha512', skips=None,
+                 forward_delta=True, dedupe=True,
+                 ocfl_version='draft', fixity=None, fhout=sys.stdout):
         """Initialize OCFL builder.
 
         Parameters:
+           forward_delta - set False to turn off foward delta
+           dedupe - set False to turn off dedupe within versions
            fixity - list of fixity types to add as fixity section
            fhout - optional overwrite of STDOUT for print outputs
         """
         self.identifier = identifier
         self.digest_algorithm = digest_algorithm
         self.skips = set() if skips is None else set(skips)
+        self.forward_delta = forward_delta
+        self.dedupe = dedupe
         self.ocfl_version = ocfl_version
         self.fixity = fixity
         self.src_files = {}
@@ -78,8 +83,7 @@ class Object(object):
             fixity = None
         return inventory
 
-    def add_version(self, inventory, srcdir, vdir, metadata=None,
-                    forward_delta=True, dedupe=True, rename=True):
+    def add_version(self, inventory, srcdir, vdir, metadata=None):
         """Add to inventory data for new version based on files in srcdir.
 
         srcdir - the directory path where the files for this version exist,
@@ -114,7 +118,7 @@ class Object(object):
                 if digest not in state:
                     state[digest] = []
                 state[digest].append(sfilepath)
-                if forward_delta and digest in manifest:
+                if self.forward_delta and digest in manifest:
                     # We already have this content in a previous version and we are using
                     # forward deltas so do not need to copy in this one
                     pass
@@ -123,7 +127,7 @@ class Object(object):
                     # we save the information for later includes
                     if digest not in digests_in_version:
                         digests_in_version[digest] = [vfilepath]
-                    elif not dedupe:
+                    elif not self.dedupe:
                         digests_in_version[digest].append(vfilepath)
                     manifest_to_srcfile[vfilepath] = filepath
         # Add any new digests in this version to the manifest
@@ -149,8 +153,7 @@ class Object(object):
         inventory['versions'][vdir] = metadata.as_dict(state=state)
         return manifest_to_srcfile
 
-    def build_inventory(self, path, metadata=None,
-                        forward_delta=True, dedupe=True, rename=True):
+    def build_inventory(self, path, metadata=None):
         """Generator for building an OCFL inventory.
 
         Yields (vdir, inventory, manifest_to_srcfile) for each version in sequence,
@@ -170,9 +173,7 @@ class Object(object):
         for vn in sorted(versions.keys()):
             vdir = versions[vn]
             manifest_to_srcfile = self.add_version(inventory, os.path.join(path, vdir), vdir,
-                                                   metadata=metadata,
-                                                   forward_delta=forward_delta, dedupe=dedupe,
-                                                   rename=rename)
+                                                   metadata=metadata)
             yield (vdir, inventory, manifest_to_srcfile)
 
     def write_object_declaration(self, objdir):
@@ -194,17 +195,12 @@ class Object(object):
         with open(sidecar, 'w') as fh:
             fh.write(digest + ' ' + invfilename + '\n')
 
-    def write(self, srcdir, metadata=None,
-              forward_delta=True, dedupe=True, rename=True,
-              objdir=None):
+    def write(self, srcdir, metadata=None, objdir=None):
         """Write out OCFL object to dst if set, else print inventory.
 
         Parameters:
           srcdir - source directory with version sub-directories
           metadata - VersionMetadata object applied to all versions
-          forward_delta - set False to turn off foward delta
-          dedupe - set False to turn off dedupe within versions
-          rename - set False to write an extra copy in versions that rename
           objdir - output directory for object (must not already exist), if not
               set then will just write out inventories that would have been
               created
@@ -213,9 +209,7 @@ class Object(object):
             raise ObjectException("Identifier is not set!")
         if objdir is not None:
             os.makedirs(objdir)
-        for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(srcdir, metadata=metadata,
-                                                                           forward_delta=True, dedupe=True,
-                                                                           rename=True):
+        for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(srcdir, metadata=metadata):
             if objdir is None:
                 self.prnt("\n\n### Inventory for %s\n" % (vdir))
                 self.prnt(json.dumps(inventory, sort_keys=True, indent=2))
@@ -234,8 +228,7 @@ class Object(object):
         self.write_object_declaration(objdir)
         self.write_inventory_and_sidecar(objdir, inventory)
 
-    def create(self, srcdir, metadata=None,
-               dedupe=True, objdir=None):
+    def create(self, srcdir, metadata=None, objdir=None):
         """Create an OCFL object with v1 content from srcdir.
 
         Write to dst if set, else just print inventory.
@@ -247,8 +240,7 @@ class Object(object):
         inventory = self.start_inventory()
         vdir = 'v1'
         manifest_to_srcfile = self.add_version(inventory, srcdir, vdir,
-                                               metadata=metadata,
-                                               dedupe=dedupe)
+                                               metadata=metadata)
         if objdir is None:
             self.prnt("\n\n### Inventory for %s\n" % (vdir))
             self.prnt(json.dumps(inventory, sort_keys=True, indent=2))
@@ -319,7 +311,7 @@ class Object(object):
 
         Avoid using Python 3 print function so we can run on 2.7 still.
 
-        Can't call this print in 2.7, hence prnt
+        Can't call this 'print' in 2.7, hence 'prnt'.
         """
         s = ' '.join(str(o) for o in objects) + '\n'
         if sys.version_info > (3, 0):
