@@ -85,6 +85,7 @@ try:
     elif args.create or args.build or args.show or args.validate:
         if not args.id:
             raise ocfl.StoreException("Must specify id to act on an object in the store")
+        objdir = store.object_path(args.id)
         obj = ocfl.Object(identifier=args.id,
                           digest_algorithm=args.digest,
                           forward_delta=not args.no_forward_delta,
@@ -93,7 +94,7 @@ try:
                           ocfl_version=args.ocfl_version,
                           fixity=args.fixity)
         if args.show:
-            obj.show(store.object_path(args.id))
+            obj.show(objdir)
         else:
             logging.error("create/build/validate not implemented")
     else:
