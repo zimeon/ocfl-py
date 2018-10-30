@@ -9,3 +9,4 @@ build/
 dist/
 htmlcov/
 ocfl_py.egg-info/
+.eggs/

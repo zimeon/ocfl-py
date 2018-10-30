@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Digest tests."""
+"""Object tests."""
 import io
 import json
 import os
@@ -74,9 +74,9 @@ class TestAll(unittest.TestCase):
                        metadata=VersionMetadata())
         self.assertEqual(inventory['head'], 'v1')
         self.assertEqual(inventory['manifest'],
-                         {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/foo/bar.xml'],
-                          'c289c8ccd4bab6e385f5afdd89b5bda2': ['v1/image.tiff'],
-                          'd41d8cd98f00b204e9800998ecf8427e': ['v1/empty.txt']})
+                         {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],
+                          'c289c8ccd4bab6e385f5afdd89b5bda2': ['v1/content/image.tiff'],
+                          'd41d8cd98f00b204e9800998ecf8427e': ['v1/content/empty.txt']})
         self.assertEqual(inventory['versions'],
                          {"v1":
                           {'created': '2018-01-01T01:01:01Z',
@@ -93,10 +93,10 @@ class TestAll(unittest.TestCase):
                        metadata=VersionMetadata())
         self.assertEqual(inventory['head'], 'v2')
         self.assertEqual(inventory['manifest'],
-                         {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/foo/bar.xml'],
-                          '2673a7b11a70bc7ff960ad8127b4adeb': ['v2/foo/bar.xml'],
-                          'c289c8ccd4bab6e385f5afdd89b5bda2': ['v1/image.tiff'],
-                          'd41d8cd98f00b204e9800998ecf8427e': ['v1/empty.txt']})
+                         {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],
+                          '2673a7b11a70bc7ff960ad8127b4adeb': ['v2/content/foo/bar.xml'],
+                          'c289c8ccd4bab6e385f5afdd89b5bda2': ['v1/content/image.tiff'],
+                          'd41d8cd98f00b204e9800998ecf8427e': ['v1/content/empty.txt']})
         self.assertEqual(inventory['versions']['v2'],
                          {'created': '2018-02-02T02:02:02Z',
                           'message': 'Fix bar.xml, remove image.tiff, add empty2.txt',
@@ -108,28 +108,42 @@ class TestAll(unittest.TestCase):
         # Now with fixity
         oo = Object(digest_algorithm="md5", fixity=['sha1'])
         inventory = {'manifest': {}, 'versions': {}, 'fixity': {'sha1': {}}}
-        oo.add_version(inventory, 'fixtures/content/spec-ex-full/v1', vdir='v1',
-                       metadata=VersionMetadata())
+        manifest_to_srcfile = oo.add_version(inventory, 'fixtures/content/spec-ex-full/v1', vdir='v1',
+                                             metadata=VersionMetadata())
+        self.assertEqual(manifest_to_srcfile, {
+            'v1/content/image.tiff': 'fixtures/content/spec-ex-full/v1/image.tiff',
+            'v1/content/empty.txt': 'fixtures/content/spec-ex-full/v1/empty.txt',
+            'v1/content/foo/bar.xml': 'fixtures/content/spec-ex-full/v1/foo/bar.xml'
+        })
 
     def test06_build_inventory(self):
         """Test build_inventory."""
         oo = Object(digest_algorithm="md5")
-        for (vdir, inventory) in oo.build_inventory('fixtures/content/spec-ex-full',
-                                                    metadata=VersionMetadata()):
+        for (vdir, inventory, manifest_to_srcfile) in oo.build_inventory('fixtures/content/spec-ex-full',
+                                                                         metadata=VersionMetadata()):
             pass
         self.assertEqual(inventory['type'], 'Object')
         self.assertEqual(inventory['head'], 'v3')
         self.assertEqual(inventory['manifest'],
-                         {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/foo/bar.xml'],
-                          '2673a7b11a70bc7ff960ad8127b4adeb': ['v2/foo/bar.xml'],
-                         'c289c8ccd4bab6e385f5afdd89b5bda2': ['v1/image.tiff'],
-                          'd41d8cd98f00b204e9800998ecf8427e': ['v1/empty.txt']})
+                         {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],
+                          '2673a7b11a70bc7ff960ad8127b4adeb': ['v2/content/foo/bar.xml'],
+                          'c289c8ccd4bab6e385f5afdd89b5bda2': ['v1/content/image.tiff'],
+                          'd41d8cd98f00b204e9800998ecf8427e': ['v1/content/empty.txt']})
         self.assertEqual(len(inventory['versions']), 3)
         # test skips by skipping 'v3'
         oo = Object(digest_algorithm="md5", skips=['v3'])
-        for (vdir, inventory) in oo.build_inventory('fixtures/content/spec-ex-full',
-                                                    metadata=VersionMetadata()):
-            pass
+        for (vdir, inventory, manifest_to_srcfile) in oo.build_inventory('fixtures/content/spec-ex-full',
+                                                                         metadata=VersionMetadata()):
+            if vdir == 'v1':
+                self.assertEqual(manifest_to_srcfile, {
+                    'v1/content/image.tiff': 'fixtures/content/spec-ex-full/v1/image.tiff',
+                    'v1/content/empty.txt': 'fixtures/content/spec-ex-full/v1/empty.txt',
+                    'v1/content/foo/bar.xml': 'fixtures/content/spec-ex-full/v1/foo/bar.xml'
+                })
+            else:
+                self.assertEqual(manifest_to_srcfile, {
+                    'v2/content/foo/bar.xml': 'fixtures/content/spec-ex-full/v2/foo/bar.xml'
+                })
         self.assertEqual(inventory['head'], 'v2')
         self.assertEqual(len(inventory['versions']), 2)
 

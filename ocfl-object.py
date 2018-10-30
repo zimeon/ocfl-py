@@ -25,27 +25,13 @@ commands.add_argument('--show', action='store_true',
 commands.add_argument('--validate', action='store_true',
                       help='Validate an OCFL object')
 
-# Version metadata settings
+# Version metadata and object settings
 ocfl.add_version_metadata_args(parser)
+ocfl.add_object_args(parser)
 
-parser.add_argument('--skip', action='append', default=['README.md', '.DS_Store'],
-                    help='directories and files to ignore')
-
-# Versioning strategy settings
-parser.add_argument('--no-forward-delta', action='store_true',
-                    help='do not use forward deltas')
-parser.add_argument('--no-dedupe', '--no-dedup', action='store_true',
-                    help='do not use deduplicate files within a version')
-parser.add_argument('--no-rename', action='store_true',
-                    help='include files in new version if they did not exist with '
-                         'same path in previous version')
-
-parser.add_argument('--objdir', '--obj',
-                    help='read from or write to OCFL object directory objdir')
-parser.add_argument('--ocfl-version', default='draft',
-                    help='OCFL specification version')
 parser.add_argument('--verbose', '-v', action='store_true',
                     help="be more verbose")
+
 args = parser.parse_args()
 metadata = ocfl.VersionMetadata(args)
 
@@ -54,19 +40,17 @@ logging.basicConfig(level=logging.INFO if args.verbose else logging.WARN)
 obj = ocfl.Object(identifier=args.id,
                   digest_algorithm=args.digest,
                   skips=args.skip,
+                  forward_delta=not args.no_forward_delta,
+                  dedupe=not args.no_dedupe,
                   ocfl_version=args.ocfl_version,
                   fixity=args.fixity)
 if args.create:
     obj.create(srcdir=args.srcdir,
                metadata=metadata,
-               dedupe=not args.no_dedupe,
                objdir=args.objdir)
 elif args.build:
     obj.write(srcdir=args.srcdir,
               metadata=metadata,
-              forward_delta=not args.no_forward_delta,
-              dedupe=not args.no_dedupe,
-              rename=not args.no_rename,
               objdir=args.objdir)
 elif args.show:
     obj.show(path=args.objdir)

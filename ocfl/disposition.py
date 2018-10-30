@@ -1,4 +1,5 @@
 """Handle different storage dispositions."""
+from .identity import Identity
 from .ntree import Ntree
 from .uuid_quadtree import UUIDQuadtree
 
@@ -13,5 +14,7 @@ def get_dispositor(disposition=None):
         return Ntree(n=4)
     elif disposition == 'uuid_quadtree':
         return UUIDQuadtree()
+    elif disposition == 'identity':
+        return Identity()
     else:
         raise Exception("Unsupported disposition %s, aborting!" % (disposition))

@@ -25,11 +25,11 @@ class StoreException(Exception):
 class Store(object):
     """Class for handling OCFL Object Stores."""
 
-    def __init__(self, root=None, disposition=None, default_disposition=None):
+    def __init__(self, root=None, disposition=None):
         """Initialize OCFL Object Store."""
         self.root = root
         self.disposition = disposition
-        self.dispositor = None
+        self._dispositor = None
 
     @property
     def declaration_file(self):
@@ -41,12 +41,19 @@ class Store(object):
         """Path of storage root disposition file."""
         return os.path.join(self.root, '1=' + quote_plus(self.disposition))
 
+    @property
+    def dispositor(self):
+        """Instance of dispositor class.
+
+        Lazily initialized.
+        """
+        if not self._dispositor:
+            self._dispositor = get_dispositor(disposition=self.disposition)
+        return self._dispositor
+
     def object_path(self, identifier):
         """Path to OCFL object with given identifier."""
-        if not self.dispositor:
-            self.dispositor = get_dispositor(disposition=self.disposition)
-        path = self.dispositor.identifier_to_path(identifier)
-        return path
+        return os.path.join(self.root, self.dispositor.identifier_to_path(identifier))
 
     def initialize(self):
         """Initialize an object store."""
@@ -111,4 +118,4 @@ class Store(object):
         inventory = o.parse_inventory(object_path)
         identifier = inventory['id']
         path = self.object_path(identifier)
-        logging.info("Will copy from %s to %s under root" % (object_path, path))
+        logging.info("Will copy from %s to %s" % (object_path, path))

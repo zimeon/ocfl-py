@@ -14,6 +14,23 @@ from .validator import OCFLValidator
 from .version import VersionMetadata
 
 
+def add_object_args(parser):
+    """Add Object settings to argparse instance parser."""
+    # Disk scanning
+    parser.add_argument('--skip', action='append', default=['README.md', '.DS_Store'],
+                        help='directories and files to ignore')
+    # Versioning strategy settings
+    parser.add_argument('--no-forward-delta', action='store_true',
+                        help='do not use forward deltas')
+    parser.add_argument('--no-dedupe', '--no-dedup', action='store_true',
+                        help='do not use deduplicate files within a version')
+    # Object files
+    parser.add_argument('--objdir', '--obj',
+                        help='read from or write to OCFL object directory objdir')
+    parser.add_argument('--ocfl-version', default='draft',
+                        help='OCFL specification version')
+
+
 class ObjectException(Exception):
     """Exception class for OCFL Object."""
 
@@ -24,19 +41,25 @@ class Object(object):
     """Class for handling OCFL Object data and operations."""
 
     def __init__(self, identifier=None,
-                 digest_algorithm='sha512', skips=None, ocfl_version='draft',
-                 fixity=None, fhout=sys.stdout):
+                 digest_algorithm='sha512', skips=None,
+                 forward_delta=True, dedupe=True,
+                 ocfl_version='draft', fixity=None, fhout=sys.stdout):
         """Initialize OCFL builder.
 
         Parameters:
+           forward_delta - set False to turn off foward delta
+           dedupe - set False to turn off dedupe within versions
            fixity - list of fixity types to add as fixity section
            fhout - optional overwrite of STDOUT for print outputs
         """
         self.identifier = identifier
         self.digest_algorithm = digest_algorithm
         self.skips = set() if skips is None else set(skips)
+        self.forward_delta = forward_delta
+        self.dedupe = dedupe
         self.ocfl_version = ocfl_version
         self.fixity = fixity
+        self.src_files = {}
         self.validation_codes = None
         self.fhout = fhout
 
@@ -53,6 +76,11 @@ class Object(object):
     def digest(self, filename):
         """Digest for file filename."""
         return file_digest(filename, self.digest_algorithm)
+
+    def normalize_filename(self, filename):
+        """Translate source filename to a normalized (safe and sanitized) name within object."""
+        # FIXME - noop for now
+        return filename
 
     def start_inventory(self):
         """Create inventory start with metadata from self."""
@@ -72,18 +100,22 @@ class Object(object):
             fixity = None
         return inventory
 
-    def add_version(self, inventory, srcdir, vdir, metadata=None,
-                    forward_delta=True, dedupe=True, rename=True):
+    def add_version(self, inventory, srcdir, vdir, metadata=None):
         """Add to inventory data for new version based on files in srcdir.
 
         srcdir - the directory path where the files for this version exist,
                  including any version directory that might be present
         vdir - the version directory that these files are being added in
+
+        Returns:
+
+        manifest_to_srcfile - dict mapping from paths in manifest to the full
+            path of the source file
         """
         state = {}
         manifest = inventory['manifest']
         digests_in_version = {}
-        vfilepath_to_srcfile = {}
+        manifest_to_srcfile = {}
         # Go through all files to find new files in manifest and state for each version
         for (dirpath, dirnames, filenames) in os.walk(srcdir, followlinks=True):
             # Go through filenames, in sort order so the it is deterministic
@@ -96,13 +128,14 @@ class Object(object):
                     continue
                 filepath = os.path.join(dirpath, filename)
                 sfilepath = os.path.relpath(filepath, srcdir)  # path relative to this version
-                vfilepath = os.path.join(vdir, sfilepath)  # path relative to root, inc v#
+                norm_path = self.normalize_filename(sfilepath)
+                vfilepath = os.path.join(vdir, 'content', norm_path)  # path relative to root, inc v#/content
                 digest = self.digest(filepath)
                 # Always add file to state
                 if digest not in state:
                     state[digest] = []
                 state[digest].append(sfilepath)
-                if forward_delta and digest in manifest:
+                if self.forward_delta and digest in manifest:
                     # We already have this content in a previous version and we are using
                     # forward deltas so do not need to copy in this one
                     pass
@@ -111,9 +144,9 @@ class Object(object):
                     # we save the information for later includes
                     if digest not in digests_in_version:
                         digests_in_version[digest] = [vfilepath]
-                    elif not dedupe:
+                    elif not self.dedupe:
                         digests_in_version[digest].append(vfilepath)
-                    vfilepath_to_srcfile[vfilepath] = filepath
+                    manifest_to_srcfile[vfilepath] = filepath
         # Add any new digests in this version to the manifest
         for digest, paths in digests_in_version.items():
             if digest not in manifest:
@@ -127,7 +160,7 @@ class Object(object):
                 fixities = inventory['fixity'][fixity_type]
                 for digest, vfilepaths in digests_in_version.items():
                     for vfilepath in vfilepaths:
-                        fixity_digest = file_digest(vfilepath_to_srcfile[vfilepath], fixity_type)
+                        fixity_digest = file_digest(manifest_to_srcfile[vfilepath], fixity_type)
                         if fixity_digest not in fixities:
                             fixities[fixity_digest] = [vfilepath]
                         else:
@@ -135,14 +168,15 @@ class Object(object):
         # Set head to this latest version, and add this version to inventory
         inventory['head'] = vdir
         inventory['versions'][vdir] = metadata.as_dict(state=state)
+        return manifest_to_srcfile
 
-    def build_inventory(self, path, metadata=None,
-                        forward_delta=True, dedupe=True, rename=True):
+    def build_inventory(self, path, metadata=None):
         """Generator for building an OCFL inventory.
 
-        Yields (vdir, inventory) for each version in sequence, where vdir is
-        the version directory name and inventory is the inventory for that
-        version.
+        Yields (vdir, inventory, manifest_to_srcfile) for each version in sequence,
+        where vdir is the version directory name, inventory is the inventory for that
+        version, and manifest_to_srcfile is a dictionary that maps filepaths in the
+        manifest to actual source filepaths.
         """
         inventory = self.start_inventory()
         # Find the versions
@@ -155,11 +189,9 @@ class Object(object):
         # Go through versions in order building versions array, deduping if selected
         for vn in sorted(versions.keys()):
             vdir = versions[vn]
-            self.add_version(inventory, os.path.join(path, vdir), vdir,
-                             metadata=metadata,
-                             forward_delta=forward_delta, dedupe=dedupe,
-                             rename=rename)
-            yield (vdir, inventory)
+            manifest_to_srcfile = self.add_version(inventory, os.path.join(path, vdir), vdir,
+                                                   metadata=metadata)
+            yield (vdir, inventory, manifest_to_srcfile)
 
     def write_object_declaration(self, objdir):
         """Write NAMASTE object declaration to objdir."""
@@ -180,17 +212,12 @@ class Object(object):
         with open(sidecar, 'w') as fh:
             fh.write(digest + ' ' + invfilename + '\n')
 
-    def write(self, srcdir, metadata=None,
-              forward_delta=True, dedupe=True, rename=True,
-              objdir=None):
+    def write(self, srcdir, metadata=None, objdir=None):
         """Write out OCFL object to dst if set, else print inventory.
 
         Parameters:
           srcdir - source directory with version sub-directories
           metadata - VersionMetadata object applied to all versions
-          forward_delta - set False to turn off foward delta
-          dedupe - set False to turn off dedupe within versions
-          rename - set False to write an extra copy in versions that rename
           objdir - output directory for object (must not already exist), if not
               set then will just write out inventories that would have been
               created
@@ -199,31 +226,26 @@ class Object(object):
             raise ObjectException("Identifier is not set!")
         if objdir is not None:
             os.makedirs(objdir)
-        for (vdir, inventory) in self.build_inventory(srcdir, metadata=metadata,
-                                                      forward_delta=True, dedupe=True,
-                                                      rename=True):
+        for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(srcdir, metadata=metadata):
             if objdir is None:
                 self.prnt("\n\n### Inventory for %s\n" % (vdir))
                 self.prnt(json.dumps(inventory, sort_keys=True, indent=2))
             else:
                 self.write_inventory_and_sidecar(os.path.join(objdir, vdir), inventory)
+                # Copy files into this version
+                for (path, srcfile) in manifest_to_srcfile.items():
+                    dstfile = os.path.join(objdir, path)
+                    dstpath = os.path.dirname(dstfile)
+                    if not os.path.exists(dstpath):
+                        os.makedirs(dstpath)
+                    copyfile(srcfile, dstfile)
         if objdir is None:
             return
         # Write NAMASTE, inventory and sidecar
         self.write_object_declaration(objdir)
         self.write_inventory_and_sidecar(objdir, inventory)
-        # Write version files
-        for digest, paths in inventory['manifest'].items():
-            for path in paths:
-                srcfile = os.path.join(srcdir, path)
-                dstfile = os.path.join(objdir, path)
-                dstpath = os.path.dirname(dstfile)
-                if not os.path.exists(dstpath):
-                    os.makedirs(dstpath)
-                copyfile(srcfile, dstfile)
 
-    def create(self, srcdir, metadata=None,
-               dedupe=True, objdir=None):
+    def create(self, srcdir, metadata=None, objdir=None):
         """Create an OCFL object with v1 content from srcdir.
 
         Write to dst if set, else just print inventory.
@@ -234,8 +256,8 @@ class Object(object):
             os.makedirs(objdir)
         inventory = self.start_inventory()
         vdir = 'v1'
-        self.add_version(inventory, srcdir, vdir, metadata=metadata,
-                         dedupe=dedupe)
+        manifest_to_srcfile = self.add_version(inventory, srcdir, vdir,
+                                               metadata=metadata)
         if objdir is None:
             self.prnt("\n\n### Inventory for %s\n" % (vdir))
             self.prnt(json.dumps(inventory, sort_keys=True, indent=2))
@@ -248,8 +270,7 @@ class Object(object):
         # Write version files
         for digest, paths in inventory['manifest'].items():
             for path in paths:
-                path_without_vdir = remove_first_directory(path)
-                srcfile = os.path.join(srcdir, path_without_vdir)
+                srcfile = manifest_to_srcfile[path]
                 dstfile = os.path.join(objdir, path)
                 dstpath = os.path.dirname(dstfile)
                 if not os.path.exists(dstpath):
@@ -307,7 +328,7 @@ class Object(object):
 
         Avoid using Python 3 print function so we can run on 2.7 still.
 
-        Can't call this print in 2.7, hence prnt
+        Can't call this 'print' in 2.7, hence 'prnt'.
         """
         s = ' '.join(str(o) for o in objects) + '\n'
         if sys.version_info > (3, 0):
