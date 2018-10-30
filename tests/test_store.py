@@ -43,3 +43,29 @@ class TestAll(unittest.TestCase):
         """Test object_path method."""
         s = Store(root='x/y', disposition='identity')
         self.assertEqual(s.object_path('id1'), 'x/y/id1')
+
+    def test06_initialize(self):
+        """Test initialize method."""
+        tempdir = tempfile.mkdtemp(prefix='test_init')
+        s = Store(root=tempdir, disposition='identity')
+        self.assertRaises(StoreException, s.initialize)
+        tempdir = os.path.join(tempdir, 'aaa')
+        s = Store(root=tempdir, disposition='identity')
+        s.initialize()
+        self.assertTrue(os.path.isfile(s.declaration_file))
+
+    def test07_check_root(self):
+        """Test check_root method."""
+        tempdir = os.path.join(tempfile.mkdtemp(prefix='test_root'), 'rrr')
+        s = Store(root=tempdir, disposition='identity')
+        # Not present
+        self.assertRaises(StoreException, s.check_root)
+        # File not dir
+        with open(tempdir, 'w') as fh:
+            fh.close()
+        self.assertRaises(StoreException, s.check_root)
+        os.remove(tempdir)
+        # No declaration
+        os.mkdir(tempdir)
+        self.assertRaises(StoreException, s.check_root)
+        # Add correct declaration
