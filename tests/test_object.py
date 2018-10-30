@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Digest tests."""
+"""Object tests."""
 import io
 import json
 import os

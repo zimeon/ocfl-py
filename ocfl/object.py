@@ -14,6 +14,23 @@ from .validator import OCFLValidator
 from .version import VersionMetadata
 
 
+def add_object_args(parser):
+    """Add Object settings to argparse instance parser."""
+    # Disk scanning
+    parser.add_argument('--skip', action='append', default=['README.md', '.DS_Store'],
+                        help='directories and files to ignore')
+    # Versioning strategy settings
+    parser.add_argument('--no-forward-delta', action='store_true',
+                        help='do not use forward deltas')
+    parser.add_argument('--no-dedupe', '--no-dedup', action='store_true',
+                        help='do not use deduplicate files within a version')
+    # Object files
+    parser.add_argument('--objdir', '--obj',
+                        help='read from or write to OCFL object directory objdir')
+    parser.add_argument('--ocfl-version', default='draft',
+                        help='OCFL specification version')
+
+
 class ObjectException(Exception):
     """Exception class for OCFL Object."""
 

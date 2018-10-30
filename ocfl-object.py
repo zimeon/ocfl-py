@@ -25,24 +25,13 @@ commands.add_argument('--show', action='store_true',
 commands.add_argument('--validate', action='store_true',
                       help='Validate an OCFL object')
 
-# Version metadata settings
+# Version metadata and object settings
 ocfl.add_version_metadata_args(parser)
+ocfl.add_object_args(parser)
 
-parser.add_argument('--skip', action='append', default=['README.md', '.DS_Store'],
-                    help='directories and files to ignore')
-
-# Versioning strategy settings
-parser.add_argument('--no-forward-delta', action='store_true',
-                    help='do not use forward deltas')
-parser.add_argument('--no-dedupe', '--no-dedup', action='store_true',
-                    help='do not use deduplicate files within a version')
-
-parser.add_argument('--objdir', '--obj',
-                    help='read from or write to OCFL object directory objdir')
-parser.add_argument('--ocfl-version', default='draft',
-                    help='OCFL specification version')
 parser.add_argument('--verbose', '-v', action='store_true',
                     help="be more verbose")
+
 args = parser.parse_args()
 metadata = ocfl.VersionMetadata(args)
 
