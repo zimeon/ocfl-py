@@ -6,6 +6,7 @@ import re
 import logging
 
 from .digest import file_digest
+from .namaste import find_namastes, NamasteException
 
 
 class OCFLValidator(object):
@@ -46,13 +47,17 @@ class OCFLValidator(object):
 
     def validate(self, path):
         """Validate OCFL object at path."""
+        if not os.path.isdir(path):
+            self.error('E000')
+            return False
         # Object declaration
-        namastefile = os.path.join(path, '0=ocfl_object_1.0')
-        if not os.path.exists(namastefile):
+        namastes = find_namastes(0, path)
+        if len(namastes) == 0:
             self.error('E001')
-        # No check for E002 as we only know about 1.0
-        elif os.path.getsize(namastefile) > 0:
-            self.error('E003')
+        elif len(namastes) > 1:
+            self.error('E901')
+        elif not namastes[0].content_ok(path):
+            self.error('E902')
         # Inventory
         inv_file = os.path.join(path, 'inventory.json')
         if not os.path.exists(inv_file):

@@ -10,6 +10,7 @@ from shutil import copyfile
 import sys
 
 from .digest import file_digest
+from .namaste import Namaste
 from .validator import OCFLValidator
 from .version import VersionMetadata
 
@@ -60,7 +61,6 @@ class Object(object):
         self.ocfl_version = ocfl_version
         self.fixity = fixity
         self.src_files = {}
-        self.validation_codes = None
         self.fhout = fhout
 
     def parse_version_directory(self, dirname):
@@ -195,9 +195,7 @@ class Object(object):
 
     def write_object_declaration(self, objdir):
         """Write NAMASTE object declaration to objdir."""
-        namastefile = os.path.join(objdir, '0=ocfl_object_1.0')
-        with open(namastefile, 'w') as fh:
-            pass  # empty file
+        Namaste(0, 'ocfl_object_1.0').write(objdir)
 
     def write_inventory_and_sidecar(self, objdir, inventory):
         """Write inventory and sidecar to objdir."""
