@@ -5,7 +5,7 @@ import os
 import os.path
 import re
 import logging
-from shutil import copyfile
+from shutil import copyfile, copytree
 try:
     from urllib.parse import quote_plus  # py3
 except:                                  # pragma: no cover -- py2
@@ -114,8 +114,15 @@ class Store(object):
 
     def add(self, object_path):
         """Add pre-constructed object from object_path."""
+        # Sanity check
         o = Object()
         inventory = o.parse_inventory(object_path)
         identifier = inventory['id']
         path = self.object_path(identifier)
-        logging.info("Will copy from %s to %s" % (object_path, path))
+        logging.info("Copying from %s to %s" % (object_path, path))
+        try:
+            copytree(object_path, path)
+            logging.info("Copied")
+        except Exception as e:
+            logging.error("Copy failed: " + str(e))
+            raise StoreException("Add object failed!")

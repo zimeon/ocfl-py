@@ -3,6 +3,7 @@
 import argparse
 import logging
 import ocfl
+import sys
 
 parser = argparse.ArgumentParser(description='Manpulate an OCFL Object Store.',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -59,6 +60,8 @@ try:
     elif args.list:
         store.list()
     elif args.add:
+        if not args.src:
+            raise ocfl.StoreException("Must specify object path with --src")
         store.add(object_path=args.src)
     elif args.purge:
         logging.error("purge not implemented")
@@ -81,3 +84,5 @@ try:
         logging.warn("Nuttin' happenin' 'round 'ere.")
 except (ocfl.StoreException, ocfl.ObjectException) as e:
     logging.error(str(e))
+    sys.exit(1)
+
