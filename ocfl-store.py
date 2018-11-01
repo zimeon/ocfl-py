@@ -85,4 +85,3 @@ try:
 except (ocfl.StoreException, ocfl.ObjectException) as e:
     logging.error(str(e))
     sys.exit(1)
-
