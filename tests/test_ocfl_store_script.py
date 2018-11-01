@@ -24,7 +24,8 @@ class TestAll(unittest.TestCase):
         type(self).n += 1  # access class variable not copy
         self.m = 0
         self.tmpdir = tempfile.mkdtemp(prefix='test' + str(self.n) + '_')
-        print("\n## %d. %s\n" % (self.n, self.shortDescription()))
+        if self.demo:
+            print("\n## %d. %s\n" % (self.n, self.shortDescription()))
 
     def tearDown(self):
         """Teardown for each test."""
@@ -34,7 +35,8 @@ class TestAll(unittest.TestCase):
     def run_ocfl_store(self, desc, options, treedir='store'):
         """Run the ocfl-store.py script."""
         self.m += 1
-        print("\n### %d.%d %s\n" % (self.n, self.m, desc))
+        if self.demo:
+            print("\n### %d.%d %s\n" % (self.n, self.m, desc))
         cmd = ['python', 'ocfl-store.py',
                '--root', os.path.join(self.tmpdir, treedir)] + options
         code = 0
@@ -46,7 +48,9 @@ class TestAll(unittest.TestCase):
         out = "```\n> " + ' '.join(cmd) + "\n" + out + "```\n"
         if self.demo:
             out = re.sub(self.tmpdir, 'tmp', out)
-        print(out)
+            print(out)
+        else:
+            return out
         if code == 0:
             tree = subprocess.check_output('cd %s; tree -a %s' % (self.tmpdir, treedir),
                                            stderr=subprocess.STDOUT,
