@@ -77,6 +77,17 @@ class TestAll(unittest.TestCase):
         self.assertIn('### Inventory for v2', out)
         self.assertIn('### Inventory for v3', out)
 
+    def test20_errors(self):
+        """Test error conditions."""
+        out = self.run_ocfl_store("No valid command argument",
+                                  [],
+                                  include_objdir=False)
+        self.assertIn('one of the arguments ', out)
+        out = self.run_ocfl_store("No identifier",
+                                  ['--create'],
+                                  include_objdir=False)
+        self.assertIn('Identifier is not set!', out)
+
 
 if __name__ == '__main__':
     # Run in demo mode if run directly instead of through py.test
