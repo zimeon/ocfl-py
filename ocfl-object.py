@@ -55,7 +55,7 @@ def do_object_operation(args):
                    objdir=args.objdir)
     elif args.build:
         metadata = ocfl.VersionMetadata(args)
-        obj.write(srcdir=args.srcdir,
+        obj.build(srcdir=args.srcdir,
                   metadata=metadata,
                   objdir=args.objdir)
     elif args.show:

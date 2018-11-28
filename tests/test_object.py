@@ -177,14 +177,14 @@ class TestAll(unittest.TestCase):
             j = json.load(fh)
         self.assertEqual(j, {'gh': 'ik'})
 
-    def test09_write(self):
+    def test09_build(self):
         """Test write method."""
         tempdir = tempfile.mkdtemp(prefix='test_write')
         oo = Object()
-        self.assertRaises(ObjectException, oo.write, srcdir='fixtures/content/spec-ex-full')
+        self.assertRaises(ObjectException, oo.build, srcdir='fixtures/content/spec-ex-full')
         oo.identifier = 'uri:firkin'
         objdir = os.path.join(tempdir, '1')
-        oo.write(srcdir='fixtures/content/spec-ex-full',
+        oo.build(srcdir='fixtures/content/spec-ex-full',
                  metadata=VersionMetadata(),
                  objdir=objdir)
         self.assertEqual(set(os.listdir(objdir)),

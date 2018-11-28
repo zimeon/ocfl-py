@@ -210,8 +210,8 @@ class Object(object):
         with open(sidecar, 'w') as fh:
             fh.write(digest + ' ' + invfilename + '\n')
 
-    def write(self, srcdir, metadata=None, objdir=None):
-        """Write out OCFL object to dst if set, else print inventory.
+    def build(self, srcdir, metadata=None, objdir=None):
+        """Build an OCFL object and write to objdir if set, else print inventories.
 
         Parameters:
           srcdir - source directory with version sub-directories
@@ -224,7 +224,9 @@ class Object(object):
             raise ObjectException("Identifier is not set!")
         if objdir is not None:
             os.makedirs(objdir)
+        num_versions = 0
         for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(srcdir, metadata=metadata):
+            num_versions += 1
             if objdir is None:
                 self.prnt("\n\n### Inventory for %s\n" % (vdir))
                 self.prnt(json.dumps(inventory, sort_keys=True, indent=2))
@@ -242,6 +244,7 @@ class Object(object):
         # Write NAMASTE, inventory and sidecar
         self.write_object_declaration(objdir)
         self.write_inventory_and_sidecar(objdir, inventory)
+        logging.info("Built object %s with %s versions" % (self.identifier, num_versions))
 
     def create(self, srcdir, metadata=None, objdir=None):
         """Create an OCFL object with v1 content from srcdir.
@@ -274,6 +277,7 @@ class Object(object):
                 if not os.path.exists(dstpath):
                     os.makedirs(dstpath)
                 copyfile(srcfile, dstfile)
+        logging.info("Created object %s in %s" % (self.identifier, objdir))
 
     def _show_indent(self, level, last=False):
         tree_next = '├── '

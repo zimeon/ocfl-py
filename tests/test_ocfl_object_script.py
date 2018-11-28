@@ -25,18 +25,20 @@ class TestAll(unittest.TestCase):
         self.m = 0
         self.tmpdir = tempfile.mkdtemp(prefix='test' + str(self.n) + '_')
         if self.demo:
-            print("\n## %d. %s\n" % (self.n, self.shortDescription()))
+            print("\n## %d. %s" % (self.n, self.shortDescription()))
 
     def tearDown(self):
         """Teardown for each test."""
         if self.tmpdir is not None and not self.keep_tmpdirs:
             shutil.rmtree(self.tmpdir)
 
-    def run_ocfl_store(self, desc, options, treedir='object', include_objdir=True):
+    def run_ocfl_store(self, desc, options, text=None, treedir='object', include_objdir=True):
         """Run the ocfl-store.py script."""
         self.m += 1
         if self.demo:
             print("\n### %d.%d %s\n" % (self.n, self.m, desc))
+        if text:
+            print(text + '\n')
         cmd = ['python', 'ocfl-object.py']
         if include_objdir:
             cmd += ['--objdir', os.path.join(self.tmpdir, treedir)]
@@ -66,16 +68,30 @@ class TestAll(unittest.TestCase):
         """Test object inventory creation with output to stdout."""
         out = self.run_ocfl_store("Inventory for new object with just v1",
                                   ['--create', '--id', 'http://example.org/obj1', '--src', 'fixtures/content/cf1/v1'],
+                                  text="Without an `--objdir` argument the script just writes out the inventory for the object that would have been created.",
                                   include_objdir=False)
         self.assertIn('"id": "http://example.org/obj1"', out)
         self.assertIn('### Inventory for v1', out)
         out = self.run_ocfl_store("Inventory for new object with three versions",
                                   ['--build', '--id', 'http://example.org/obj2', '--src', 'fixtures/content/cf3'],
+                                  text="Without an `--objdir` argument the script just writes out the inventory for each version in the object that would have been created.",
                                   include_objdir=False)
         self.assertIn('"id": "http://example.org/obj2"', out)
         self.assertIn('### Inventory for v1', out)
         self.assertIn('### Inventory for v2', out)
         self.assertIn('### Inventory for v3', out)
+
+    def test02_create_v1(self):
+        """Test object creation with just v1."""
+        out = self.run_ocfl_store("New object with just v1",
+                                  ['--create', '--id', 'http://example.org/obj1', '--src', 'fixtures/content/cf1/v1', '-v'])
+        self.assertIn('Created object http://example.org/obj1', out)
+
+    def test03_create_multi(self):
+        """Test object build with three versions."""
+        out = self.run_ocfl_store("New object with three versions",
+                                  ['--build', '--id', 'http://example.org/obj2', '--src', 'fixtures/content/cf3', '-v'])
+        self.assertIn('Built object http://example.org/obj2 with 3 versions', out)
 
     def test20_errors(self):
         """Test error conditions."""
