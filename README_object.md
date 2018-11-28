@@ -24,7 +24,7 @@ Without an `--objdir` argument the script just writes out the inventory for the 
   "type": "Object",
   "versions": {
     "v1": {
-      "created": "2018-11-28T15:25:51.319394Z",
+      "created": "2018-11-28T15:31:54.116634Z",
       "message": "",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
@@ -65,7 +65,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
   "type": "Object",
   "versions": {
     "v1": {
-      "created": "2018-11-28T15:25:51.425983Z",
+      "created": "2018-11-28T15:31:54.223434Z",
       "message": "",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
@@ -99,7 +99,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
   "type": "Object",
   "versions": {
     "v1": {
-      "created": "2018-11-28T15:25:51.425983Z",
+      "created": "2018-11-28T15:31:54.223434Z",
       "message": "",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
@@ -113,7 +113,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
       }
     },
     "v2": {
-      "created": "2018-11-28T15:25:51.426370Z",
+      "created": "2018-11-28T15:31:54.223819Z",
       "message": "",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
@@ -147,7 +147,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
   "type": "Object",
   "versions": {
     "v1": {
-      "created": "2018-11-28T15:25:51.425983Z",
+      "created": "2018-11-28T15:31:54.223434Z",
       "message": "",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
@@ -161,7 +161,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
       }
     },
     "v2": {
-      "created": "2018-11-28T15:25:51.426370Z",
+      "created": "2018-11-28T15:31:54.223819Z",
       "message": "",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
@@ -175,7 +175,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
       }
     },
     "v3": {
-      "created": "2018-11-28T15:25:51.426741Z",
+      "created": "2018-11-28T15:31:54.224159Z",
       "message": "",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
@@ -252,23 +252,48 @@ object
 
 ## 4. Test extract of version.
 
-### 4.1 New object with three versions
+### 4.1 Extract v1
 
 ```
 > python ocfl-object.py --dstdir tmp --extract v1 --objdir fixtures/objects/spec-ex-full -v
 INFO:root:Extracted v1 into tmp/v1
 ```
 
-Exited with code 0
+```
+.
+└── v1
+    ├── empty.txt
+    ├── foo
+    │   └── bar.xml
+    └── image.tiff
 
-### 4.2 New object with three versions
+2 directories, 3 files
+```
+
+
+### 4.2 Extract v2
 
 ```
 > python ocfl-object.py --dstdir tmp --extract v2 --objdir fixtures/objects/spec-ex-full -v
 INFO:root:Extracted v2 into tmp/v2
 ```
 
-Exited with code 0
+```
+.
+├── v1
+│   ├── empty.txt
+│   ├── foo
+│   │   └── bar.xml
+│   └── image.tiff
+└── v2
+    ├── empty.txt
+    ├── empty2.txt
+    └── foo
+        └── bar.xml
+
+4 directories, 6 files
+```
+
 
 ## 5. Test error conditions.
 

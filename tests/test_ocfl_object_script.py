@@ -63,6 +63,11 @@ class TestAll(unittest.TestCase):
                                            stderr=subprocess.STDOUT,
                                            shell=True).decode('utf-8')
             print("```\n" + tree + "```\n")
+        elif code == 0 and include_dstdir:
+            tree = subprocess.check_output('cd %s; tree -a .' % (self.tmpdir),
+                                           stderr=subprocess.STDOUT,
+                                           shell=True).decode('utf-8')
+            print("```\n" + tree + "```\n")
         else:
             print("Exited with code %d" % (code))
         return out
@@ -98,7 +103,7 @@ class TestAll(unittest.TestCase):
 
     def test04_extract(self):
         """Test extract of version."""
-        out = self.run_ocfl_store("New object with three versions",
+        out = self.run_ocfl_store("Extract v1",
                                   ['--extract', 'v1', '--objdir', 'fixtures/objects/spec-ex-full', '-v'],
                                   include_objdir=False,
                                   include_dstdir=True)
@@ -112,7 +117,7 @@ class TestAll(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.join(self.tmpdir, 'v1/empty2.txt')))
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, 'v1/foo/bar.xml')), 272)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, 'v1/image.tiff')), 2021)
-        out = self.run_ocfl_store("New object with three versions",
+        out = self.run_ocfl_store("Extract v2",
                                   ['--extract', 'v2', '--objdir', 'fixtures/objects/spec-ex-full', '-v'],
                                   include_objdir=False,
                                   include_dstdir=True)
