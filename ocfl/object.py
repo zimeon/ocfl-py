@@ -311,6 +311,33 @@ class Object(object):
         self.prnt(str(validator))
         return passed
 
+    def extract(self, objdir, version, dstdir):
+        """Extract version from object at objdir into dstdir."""
+        # Read inventory, set up version
+        inv = self.parse_inventory(objdir)
+        if version == 'head':
+            version = inv['head']
+            logging.info("Object at %s has head %s" % (objdir, version))
+        elif version not in inv['versions']:
+            raise ObjectException("Object at %s does not include a version '%s'" % (objdir, version))
+        # Sanity check on destination
+        if not os.path.isdir(dstdir):
+            raise ObjectException("Destination %s does not exist or is not directory" % (dstdir))
+        dstdir = os.path.join(dstdir, version)
+        if os.path.exists(dstdir):
+            raise ObjectException("Target directorty %s already exists, aborting!" % (dstdir))
+        os.mkdir(dstdir)
+        # Now extract...
+        manifest = inv['manifest']
+        state = inv['versions'][version]['state']
+        for (digest, logical_files) in state.items():
+            existing_file = manifest[digest][0]  # FIXME - pick "best" (closest version?) not first?
+            for logical_file in logical_files:
+                # FIXME -- need to abstract access so we can, for example, implement S3->local extraction
+                logging.debug("Copying %s -> %s" % (digest, logical_file))
+                copyfile(os.path.join(objdir, existing_file), os.path.join(dstdir, logical_file))
+        logging.info("Extracted %s into %s" % (version, dstdir))
+
     def parse_inventory(self, path):
         """Read JSON top-level inventory file for object at path."""
         inv_file = os.path.join(path, 'inventory.json')
