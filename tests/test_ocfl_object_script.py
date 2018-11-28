@@ -32,7 +32,8 @@ class TestAll(unittest.TestCase):
         if self.tmpdir is not None and not self.keep_tmpdirs:
             shutil.rmtree(self.tmpdir)
 
-    def run_ocfl_store(self, desc, options, text=None, treedir='object', include_objdir=True):
+    def run_ocfl_store(self, desc, options, text=None, treedir='object',
+                       include_objdir=True, include_dstdir=False):
         """Run the ocfl-store.py script."""
         self.m += 1
         if self.demo:
@@ -42,6 +43,8 @@ class TestAll(unittest.TestCase):
         cmd = ['python', 'ocfl-object.py']
         if include_objdir:
             cmd += ['--objdir', os.path.join(self.tmpdir, treedir)]
+        elif include_dstdir:
+            cmd += ['--dstdir', self.tmpdir]
         cmd += options
         code = 0
         try:
@@ -92,6 +95,37 @@ class TestAll(unittest.TestCase):
         out = self.run_ocfl_store("New object with three versions",
                                   ['--build', '--id', 'http://example.org/obj2', '--src', 'fixtures/content/cf3', '-v'])
         self.assertIn('Built object http://example.org/obj2 with 3 versions', out)
+
+    def test04_extract(self):
+        """Test extract of version."""
+        out = self.run_ocfl_store("New object with three versions",
+                                  ['--extract', 'v1', '--objdir', 'fixtures/objects/spec-ex-full', '-v'],
+                                  include_objdir=False,
+                                  include_dstdir=True)
+        # Excpect:
+        # v1
+        # ├── [          0]  empty.txt
+        # ├── [        102]  foo
+        # │   └── [        272]  bar.xml
+        # └── [       2021]  image.tiff
+        self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, 'v1/empty.txt')), 0)
+        self.assertFalse(os.path.exists(os.path.join(self.tmpdir, 'v1/empty2.txt')))
+        self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, 'v1/foo/bar.xml')), 272)
+        self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, 'v1/image.tiff')), 2021)
+        out = self.run_ocfl_store("New object with three versions",
+                                  ['--extract', 'v2', '--objdir', 'fixtures/objects/spec-ex-full', '-v'],
+                                  include_objdir=False,
+                                  include_dstdir=True)
+        # Expect:
+        # v2
+        # ├── [          0]  empty.txt
+        # ├── [          0]  empty2.txt
+        # └── [        102]  foo
+        #    └── [        272]  bar.xml
+        self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, 'v2/empty.txt')), 0)
+        self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, 'v2/empty2.txt')), 0)
+        self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, 'v2/foo/bar.xml')), 272)
+        self.assertFalse(os.path.exists(os.path.join(self.tmpdir, 'v2/image.tiff')))
 
     def test20_errors(self):
         """Test error conditions."""

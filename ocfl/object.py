@@ -339,7 +339,14 @@ class Object(object):
             for logical_file in logical_files:
                 # FIXME -- need to abstract access so we can, for example, implement S3->local extraction
                 logging.debug("Copying %s -> %s" % (digest, logical_file))
-                copyfile(os.path.join(objdir, existing_file), os.path.join(dstdir, logical_file))
+                dstfile = os.path.join(dstdir, logical_file)
+                dstpath = os.path.dirname(dstfile)
+                try:
+                    os.makedirs(dstpath)  # exist_ok parameter only in Python 3.2+
+                except OSError as e:
+                    if not os.path.isdir(dstpath):
+                        raise
+                copyfile(os.path.join(objdir, existing_file), dstfile)
         logging.info("Extracted %s into %s" % (version, dstdir))
 
     def parse_inventory(self, path):
