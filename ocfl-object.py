@@ -40,7 +40,7 @@ def parse_arguments():
 
 
 def do_object_operation(args):
-    """Implement object operations in a way that can be reused by ocff-store.py."""
+    """Implement object operations in a way that can be reused by ocfl-store.py."""
     obj = ocfl.Object(identifier=args.id,
                       digest_algorithm=args.digest,
                       skips=args.skip,

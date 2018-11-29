@@ -12,6 +12,7 @@ if match:
 else:
     raise RuntimeError("Unable to find version string")
 
+
 class ShellCommand(Command):
     """Class to with defaults for adding extra shell commnads from setup."""
 
@@ -46,7 +47,7 @@ class Readmes(ShellCommand):
 
     def run(self):
         """Run coverage program."""
-        os.system("python tests/test_ocfl_object_script.py > README_object.md") 
+        os.system("python tests/test_ocfl_object_script.py > README_object.md")
         os.system("python tests/test_ocfl_store_script.py > README_store.md")
         print("Built README_object.md and README_store.md.")
 
