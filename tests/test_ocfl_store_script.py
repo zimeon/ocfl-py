@@ -69,7 +69,7 @@ class TestAll(unittest.TestCase):
                                   ['--list', '-v'])
         self.assertIn('Found 0 OCFL Objects under root', out)
         out = self.run_ocfl_store("Add object",
-                                  ['--add', '--src', 'fixtures/objects/of1', '--disposition', 'identity', '-v'])
+                                  ['--add', '--src', 'fixtures/1.0/objects/of1', '--disposition', 'identity', '-v'])
 
     def test02_errors(self):
         """Test error cases."""

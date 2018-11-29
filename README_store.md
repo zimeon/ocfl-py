@@ -36,8 +36,8 @@ store
 ### 1.3 Add object
 
 ```
-> python ocfl-store.py --root tmp/store --add --src fixtures/objects/of1 --disposition identity -v
-INFO:root:Copying from fixtures/objects/of1 to tmp/store/ark%3A123%2Fabc
+> python ocfl-store.py --root tmp/store --add --src fixtures/1.0/objects/of1 --disposition identity -v
+INFO:root:Copying from fixtures/1.0/objects/of1 to tmp/store/ark%3A123%2Fabc
 INFO:root:Copied
 ```
 

@@ -7,7 +7,7 @@
 Without an `--objdir` argument the script just writes out the inventory for the object that would have been created.
 
 ```
-> python ocfl-object.py --create --id http://example.org/obj1 --src fixtures/content/cf1/v1
+> python ocfl-object.py --create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1
 
 
 ### Inventory for v1
@@ -24,7 +24,7 @@ Without an `--objdir` argument the script just writes out the inventory for the 
   "type": "Object",
   "versions": {
     "v1": {
-      "created": "2018-11-28T15:31:54.116634Z",
+      "created": "2018-11-29T13:10:44.286323Z",
       "message": "",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
@@ -48,7 +48,7 @@ Exited with code 0
 Without an `--objdir` argument the script just writes out the inventory for each version in the object that would have been created.
 
 ```
-> python ocfl-object.py --build --id http://example.org/obj2 --src fixtures/content/cf3
+> python ocfl-object.py --build --id http://example.org/obj2 --src fixtures/1.0/content/cf3
 
 
 ### Inventory for v1
@@ -65,7 +65,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
   "type": "Object",
   "versions": {
     "v1": {
-      "created": "2018-11-28T15:31:54.223434Z",
+      "created": "2018-11-29T13:10:44.403391Z",
       "message": "",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
@@ -99,7 +99,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
   "type": "Object",
   "versions": {
     "v1": {
-      "created": "2018-11-28T15:31:54.223434Z",
+      "created": "2018-11-29T13:10:44.403391Z",
       "message": "",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
@@ -113,7 +113,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
       }
     },
     "v2": {
-      "created": "2018-11-28T15:31:54.223819Z",
+      "created": "2018-11-29T13:10:44.403774Z",
       "message": "",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
@@ -147,7 +147,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
   "type": "Object",
   "versions": {
     "v1": {
-      "created": "2018-11-28T15:31:54.223434Z",
+      "created": "2018-11-29T13:10:44.403391Z",
       "message": "",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
@@ -161,7 +161,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
       }
     },
     "v2": {
-      "created": "2018-11-28T15:31:54.223819Z",
+      "created": "2018-11-29T13:10:44.403774Z",
       "message": "",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
@@ -175,7 +175,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
       }
     },
     "v3": {
-      "created": "2018-11-28T15:31:54.224159Z",
+      "created": "2018-11-29T13:10:44.404128Z",
       "message": "",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
@@ -199,7 +199,7 @@ Exited with code 0
 ### 2.1 New object with just v1
 
 ```
-> python ocfl-object.py --objdir tmp/object --create --id http://example.org/obj1 --src fixtures/content/cf1/v1 -v
+> python ocfl-object.py --objdir tmp/object --create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1 -v
 INFO:root:Created object http://example.org/obj1 in tmp/object
 ```
 
@@ -223,7 +223,7 @@ object
 ### 3.1 New object with three versions
 
 ```
-> python ocfl-object.py --objdir tmp/object --build --id http://example.org/obj2 --src fixtures/content/cf3 -v
+> python ocfl-object.py --objdir tmp/object --build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 -v
 INFO:root:Built object http://example.org/obj2 with 3 versions
 ```
 
@@ -255,7 +255,7 @@ object
 ### 4.1 Extract v1
 
 ```
-> python ocfl-object.py --dstdir tmp --extract v1 --objdir fixtures/objects/spec-ex-full -v
+> python ocfl-object.py --dstdir tmp --extract v1 --objdir fixtures/1.0/objects/spec-ex-full -v
 INFO:root:Extracted v1 into tmp/v1
 ```
 
@@ -274,7 +274,7 @@ INFO:root:Extracted v1 into tmp/v1
 ### 4.2 Extract v2
 
 ```
-> python ocfl-object.py --dstdir tmp --extract v2 --objdir fixtures/objects/spec-ex-full -v
+> python ocfl-object.py --dstdir tmp --extract v2 --objdir fixtures/1.0/objects/spec-ex-full -v
 INFO:root:Extracted v2 into tmp/v2
 ```
 

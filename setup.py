@@ -12,11 +12,9 @@ if match:
 else:
     raise RuntimeError("Unable to find version string")
 
+class ShellCommand(Command):
+    """Class to with defaults for adding extra shell commnads from setup."""
 
-class Coverage(Command):
-    """Class to allow coverage run from setup."""
-
-    description = "run coverage"
     user_options = []
 
     def initialize_options(self):
@@ -27,12 +25,30 @@ class Coverage(Command):
         """Empty finalize_options."""
         pass
 
+
+class Coverage(ShellCommand):
+    """Class to allow coverage run from setup."""
+
+    description = "run coverage"
+
     def run(self):
         """Run coverage program."""
         os.system("coverage run --source=ocfl setup.py test")
         os.system("coverage report")
         os.system("coverage html")
         print("See htmlcov/index.html for details.")
+
+
+class Readmes(ShellCommand):
+    """Class to make readme files for demo runs."""
+
+    description = "make README_ files"
+
+    def run(self):
+        """Run coverage program."""
+        os.system("python tests/test_ocfl_object_script.py > README_object.md") 
+        os.system("python tests/test_ocfl_store_script.py > README_store.md")
+        print("Built README_object.md and README_store.md.")
 
 setup(
     name='ocfl-py',
@@ -61,5 +77,6 @@ setup(
     test_suite="tests",
     cmdclass={
         'coverage': Coverage,
+        'readmes': Readmes,
     },
 )
