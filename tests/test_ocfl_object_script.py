@@ -75,13 +75,13 @@ class TestAll(unittest.TestCase):
     def test01_create_inventory_dryrun(self):
         """Test object inventory creation with output to stdout."""
         out = self.run_ocfl_store("Inventory for new object with just v1",
-                                  ['--create', '--id', 'http://example.org/obj1', '--src', 'fixtures/content/cf1/v1'],
+                                  ['--create', '--id', 'http://example.org/obj1', '--src', 'fixtures/1.0/content/cf1/v1'],
                                   text="Without an `--objdir` argument the script just writes out the inventory for the object that would have been created.",
                                   include_objdir=False)
         self.assertIn('"id": "http://example.org/obj1"', out)
         self.assertIn('### Inventory for v1', out)
         out = self.run_ocfl_store("Inventory for new object with three versions",
-                                  ['--build', '--id', 'http://example.org/obj2', '--src', 'fixtures/content/cf3'],
+                                  ['--build', '--id', 'http://example.org/obj2', '--src', 'fixtures/1.0/content/cf3'],
                                   text="Without an `--objdir` argument the script just writes out the inventory for each version in the object that would have been created.",
                                   include_objdir=False)
         self.assertIn('"id": "http://example.org/obj2"', out)
@@ -92,19 +92,19 @@ class TestAll(unittest.TestCase):
     def test02_create_v1(self):
         """Test object creation with just v1."""
         out = self.run_ocfl_store("New object with just v1",
-                                  ['--create', '--id', 'http://example.org/obj1', '--src', 'fixtures/content/cf1/v1', '-v'])
+                                  ['--create', '--id', 'http://example.org/obj1', '--src', 'fixtures/1.0/content/cf1/v1', '-v'])
         self.assertIn('Created object http://example.org/obj1', out)
 
     def test03_create_multi(self):
         """Test object build with three versions."""
         out = self.run_ocfl_store("New object with three versions",
-                                  ['--build', '--id', 'http://example.org/obj2', '--src', 'fixtures/content/cf3', '-v'])
+                                  ['--build', '--id', 'http://example.org/obj2', '--src', 'fixtures/1.0/content/cf3', '-v'])
         self.assertIn('Built object http://example.org/obj2 with 3 versions', out)
 
     def test04_extract(self):
         """Test extract of version."""
         out = self.run_ocfl_store("Extract v1",
-                                  ['--extract', 'v1', '--objdir', 'fixtures/objects/spec-ex-full', '-v'],
+                                  ['--extract', 'v1', '--objdir', 'fixtures/1.0/objects/spec-ex-full', '-v'],
                                   include_objdir=False,
                                   include_dstdir=True)
         # Excpect:
@@ -118,7 +118,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, 'v1/foo/bar.xml')), 272)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, 'v1/image.tiff')), 2021)
         out = self.run_ocfl_store("Extract v2",
-                                  ['--extract', 'v2', '--objdir', 'fixtures/objects/spec-ex-full', '-v'],
+                                  ['--extract', 'v2', '--objdir', 'fixtures/1.0/objects/spec-ex-full', '-v'],
                                   include_objdir=False,
                                   include_dstdir=True)
         # Expect:
