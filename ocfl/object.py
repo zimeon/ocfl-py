@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Core of OCFL Object library."""
-import hashlib
 import json
 import os
 import os.path
