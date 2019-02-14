@@ -18,12 +18,14 @@ Contributing
 ------------
 
 See `CONTRIBUTING.md
-<https://github.com/resync/resync/blob/master/CONTRIBUTING.md>`_
+<https://github.com/zimeon/ocfl-py/blob/master/CONTRIBUTING.md>`_
 for guidelines for contributing.
 
 Copyright and License
 ---------------------
 
-Copyright 2018--2019 Simeon Warner and contributors. Provided under the MIT license, see `LICENSE.txt
-<https://github.com/resync/resync/blob/master/LICENSE.txt>`_.
+Copyright 2018--2019 Simeon Warner and `contributors
+<https://github.com/zimeon/ocfl-py/graphs/contributors>`_.
+Provided under the MIT license, see `LICENSE.txt
+<https://github.com/zimeon/ocfl-py/blob/master/LICENSE.txt>`_.
 
