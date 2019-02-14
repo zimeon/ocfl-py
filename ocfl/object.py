@@ -86,7 +86,7 @@ class Object(object):
         """Create inventory start with metadata from self."""
         inventory = {
             'id': self.identifier,
-            'type': 'Object',
+            'type': 'https://ocfl.io/1.0/spec/#inventory',
             'digestAlgorithm': self.digest_algorithm,
             'versions': {},
             'manifest': {}

@@ -82,7 +82,6 @@ class VersionMetadata(object):
 
     def add_to_dict(self, m, **kwargs):
         """Add metadata to dictionary m."""
-        m['type'] = 'Version'
         m['created'] = self.created if self.created else datetime_to_str()
         m['message'] = self.message
         m['user'] = {'name': self.name, 'address': self.address}

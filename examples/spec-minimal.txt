@@ -7,17 +7,16 @@
   "head": "v1",
   "id": "http://example.org/minimal",
   "manifest": {
-    "7545b...f67": [ "v1/file.txt" ]
+    "7545b8...f67": [ "v1/content/file.txt" ]
   },
-  "type": "Object",
+  "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
       "created": "2018-10-02T12:00:00Z",
       "message": "One file",
       "state": {
-        "7545b...f67": [ "file.txt" ]
+        "7545b8...f67": [ "file.txt" ]
       },
-      "type": "Version",
       "user": {
         "address": "alice@example.org",
         "name": "Alice"

@@ -85,7 +85,6 @@ class TestAll(unittest.TestCase):
                                '184f84e28cbe75e050e9c25ea7f2e939': ['foo/bar.xml'],
                                'c289c8ccd4bab6e385f5afdd89b5bda2': ['image.tiff'],
                                'd41d8cd98f00b204e9800998ecf8427e': ['empty.txt']},
-                           'type': 'Version',
                            'user': {'address': 'alice@example.com', 'name': 'Alice'}}})
         self.assertNotIn('fixity', inventory)
         # Now add second version to check forward delta
@@ -103,7 +102,6 @@ class TestAll(unittest.TestCase):
                           'state': {
                               '2673a7b11a70bc7ff960ad8127b4adeb': ['foo/bar.xml'],
                               'd41d8cd98f00b204e9800998ecf8427e': ['empty.txt', 'empty2.txt']},
-                          'type': 'Version',
                           'user': {'address': 'bob@example.com', 'name': 'Bob'}})
         # Now with fixity
         oo = Object(digest_algorithm="md5", fixity=['sha1'])
@@ -122,7 +120,7 @@ class TestAll(unittest.TestCase):
         for (vdir, inventory, manifest_to_srcfile) in oo.build_inventory('fixtures/1.0/content/spec-ex-full',
                                                                          metadata=VersionMetadata()):
             pass
-        self.assertEqual(inventory['type'], 'Object')
+        self.assertEqual(inventory['type'], 'https://ocfl.io/1.0/spec/#inventory')
         self.assertEqual(inventory['head'], 'v3')
         self.assertEqual(inventory['manifest'],
                          {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],

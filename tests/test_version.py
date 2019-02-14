@@ -25,7 +25,6 @@ class TestAll(unittest.TestCase):
                                   address='d')
         m = VersionMetadata(args=args)
         d = m.as_dict(extra='x')
-        self.assertEqual(d['type'], 'Version')
         self.assertEqual(d['created'], 'a')
         self.assertEqual(d['message'], 'b')
         self.assertEqual(d['user'], {'name': 'c', 'address': 'd'})
