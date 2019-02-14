@@ -11,3 +11,19 @@ ocfl-py - An OCFL implementation in Python
 
 Attempts to follow `current draft of OCFL specification
 <https://ocfl.io/draft/spec/>`_
+
+See `README_*.md` files for current examples.
+
+Contributing
+------------
+
+See `CONTRIBUTING.md
+<https://github.com/resync/resync/blob/master/CONTRIBUTING.md>`_
+for guidelines for contributing.
+
+Copyright and License
+---------------------
+
+Copyright 2018--2019 Simeon Warner and contributors. Provided under the MIT license, see `LICENSE.txt
+<https://github.com/resync/resync/blob/master/LICENSE.txt>`_.
+
