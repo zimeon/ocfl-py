@@ -23,10 +23,19 @@ class TestAll(unittest.TestCase):
         self.assertIn('E100', v.codes)
         v = OCFLValidator()
         self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad03_no_inv'))
-        self.assertIn('E005', v.codes)
+        self.assertIn('E004', v.codes)
         v = OCFLValidator()
         self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad04_no_sidecar'))
         self.assertIn('E005', v.codes)
+        # v = OCFLValidator()
+        # self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad05_missing_file'))
+        # self.assertIn('E006', v.codes)
+        # v = OCFLValidator()
+        # self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad06_extra_file'))
+        # self.assertIn('E007', v.codes)
+        # v = OCFLValidator()
+        # self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad07_file_in_manifest_not_used'))
+        # self.assertIn('E008', v.codes)
 
     def test02_good(self):
         """Check good objects pass."""

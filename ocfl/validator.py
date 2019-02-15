@@ -1,4 +1,11 @@
-"""OCFL Validator."""
+"""OCFL Validator.
+
+Philosophy of this code is to keep it separate from the implementations
+of Store, Object and Version used to build and manipulate OCFL data, but
+to leverage lower level functions such as digest creation etc.. Code style
+is plain/verbose with detailed and specific validation errors that might
+help someone debug an implementation.
+"""
 import json
 import os
 import os.path
@@ -72,16 +79,35 @@ class OCFLValidator(object):
                 self.validate_inventory_digest(inv_file, inv_digest_file)
             except Exception as e:
                 self.error(str(e))
-        #
         return self.errors == 0
 
     def validate_inventory(self, inv_file):
-        """Validate a given inventory file."""
+        """Validate a given inventory file, record errors with self.error()."""
         with open(inv_file) as fh:
             inventory = json.load(fh)
-        # Sanity checks
+        # Basic structure
         if 'id' not in inventory:
             self.error("E100")
+        elif inventory['id'] == '':
+            self.error("E101")
+        if 'type' not in inventory:
+            self.error("E102")
+        elif inventory['type'] != 'https://ocfl.io/1.0/spec/#inventory':
+            self.error("E103")
+        if 'digestAlgorithm' not in inventory:
+            self.error("E104")
+        elif inventory['digestAlgorithm'] not in ('sha256', 'sha512'):
+            self.error("E105")  # FIXME - WARN if not sha512?
+        if 'head' not in inventory:
+            self.error("E106")
+        if 'manifest' not in inventory:
+            self.error("E107")
+        else:
+            self.validate_manifest(inventory['manifest'])
+        if 'versions' not in inventory:
+            self.error("E108")
+        else:
+            self.validate_versions(inventory['versions'])
 
     def validate_inventory_digest(self, inv_file, inv_digest_file):
         """Validate a given inventory digest for a give inventory file."""
@@ -93,6 +119,14 @@ class OCFLValidator(object):
         digest_actual = file_digest(inv_file, digest_algorithm)
         if digest_actual != digest_recorded:
             raise Exception("Mismatch between actual and recorded inventory digests for %s (calcuated %s but read %s from %s)" % (inv_file, digest_actual, digest_recorded, inv_digest_file))
+
+    def validate_manifest(self, manifest):
+        """Validate manifest block in inventory."""
+        pass
+
+    def validate_versions(self, versions):
+        """Validate versions block in inventory."""
+        pass
 
     def read_inventory_digest(self, inv_digest_file):
         """Read inventory digest from sidecar file.
