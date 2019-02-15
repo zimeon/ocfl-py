@@ -35,6 +35,83 @@
       "description": {
          "en": "OCFL Object Conformance Declaration is not zero size"
       }
+    },
+    "E004": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#inventory",
+      "description": {
+         "en": "OCFL Object top-level inventory is missing"
+      }
+    },
+    "E005": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#inventory-digest",
+      "description": {
+         "en": "OCFL Object top-level inventory is missing sidecar digest file"
+      }
+    },
+    "E100": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#inventory",
+      "description": {
+         "en": "OCFL Object inventory missing `id` attribute"
+      }
+    },
+    "E101": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#inventory",
+      "description": {
+         "en": "OCFL Object inventory `id` attribute is empty"
+      }
+    },
+    "E102": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#inventory",
+      "description": {
+         "en": "OCFL Object inventory missing `type` attribute"
+      }
+    },
+    "E103": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#inventory",
+      "description": {
+         "en": "OCFL Object inventory `type` attribute has wrong value"
+      }
+    },
+    "E104": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#inventory",
+      "description": {
+         "en": "OCFL Object inventory missing `digestAlgorithm` attribute"
+      }
+    },
+    "E105": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#inventory",
+      "description": {
+         "en": "OCFL Object inventory `digestAlgorithm` attribute not an allowed value"
+      }
+    },
+    "E106": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#inventory",
+      "description": {
+         "en": "OCFL Object inventory missing `head` attribute"
+      }
+    },
+    "E107": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#inventory",
+      "description": {
+         "en": "OCFL Object inventory missing `manifest` attribute"
+      }
+    },
+    "E108": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#inventory",
+      "description": {
+         "en": "OCFL Object inventory missing `versions` attribute"
+      }
     }
   }
 }
