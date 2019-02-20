@@ -141,6 +141,10 @@ class TestAll(unittest.TestCase):
         out = self.run_ocfl_store("No identifier",
                                   ['--create'],
                                   include_objdir=False)
+        self.assertIn('Must specify --srcdir', out)
+        out = self.run_ocfl_store("No identifier",
+                                  ['--create', '--srcdir', 'tmp'],
+                                  include_objdir=False)
         self.assertIn('Identifier is not set!', out)
 
 

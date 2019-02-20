@@ -7,7 +7,7 @@ import ocfl
 
 def parse_arguments():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description='Build an OCFL inventory.',
+    parser = argparse.ArgumentParser(description='Manipulate an OCFL object or inventory.',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--srcdir', '--src', action='store',
                         help='source directory path')
@@ -22,9 +22,9 @@ def parse_arguments():
 
     commands = parser.add_mutually_exclusive_group(required=True)
     commands.add_argument('--create', action='store_true',
-                          help='Create an new object with version 1 from objdir')
+                          help='Create a new object with version 1 files in srcdir')
     commands.add_argument('--build', action='store_true',
-                          help='Build an new object from version directories in objdir')
+                          help='Build a new object from version directories in srcdir')
     commands.add_argument('--show', action='store_true',
                           help='Show versions and files in an OCFL object')
     commands.add_argument('--validate', action='store_true',
@@ -49,11 +49,15 @@ def do_object_operation(args):
                       ocfl_version=args.ocfl_version,
                       fixity=args.fixity)
     if args.create:
+        if args.srcdir is None:
+            raise Exception("Must specify --srcdir containing v1 files when creating an OCFL object!")
         metadata = ocfl.VersionMetadata(args)
         obj.create(srcdir=args.srcdir,
                    metadata=metadata,
                    objdir=args.objdir)
     elif args.build:
+        if args.srcdir is None:
+            raise Exception("Must specify --srcdir containing version directories when building an OCFL object!")
         metadata = ocfl.VersionMetadata(args)
         obj.build(srcdir=args.srcdir,
                   metadata=metadata,
