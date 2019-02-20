@@ -246,7 +246,7 @@ class Object(object):
         logging.info("Built object %s with %s versions" % (self.identifier, num_versions))
 
     def create(self, srcdir, metadata=None, objdir=None):
-        """Create an OCFL object with v1 content from srcdir.
+        """Create a new OCFL object with v1 content from srcdir.
 
         Write to dst if set, else just print inventory.
         """
