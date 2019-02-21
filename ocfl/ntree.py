@@ -50,8 +50,8 @@ class Ntree(Dispositor):
             segments.append(identifier)
         return os.path.join(*segments)
 
-    def path_to_identifier(self, path, root=None):
-        """Convert path relative to root to identifier."""
+    def relative_path_to_identifier(self, path):
+        """Convert relative path to identifier."""
         if self.encapsulate:
             (path, encap_id) = os.path.split(path)
         # Combine all directories
