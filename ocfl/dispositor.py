@@ -17,7 +17,7 @@ class Dispositor(object):
     def strip_root(self, path, root):
         """Remove root from path, throw exception on failure."""
         root = root.rstrip(os.sep)  # ditch any trailing path separator
-        if os.path.commonpath((path, root)) == root:
+        if os.path.commonprefix((path, root)) == root:
             return os.path.relpath(path, start=root)
         else:
             raise Exception("Path %s is not in root %s" % (path, root))
