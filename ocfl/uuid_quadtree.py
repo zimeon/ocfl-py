@@ -41,8 +41,8 @@ class UUIDQuadtree(Dispositor):
         return os.path.join(match.group(1), match.group(2), match.group(3), match.group(4),
                             match.group(5), match.group(6), match.group(7), match.group(8))
 
-    def path_to_identifier(self, path, root=None):
-        """Convert path relative to root to identifier."""
+    def relative_path_to_identifier(self, path):
+        """Convert relative path to identifier."""
         # Combine all directories
         segments = path.split(os.sep)
         if len(segments) != 8:
