@@ -7,6 +7,7 @@ import re
 import logging
 from shutil import copyfile
 import sys
+import urllib.parse
 
 from .digest import file_digest
 from .namaste import Namaste
@@ -19,6 +20,8 @@ def add_object_args(parser):
     # Disk scanning
     parser.add_argument('--skip', action='append', default=['README.md', '.DS_Store'],
                         help='directories and files to ignore')
+    parser.add_argument('--normalization', '--norm', default=None,
+                        help='filename normalization strategy')
     # Versioning strategy settings
     parser.add_argument('--no-forward-delta', action='store_true',
                         help='do not use forward deltas')
@@ -41,8 +44,8 @@ class Object(object):
     """Class for handling OCFL Object data and operations."""
 
     def __init__(self, identifier=None,
-                 digest_algorithm='sha512', skips=None,
-                 forward_delta=True, dedupe=True,
+                 digest_algorithm='sha512', filename_normalization='uri',
+                 skips=None, forward_delta=True, dedupe=True,
                  ocfl_version='draft', fixity=None, fhout=sys.stdout):
         """Initialize OCFL builder.
 
@@ -54,6 +57,7 @@ class Object(object):
         """
         self.identifier = identifier
         self.digest_algorithm = digest_algorithm
+        self.filename_normalization = filename_normalization
         self.skips = set() if skips is None else set(skips)
         self.forward_delta = forward_delta
         self.dedupe = dedupe
@@ -78,7 +82,13 @@ class Object(object):
 
     def normalize_filename(self, filename):
         """Translate source filename to a normalized (safe and sanitized) name within object."""
-        # FIXME - noop for now
+        if self.filename_normalization == 'uri':
+            filename = urllib.parse.quote(filename)
+            # also encode any leading period to unhide files
+            if filename[0] == '.':
+                filename = '%2E' + filename[1:]
+        elif self.filename_normalization is not None:
+            raise Exception("Unknown filename filename normalization '%s' requested" % (filename_normalization))
         return filename
 
     def start_inventory(self):

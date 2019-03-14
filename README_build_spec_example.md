@@ -15,3 +15,11 @@ to get <examples/spec-minimal.txt>
 ```
 
 to get <examples/spec-full.txt>
+
+## Rename example
+
+```
+./ocfl-object.py --build --src fixtures/1.0/content/spec-ex-rename --id http://example.org/rename --digest sha512 --normalization uri --created "2019-03-14T20:31:00Z" -v | ./compactify_spec_examples.py > examples/spec-rename.txt
+```
+
+to get <examples/spec-rename.txt>

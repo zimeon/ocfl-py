@@ -9,11 +9,11 @@ def add_version_metadata_args(parser):
     parser.add_argument('--created', default=None,
                         help='creation time to be used with version(s) added, else '
                              'current time will be recorded')
-    parser.add_argument('--message', default='',
+    parser.add_argument('--message', default=None,
                         help='message to be recorded with version(s) added')
-    parser.add_argument('--name', default='someone',
+    parser.add_argument('--name', default=None,
                         help='name of user adding version(s) to object')
-    parser.add_argument('--address', default='somewhere',
+    parser.add_argument('--address', default=None,
                         help='address of user adding version(s) to object')
 
 
@@ -83,8 +83,12 @@ class VersionMetadata(object):
     def add_to_dict(self, m, **kwargs):
         """Add metadata to dictionary m."""
         m['created'] = self.created if self.created else datetime_to_str()
-        m['message'] = self.message
-        m['user'] = {'name': self.name, 'address': self.address}
+        if self.message is not None:
+            m['message'] = self.message
+        if self.name is not None or self.address is not None:
+            m['user'] = {'name': self.name}
+            if self.address is not None:
+                m['user']['address'] = self.address
         # Add any extra values, and they will override instance variables
         for (key, value) in kwargs.items():
             m[key] = value
