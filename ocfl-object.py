@@ -43,7 +43,7 @@ def do_object_operation(args):
     """Implement object operations in a way that can be reused by ocfl-store.py."""
     obj = ocfl.Object(identifier=args.id,
                       digest_algorithm=args.digest,
-                      filename_normalization=args.normalization,
+                      filepath_normalization=args.normalization,
                       skips=args.skip,
                       forward_delta=not args.no_forward_delta,
                       dedupe=not args.no_dedupe,
