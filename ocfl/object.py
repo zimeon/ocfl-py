@@ -7,6 +7,10 @@ import re
 import logging
 from shutil import copyfile
 import sys
+try:
+    from urllib.parse import quote as urlquote  # python3
+except:
+    from urllib import quote as urlquote  # python2
 
 from .digest import file_digest
 from .namaste import Namaste
@@ -19,6 +23,8 @@ def add_object_args(parser):
     # Disk scanning
     parser.add_argument('--skip', action='append', default=['README.md', '.DS_Store'],
                         help='directories and files to ignore')
+    parser.add_argument('--normalization', '--norm', default=None,
+                        help='filename normalization strategy')
     # Versioning strategy settings
     parser.add_argument('--no-forward-delta', action='store_true',
                         help='do not use forward deltas')
@@ -41,8 +47,8 @@ class Object(object):
     """Class for handling OCFL Object data and operations."""
 
     def __init__(self, identifier=None,
-                 digest_algorithm='sha512', skips=None,
-                 forward_delta=True, dedupe=True,
+                 digest_algorithm='sha512', filename_normalization='uri',
+                 skips=None, forward_delta=True, dedupe=True,
                  ocfl_version='draft', fixity=None, fhout=sys.stdout):
         """Initialize OCFL builder.
 
@@ -54,6 +60,7 @@ class Object(object):
         """
         self.identifier = identifier
         self.digest_algorithm = digest_algorithm
+        self.filename_normalization = filename_normalization
         self.skips = set() if skips is None else set(skips)
         self.forward_delta = forward_delta
         self.dedupe = dedupe
@@ -78,7 +85,13 @@ class Object(object):
 
     def normalize_filename(self, filename):
         """Translate source filename to a normalized (safe and sanitized) name within object."""
-        # FIXME - noop for now
+        if self.filename_normalization == 'uri':
+            filename = urlquote(filename)
+            # also encode any leading period to unhide files
+            if filename[0] == '.':
+                filename = '%2E' + filename[1:]
+        elif self.filename_normalization is not None:
+            raise Exception("Unknown filename filename normalization '%s' requested" % (filename_normalization))
         return filename
 
     def start_inventory(self):
@@ -129,6 +142,10 @@ class Object(object):
                 sfilepath = os.path.relpath(filepath, srcdir)  # path relative to this version
                 norm_path = self.normalize_filename(sfilepath)
                 vfilepath = os.path.join(vdir, 'content', norm_path)  # path relative to root, inc v#/content
+                # Check we don't already have this vfilepath from many to one normalization,
+                # add suffix to distinguish if necessary
+                if vfilepath in manifest_to_srcfile:
+                    vfilepath = make_unused_filepath(vfilepath, manifest_to_srcfile)
                 digest = self.digest(filepath)
                 # Always add file to state
                 if digest not in state:
@@ -390,3 +407,13 @@ def remove_first_directory(path):
             path = head
             rpath = tail if rpath == '' else os.path.join(tail, rpath)
     return rpath
+
+
+def make_unused_filepath(filepath, used, separator='__'):
+    """Find filepath with string appended that makes it disjoint from those in used."""
+    n = 1
+    while True:
+        n += 1
+        f = filepath + separator + str(n)
+        if f not in used:
+            return f
