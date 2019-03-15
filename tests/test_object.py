@@ -6,7 +6,7 @@ import os
 import sys
 import tempfile
 import unittest
-from ocfl.object import Object, ObjectException, remove_first_directory
+from ocfl.object import Object, ObjectException, remove_first_directory, make_unused_filepath
 from ocfl.version import VersionMetadata
 
 
@@ -235,9 +235,17 @@ class TestAll(unittest.TestCase):
         self.assertRaises(ObjectException, oo.parse_inventory, path='fixtures/1.0/bad-objects/bad02_no_id')
 
     def test90_remove_first_directory(self):
-        """Test encode."""
+        """Test remove_first_directory function."""
         self.assertEqual(remove_first_directory(''), '')
         self.assertEqual(remove_first_directory('a'), '')
         self.assertEqual(remove_first_directory('a/b'), 'b')
         self.assertEqual(remove_first_directory('a/b/'), 'b')
         self.assertEqual(remove_first_directory('a/b/c'), 'b/c')
+
+    def test91_make_unused_filepath(self):
+        """Test make_unused_filepath function."""
+        self.assertEqual(make_unused_filepath('x/y', []), 'x/y__2')
+        self.assertEqual(make_unused_filepath('x/y', {'x/y__2': 1}), 'x/y__3')
+        self.assertEqual(make_unused_filepath('x/y', {'x/y': 1}, ''), 'x/y2')
+        self.assertEqual(make_unused_filepath('x/y', ['x/y', 'x/y2', 'x/y3'], ''), 'x/y4')
+

@@ -7,7 +7,10 @@ import re
 import logging
 from shutil import copyfile
 import sys
-import urllib.parse
+try:
+    from urllib.parse import quote as urlquote  # python3
+except:
+    from urllib import quote as urlquote  # python2
 
 from .digest import file_digest
 from .namaste import Namaste
@@ -83,7 +86,7 @@ class Object(object):
     def normalize_filename(self, filename):
         """Translate source filename to a normalized (safe and sanitized) name within object."""
         if self.filename_normalization == 'uri':
-            filename = urllib.parse.quote(filename)
+            filename = urlquote(filename)
             # also encode any leading period to unhide files
             if filename[0] == '.':
                 filename = '%2E' + filename[1:]
@@ -140,14 +143,9 @@ class Object(object):
                 norm_path = self.normalize_filename(sfilepath)
                 vfilepath = os.path.join(vdir, 'content', norm_path)  # path relative to root, inc v#/content
                 # Check we don't already have this vfilepath from many to one normalization,
-                # if that is the case fine _nnn suffix to distinguish
+                # add suffix to distinguish if necessary
                 if vfilepath in manifest_to_srcfile:
-                    n = 2
-                    while True:
-                        vp = vfilepath + '_' + str(n)
-                        if vp not in manifest_to_srcfile:
-                            vfilepath = vp
-                            break
+                    vfilepath = make_unused_filepath(vfilepath, manifest_to_srcfile)
                 digest = self.digest(filepath)
                 # Always add file to state
                 if digest not in state:
@@ -409,3 +407,13 @@ def remove_first_directory(path):
             path = head
             rpath = tail if rpath == '' else os.path.join(tail, rpath)
     return rpath
+
+
+def make_unused_filepath(filepath, used, separator='__'):
+    """Find filepath with string appended that makes it disjoint from those in used."""
+    n = 1
+    while True:
+        n += 1
+        f = filepath + separator + str(n)
+        if f not in used:
+            return f
