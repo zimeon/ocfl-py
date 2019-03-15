@@ -248,4 +248,3 @@ class TestAll(unittest.TestCase):
         self.assertEqual(make_unused_filepath('x/y', {'x/y__2': 1}), 'x/y__3')
         self.assertEqual(make_unused_filepath('x/y', {'x/y': 1}, ''), 'x/y2')
         self.assertEqual(make_unused_filepath('x/y', ['x/y', 'x/y2', 'x/y3'], ''), 'x/y4')
-
