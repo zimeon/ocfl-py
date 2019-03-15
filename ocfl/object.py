@@ -139,6 +139,15 @@ class Object(object):
                 sfilepath = os.path.relpath(filepath, srcdir)  # path relative to this version
                 norm_path = self.normalize_filename(sfilepath)
                 vfilepath = os.path.join(vdir, 'content', norm_path)  # path relative to root, inc v#/content
+                # Check we don't already have this vfilepath from many to one normalization,
+                # if that is the case fine _nnn suffix to distinguish
+                if vfilepath in manifest_to_srcfile:
+                    n = 2
+                    while True:
+                        vp = vfilepath + '_' + str(n)
+                        if vp not in manifest_to_srcfile:
+                            vfilepath = vp
+                            break
                 digest = self.digest(filepath)
                 # Always add file to state
                 if digest not in state:
