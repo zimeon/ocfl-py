@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Core of OCFL Object library."""
+import hashlib
 import json
 import os
 import os.path
@@ -18,13 +19,17 @@ from .validator import OCFLValidator
 from .version import VersionMetadata
 
 
+NORMALIZATIONS = ['uri', 'md5']  # Must match possibilities in map_filepaths()
+
+
 def add_object_args(parser):
     """Add Object settings to argparse instance parser."""
     # Disk scanning
     parser.add_argument('--skip', action='append', default=['README.md', '.DS_Store'],
                         help='directories and files to ignore')
     parser.add_argument('--normalization', '--norm', default=None,
-                        help='filename normalization strategy')
+                        help='filepath normalization strategy (None, %s)' %
+                        (', '.join(NORMALIZATIONS)))
     # Versioning strategy settings
     parser.add_argument('--no-forward-delta', action='store_true',
                         help='do not use forward deltas')
@@ -47,7 +52,7 @@ class Object(object):
     """Class for handling OCFL Object data and operations."""
 
     def __init__(self, identifier=None,
-                 digest_algorithm='sha512', filename_normalization='uri',
+                 digest_algorithm='sha512', filepath_normalization='uri',
                  skips=None, forward_delta=True, dedupe=True,
                  ocfl_version='draft', fixity=None, fhout=sys.stdout):
         """Initialize OCFL builder.
@@ -60,7 +65,7 @@ class Object(object):
         """
         self.identifier = identifier
         self.digest_algorithm = digest_algorithm
-        self.filename_normalization = filename_normalization
+        self.filepath_normalization = filepath_normalization
         self.skips = set() if skips is None else set(skips)
         self.forward_delta = forward_delta
         self.dedupe = dedupe
@@ -83,16 +88,39 @@ class Object(object):
         """Digest for file filename."""
         return file_digest(filename, self.digest_algorithm)
 
-    def normalize_filename(self, filename):
-        """Translate source filename to a normalized (safe and sanitized) name within object."""
-        if self.filename_normalization == 'uri':
-            filename = urlquote(filename)
+    def map_filepath(self, filepath, vdir, used):
+        """Map source filepath to a  name within object.
+
+        The purpose of the mapping might be normalization, sanitization,
+        content distribution, or something else. Parameters:
+
+        filepath - the source filepath
+        vdir - the current version directory
+        used - disctionary used to check whether a given vfilepath has
+          been used already
+
+        Returns:
+
+        vfilepath - the version filepath for this content that starts
+          with vdir/content/
+        """
+        if self.filepath_normalization == 'uri':
+            filepath = urlquote(filepath)
             # also encode any leading period to unhide files
-            if filename[0] == '.':
-                filename = '%2E' + filename[1:]
-        elif self.filename_normalization is not None:
-            raise Exception("Unknown filename filename normalization '%s' requested" % (filename_normalization))
-        return filename
+            if filepath[0] == '.':
+                filepath = '%2E' + filepath[1:]
+        elif self.filepath_normalization == 'md5':
+            # Truncated MD5 hash of the _filepath_ as an illustration of diff paths for spec,
+            # not sure there could be any real application of this
+            filepath = hashlib.md5(filepath.encode('utf-8')).hexdigest()[0:16]
+        elif self.filepath_normalization is not None:
+            raise Exception("Unknown filepath normalization '%s' requested" % (self.filepath_normalization))
+        vfilepath = os.path.join(vdir, 'content', filepath)  # path relative to root, inc v#/content
+        # Check we don't already have this vfilepath from many to one normalization,
+        # add suffix to distinguish if necessary
+        if vfilepath in used:
+            vfilepath = make_unused_filepath(vfilepath, used)
+        return vfilepath
 
     def start_inventory(self):
         """Create inventory start with metadata from self."""
@@ -140,12 +168,7 @@ class Object(object):
                     continue
                 filepath = os.path.join(dirpath, filename)
                 sfilepath = os.path.relpath(filepath, srcdir)  # path relative to this version
-                norm_path = self.normalize_filename(sfilepath)
-                vfilepath = os.path.join(vdir, 'content', norm_path)  # path relative to root, inc v#/content
-                # Check we don't already have this vfilepath from many to one normalization,
-                # add suffix to distinguish if necessary
-                if vfilepath in manifest_to_srcfile:
-                    vfilepath = make_unused_filepath(vfilepath, manifest_to_srcfile)
+                vfilepath = self.map_filepath(sfilepath, vdir, manifest_to_srcfile)
                 digest = self.digest(filepath)
                 # Always add file to state
                 if digest not in state:

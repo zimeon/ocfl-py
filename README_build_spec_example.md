@@ -16,10 +16,10 @@ to get <examples/spec-minimal.txt>
 
 to get <examples/spec-full.txt>
 
-## Rename example
+## Different paths example
 
 ```
-./ocfl-object.py --build --src fixtures/1.0/content/spec-ex-rename --id http://example.org/rename --digest sha512 --normalization uri --created "2019-03-14T20:31:00Z" -v | ./compactify_spec_examples.py > examples/spec-rename.txt
+./ocfl-object.py --build --src fixtures/1.0/content/spec-ex-diff-paths --id http://example.org/diff-paths --digest sha512 --normalization md5 --created "2019-03-14T20:31:00Z" -v | ./compactify_spec_examples.py > examples/spec-diff-paths.txt
 ```
 
-to get <examples/spec-rename.txt>
+to get <examples/spec-diff-paths.txt>
