@@ -19,7 +19,8 @@ from .validator import OCFLValidator
 from .version import VersionMetadata
 
 
-NORMALIZATIONS = ['uri', 'md5']
+NORMALIZATIONS = ['uri', 'md5']  # Must match possibilities in map_filepaths()
+
 
 def add_object_args(parser):
     """Add Object settings to argparse instance parser."""
