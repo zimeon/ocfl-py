@@ -1,0 +1,24 @@
+
+
+### Inventory for v1
+
+{
+  "digestAlgorithm": "sha512",
+  "head": "v1",
+  "id": "http://example.org/diff-paths",
+  "manifest": {
+    "7545b8...f67": [ "v1/content/3bacb119a98a15c5ab43ee64d63906ee" ],
+    "af318d...3cd": [ "v1/content/9f2bab8ef869947da167b754c9b3c8b8" ]
+  },
+  "type": "https://ocfl.io/1.0/spec/#inventory",
+  "versions": {
+    "v1": {
+      "created": "2019-03-14T20:31:00Z",
+      "state": {
+        "7545b8...f67": [ "a file.wxy" ],
+        "af318d...3cd": [ "another file.xyz" ]
+      }
+    }
+  }
+}
+

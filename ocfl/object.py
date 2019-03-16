@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Core of OCFL Object library."""
+import hashlib
 import json
 import os
 import os.path
@@ -18,13 +19,16 @@ from .validator import OCFLValidator
 from .version import VersionMetadata
 
 
+NORMALIZATIONS = ['uri', 'md5']
+
 def add_object_args(parser):
     """Add Object settings to argparse instance parser."""
     # Disk scanning
     parser.add_argument('--skip', action='append', default=['README.md', '.DS_Store'],
                         help='directories and files to ignore')
     parser.add_argument('--normalization', '--norm', default=None,
-                        help='filepath normalization strategy')
+                        help='filepath normalization strategy (None, %s)' %
+                        (', '.join(NORMALIZATIONS)))
     # Versioning strategy settings
     parser.add_argument('--no-forward-delta', action='store_true',
                         help='do not use forward deltas')
@@ -104,6 +108,10 @@ class Object(object):
             # also encode any leading period to unhide files
             if filepath[0] == '.':
                 filepath = '%2E' + filepath[1:]
+        elif self.filepath_normalization == 'md5':
+            # MD5 hash of the _filepath_ as an illustration of diff paths for spec,
+            # not sure there could be any real application of this
+            filepath = hashlib.md5(filepath.encode('utf-8')).hexdigest()
         elif self.filepath_normalization is not None:
             raise Exception("Unknown filepath normalization '%s' requested" % (self.filepath_normalization))
         vfilepath = os.path.join(vdir, 'content', filepath)  # path relative to root, inc v#/content
