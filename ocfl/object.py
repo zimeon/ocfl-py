@@ -110,9 +110,9 @@ class Object(object):
             if filepath[0] == '.':
                 filepath = '%2E' + filepath[1:]
         elif self.filepath_normalization == 'md5':
-            # MD5 hash of the _filepath_ as an illustration of diff paths for spec,
+            # Truncated MD5 hash of the _filepath_ as an illustration of diff paths for spec,
             # not sure there could be any real application of this
-            filepath = hashlib.md5(filepath.encode('utf-8')).hexdigest()
+            filepath = hashlib.md5(filepath.encode('utf-8')).hexdigest()[0:16]
         elif self.filepath_normalization is not None:
             raise Exception("Unknown filepath normalization '%s' requested" % (self.filepath_normalization))
         vfilepath = os.path.join(vdir, 'content', filepath)  # path relative to root, inc v#/content
