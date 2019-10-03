@@ -51,6 +51,7 @@ class Readmes(ShellCommand):
         os.system("python tests/test_ocfl_store_script.py > README_store.md")
         print("Built README_object.md and README_store.md.")
 
+
 setup(
     name='ocfl-py',
     version=version,

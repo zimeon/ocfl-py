@@ -11,10 +11,10 @@ before_install:
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
   - git submodule update --init --recursive
 install:
-  - pip install coveralls pep8 pep257
+  - pip install coveralls pycodestyle pep257
   - python setup.py install
 script:
-  - pep8 --ignore=E501 ocfl/*.py tests/*.py *.py
+  - pycodestyle --ignore=E501,W503 ocfl/*.py tests/*.py *.py
   - pep257 ocfl/*.py tests/*.py *.py
   - python setup.py test
 after_success:
