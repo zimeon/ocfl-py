@@ -164,7 +164,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(j, {'abc': 'def'})
         with open(os.path.join(tempdir, 'inventory.json.sha512')) as fh:
             digest = fh.read()
-        self.assertRegexpMatches(digest, r'''[0-9a-f]{128} inventory.json\n''')
+        self.assertRegex(digest, r'''[0-9a-f]{128} inventory.json\n''')
         # and now makind directory
         oo = Object()
         invdir = os.path.join(tempdir, 'xxx')
