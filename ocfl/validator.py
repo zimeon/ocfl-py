@@ -16,6 +16,17 @@ from .digest import file_digest
 from .namaste import find_namastes, NamasteException
 
 
+def check_keys(d, required=None, optional=None):
+    """Check dict like object d for presence of required and optional keys."""
+    for k in required:
+        if k not in d:
+            return False
+    for k in d:
+        if k not in required and k not in optional:
+            return False
+    return True
+
+
 class OCFLValidator(object):
     """Class for OCFL Validator."""
 
@@ -31,10 +42,13 @@ class OCFLValidator(object):
         if self.validation_codes is None:
             with open(os.path.join(os.path.dirname(__file__), 'data/validation-errors.json'), 'r') as fh:
                 self.validation_codes = json.load(fh)['codes']
+        # Object state
+        self.digest_algorithm = 'sha512'
+        self.content_directory = 'content'
 
     def error(self, code, **args):
         """Add error code to self.codes."""
-        # print("args = %s" % (str(**args)))
+        # print("args = %s" % (str(args)))
         if code in self.validation_codes and 'description' in self.validation_codes[code]:
             desc = self.validation_codes[code]['description']
             lang_desc = None
@@ -47,9 +61,18 @@ class OCFLValidator(object):
                 lang_desc = desc[sorted(list(desc.keys()))[0]]
             else:
                 lang_desc = "Error %s - no description, params (%s)"
-            self.codes[code] = '[' + code + '] ' + lang_desc  # FIXME - use **args
+            # Add in any parameters
+            if 'params' in self.validation_codes[code]:
+                params = []
+                for param in self.validation_codes[code]['params']:
+                    params.append(str(args[param]) if param in args else '???')
+                try:
+                    lang_desc = lang_desc % tuple(params)
+                except TypeError:
+                    lang_desc += str(args)
+            self.codes[code] = '[' + code + '] ' + lang_desc
         else:
-            self.codes[code] = "Unknown error %s - params (%s)" % (code, str(**args))
+            self.codes[code] = "Unknown error %s - params (%s)" % (code, str(args))
         self.errors += 1
 
     def validate(self, path):
@@ -62,27 +85,35 @@ class OCFLValidator(object):
         if len(namastes) == 0:
             self.error('E001')
         elif len(namastes) > 1:
-            self.error('E901')
+            self.error('E901', files=len(namastes))
         elif not namastes[0].content_ok(path):
-            self.error('E902')
+            self.error('E003')
         # Inventory
         inv_file = os.path.join(path, 'inventory.json')
         if not os.path.exists(inv_file):
             self.error('E004')
+            return False
         else:
-            self.validate_inventory(inv_file)
-        inv_digest_file = os.path.join(path, 'inventory.json.sha512')  # FIXME - support other digests
+            inventory = self.validate_inventory(inv_file)
+        inv_digest_file = os.path.join(path, 'inventory.json.' + self.digest_algorithm)
         if not os.path.exists(inv_digest_file):
             self.error('E005')
         else:
             try:
                 self.validate_inventory_digest(inv_file, inv_digest_file)
             except Exception as e:
-                self.error(str(e))
+                self.error('E999', description=str(e))
+        # Object content
+        self.validate_content(path, inventory)
         return self.errors == 0
 
     def validate_inventory(self, inv_file):
-        """Validate a given inventory file, record errors with self.error()."""
+        """Validate a given inventory file, record errors with self.error().
+
+        Returns inventory object for use in later validation
+        of object content. Does not look at anything else in the
+        object itself.
+        """
         with open(inv_file) as fh:
             inventory = json.load(fh)
         # Basic structure
@@ -98,19 +129,31 @@ class OCFLValidator(object):
             self.error("E104")
         elif inventory['digestAlgorithm'] not in ('sha256', 'sha512'):
             self.error("E105")  # FIXME - WARN if not sha512?
+        else:
+            self.digest_algorithm = inventory['digestAlgorithm']
         if 'head' not in inventory:
             self.error("E106")
+        if 'contentDirectory' in inventory:
+            self.content_directory = inventory['contentDirectory']
+            if not re.match(r'''^[\w][\w\._]*$''', self.content_directory):  # See https://github.com/OCFL/spec/issues/415
+                self.error("E998")
         if 'manifest' not in inventory:
             self.error("E107")
         else:
-            self.validate_manifest(inventory['manifest'])
+            manifest_files = self.validate_manifest(inventory['manifest'])
         if 'versions' not in inventory:
             self.error("E108")
         else:
-            self.validate_versions(inventory['versions'])
+            all_versions = self.validate_version_sequence(inventory['versions'])
+            self.validate_versions(inventory['versions'], all_versions, manifest_files)
+        return inventory
 
     def validate_inventory_digest(self, inv_file, inv_digest_file):
-        """Validate a given inventory digest for a give inventory file."""
+        """Validate a given inventory digest for a give inventory file.
+
+        On error throws exception with debugging string intended to
+        be presented to a user.
+        """
         m = re.match(r'''.*\.(\w+)$''', inv_digest_file)
         if not m:
             raise Exception("Cannot extract digest type from inventory digest file name %s" % (inv_digest_file))
@@ -122,11 +165,118 @@ class OCFLValidator(object):
 
     def validate_manifest(self, manifest):
         """Validate manifest block in inventory."""
+        # Get regex for checking form of digest
+        if self.digest_algorithm == 'sha512':
+            digest_regex = r'''^[0-9a-z]{128}$'''
+        elif self.digest_algorithm == 'sha256':
+            digest_regex = r'''^[0-9a-z]{64}$'''
+        else:
+            raise Exception("Bad digest algorithm %s" % (digest_algorithm))
+        manifest_files = {}
+        for digest in manifest:
+            m = re.match(digest_regex, digest)
+            if not m:
+                self.error('E304', digest=digest)
+            else:
+                for file in manifest[digest]:
+                    manifest_files[file] = digest
+        return manifest_files
+
+    def validate_version_sequence(self, versions):
+        """Validate sequence of version names in versions block in inventory.
+
+        Returns an array of in-sequence version directories.
+        """
+        # Validate version sequence
+        # https://ocfl.io/draft/spec/#version-directories
+        zero_padded = None
+        max_version_num = 999999  # Excessive limit
+        if 'v1' in versions:
+            fmt = 'v%d'
+            zero_padded = False
+        else:  # Find padding size
+            for n in range(2, 11):
+                fmt = 'v%0' + str(n) + 'd'
+                vkey = fmt % 1
+                if vkey in versions:
+                    zero_padded = n
+                    max_version_num = (10 ** n) - 1
+                    break
+            if not zero_padded:
+                self.error("E305")
+                return
+        # Have v1 and know format, work through to check sequence
+        all_versions = []
+        for n in range(2, max_version_num + 1):
+            v = (fmt % n)
+            if v in versions:
+                all_versions.append(v)
+            else:
+                if len(versions) != (n - 1):
+                    self.error("E306")  # Extra version dirs outside sequence
+                return(all_versions)
+        # n now exceeds the zero padding size, we might either have an object that
+        # is correct with its maximum number of versions, or else an error
+        if len(versions) != max_version_num:
+            self.error("E306")
+        return(all_versions)
+
+    def validate_versions(self, versions, all_versions, manifest_files):
+        """Validate versions block in inventory."""
+        for v in all_versions:
+            version = versions[v]
+            if 'created' not in version:
+                self.error('E401')  # No created
+            if 'state' in version:
+                digests_used = self.validate_state_block(version['state'])
+            else:
+                self.error('E402')
+            if not check_keys(version, required=['created', 'state'], optional=['message', 'user']):
+                self.error('E403')
+            # FIXME - more in here, check 'user' if present
         pass
 
-    def validate_versions(self, versions):
-        """Validate versions block in inventory."""
-        pass
+    def validate_state_block(self, state):
+        """Validate state block in a version in an inventory.
+
+        Returns a list of content digests referenced in the state block.
+        """
+        digests = []
+        # FIXME ...
+        return digests
+
+    def validate_content(self, path, inventory):
+        """Validate file presence and content at path against inventory.
+
+        The inventory is assumed to be valid and safe to use for construction
+        of file paths etc..
+        """
+        files_seen = dict()
+        for version in inventory['versions']:
+            version_path = os.path.join(path, version)
+            if not os.path.isdir(version_path):
+                self.error('E301', version_path)
+            else:
+                for dirpath, dirs, files in os.walk(version_path, topdown=True):
+                    for file in files:
+                        if file == 'inventory.json':
+                            pass
+                        elif file == 'inventory.json.' + self.digest_algorithm:
+                            pass
+                        else:
+                            obj_path = os.path.relpath(os.path.join(dirpath, file), start=path)
+                            files_seen[obj_path] = True
+        # Check all files in manifest
+        for digest in inventory['manifest']:
+            for filepath in inventory['manifest'][digest]:
+                if filepath not in files_seen:
+                    self.error('E302', content_path=filepath)
+                else:
+                    # FIXME - check digest
+                    files_seen.pop(filepath)
+        # Anything left in files_seen is not mentioned in the inventory
+        if len(files_seen) > 0:
+            self.error('E303', extra_files=', '.join(files_seen.keys()))
 
     def read_inventory_digest(self, inv_digest_file):
         """Read inventory digest from sidecar file.

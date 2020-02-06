@@ -33,7 +33,7 @@
       "type": "Error",
       "section": "https://ocfl.io/draft/spec/#object-conformance-declaration",
       "description": {
-         "en": "OCFL Object Conformance Declaration is not zero size"
+         "en": "OCFL Object NamAsTe file contents do not match file name without leading 0="
       }
     },
     "E004": {
@@ -111,6 +111,29 @@
       "section": "https://ocfl.io/draft/spec/#inventory",
       "description": {
          "en": "OCFL Object inventory missing `versions` attribute"
+      }
+    },
+    "E302": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#inventory",
+      "description": {
+         "en": "OCFL Object inventory manifest includes a file that is not present in the object"
+      }
+    },
+    "E303": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#inventory",
+      "params": ["extra_files"],
+      "description": {
+         "en": "OCFL Object includes one or more files that are not mentioned in the inventory (%s)"
+      }
+    },
+    "E901": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#object-conformance-declaration",
+      "params": ["files"],
+      "description": {
+         "en": "OCFL Object includes more that one NamAsTe file that looks like an object declaration (got %s)"
       }
     }
   }
