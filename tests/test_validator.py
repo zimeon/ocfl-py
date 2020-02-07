@@ -9,36 +9,25 @@ class TestAll(unittest.TestCase):
 
     def test01_bad(self):
         """Check bad objects fail."""
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/does_not_even_exist'))
-        self.assertIn('E987', v.codes)
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad00_empty'))
-        self.assertIn('E001', v.codes)
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad01_no_decl'))
-        self.assertIn('E001', v.codes)
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad02_no_id'))
-        self.assertIn('E100', v.codes)
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad03_no_inv'))
-        self.assertIn('E004', v.codes)
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad04_no_sidecar'))
-        self.assertIn('E005', v.codes)
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad05_missing_file'))
-        self.assertIn('E302', v.codes)
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad06_extra_file'))
-        self.assertIn('E303', v.codes)
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad07_file_in_manifest_not_used'))
-        self.assertIn('E302', v.codes)
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad08_content_not_in_content_dir'))
-        self.assertIn('E913', v.codes)
+        for bad, codes in {'does_not_even_exist': ['E987'],
+                           'bad01_no_decl': ['E001'],
+                           'bad02_no_id': ['E100'],
+                           'bad03_no_inv': ['E004'],
+                           'bad04_no_sidecar': ['E005'],
+                           'bad05_missing_file': ['E302'],
+                           'bad06_extra_file': ['E303'],
+                           'bad07_file_in_manifest_not_used': ['E302'],
+                           'bad08_content_not_in_content_dir': ['E913'],
+                           'bad09_wrong_head_doesnt_exist': ['E914'],
+                           'bad10_wrong_head_format': ['E914'],
+                           'bad11_extra_file_in_root': ['E915'],
+                           'bad12_extra_dir_in_root': ['E916'],
+                           'bad13_file_in_extensions_dir': ['E918']}.items():
+            v = OCFLValidator()
+            filepath = 'fixtures/1.0/bad-objects/' + bad
+            self.assertFalse(v.validate(filepath))
+            for code in codes:
+                self.assertIn(code, v.codes, msg="for object at " + filepath)
 
     def test02_good(self):
         """Check good objects pass."""

@@ -106,8 +106,7 @@ class OCFLValidator(object):
         if not os.path.exists(inv_file):
             self.error('E004')
             return False
-        else:
-            inventory = self.validate_inventory(inv_file)
+        inventory, all_versions = self.validate_inventory(inv_file)
         inv_digest_file = os.path.join(path, 'inventory.json.' + self.digest_algorithm)
         if not os.path.exists(inv_digest_file):
             self.error('E005')
@@ -116,6 +115,8 @@ class OCFLValidator(object):
                 self.validate_inventory_digest(inv_file, inv_digest_file)
             except Exception as e:
                 self.error('E999', description=str(e))
+        # Object root
+        self.validate_object_root(path, all_versions)
         # Object content
         self.validate_content(path, inventory)
         return self.errors == 0
@@ -144,8 +145,6 @@ class OCFLValidator(object):
             self.error("E105")  # FIXME - WARN if not sha512?
         else:
             self.digest_algorithm = inventory['digestAlgorithm']
-        if 'head' not in inventory:
-            self.error("E106")
         if 'contentDirectory' in inventory:
             self.content_directory = inventory['contentDirectory']
             if re.match(r'''/''', self.content_directory) or self.content_directory in ['.', '..']:
@@ -160,9 +159,14 @@ class OCFLValidator(object):
         else:
             all_versions = self.validate_version_sequence(inventory['versions'])
             digests_used = self.validate_versions(inventory['versions'], all_versions, manifest_files)
+        if 'head' in inventory:
+            if inventory['head'] != all_versions[-1]:
+                self.error("E914", got=inventory['head'], expected=all_versions[-1])
+        else:
+            self.error("E106")
         if 'manifest' in inventory and 'versions' in inventory:
             self.check_digests_present_and_used(inventory['manifest'], digests_used)
-        return inventory
+        return inventory, all_versions
 
     def validate_inventory_digest(self, inv_file, inv_digest_file):
         """Validate a given inventory digest for a give inventory file.
@@ -287,6 +291,42 @@ class OCFLValidator(object):
                 self.error("E913", description="in state but not in manifest: " + ", ".join(not_in_manifest))
             if len(not_in_state) > 0:
                 self.error("E302", description="in manifest but not in state: " + ", ".join(not_in_state))
+
+    def validate_object_root(self, path, version_dirs):
+        """Validate object root at path.
+
+        All expected_files must be present and no other files.
+        All expected_dirs must be present and no other dirs.
+        """
+        expected_files = ['0=ocfl_object_1.0', 'inventory.json',
+                          'inventory.json.' + self.digest_algorithm]
+        for entry in os.listdir(path):
+            filepath = os.path.join(path, entry)
+            if os.path.isfile(filepath):
+                if entry not in expected_files:
+                    self.error('E915', file=entry)
+            elif os.path.isdir(filepath):
+                if entry in version_dirs:
+                    pass
+                elif entry == 'extensions':
+                    self.validate_extensions_dir(path)
+                else:
+                    self.error('E916', dir=entry)
+            else:
+                self.error('E917', entry=entry)
+
+    def validate_extensions_dir(self, path):
+        """Validate content of extensions directory inside object root at path.
+
+        So far this is just to check that there aren't any entries in the
+        extensions directory that aren't directories themselves. Should refine/check
+        when https://github.com/OCFL/spec/issues/403 is resolved.
+        """
+        extpath = os.path.join(path, 'extensions')
+        for entry in os.listdir(extpath):
+            filepath = os.path.join(extpath, entry)
+            if not os.path.isdir(filepath):
+                self.error('E918', entry=entry)
 
     def validate_content(self, path, inventory):
         """Validate file presence and content at path against inventory.

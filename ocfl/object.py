@@ -10,8 +10,8 @@ from shutil import copyfile
 import sys
 try:
     from urllib.parse import quote as urlquote  # python3
-except:
-    from urllib import quote as urlquote  # python2
+except:                                   # pragma: no cover -- py2
+    from urllib import quote as urlquote  # pragma: no cover -- py2
 
 from .digest import file_digest
 from .namaste import Namaste
