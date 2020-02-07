@@ -35,7 +35,7 @@ class TestAll(unittest.TestCase):
         self.assertIn('E303', v.codes)
         v = OCFLValidator()
         self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad07_file_in_manifest_not_used'))
-        self.assertIn('E008', v.codes)
+        self.assertIn('E302', v.codes)
 
     def test02_good(self):
         """Check good objects pass."""

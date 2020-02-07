@@ -116,8 +116,9 @@
     "E302": {
       "type": "Error",
       "section": "https://ocfl.io/draft/spec/#inventory",
+      "params": ["description"],
       "description": {
-         "en": "OCFL Object inventory manifest includes a file that is not present in the object"
+         "en": "OCFL Object inventory manifest includes a digest that is not present in the object state (%s)"
       }
     },
     "E303": {
@@ -128,12 +129,27 @@
          "en": "OCFL Object includes one or more files that are not mentioned in the inventory (%s)"
       }
     },
+    "E305": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#inventory",
+      "params": ["digest"],
+      "description": {
+         "en": "OCFL Object state block includes bad digest (%s)"
+      }
+    },
     "E901": {
       "type": "Error",
       "section": "https://ocfl.io/draft/spec/#object-conformance-declaration",
       "params": ["files"],
       "description": {
          "en": "OCFL Object includes more that one NamAsTe file that looks like an object declaration (got %s)"
+      }
+    },
+    "E912": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#version",
+      "description": {
+         "en": "OCFL Object state block is not a JSON object"
       }
     }
   }

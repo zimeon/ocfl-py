@@ -75,6 +75,14 @@ class OCFLValidator(object):
             self.codes[code] = "Unknown error %s - params (%s)" % (code, str(args))
         self.errors += 1
 
+    def digest_regex(self):
+        """A regex for validating digest algorithm format."""
+        if self.digest_algorithm == 'sha512':
+            return r'''^[0-9a-z]{128}$'''
+        elif self.digest_algorithm == 'sha256':
+            return r'''^[0-9a-z]{64}$'''
+        raise Exception("Bad digest algorithm %s" % (self.digest_algorithm))
+
     def validate(self, path):
         """Validate OCFL object at path."""
         if not os.path.isdir(path):
@@ -145,7 +153,9 @@ class OCFLValidator(object):
             self.error("E108")
         else:
             all_versions = self.validate_version_sequence(inventory['versions'])
-            self.validate_versions(inventory['versions'], all_versions, manifest_files)
+            digests_used = self.validate_versions(inventory['versions'], all_versions, manifest_files)
+        if 'manifest' in inventory and 'versions' in inventory:
+            self.check_digests_present_and_used(inventory['manifest'], digests_used)
         return inventory
 
     def validate_inventory_digest(self, inv_file, inv_digest_file):
@@ -166,15 +176,9 @@ class OCFLValidator(object):
     def validate_manifest(self, manifest):
         """Validate manifest block in inventory."""
         # Get regex for checking form of digest
-        if self.digest_algorithm == 'sha512':
-            digest_regex = r'''^[0-9a-z]{128}$'''
-        elif self.digest_algorithm == 'sha256':
-            digest_regex = r'''^[0-9a-z]{64}$'''
-        else:
-            raise Exception("Bad digest algorithm %s" % (digest_algorithm))
         manifest_files = {}
         for digest in manifest:
-            m = re.match(digest_regex, digest)
+            m = re.match(self.digest_regex(), digest)
             if not m:
                 self.error('E304', digest=digest)
             else:
@@ -191,14 +195,17 @@ class OCFLValidator(object):
         # https://ocfl.io/draft/spec/#version-directories
         zero_padded = None
         max_version_num = 999999  # Excessive limit
+        all_versions = []
         if 'v1' in versions:
             fmt = 'v%d'
             zero_padded = False
+            all_versions.append('v1')
         else:  # Find padding size
             for n in range(2, 11):
                 fmt = 'v%0' + str(n) + 'd'
                 vkey = fmt % 1
                 if vkey in versions:
+                    all_versions.append(vkey)
                     zero_padded = n
                     max_version_num = (10 ** n) - 1
                     break
@@ -206,7 +213,6 @@ class OCFLValidator(object):
                 self.error("E305")
                 return
         # Have v1 and know format, work through to check sequence
-        all_versions = []
         for n in range(2, max_version_num + 1):
             v = (fmt % n)
             if v in versions:
@@ -223,18 +229,19 @@ class OCFLValidator(object):
 
     def validate_versions(self, versions, all_versions, manifest_files):
         """Validate versions block in inventory."""
+        digests_used = []
         for v in all_versions:
             version = versions[v]
             if 'created' not in version:
                 self.error('E401')  # No created
             if 'state' in version:
-                digests_used = self.validate_state_block(version['state'])
+                digests_used += self.validate_state_block(version['state'])
             else:
                 self.error('E402')
             if not check_keys(version, required=['created', 'state'], optional=['message', 'user']):
                 self.error('E403')
             # FIXME - more in here, check 'user' if present
-        pass
+        return digests_used
 
     def validate_state_block(self, state):
         """Validate state block in a version in an inventory.
@@ -242,8 +249,36 @@ class OCFLValidator(object):
         Returns a list of content digests referenced in the state block.
         """
         digests = []
-        # FIXME ...
+        if type(state) != dict:
+            self.error('E912')
+        else:
+            digest_regex = self.digest_regex()
+            for digest in state:
+                if not re.match(self.digest_regex(), digest):
+                    self.error('E305', digest=digest)
+                else:
+                    for file in state[digest]:
+                        # FIXME - Validate logical file names                
+                        pass
+                    digests.append(digest)
         return digests
+
+    def check_digests_present_and_used(self, manifest, digests_used):
+        """Check all digests in manifest that are needed are present and used."""
+        if set(manifest.keys()) != set(digests_used):
+            not_in_state = []
+            for digest in manifest:
+                if digest not in digests_used:
+                    not_in_state.append(digest)
+            not_in_manifest = []
+            for digest in digests_used:
+                if digest not in manifest:
+                    not_in_manifest.append(digest)
+            description = ''
+            if len(not_in_manifest) > 0:
+                self.error("E913", description="in state but not in manifest: " + ", ".join(not_in_manifest))
+            if len(not_in_state) > 0:
+                self.error("E302", description="in manifest but not in state: " + ", ".join(not_in_state))
 
     def validate_content(self, path, inventory):
         """Validate file presence and content at path against inventory.
