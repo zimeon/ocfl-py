@@ -148,7 +148,8 @@ class OCFLValidator(object):
             self.error("E106")
         if 'contentDirectory' in inventory:
             self.content_directory = inventory['contentDirectory']
-            if not re.match(r'''^[\w][\w\._]*$''', self.content_directory):  # See https://github.com/OCFL/spec/issues/415
+            if re.match(r'''/''', self.content_directory) or self.content_directory in ['.', '..']:
+                # See https://github.com/OCFL/spec/issues/415
                 self.error("E998")
         if 'manifest' not in inventory:
             self.error("E107")
