@@ -151,6 +151,22 @@
       "description": {
          "en": "OCFL Object state block is not a JSON object"
       }
+    },
+    "E913": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/#manifest",
+      "params": ["path"],
+      "description": {
+         "en": "OCFL Object manifest includes invalid content path %s"
+      }
+    },
+    "E987": {
+      "type": "Error",
+      "section": "https://ocfl.io/draft/spec/",
+      "params": ["path"],
+      "description": {
+         "en": "No OCFL Object to validate at path %s"
+      }
     }
   }
 }

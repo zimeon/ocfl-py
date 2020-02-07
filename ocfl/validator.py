@@ -83,10 +83,15 @@ class OCFLValidator(object):
             return r'''^[0-9a-z]{64}$'''
         raise Exception("Bad digest algorithm %s" % (self.digest_algorithm))
 
+    def is_valid_content_path(self, path):
+        """True if path is a valid content path."""
+        m = re.match(r'''^v\d+/''' + self.content_directory + r'''/''', path)
+        return m is not None
+
     def validate(self, path):
         """Validate OCFL object at path."""
         if not os.path.isdir(path):
-            self.error('E000')
+            self.error('E987', path=path)
             return False
         # Object declaration
         namastes = find_namastes(0, path)
@@ -184,6 +189,8 @@ class OCFLValidator(object):
             else:
                 for file in manifest[digest]:
                     manifest_files[file] = digest
+                    if not self.is_valid_content_path(file):
+                        self.error("E913", path=file)
         return manifest_files
 
     def validate_version_sequence(self, versions):

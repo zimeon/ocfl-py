@@ -11,7 +11,7 @@ class TestAll(unittest.TestCase):
         """Check bad objects fail."""
         v = OCFLValidator()
         self.assertFalse(v.validate('fixtures/1.0/bad-objects/does_not_even_exist'))
-        self.assertIn('E000', v.codes)
+        self.assertIn('E987', v.codes)
         v = OCFLValidator()
         self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad00_empty'))
         self.assertIn('E001', v.codes)
@@ -36,6 +36,9 @@ class TestAll(unittest.TestCase):
         v = OCFLValidator()
         self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad07_file_in_manifest_not_used'))
         self.assertIn('E302', v.codes)
+        v = OCFLValidator()
+        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad08_content_not_in_content_dir'))
+        self.assertIn('E913', v.codes)
 
     def test02_good(self):
         """Check good objects pass."""
