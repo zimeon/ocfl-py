@@ -258,7 +258,7 @@ class OCFLValidator(object):
                     self.error('E305', digest=digest)
                 else:
                     for file in state[digest]:
-                        # FIXME - Validate logical file names                
+                        # FIXME - Validate logical file names
                         pass
                     digests.append(digest)
         return digests
