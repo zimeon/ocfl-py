@@ -258,6 +258,14 @@ class TestAll(unittest.TestCase):
         oo.filepath_normalization = '???'
         self.assertRaises(Exception, oo.map_filepath, 'a', 'v1', {})
 
+    def test15_extract(self):
+        """Test extract method."""
+        tempdir = tempfile.mkdtemp(prefix='test_extract')
+        oo = Object()
+        oo.extract('fixtures/1.0/objects/of1', 'v1', tempdir)
+        self.assertEqual(os.listdir(tempdir), ['v1'])
+        self.assertEqual(os.listdir(os.path.join(tempdir, 'v1')), ['a_file.txt'])
+
     def test90_remove_first_directory(self):
         """Test remove_first_directory function."""
         self.assertEqual(remove_first_directory(''), '')
