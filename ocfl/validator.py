@@ -30,6 +30,7 @@ class OCFLValidator(object):
         # Object state
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
+        self.inventory_digest_files = {}  # index by version_dir, algorithms may differ
 
     def __str__(self):
         """String representation."""
@@ -113,7 +114,7 @@ class OCFLValidator(object):
         # Version inventory files
         self.validate_version_inventories(path, inventory, all_versions)
         # Object content
-        self.validate_content(path, inventory)
+        self.validate_content(path, inventory, all_versions)
         return self.log.num_errors == 0
 
     def validate_inventory(self, inv_file, where='top-level'):
@@ -131,7 +132,7 @@ class OCFLValidator(object):
 
     def validate_inventory_digest(self, inv_file, digest_algorithm, where="top-level"):
         """Validate the appropriate inventory digest file in path."""
-        inv_digest_file = inv_file + '.' + self.digest_algorithm
+        inv_digest_file = inv_file + '.' + digest_algorithm
         if not os.path.exists(inv_digest_file):
             self.log.error('E005', where=where, path=inv_digest_file)
         else:
@@ -194,32 +195,50 @@ class OCFLValidator(object):
 
     def validate_version_inventories(self, path, inventory, version_dirs):
         """Each version SHOULD have an inventory up to that point."""
+        inv_digest_files = {}  # index by version_dir
+        last_version = version_dirs[-1]
         for version_dir in version_dirs:
             version_path = os.path.join(path, version_dir)
             inv_file = os.path.join(version_path, 'inventory.json')
             if not os.path.exists(inv_file):
                 self.log.error('W011', where=version_dir)
+            elif version_dir == last_version:
+                # Don't validate in this case. Per the spec the inventory in the last version
+                # MUST be identical to the copy in the object root
+                root_inv_file = os.path.join(path, 'inventory.json')
+                # FIXME -- how to diff efficiently?
+                with open(inv_file, 'r') as ifh:
+                    inv = ifh.read()
+                with open(root_inv_file, 'r') as rifh:
+                    root_inv = rifh.read()
+                if inv != root_inv:
+                    self.log.error('E099', root_inv_file=root_inv_file, inv_file=inv_file)
+                else:
+                    # FIXME - could just compare digest files...
+                    self.validate_inventory_digest(inv_file, self.digest_algorithm, where=version_dir)
+                self.inventory_digest_files[version_dir] = 'inventory.json.' + self.digest_algorithm
             else:
-                version_inventory, all_versions = self.validate_inventory(inv_file, where=version_dir)
-                self.validate_inventory_digest(inv_file, self.digest_algorithm, where=version_dir)
+                # Note that inventories in prior versions may use different digest algorithms
+                version_inventory, inv_validator = self.validate_inventory(inv_file, where=version_dir)
+                self.validate_inventory_digest(inv_file, inv_validator.digest_algorithm, where=version_dir)
+                self.inventory_digest_files[version_dir] = 'inventory.json.' + inv_validator.digest_algorithm
 
-    def validate_content(self, path, inventory):
+    def validate_content(self, path, inventory, version_dirs):
         """Validate file presence and content at path against inventory.
 
         The inventory is assumed to be valid and safe to use for construction
         of file paths etc..
         """
         files_seen = dict()
-        for version in inventory['versions']:
-            version_path = os.path.join(path, version)
+        for version_dir in version_dirs:
+            version_path = os.path.join(path, version_dir)
             if not os.path.isdir(version_path):
                 self.log.error('E301', version_path=version_path)
             else:
                 # Check contents of version directory execpt content_directory
                 for entry in os.listdir(version_path):
-                    if entry == 'inventory.json':
-                        pass
-                    elif entry == 'inventory.json.' + self.digest_algorithm:
+                    if ((entry == 'inventory.json') or
+                            (version_dir in self.inventory_digest_files and entry == self.inventory_digest_files[version_dir])):
                         pass
                     elif entry == self.content_directory:
                         # Check content_directory
@@ -229,11 +248,11 @@ class OCFLValidator(object):
                                 obj_path = os.path.relpath(os.path.join(dirpath, file), start=path)
                                 files_seen[obj_path] = True
                         if len(files_seen) == 0:
-                            self.log.warn("W005")
+                            self.log.warn("W005", where=version_dir)
                     elif os.path.isdir(os.path.join(version_path, entry)):
-                        self.log.warn("W004", entry=entry)
+                        self.log.warn("W004", where=version_dir, entry=entry)
                     else:
-                        self.log.error("E306", entry=entry)
+                        self.log.error("E306", where=version_dir, entry=entry)
         # Check all files in manifest
         for digest in inventory['manifest']:
             for filepath in inventory['manifest'][digest]:

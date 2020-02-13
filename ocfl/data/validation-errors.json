@@ -75,6 +75,14 @@
          "en": "Cannot extract digest inventory digest file (%s)"
       }
     },
+     "E099": {
+      "type": "Error",
+      "section": "version-inventory",
+      "params": ["root_inv_file", "inv_file"],
+      "description": {
+         "en": "Object root inventory and copy in last version MUST be identical but are not (%s and %s)"
+      }
+    },
     "E100": {
       "type": "Error",
       "section": "inventory",
@@ -166,9 +174,9 @@
     "E306": {
       "type": "Error",
       "section": "version-directories",
-      "params": ["entry"],
+      "params": ["where", "entry"],
       "description": {
-         "en": "OCFL Object version diretory includes an illegal file (%s)"
+         "en": "OCFL Object version directory %s includes an illegal file (%s)"
       }
     },
     "E401": {
@@ -313,16 +321,17 @@
     "W004": {
       "type": "Warning",
       "section": "version-directories",
-      "params": ["entry"],
+      "params": ["where", "entry"],
       "description": {
-         "en": "OCFL Object version directories SHOULD NOT contain any directory except the designated content directory (found %s)"
+         "en": "OCFL Object version directory %s SHOULD NOT contain any directory except the designated content directory (found %s)"
       }
     },
     "W005": {
       "type": "Warning",
       "section": "version-directories",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object version directories SHOULD NOT contain an empty content directory"
+         "en": "OCFL Object version directory %s SHOULD NOT contain an empty content directory"
       }
     },
     "W006": {
