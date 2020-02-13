@@ -27,7 +27,7 @@ class TestAll(unittest.TestCase):
             filepath = 'fixtures/1.0/bad-objects/' + bad
             self.assertFalse(v.validate(filepath))
             for code in codes:
-                self.assertIn(code, v.codes, msg="for object at " + filepath)
+                self.assertIn(code, v.log.codes, msg="for object at " + filepath)
         #
         # Extra local fixtures that perhaps should be moved into the main set
         for bad, codes in {'bad15_wrong_version_block_values': ['E302', 'E401', 'E403', 'E404', 'E912']}.items():
@@ -35,7 +35,7 @@ class TestAll(unittest.TestCase):
             filepath = 'extra_fixtures/bad-objects/' + bad
             self.assertFalse(v.validate(filepath))
             for code in codes:
-                self.assertIn(code, v.codes, msg="for object at " + filepath)
+                self.assertIn(code, v.log.codes, msg="for object at " + filepath)
 
     def test02_warn(self):
         """Check warm objects pass but give expected warnings."""
@@ -51,7 +51,7 @@ class TestAll(unittest.TestCase):
             v = OCFLValidator()
             filepath = 'fixtures/1.0/warn-objects/' + warn
             self.assertTrue(v.validate(filepath), msg="for object at " + filepath)
-            self.assertEqual(set(codes), set(v.codes), msg="for object at " + filepath)
+            self.assertEqual(set(codes), set(v.log.codes), msg="for object at " + filepath)
 
     def test03_good(self):
         """Check good objects pass."""

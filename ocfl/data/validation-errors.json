@@ -117,9 +117,9 @@
     "E302": {
       "type": "Error",
       "section": "inventory",
-      "params": ["description"],
+      "params": ["content_path"],
       "description": {
-         "en": "OCFL Object inventory manifest includes a digest that is not present in the object state (%s)"
+         "en": "OCFL Object inventory manifest includes a digest and file path that is not referenced in the object state (%s)"
       }
     },
     "E303": {
