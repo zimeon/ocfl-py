@@ -14,12 +14,14 @@ class ValidationLogger(object):
 
     validation_codes = None
 
-    def __init__(self, lang='en'):
+    def __init__(self, warnings=False, lang='en'):
         """Initialize OCFL validation logger."""
+        self.warnings = warnings
         self.lang = lang
         self.codes = {}
-        self.errors = 0
-        self.warnings = 0
+        self.messages = []
+        self.num_errors = 0
+        self.num_warnings = 0
         self.info = 0
         if self.validation_codes is None:
             with open(os.path.join(os.path.dirname(__file__), 'data/validation-errors.json'), 'r') as fh:
@@ -48,23 +50,27 @@ class ValidationLogger(object):
                     lang_desc = lang_desc % tuple(params)
                 except TypeError:
                     lang_desc += str(args)
-            self.codes[code] = '[' + code + '] ' + lang_desc
+            message = '[' + code + '] ' + lang_desc
         else:
-            self.codes[code] = "Unknown " + severity + ": %s - params (%s)" % (code, str(args))
+            message = "Unknown " + severity + ": %s - params (%s)" % (code, str(args))
+        # Store set of codes with last message for that codes, and _full_ list of messages
+        self.codes[code] = message
+        if severity == 'error' or self.warnings:
+            self.messages.append(message)
 
     def error(self, code, **args):
         """Add error code to self.codes."""
         self.error_or_warning(code, severity='error', **args)
-        self.errors += 1
+        self.num_errors += 1
 
     def warn(self, code, **args):
         """Add warning code to self.codes."""
         self.error_or_warning(code, severity='warning', **args)
-        self.warnings += 1
+        self.num_warnings += 1
 
     def __str__(self):
         """String of validator status."""
         s = ''
-        for code in sorted(self.codes.keys()):
-            s += self.codes[code] + '\n'
+        for message in sorted(self.messages):
+            s += message + '\n'
         return s

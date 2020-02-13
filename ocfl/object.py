@@ -347,15 +347,15 @@ class Object(object):
             # for (dirpath, dirnames, filenames) in os.walk(, followlinks=True):
             self.prnt(self._show_indent(level, (n == len(dirs))) + d + '   ' + note)
 
-    def validate(self, path):
+    def validate(self, path, warnings=False):
         """Validate OCFL object at path."""
-        validator = OCFLValidator()
+        validator = OCFLValidator(warnings=warnings)
         passed = validator.validate(path)
+        self.prnt(str(validator))
         if passed:
             self.prnt("OCFL object at %s is VALID" % (path))
         else:
             self.prnt("OCFL object at %s is INVALID" % (path))
-        self.prnt(str(validator))
         return passed
 
     def extract(self, objdir, version, dstdir):

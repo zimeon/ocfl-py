@@ -11,13 +11,22 @@ from .w3c_datetime import str_to_datetime
 class InventoryValidator(object):
     """Class for OCFL Inventory Validator."""
 
-    def __init__(self, log=None):
+    def __init__(self, log=None, where='???'):
         """Initialize OCFL Inventory Validator."""
         self.log = log
+        self.where = where
         # Object state
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
         self.all_versions = []
+
+    def error(self, code, **args):
+        """Error with added context."""
+        self.log.error(code, where=self.where, **args)
+
+    def warn(self, code, **args):
+        """Warning with added context."""
+        self.log.warn(code, where=self.where, **args)
 
     def validate(self, inventory):
         """Validate a given inventory."""
@@ -25,44 +34,44 @@ class InventoryValidator(object):
         if 'id' in inventory:
             iid = inventory['id']
             if type(iid) != str or iid == '':
-                self.log.error("E101")
+                self.error("E101")
             elif not re.match(r'''(\w+):.+''', iid):
-                self.log.warn("W007", id=iid)
+                self.warn("W007", id=iid)
         else:
-            self.log.error("E100")
+            self.error("E100")
         if 'type' not in inventory:
-            self.log.error("E102")
+            self.error("E102")
         elif inventory['type'] != 'https://ocfl.io/1.0/spec/#inventory':
-            self.log.error("E103")
+            self.error("E103")
         if 'digestAlgorithm' not in inventory:
-            self.log.error("E104")
+            self.error("E104")
         elif inventory['digestAlgorithm'] == 'sha512':
             pass
         elif inventory['digestAlgorithm'] == 'sha256':
-            self.log.warn("W006")
+            self.warn("W006")
             self.digest_algorithm = inventory['digestAlgorithm']
         else:
-            self.log.error("E105", digest_algorithm=inventory['digestAlgorithm'])
+            self.error("E105", digest_algorithm=inventory['digestAlgorithm'])
         if 'contentDirectory' in inventory:
             self.content_directory = inventory['contentDirectory']
             if re.match(r'''/''', self.content_directory) or self.content_directory in ['.', '..']:
                 # See https://github.com/OCFL/spec/issues/415
-                self.log.error("E998")
+                self.error("E998")
         if 'manifest' not in inventory:
-            self.log.error("E107")
+            self.error("E107")
         else:
             manifest_files = self.validate_manifest(inventory['manifest'])
         if 'versions' not in inventory:
-            self.log.error("E108")
+            self.error("E108")
         else:
             self.all_versions = self.validate_version_sequence(inventory['versions'])
             digests_used = self.validate_versions(inventory['versions'], self.all_versions, manifest_files)
         if 'head' in inventory:
             head = self.all_versions[-1]
             if inventory['head'] != head:
-                self.log.error("E914", got=inventory['head'], expected=head)
+                self.error("E914", got=inventory['head'], expected=head)
         else:
-            self.log.error("E106")
+            self.error("E106")
         if 'manifest' in inventory and 'versions' in inventory:
             self.check_digests_present_and_used(inventory['manifest'], digests_used)
 
@@ -73,12 +82,12 @@ class InventoryValidator(object):
         for digest in manifest:
             m = re.match(self.digest_regex(), digest)
             if not m:
-                self.log.error('E304', digest=digest)
+                self.error('E304', digest=digest)
             else:
                 for file in manifest[digest]:
                     manifest_files[file] = digest
                     if not self.is_valid_content_path(file):
-                        self.log.error("E913", path=file)
+                        self.error("E913", path=file)
         return manifest_files
 
     def validate_version_sequence(self, versions):
@@ -105,10 +114,10 @@ class InventoryValidator(object):
                     max_version_num = (10 ** n) - 1
                     break
             if not zero_padded:
-                self.log.error("E305")
+                self.error("E305")
                 return
         if zero_padded:
-            self.log.warn("W003")
+            self.warn("W003")
         # Have v1 and know format, work through to check sequence
         for n in range(2, max_version_num + 1):
             v = (fmt % n)
@@ -116,12 +125,12 @@ class InventoryValidator(object):
                 all_versions.append(v)
             else:
                 if len(versions) != (n - 1):
-                    self.log.error("E306")  # Extra version dirs outside sequence
+                    self.error("E306")  # Extra version dirs outside sequence
                 return(all_versions)
         # n now exceeds the zero padding size, we might either have an object that
         # is correct with its maximum number of versions, or else an error
         if len(versions) != max_version_num:
-            self.log.error("E306")
+            self.error("E306")
         return(all_versions)
 
     def validate_versions(self, versions, all_versions, manifest_files):
@@ -130,38 +139,38 @@ class InventoryValidator(object):
         for v in all_versions:
             version = versions[v]
             if 'created' not in version or type(versions[v]['created']) != str:
-                self.log.error('E401')  # No created
+                self.error('E401')  # No created
             else:
                 created = versions[v]['created']
                 try:
                     dt = str_to_datetime(created)
                     if not re.search(r'''(Z|[+-]\d\d:\d\d)$''', created):  # FIXME - kludge
-                        self.log.warn('W008')
+                        self.warn('W008', version=v)
                     if not re.search(r'''T\d\d:\d\d:\d\d''', created):  # FIXME - kludge
-                        self.log.warn('W009')
+                        self.warn('W009', version=v)
                 except ValueError as e:
-                    self.log.error('E402', description=str(e))
+                    self.error('E402', description=str(e))
             if 'state' in version:
                 digests_used += self.validate_state_block(version['state'])
             else:
-                self.log.error('E402')
+                self.error('E402')
             if 'message' not in version:
-                self.log.warn('W001')
+                self.warn('W001')
             elif type(version['message']) != str:
-                self.log.error('E403')
+                self.error('E403')
             if 'user' not in version:
-                self.log.warn('W002')
+                self.warn('W002')
             else:
                 user = version['user']
                 if type(user) != dict:
-                    self.log.error('E404')
+                    self.error('E404')
                 else:
                     if 'name' not in user or type(user['name']) != str:
-                        self.log.error('E405')
+                        self.error('E405')
                     if 'address' not in user:
-                        self.log.warn('W010')
+                        self.warn('W010', version=v)
                     elif type(user['address']) != str:
-                        self.log.error('E406')
+                        self.error('E406')
         return digests_used
 
     def validate_state_block(self, state):
@@ -171,12 +180,12 @@ class InventoryValidator(object):
         """
         digests = []
         if type(state) != dict:
-            self.log.error('E912')
+            self.error('E912')
         else:
             digest_regex = self.digest_regex()
             for digest in state:
                 if not re.match(self.digest_regex(), digest):
-                    self.log.error('E305', digest=digest)
+                    self.error('E305', digest=digest)
                 else:
                     for file in state[digest]:
                         # FIXME - Validate logical file names
@@ -197,9 +206,9 @@ class InventoryValidator(object):
                     not_in_manifest.append(digest)
             description = ''
             if len(not_in_manifest) > 0:
-                self.log.error("E913", description="in state but not in manifest: " + ", ".join(not_in_manifest))
+                self.error("E913", description="in state but not in manifest: " + ", ".join(not_in_manifest))
             if len(not_in_state) > 0:
-                self.log.error("E302", description="in manifest but not in state: " + ", ".join(not_in_state))
+                self.error("E302", description="in manifest but not in state: " + ", ".join(not_in_state))
 
     def digest_regex(self):
         """A regex for validating digest algorithm format."""

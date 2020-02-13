@@ -46,8 +46,33 @@
     "E005": {
       "type": "Error",
       "section": "inventory-digest",
+      "params": ["where", "path"],
       "description": {
-         "en": "OCFL Object top-level inventory is missing sidecar digest file"
+         "en": "OCFL Object %s inventory is missing sidecar digest file at %s"
+      }
+    },
+    "E006": {
+      "type": "Error",
+      "section": "inventory-digest",
+      "params": ["inv_file", "actual", "recorded", "inv_digest_file"],
+      "description": {
+         "en": "Mismatch between actual and recorded inventory digests for %s (calcuated %s but read %s from %s)"
+      }
+    },
+    "E007": {
+      "type": "Error",
+      "section": "inventory-digest",
+      "params": ["inv_digest_file"],
+      "description": {
+         "en": "Cannot extract digest type from inventory digest file name %s"
+      }
+    },
+    "E008": {
+      "type": "Error",
+      "section": "inventory-digest",
+      "params": ["description"],
+      "description": {
+         "en": "Cannot extract digest inventory digest file (%s)"
       }
     },
     "E100": {
@@ -133,9 +158,9 @@
     "E305": {
       "type": "Error",
       "section": "inventory",
-      "params": ["digest"],
+      "params": ["where", "digest"],
       "description": {
-         "en": "OCFL Object state block includes bad digest (%s)"
+         "en": "OCFL Object %s inventory state block includes bad digest (%s)"
       }
     },
     "E306": {
@@ -149,16 +174,17 @@
     "E401": {
       "type": "Error",
       "section": "version",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object version block does not include a created date or it is malformed"
+         "en": "OCFL Object %s inventory version block does not include a created date or it is malformed"
       }
     },
     "E402": {
       "type": "Error",
       "section": "version",
-      "params": ["description"],
+      "params": ["where", "description"],
       "description": {
-         "en": "OCFL Object version block has bad created date, must be IS8601 (%s)"
+         "en": "OCFL Object %s inventory version block has bad created date, must be IS8601 (%s)"
       }
     },
     "E403": {
@@ -215,9 +241,9 @@
     "E914": {
       "type": "Error",
       "section": "inventory-structure",
-      "params": ["got", "expected"],
+      "params": ["where", "got", "expected"],
       "description": {
-         "en": "OCFL Object head attribute doesn't match versions (got %s, expected %s)"
+         "en": "OCFL Object %s inventory head attribute doesn't match versions (got %s, expected %s)"
       }
     },
     "E915": {
@@ -263,22 +289,25 @@
     "W001": {
       "type": "Warning",
       "section": "version",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object version descriptions SHOULD include a message key"
+         "en": "OCFL Object %s inventory version descriptions SHOULD include a message key"
       }
     },
     "W002": {
       "type": "Warning",
       "section": "version",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object version descriptions SHOULD include a user key"
+         "en": "OCFL Object %s inventory version descriptions SHOULD include a user key"
       }
     },
     "W003": {
       "type": "Warning",
       "section": "version",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object version numbers SHOULD NOT be zero-padded"
+         "en": "OCFL Object %s inventory version numbers SHOULD NOT be zero-padded"
       }
     },
     "W004": {
@@ -299,37 +328,49 @@
     "W006": {
       "type": "Warning",
       "section": "digests",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object SHOULD use sha512 but uses sha256 as the DigestAlgorithm"
+         "en": "OCFL Object %s inventory SHOULD use sha512 but uses sha256 as the DigestAlgorithm"
       }
     },
     "W007": {
       "type": "Warning",
       "section": "inventory-structure",
-      "params": ["id"],
+      "params": ["where", "id"],
       "description": {
-         "en": "OCFL Object id SHOULD be a URI (got %s)"
+         "en": "OCFL Object %s inventory id SHOULD be a URI (got %s)"
       }
     },
     "W008": {
       "type": "Warning",
       "section": "version",
+      "params": ["where", "version"],
       "description": {
-         "en": "OCFL Object version block created date SHOULD include a timezone designator"
+         "en": "OCFL Object %s inventory %s version block created date SHOULD include a timezone designator"
       }
     },
     "W009": {
       "type": "Warning",
       "section": "version",
+      "params": ["where", "version"],
       "description": {
-         "en": "OCFL Object version block created date SHOULD be granular to the seconds level"
+         "en": "OCFL Object %s inventory %s version block created date SHOULD be granular to the seconds level"
       }
     },
     "W010": {
       "type": "Warning",
       "section": "version",
+      "params": ["where", "version"],
       "description": {
-         "en": "OCFL Object version block user description SHOULD have an address"
+         "en": "OCFL Object %s inventory %s version block user description SHOULD have an address"
+      }
+    },
+    "W011": {
+      "type": "Warning",
+      "section": "inventory-digest",
+      "params": ["where"],
+      "description": {
+         "en": "OCFL Object %s SHOULD have an inventory file but does not"
       }
     }
   }

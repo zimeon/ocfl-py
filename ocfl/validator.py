@@ -21,11 +21,12 @@ from .w3c_datetime import str_to_datetime
 class OCFLValidator(object):
     """Class for OCFL Validator."""
 
-    def __init__(self, log=None, lang='en'):
+    def __init__(self, log=None, warnings=False, lang='en'):
         """Initialize OCFL validator."""
         self.log = log
+        self.warnings = warnings
         if self.log is None:
-            self.log = ValidationLogger(lang)
+            self.log = ValidationLogger(warnings=warnings, lang=lang)
         # Object state
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
@@ -102,22 +103,20 @@ class OCFLValidator(object):
         if not os.path.exists(inv_file):
             self.log.error('E004')
             return False
-        inventory, all_versions = self.validate_inventory(inv_file)
-        inv_digest_file = os.path.join(path, 'inventory.json.' + self.digest_algorithm)
-        if not os.path.exists(inv_digest_file):
-            self.log.error('E005')
-        else:
-            try:
-                self.validate_inventory_digest(inv_file, inv_digest_file)
-            except Exception as e:
-                self.log.error('E999', description=str(e))
+        inventory, inv_validator = self.validate_inventory(inv_file)
+        all_versions = inv_validator.all_versions
+        self.content_directory = inv_validator.content_directory
+        self.digest_algorithm = inv_validator.digest_algorithm
+        self.validate_inventory_digest(inv_file, self.digest_algorithm)
         # Object root
         self.validate_object_root(path, all_versions)
+        # Version inventory files
+        self.validate_version_inventories(path, inventory, all_versions)
         # Object content
         self.validate_content(path, inventory)
-        return self.log.errors == 0
+        return self.log.num_errors == 0
 
-    def validate_inventory(self, inv_file):
+    def validate_inventory(self, inv_file, where='top-level'):
         """Validate a given inventory file, record errors with self.log.error().
 
         Returns inventory object for use in later validation
@@ -126,26 +125,36 @@ class OCFLValidator(object):
         """
         with open(inv_file) as fh:
             inventory = json.load(fh)
-        inv_validator = InventoryValidator(log=self.log)
+        inv_validator = InventoryValidator(log=self.log, where=where)
         inv_validator.validate(inventory)
-        self.content_directory = inv_validator.content_directory
-        self.digest_algorithm = inv_validator.digest_algorithm
-        return inventory, inv_validator.all_versions
+        return inventory, inv_validator
 
-    def validate_inventory_digest(self, inv_file, inv_digest_file):
+    def validate_inventory_digest(self, inv_file, digest_algorithm, where="top-level"):
+        """Validate the appropriate inventory digest file in path."""
+        inv_digest_file = inv_file + '.' + self.digest_algorithm
+        if not os.path.exists(inv_digest_file):
+            self.log.error('E005', where=where, path=inv_digest_file)
+        else:
+            self.validate_inventory_digest_match(inv_file, inv_digest_file)
+
+    def validate_inventory_digest_match(self, inv_file, inv_digest_file):
         """Validate a given inventory digest for a give inventory file.
 
         On error throws exception with debugging string intended to
         be presented to a user.
         """
         m = re.match(r'''.*\.(\w+)$''', inv_digest_file)
-        if not m:
-            raise Exception("Cannot extract digest type from inventory digest file name %s" % (inv_digest_file))
-        digest_algorithm = m.group(1)
-        digest_recorded = self.read_inventory_digest(inv_digest_file)
-        digest_actual = file_digest(inv_file, digest_algorithm)
-        if digest_actual != digest_recorded:
-            raise Exception("Mismatch between actual and recorded inventory digests for %s (calcuated %s but read %s from %s)" % (inv_file, digest_actual, digest_recorded, inv_digest_file))
+        if m:
+            digest_algorithm = m.group(1)
+            try:
+                digest_recorded = self.read_inventory_digest(inv_digest_file)
+                digest_actual = file_digest(inv_file, digest_algorithm)
+                if digest_actual != digest_recorded:
+                    self.log.error("E006", inv_file=inv_file, actual=digest_actual, recorded=digest_recorded, inv_digest_file=inv_digest_file)
+            except Exception as e:
+                self.log.error("E008", description=str(e))
+        else:
+            self.log.error("E007", inv_digest_file=inv_digest_file)
 
     def validate_object_root(self, path, version_dirs):
         """Validate object root at path.
@@ -182,6 +191,17 @@ class OCFLValidator(object):
             filepath = os.path.join(extpath, entry)
             if not os.path.isdir(filepath):
                 self.log.error('E918', entry=entry)
+
+    def validate_version_inventories(self, path, inventory, version_dirs):
+        """Each version SHOULD have an inventory up to that point."""
+        for version_dir in version_dirs:
+            version_path = os.path.join(path, version_dir)
+            inv_file = os.path.join(version_path, 'inventory.json')
+            if not os.path.exists(inv_file):
+                self.log.error('W011', where=version_dir)
+            else:
+                version_inventory, all_versions = self.validate_inventory(inv_file, where=version_dir)
+                self.validate_inventory_digest(inv_file, self.digest_algorithm, where=version_dir)
 
     def validate_content(self, path, inventory):
         """Validate file presence and content at path against inventory.
