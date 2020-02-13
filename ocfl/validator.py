@@ -269,10 +269,21 @@ class OCFLValidator(object):
                 self.error('E402')
             if 'message' not in version:
                 self.warn('W001')
-            if 'user' in version:
-                pass  # FIXME - check sub-elements
-            else:
+            elif type(version['message']) != str:
+                self.error('E403')
+            if 'user' not in version:
                 self.warn('W002')
+            else:
+                user = version['user']
+                if type(user) != dict:
+                    self.error('E404')
+                else:
+                    if 'name' not in user or type(user['name']) != str:
+                        self.error('E405')
+                    if 'address' not in user:
+                        self.warn('W010')
+                    elif type(user['address']) != str:
+                        self.error('E406')
         return digests_used
 
     def validate_state_block(self, state):

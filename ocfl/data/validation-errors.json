@@ -16,7 +16,7 @@
   "codes": {
     "E001": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#object-conformance-declaration",
+      "section": "object-conformance-declaration",
       "description": {
          "en": "Missing OCFL Namaste file",
          "zz": "Description in language zz"
@@ -24,70 +24,70 @@
     },
     "E002": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#object-conformance-declaration",
+      "section": "object-conformance-declaration",
       "description": {
          "en": "Namaste file name does not match OCFL Version"
       }
     },
     "E003": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#object-conformance-declaration",
+      "section": "object-conformance-declaration",
       "description": {
          "en": "OCFL Object NamAsTe file contents do not match file name without leading 0="
       }
     },
     "E004": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory",
+      "section": "inventory",
       "description": {
          "en": "OCFL Object top-level inventory is missing"
       }
     },
     "E005": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory-digest",
+      "section": "inventory-digest",
       "description": {
          "en": "OCFL Object top-level inventory is missing sidecar digest file"
       }
     },
     "E100": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory",
+      "section": "inventory",
       "description": {
          "en": "OCFL Object inventory missing `id` attribute"
       }
     },
     "E101": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory",
+      "section": "inventory",
       "description": {
          "en": "OCFL Object inventory `id` attribute is empty or badly formed"
       }
     },
     "E102": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory",
+      "section": "inventory",
       "description": {
          "en": "OCFL Object inventory missing `type` attribute"
       }
     },
     "E103": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory",
+      "section": "inventory",
       "description": {
          "en": "OCFL Object inventory `type` attribute has wrong value"
       }
     },
     "E104": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory",
+      "section": "inventory",
       "description": {
          "en": "OCFL Object inventory missing `digestAlgorithm` attribute"
       }
     },
     "E105": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory",
+      "section": "inventory",
       "params": ["digest_algorithm"],
       "description": {
          "en": "OCFL Object inventory `digestAlgorithm` attribute not an allowed value (got '%s')"
@@ -95,28 +95,28 @@
     },
     "E106": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory",
+      "section": "inventory",
       "description": {
          "en": "OCFL Object inventory missing `head` attribute"
       }
     },
     "E107": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory",
+      "section": "inventory",
       "description": {
          "en": "OCFL Object inventory missing `manifest` attribute"
       }
     },
     "E108": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory",
+      "section": "inventory",
       "description": {
          "en": "OCFL Object inventory missing `versions` attribute"
       }
     },
     "E302": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory",
+      "section": "inventory",
       "params": ["description"],
       "description": {
          "en": "OCFL Object inventory manifest includes a digest that is not present in the object state (%s)"
@@ -124,7 +124,7 @@
     },
     "E303": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory",
+      "section": "inventory",
       "params": ["extra_files"],
       "description": {
          "en": "OCFL Object includes one or more files that are not mentioned in the inventory (%s)"
@@ -132,7 +132,7 @@
     },
     "E305": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory",
+      "section": "inventory",
       "params": ["digest"],
       "description": {
          "en": "OCFL Object state block includes bad digest (%s)"
@@ -140,7 +140,7 @@
     },
     "E306": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#version-directories",
+      "section": "version-directories",
       "params": ["entry"],
       "description": {
          "en": "OCFL Object version diretory includes an illegal file (%s)"
@@ -148,22 +148,50 @@
     },
     "E401": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#version",
+      "section": "version",
       "description": {
          "en": "OCFL Object version block does not include a created date or it is malformed"
       }
     },
     "E402": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#version",
+      "section": "version",
       "params": ["description"],
       "description": {
          "en": "OCFL Object version block has bad created date, must be IS8601 (%s)"
       }
     },
+    "E403": {
+      "type": "Error",
+      "section": "version",
+      "description": {
+         "en": "OCFL Object version block has message key with value that isn't a string"
+      }
+    },
+    "E404": {
+      "type": "Error",
+      "section": "version",
+      "description": {
+         "en": "OCFL Object version block has user key with value that isn't a JSON object"
+      }
+    },
+    "E405": {
+      "type": "Error",
+      "section": "version",
+      "description": {
+         "en": "OCFL Object version block has user/name key with value that isn't a string"
+      }
+    },
+    "E406": {
+      "type": "Error",
+      "section": "version",
+      "description": {
+         "en": "OCFL Object version block has user/address key with value that isn't a string"
+      }
+    },
     "E901": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#object-conformance-declaration",
+      "section": "object-conformance-declaration",
       "params": ["files"],
       "description": {
          "en": "OCFL Object includes more that one NamAsTe file that looks like an object declaration (got %s)"
@@ -171,14 +199,14 @@
     },
     "E912": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#version",
+      "section": "version",
       "description": {
          "en": "OCFL Object state block is not a JSON object"
       }
     },
     "E913": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#manifest",
+      "section": "manifest",
       "params": ["path"],
       "description": {
          "en": "OCFL Object manifest includes invalid content path %s"
@@ -186,7 +214,7 @@
     },
     "E914": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#inventory-structure",
+      "section": "inventory-structure",
       "params": ["got", "expected"],
       "description": {
          "en": "OCFL Object head attribute doesn't match versions (got %s, expected %s)"
@@ -194,7 +222,7 @@
     },
     "E915": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#object-structure",
+      "section": "object-structure",
       "params": ["file"],
       "description": {
          "en": "OCFL Object root contains unexpected file: %s"
@@ -202,7 +230,7 @@
     },
     "E916": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#object-structure",
+      "section": "object-structure",
       "params": ["dir"],
       "description": {
          "en": "OCFL Object root contains unexpected directory: %s"
@@ -210,7 +238,7 @@
     },
     "E917": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#object-structure",
+      "section": "object-structure",
       "params": ["entry"],
       "description": {
          "en": "OCFL Object root contains unexpected entry that isn't a file or directory: %s"
@@ -218,7 +246,7 @@
     },
     "E918": {
       "type": "Error",
-      "section": "https://ocfl.io/draft/spec/#object-structure",
+      "section": "object-structure",
       "params": ["entry"],
       "description": {
          "en": "OCFL Object extensions direct contains an unexpected non-directory entry: %s"
@@ -234,28 +262,28 @@
     },
     "W001": {
       "type": "Warning",
-      "section": "https://ocfl.io/draft/spec/#version",
+      "section": "version",
       "description": {
          "en": "OCFL Object version descriptions SHOULD include a message key"
       }
     },
     "W002": {
       "type": "Warning",
-      "section": "https://ocfl.io/draft/spec/#version",
+      "section": "version",
       "description": {
          "en": "OCFL Object version descriptions SHOULD include a user key"
       }
     },
     "W003": {
       "type": "Warning",
-      "section": "https://ocfl.io/draft/spec/#version",
+      "section": "version",
       "description": {
          "en": "OCFL Object version numbers SHOULD NOT be zero-padded"
       }
     },
     "W004": {
       "type": "Warning",
-      "section": "https://ocfl.io/draft/spec/#version-directories",
+      "section": "version-directories",
       "params": ["entry"],
       "description": {
          "en": "OCFL Object version directories SHOULD NOT contain any directory except the designated content directory (found %s)"
@@ -263,21 +291,21 @@
     },
     "W005": {
       "type": "Warning",
-      "section": "https://ocfl.io/draft/spec/#version-directories",
+      "section": "version-directories",
       "description": {
          "en": "OCFL Object version directories SHOULD NOT contain an empty content directory"
       }
     },
     "W006": {
       "type": "Warning",
-      "section": "https://ocfl.io/draft/spec/#digests",
+      "section": "digests",
       "description": {
          "en": "OCFL Object SHOULD use sha512 but uses sha256 as the DigestAlgorithm"
       }
     },
     "W007": {
       "type": "Warning",
-      "section": "https://ocfl.io/draft/spec/#inventory-structure",
+      "section": "inventory-structure",
       "params": ["id"],
       "description": {
          "en": "OCFL Object id SHOULD be a URI (got %s)"
@@ -285,16 +313,23 @@
     },
     "W008": {
       "type": "Warning",
-      "section": "https://ocfl.io/draft/spec/#version",
+      "section": "version",
       "description": {
          "en": "OCFL Object version block created date SHOULD include a timezone designator"
       }
     },
     "W009": {
       "type": "Warning",
-      "section": "https://ocfl.io/draft/spec/#version",
+      "section": "version",
       "description": {
          "en": "OCFL Object version block created date SHOULD be granular to the seconds level"
+      }
+    },
+    "W010": {
+      "type": "Warning",
+      "section": "version",
+      "description": {
+         "en": "OCFL Object version block user description SHOULD have an address"
       }
     }
   }

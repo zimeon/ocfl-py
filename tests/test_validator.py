@@ -28,6 +28,14 @@ class TestAll(unittest.TestCase):
             self.assertFalse(v.validate(filepath))
             for code in codes:
                 self.assertIn(code, v.codes, msg="for object at " + filepath)
+        #
+        # Extra local fixtures that perhaps should be moved into the main set
+        for bad, codes in {'bad15_wrong_version_block_values': ['E302', 'E401', 'E403', 'E404', 'E912']}.items():
+            v = OCFLValidator()
+            filepath = 'extra_fixtures/bad-objects/' + bad
+            self.assertFalse(v.validate(filepath))
+            for code in codes:
+                self.assertIn(code, v.codes, msg="for object at " + filepath)
 
     def test02_warn(self):
         """Check warm objects pass but give expected warnings."""
@@ -38,7 +46,8 @@ class TestAll(unittest.TestCase):
                             'warn05_uses_sha256': ['W006'],
                             'warn06_id_not_uri': ['W007'],
                             'warn07_created_no_timezone': ['W008'],
-                            'warn08_created_not_to_seconds': ['W009']}.items():
+                            'warn08_created_not_to_seconds': ['W009'],
+                            'warn09_user_no_address': ['W010']}.items():
             v = OCFLValidator()
             filepath = 'fixtures/1.0/warn-objects/' + warn
             self.assertTrue(v.validate(filepath), msg="for object at " + filepath)
