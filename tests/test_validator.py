@@ -29,7 +29,22 @@ class TestAll(unittest.TestCase):
             for code in codes:
                 self.assertIn(code, v.codes, msg="for object at " + filepath)
 
-    def test02_good(self):
+    def test02_warn(self):
+        """Check warm objects pass but give expected warnings."""
+        for warn, codes in {'warn01_no_message_or_user': ['W001', 'W002'],
+                            'warn02_zero_padded_versions': ['W003'],
+                            'warn03_zero_padded_versions': ['W003', 'W006', 'W007', 'W008', 'W009'],
+                            'warn04_extra_dir_in_version_dir': ['W004'],
+                            'warn05_uses_sha256': ['W006'],
+                            'warn06_id_not_uri': ['W007'],
+                            'warn07_created_no_timezone': ['W008'],
+                            'warn08_created_not_to_seconds': ['W009']}.items():
+            v = OCFLValidator()
+            filepath = 'fixtures/1.0/warn-objects/' + warn
+            self.assertTrue(v.validate(filepath), msg="for object at " + filepath)
+            self.assertEqual(set(codes), set(v.codes), msg="for object at " + filepath)
+
+    def test03_good(self):
         """Check good objects pass."""
         dirs = next(os.walk('fixtures/1.0/objects'))[1]
         for dirname in dirs:

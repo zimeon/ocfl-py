@@ -71,6 +71,8 @@ def str_to_datetime(s, context='datetime'):
 
     Datetimes not specified to the level of seconds are intepreted
     as 00.0 seconds.
+
+    *** Extended to make timezone optional ***
     """
     t = None
     if s is None:
@@ -102,13 +104,13 @@ def str_to_datetime(s, context='datetime'):
     # with dt.tzinfo module but this has variation in behavior
     # between python 2.6 and 2.7... so do here for now
     m = re.match(r"(\d\d\d\d\-\d\d\-\d\dT\d\d:\d\d(:\d\d)?)(Z|([+-])"
-                 "(\d\d):(\d\d))$", s)
+                 "(\d\d):(\d\d))?$", s)
     if m is None:
         raise ValueError("Bad datetime format (%s)" % s)
     str = m.group(1) + 'Z'
     dt = dateutil_parser.parse(str)
     offset_seconds = 0
-    if m.group(3) != 'Z':
+    if m.group(3) and m.group(3) != 'Z':
         hh = int(m.group(5))
         mm = int(m.group(6))
         if hh > 23 or mm > 59:
