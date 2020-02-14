@@ -8,6 +8,18 @@ import re
 from .w3c_datetime import str_to_datetime
 
 
+def get_file_map(inventory, version_dir):
+    """Get a map of file in state to files on disk for version_dir in inventory."""
+    state = inventory['versions'][version_dir]['state']
+    manifest = inventory['manifest']
+    file_map = {}
+    for digest in state:
+        if digest in manifest:
+            for file in state[digest]:
+                file_map[file] = manifest[digest]
+    return file_map
+
+
 class InventoryValidator(object):
     """Class for OCFL Inventory Validator."""
 
@@ -16,9 +28,12 @@ class InventoryValidator(object):
         self.log = log
         self.where = where
         # Object state
+        self.inventory = None
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
+        self.head = None
         self.all_versions = []
+        self.manifest_files = None
 
     def error(self, code, **args):
         """Error with added context."""
@@ -31,6 +46,7 @@ class InventoryValidator(object):
     def validate(self, inventory):
         """Validate a given inventory."""
         # Basic structure
+        self.inventory = inventory
         if 'id' in inventory:
             iid = inventory['id']
             if type(iid) != str or iid == '':
@@ -60,24 +76,27 @@ class InventoryValidator(object):
         if 'manifest' not in inventory:
             self.error("E107")
         else:
-            manifest_files = self.validate_manifest(inventory['manifest'])
+            self.manifest_files = self.validate_manifest(inventory['manifest'])
         if 'versions' not in inventory:
             self.error("E108")
         else:
             self.all_versions = self.validate_version_sequence(inventory['versions'])
-            digests_used = self.validate_versions(inventory['versions'], self.all_versions, manifest_files)
+            digests_used = self.validate_versions(inventory['versions'], self.all_versions, self.manifest_files)
         if 'head' in inventory:
-            head = self.all_versions[-1]
-            if inventory['head'] != head:
-                self.error("E914", got=inventory['head'], expected=head)
+            self.head = self.all_versions[-1]
+            if inventory['head'] != self.head:
+                self.error("E914", got=inventory['head'], expected=self.head)
         else:
             self.error("E106")
         if 'manifest' in inventory and 'versions' in inventory:
             self.check_digests_present_and_used(inventory['manifest'], digests_used)
 
     def validate_manifest(self, manifest):
-        """Validate manifest block in inventory."""
-        # Get regex for checking form of digest
+        """Validate manifest block in inventory.
+
+        Returns manifest_files, a mapping from file to digest for each file in
+        the manifest.
+        """
         manifest_files = {}
         for digest in manifest:
             m = re.match(self.digest_regex(), digest)
@@ -222,3 +241,33 @@ class InventoryValidator(object):
         """True if path is a valid content path."""
         m = re.match(r'''^v\d+/''' + self.content_directory + r'''/''', path)
         return m is not None
+
+    def validate_as_prior_version(self, prior):
+        """Check that prior is a valid InventoryValidator for a prior version of the current inventory object.
+
+        Both inventories are assumed to have been checked for internal consistency.
+        """
+        # Must have a subset of versions which also check zero padding format etc.
+        if not set(prior.all_versions).issubset(set(self.all_versions)):
+            self.error('E407', prior_head=prior.head)
+        elif not set(prior.manifest_files.keys()).issubset(self.manifest_files.keys()):
+            self.error('E408', prior_head=prior.head)
+        else:
+            # Check references to files but realize that there might be different
+            # digest algorithms between versions
+            for version_dir in prior.all_versions:
+                prior_map = get_file_map(prior.inventory, version_dir)
+                self_map = get_file_map(self.inventory, version_dir)
+                if prior_map.keys() != self_map.keys():
+                    self.error('E409', version_dir=version_dir, prior_head=prior.head)
+                else:
+                    # Check them all...
+                    for file in prior_map:
+                        if prior_map[file] != self_map[file]:
+                            self.error('E410', version_dir=version_dir, prior_head=prior.head, file=file)
+            # Check metadata
+            prior_version = prior.inventory['versions'][version_dir]
+            self_version = self.inventory['versions'][version_dir]
+            for key in ('created', 'message', 'user'):
+                if prior_version.get(key) != self_version.get(key):
+                    self.warn('W012', version_dir=version_dir, prior_head=prior.head, key=key)

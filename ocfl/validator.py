@@ -31,6 +31,7 @@ class OCFLValidator(object):
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
         self.inventory_digest_files = {}  # index by version_dir, algorithms may differ
+        self.root_inv_validator = None
 
     def __str__(self):
         """String representation."""
@@ -105,6 +106,7 @@ class OCFLValidator(object):
             self.log.error('E004')
             return False
         inventory, inv_validator = self.validate_inventory(inv_file)
+        self.root_inv_validator = inv_validator
         all_versions = inv_validator.all_versions
         self.content_directory = inv_validator.content_directory
         self.digest_algorithm = inv_validator.digest_algorithm
@@ -222,6 +224,9 @@ class OCFLValidator(object):
                 version_inventory, inv_validator = self.validate_inventory(inv_file, where=version_dir)
                 self.validate_inventory_digest(inv_file, inv_validator.digest_algorithm, where=version_dir)
                 self.inventory_digest_files[version_dir] = 'inventory.json.' + inv_validator.digest_algorithm
+                # Is this inventory an appropriate prior version of the object root inventory?
+                if self.root_inv_validator is not None:
+                    self.root_inv_validator.validate_as_prior_version(inv_validator)
 
     def validate_content(self, path, inventory, version_dirs):
         """Validate file presence and content at path against inventory.

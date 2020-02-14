@@ -1,5 +1,6 @@
 """Test validation."""
 import os
+import os.path
 import unittest
 from ocfl.validator import OCFLValidator
 
@@ -47,9 +48,13 @@ class TestAll(unittest.TestCase):
                             'warn06_id_not_uri': ['W007'],
                             'warn07_created_no_timezone': ['W008'],
                             'warn08_created_not_to_seconds': ['W009'],
-                            'warn09_user_no_address': ['W010']}.items():
+                            'warn09_user_no_address': ['W010'],
+                            'warn10_versions_diff_digests': ['W006'],
+                            'warn11_version_inv_diff_metadata': ['W012']}.items():
             v = OCFLValidator()
             filepath = 'fixtures/1.0/warn-objects/' + warn
+            if not os.path.isdir(filepath):
+                filepath = 'extra_fixtures/warn-objects/' + warn
             self.assertTrue(v.validate(filepath), msg="for object at " + filepath)
             self.assertEqual(set(codes), set(v.log.codes), msg="for object at " + filepath)
 

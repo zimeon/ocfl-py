@@ -223,6 +223,30 @@
          "en": "OCFL Object version block has user/address key with value that isn't a string"
       }
     },
+    "E407": {
+      "type": "Error",
+      "section": "version",
+      "params": ["prior_head", "where"],
+      "description": {
+         "en": "OCFL Object inventory for %s doesn't have a subset of version blocks of inventory for %s"
+      }
+    },
+   "E408": {
+      "type": "Error",
+      "section": "version",
+      "params": ["prior_head", "where"],
+      "description": {
+         "en": "OCFL Object inventory for %s doesn't have a subset of manifest entries of inventory for %s"
+      }
+    },
+   "E409": {
+      "type": "Error",
+      "section": "version",
+      "params": ["version_dir" , "prior_head", "where"],
+      "description": {
+         "en": "OCFL Object inventory manifest for %s in %s doesn't have a subset of manifest entries of inventory for %s"
+      }
+    },
     "E901": {
       "type": "Error",
       "section": "object-conformance-declaration",
@@ -380,6 +404,14 @@
       "params": ["where"],
       "description": {
          "en": "OCFL Object %s SHOULD have an inventory file but does not"
+      }
+    },
+    "W012": {
+      "type": "Warning",
+      "section": "inventory-digest",
+      "params": ["key", "version_dir" , "prior_head", "where"],
+      "description": {
+         "en": "OCFL Object version metadata '%s' for %s in %s inventory does not match that in %s inventory"
       }
     }
   }
