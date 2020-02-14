@@ -23,17 +23,13 @@ class TestAll(unittest.TestCase):
                            'bad10_wrong_head_format': ['E914'],
                            'bad11_extra_file_in_root': ['E915'],
                            'bad12_extra_dir_in_root': ['E916'],
-                           'bad13_file_in_extensions_dir': ['E918']}.items():
+                           'bad13_file_in_extensions_dir': ['E918'],
+                           'bad14_different_root_and_latest_inventories': ['E099'],
+                           'bad15_wrong_version_block_values': ['E302', 'E401', 'E403', 'E404', 'E912']}.items():
             v = OCFLValidator()
             filepath = 'fixtures/1.0/bad-objects/' + bad
-            self.assertFalse(v.validate(filepath))
-            for code in codes:
-                self.assertIn(code, v.log.codes, msg="for object at " + filepath)
-        #
-        # Extra local fixtures that perhaps should be moved into the main set
-        for bad, codes in {'bad15_wrong_version_block_values': ['E302', 'E401', 'E403', 'E404', 'E912']}.items():
-            v = OCFLValidator()
-            filepath = 'extra_fixtures/bad-objects/' + bad
+            if not os.path.isdir(filepath):
+                filepath = 'extra_fixtures/bad-objects/' + bad
             self.assertFalse(v.validate(filepath))
             for code in codes:
                 self.assertIn(code, v.log.codes, msg="for object at " + filepath)
