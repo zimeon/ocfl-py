@@ -86,81 +86,89 @@
     "E100": {
       "type": "Error",
       "section": "inventory",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object inventory missing `id` attribute"
+         "en": "OCFL Object %s inventory missing `id` attribute"
       }
     },
     "E101": {
       "type": "Error",
       "section": "inventory",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object inventory `id` attribute is empty or badly formed"
+         "en": "OCFL Object %s inventory `id` attribute is empty or badly formed"
       }
     },
     "E102": {
       "type": "Error",
       "section": "inventory",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object inventory missing `type` attribute"
+         "en": "OCFL Object %s inventory missing `type` attribute"
       }
     },
     "E103": {
       "type": "Error",
       "section": "inventory",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object inventory `type` attribute has wrong value"
+         "en": "OCFL Object %s inventory `type` attribute has wrong value"
       }
     },
     "E104": {
       "type": "Error",
       "section": "inventory",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object inventory missing `digestAlgorithm` attribute"
+         "en": "OCFL Object %s inventory missing `digestAlgorithm` attribute"
       }
     },
     "E105": {
       "type": "Error",
       "section": "inventory",
-      "params": ["digest_algorithm"],
+      "params": ["where", "digest_algorithm"],
       "description": {
-         "en": "OCFL Object inventory `digestAlgorithm` attribute not an allowed value (got '%s')"
+         "en": "OCFL Object %s inventory `digestAlgorithm` attribute not an allowed value (got '%s')"
       }
     },
     "E106": {
       "type": "Error",
       "section": "inventory",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object inventory missing `head` attribute"
+         "en": "OCFL Object %s inventory missing `head` attribute"
       }
     },
     "E107": {
       "type": "Error",
       "section": "inventory",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object inventory missing `manifest` attribute"
+         "en": "OCFL Object %s inventory missing `manifest` attribute"
       }
     },
     "E108": {
       "type": "Error",
       "section": "inventory",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object inventory missing `versions` attribute"
+         "en": "OCFL Object %s inventory missing `versions` attribute"
       }
     },
     "E302": {
       "type": "Error",
       "section": "inventory",
-      "params": ["content_path"],
+      "params": ["where", "content_path"],
       "description": {
-         "en": "OCFL Object inventory manifest includes a digest and file path that is not referenced in the object state (%s)"
+         "en": "OCFL Object %s inventory manifest refers to a file path that is not present in the object (%s)"
       }
     },
     "E303": {
       "type": "Error",
       "section": "inventory",
-      "params": ["extra_files"],
+      "params": ["where", "extra_files"],
       "description": {
-         "en": "OCFL Object includes one or more files that are not mentioned in the inventory (%s)"
+         "en": "OCFL Object includes one or more files that are not mentioned in the %s inventory (%s)"
       }
     },
     "E305": {
@@ -168,7 +176,7 @@
       "section": "inventory",
       "params": ["where", "digest"],
       "description": {
-         "en": "OCFL Object %s inventory state block includes bad digest (%s)"
+         "en": "OCFL Object %s inventory state block includes a bad digest (%s)"
       }
     },
     "E306": {
@@ -198,29 +206,33 @@
     "E403": {
       "type": "Error",
       "section": "version",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object version block has message key with value that isn't a string"
+         "en": "OCFL Object %s inventory version block has message key with value that isn't a string"
       }
     },
     "E404": {
       "type": "Error",
       "section": "version",
-      "description": {
-         "en": "OCFL Object version block has user key with value that isn't a JSON object"
+      "params": ["where"],
+       "description": {
+         "en": "OCFL Object %s inventory version block has user key with value that isn't a JSON object"
       }
     },
     "E405": {
       "type": "Error",
       "section": "version",
-      "description": {
-         "en": "OCFL Object version block has user/name key with value that isn't a string"
+      "params": ["where"],
+       "description": {
+         "en": "OCFL Object %s inventory version block has user/name key with value that isn't a string"
       }
     },
     "E406": {
       "type": "Error",
       "section": "version",
+      "params": ["where"],
       "description": {
-         "en": "OCFL Object version block has user/address key with value that isn't a string"
+         "en": "OCFL Object %s inventory version block has user/address key with value that isn't a string"
       }
     },
     "E407": {

@@ -234,7 +234,8 @@ class OCFLValidator(object):
         The inventory is assumed to be valid and safe to use for construction
         of file paths etc..
         """
-        files_seen = dict()
+        files_seen = set()
+        # Check on disk in each version directory
         for version_dir in version_dirs:
             version_path = os.path.join(path, version_dir)
             if not os.path.isdir(version_path):
@@ -251,25 +252,24 @@ class OCFLValidator(object):
                         for dirpath, dirs, files in os.walk(content_path, topdown=True):
                             for file in files:
                                 obj_path = os.path.relpath(os.path.join(dirpath, file), start=path)
-                                files_seen[obj_path] = True
+                                files_seen.add(obj_path)
                         if len(files_seen) == 0:
                             self.log.warn("W005", where=version_dir)
                     elif os.path.isdir(os.path.join(version_path, entry)):
                         self.log.warn("W004", where=version_dir, entry=entry)
                     else:
                         self.log.error("E306", where=version_dir, entry=entry)
-        # Check all files in manifest
+        # Check all files in top-level manifest
         for digest in inventory['manifest']:
             for filepath in inventory['manifest'][digest]:
                 if filepath not in files_seen:
-                    print(str(files_seen))
-                    self.log.error('E302', content_path=filepath)
+                    self.log.error('E302', where='top-level', content_path=filepath)
                 else:
                     # FIXME - check digest
-                    files_seen.pop(filepath)
+                    files_seen.discard(filepath)
         # Anything left in files_seen is not mentioned in the inventory
         if len(files_seen) > 0:
-            self.log.error('E303', extra_files=', '.join(files_seen.keys()))
+            self.log.error('E303', where='top-level', extra_files=', '.join(sorted(files_seen)))
 
     def read_inventory_digest(self, inv_digest_file):
         """Read inventory digest from sidecar file.
