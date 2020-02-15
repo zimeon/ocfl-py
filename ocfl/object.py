@@ -393,7 +393,7 @@ class Object(object):
         logging.info("Extracted %s into %s" % (version, dstdir))
 
     def parse_inventory(self, path):
-        """Read JSON top-level inventory file for object at path."""
+        """Read JSON root inventory file for object at path."""
         inv_file = os.path.join(path, 'inventory.json')
         with open(inv_file) as fh:
             inventory = json.load(fh)

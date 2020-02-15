@@ -119,7 +119,7 @@ class OCFLValidator(object):
         self.validate_content(path, inventory, all_versions)
         return self.log.num_errors == 0
 
-    def validate_inventory(self, inv_file, where='top-level'):
+    def validate_inventory(self, inv_file, where='root'):
         """Validate a given inventory file, record errors with self.log.error().
 
         Returns inventory object for use in later validation
@@ -132,7 +132,7 @@ class OCFLValidator(object):
         inv_validator.validate(inventory)
         return inventory, inv_validator
 
-    def validate_inventory_digest(self, inv_file, digest_algorithm, where="top-level"):
+    def validate_inventory_digest(self, inv_file, digest_algorithm, where="root"):
         """Validate the appropriate inventory digest file in path."""
         inv_digest_file = inv_file + '.' + digest_algorithm
         if not os.path.exists(inv_digest_file):
@@ -259,17 +259,17 @@ class OCFLValidator(object):
                         self.log.warn("W004", where=version_dir, entry=entry)
                     else:
                         self.log.error("E306", where=version_dir, entry=entry)
-        # Check all files in top-level manifest
+        # Check all files in root manifest
         for digest in inventory['manifest']:
             for filepath in inventory['manifest'][digest]:
                 if filepath not in files_seen:
-                    self.log.error('E302', where='top-level', content_path=filepath)
+                    self.log.error('E302', where='root', content_path=filepath)
                 else:
                     # FIXME - check digest
                     files_seen.discard(filepath)
         # Anything left in files_seen is not mentioned in the inventory
         if len(files_seen) > 0:
-            self.log.error('E303', where='top-level', extra_files=', '.join(sorted(files_seen)))
+            self.log.error('E303', where='root', extra_files=', '.join(sorted(files_seen)))
 
     def read_inventory_digest(self, inv_digest_file):
         """Read inventory digest from sidecar file.

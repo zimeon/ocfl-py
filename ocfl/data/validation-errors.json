@@ -40,7 +40,7 @@
       "type": "Error",
       "section": "inventory",
       "description": {
-         "en": "OCFL Object top-level inventory is missing"
+         "en": "OCFL Object root inventory is missing"
       }
     },
     "E005": {
