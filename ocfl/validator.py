@@ -243,8 +243,8 @@ class OCFLValidator(object):
             else:
                 # Check contents of version directory execpt content_directory
                 for entry in os.listdir(version_path):
-                    if ((entry == 'inventory.json') or
-                            (version_dir in self.inventory_digest_files and entry == self.inventory_digest_files[version_dir])):
+                    if ((entry == 'inventory.json')
+                            or (version_dir in self.inventory_digest_files and entry == self.inventory_digest_files[version_dir])):
                         pass
                     elif entry == self.content_directory:
                         # Check content_directory
