@@ -3,7 +3,7 @@ import os
 import os.path
 try:
     from urllib.parse import quote_plus, unquote_plus  # py3
-except:                                                # pragma: no cover -- py2
+except ImportError:                                    # pragma: no cover -- py2
     from urllib import quote_plus, unquote_plus        # pragma: no cover -- py2
 
 

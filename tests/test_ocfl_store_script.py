@@ -80,6 +80,7 @@ class TestAll(unittest.TestCase):
                                   ['--add', '-v'])
         self.assertIn('Must specify object path with --src', out)
 
+
 if __name__ == '__main__':
     # Run in demo mode if run directly instead of through py.test
     TestAll.demo = True

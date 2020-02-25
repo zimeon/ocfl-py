@@ -8,7 +8,7 @@ import logging
 from shutil import copyfile, copytree
 try:
     from urllib.parse import quote_plus  # py3
-except:                                  # pragma: no cover -- py2
+except ImportError:                      # pragma: no cover -- py2
     from urllib import quote_plus        # pragma: no cover -- py2
 
 from .digest import file_digest
