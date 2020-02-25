@@ -16,5 +16,6 @@ If submitting a pull request:
    * Please discuss in a issue before submitting a pull request for significant changes.
    * Please submit pull requests against the `master` branch (at this early stage of development changes are merged to `master`, this may change at some stage).
    * Please follow [PEP8](https://www.python.org/dev/peps/pep-0008/) and [PEP257](https://www.python.org/dev/peps/pep-0257/) style rules. PEP8 line length (E501) is not enforced, just be reasonable.
+   * The warning W504 is enabled, but W503 is disables -- line breaks should occur before binary operators
    * Please don't repeat code.
    * Please cover the code with tests.

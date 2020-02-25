@@ -59,11 +59,18 @@ class TestAll(unittest.TestCase):
         self.assertEqual(inventory['digestAlgorithm'], "sha256")
         self.assertEqual(inventory['versions'], {})
         self.assertEqual(inventory['manifest'], {})
+        self.assertNotIn('contentDirectory', inventory)
         self.assertNotIn('fixity', inventory)
         oo = Object(identifier="info:b", digest_algorithm="sha256",
                     fixity=['md5', 'sha1'])
         inventory = oo.start_inventory()
         self.assertEqual(inventory['fixity'], {'md5': {}, 'sha1': {}})
+        #
+        oo = Object(identifier="info:b", content_directory="stuff")
+        inventory = oo.start_inventory()
+        self.assertEqual(inventory['id'], "info:b")
+        self.assertEqual(inventory['contentDirectory'], "stuff")
+        self.assertEqual(inventory['digestAlgorithm'], "sha512")
 
     def test05_add_version(self):
         """Test add_version method."""
@@ -233,6 +240,31 @@ class TestAll(unittest.TestCase):
         self.assertTrue(oo.parse_inventory(path='fixtures/1.0/objects/of1'))
         # Error cases
         self.assertRaises(ObjectException, oo.parse_inventory, path='fixtures/1.0/bad-objects/bad02_no_id')
+
+    def test14_map_filepath(self):
+        """Test map_filepath method."""
+        oo = Object()
+        # default is uri
+        self.assertEqual(oo.map_filepath('a', 'v1', {}), 'v1/content/a')
+        self.assertEqual(oo.map_filepath('.a?', 'v1', {}), 'v1/content/%2Ea%3F')
+        self.assertEqual(oo.map_filepath('a', 'v1', {'v1/content/a': True}), 'v1/content/a__2')
+        # md5
+        oo = Object()
+        oo.filepath_normalization = 'md5'
+        self.assertEqual(oo.map_filepath('a', 'v1', {}), 'v1/content/0cc175b9c0f1b6a8')
+        self.assertEqual(oo.map_filepath('a', 'v1', {'v1/content/0cc175b9c0f1b6a8': True}), 'v1/content/0cc175b9c0f1b6a8__2')
+        # error case
+        oo = Object()
+        oo.filepath_normalization = '???'
+        self.assertRaises(Exception, oo.map_filepath, 'a', 'v1', {})
+
+    def test15_extract(self):
+        """Test extract method."""
+        tempdir = tempfile.mkdtemp(prefix='test_extract')
+        oo = Object()
+        oo.extract('fixtures/1.0/objects/of1', 'v1', tempdir)
+        self.assertEqual(os.listdir(tempdir), ['v1'])
+        self.assertEqual(os.listdir(os.path.join(tempdir, 'v1')), ['a_file.txt'])
 
     def test90_remove_first_directory(self):
         """Test remove_first_directory function."""

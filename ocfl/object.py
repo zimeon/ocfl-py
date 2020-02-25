@@ -51,7 +51,7 @@ class ObjectException(Exception):
 class Object(object):
     """Class for handling OCFL Object data and operations."""
 
-    def __init__(self, identifier=None,
+    def __init__(self, identifier=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
                  skips=None, forward_delta=True, dedupe=True,
                  ocfl_version='draft', fixity=None, fhout=sys.stdout):
@@ -64,6 +64,7 @@ class Object(object):
            fhout - optional overwrite of STDOUT for print outputs
         """
         self.identifier = identifier
+        self.content_directory = content_directory
         self.digest_algorithm = digest_algorithm
         self.filepath_normalization = filepath_normalization
         self.skips = set() if skips is None else set(skips)
@@ -102,7 +103,7 @@ class Object(object):
         Returns:
 
         vfilepath - the version filepath for this content that starts
-          with vdir/content/
+          with vdir/content_directory/
         """
         if self.filepath_normalization == 'uri':
             filepath = urlquote(filepath)
@@ -115,7 +116,7 @@ class Object(object):
             filepath = hashlib.md5(filepath.encode('utf-8')).hexdigest()[0:16]
         elif self.filepath_normalization is not None:
             raise Exception("Unknown filepath normalization '%s' requested" % (self.filepath_normalization))
-        vfilepath = os.path.join(vdir, 'content', filepath)  # path relative to root, inc v#/content
+        vfilepath = os.path.join(vdir, self.content_directory, filepath)  # path relative to root, inc v#/content
         # Check we don't already have this vfilepath from many to one normalization,
         # add suffix to distinguish if necessary
         if vfilepath in used:
@@ -131,13 +132,16 @@ class Object(object):
             'versions': {},
             'manifest': {}
         }
+        # Add contentDirectory if not 'content'
+        if self.content_directory != 'content':
+            inventory['contentDirectory'] = self.content_directory
         # Add fixity section if requested
         if self.fixity is not None and len(self.fixity) > 0:
             inventory['fixity'] = {}
             for fixity_type in self.fixity:
                 inventory['fixity'][fixity_type] = {}
         else:
-            fixity = None
+            self.fixity = None
         return inventory
 
     def add_version(self, inventory, srcdir, vdir, metadata=None):
@@ -343,15 +347,15 @@ class Object(object):
             # for (dirpath, dirnames, filenames) in os.walk(, followlinks=True):
             self.prnt(self._show_indent(level, (n == len(dirs))) + d + '   ' + note)
 
-    def validate(self, path):
+    def validate(self, path, warnings=False):
         """Validate OCFL object at path."""
-        validator = OCFLValidator()
+        validator = OCFLValidator(warnings=warnings)
         passed = validator.validate(path)
+        self.prnt(str(validator))
         if passed:
             self.prnt("OCFL object at %s is VALID" % (path))
         else:
             self.prnt("OCFL object at %s is INVALID" % (path))
-        self.prnt(str(validator))
         return passed
 
     def extract(self, objdir, version, dstdir):
@@ -389,7 +393,7 @@ class Object(object):
         logging.info("Extracted %s into %s" % (version, dstdir))
 
     def parse_inventory(self, path):
-        """Read JSON top-level inventory file for object at path."""
+        """Read JSON root inventory file for object at path."""
         inv_file = os.path.join(path, 'inventory.json')
         with open(inv_file) as fh:
             inventory = json.load(fh)

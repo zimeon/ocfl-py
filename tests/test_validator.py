@@ -1,5 +1,6 @@
 """Test validation."""
 import os
+import os.path
 import unittest
 from ocfl.validator import OCFLValidator
 
@@ -9,35 +10,51 @@ class TestAll(unittest.TestCase):
 
     def test01_bad(self):
         """Check bad objects fail."""
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/does_not_even_exist'))
-        self.assertIn('E000', v.codes)
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad00_empty'))
-        self.assertIn('E001', v.codes)
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad01_no_decl'))
-        self.assertIn('E001', v.codes)
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad02_no_id'))
-        self.assertIn('E100', v.codes)
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad03_no_inv'))
-        self.assertIn('E004', v.codes)
-        v = OCFLValidator()
-        self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad04_no_sidecar'))
-        self.assertIn('E005', v.codes)
-        # v = OCFLValidator()
-        # self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad05_missing_file'))
-        # self.assertIn('E006', v.codes)
-        # v = OCFLValidator()
-        # self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad06_extra_file'))
-        # self.assertIn('E007', v.codes)
-        # v = OCFLValidator()
-        # self.assertFalse(v.validate('fixtures/1.0/bad-objects/bad07_file_in_manifest_not_used'))
-        # self.assertIn('E008', v.codes)
+        for bad, codes in {'does_not_even_exist': ['E987'],
+                           'bad01_no_decl': ['E001'],
+                           'bad02_no_id': ['E100'],
+                           'bad03_no_inv': ['E004'],
+                           'bad04_no_sidecar': ['E005'],
+                           'bad05_missing_file': ['E302'],
+                           'bad06_extra_file': ['E303'],
+                           'bad07_file_in_manifest_not_used': ['E302'],
+                           'bad08_content_not_in_content_dir': ['E913'],
+                           'bad09_wrong_head_doesnt_exist': ['E914'],
+                           'bad10_wrong_head_format': ['E914'],
+                           'bad11_extra_file_in_root': ['E915'],
+                           'bad12_extra_dir_in_root': ['E916'],
+                           'bad13_file_in_extensions_dir': ['E918'],
+                           'bad14_different_root_and_latest_inventories': ['E099'],
+                           'bad15_wrong_version_block_values': ['E302', 'E401', 'E403', 'E404', 'E912']}.items():
+            v = OCFLValidator()
+            filepath = 'fixtures/1.0/bad-objects/' + bad
+            if not os.path.isdir(filepath):
+                filepath = 'extra_fixtures/bad-objects/' + bad
+            self.assertFalse(v.validate(filepath))
+            for code in codes:
+                self.assertIn(code, v.log.codes, msg="for object at " + filepath)
 
-    def test02_good(self):
+    def test02_warn(self):
+        """Check warm objects pass but give expected warnings."""
+        for warn, codes in {'warn01_no_message_or_user': ['W001', 'W002'],
+                            'warn02_zero_padded_versions': ['W003'],
+                            'warn03_zero_padded_versions': ['W003', 'W006', 'W007', 'W008', 'W009'],
+                            'warn04_extra_dir_in_version_dir': ['W004'],
+                            'warn05_uses_sha256': ['W006'],
+                            'warn06_id_not_uri': ['W007'],
+                            'warn07_created_no_timezone': ['W008'],
+                            'warn08_created_not_to_seconds': ['W009'],
+                            'warn09_user_no_address': ['W010'],
+                            'warn10_versions_diff_digests': ['W006'],
+                            'warn11_version_inv_diff_metadata': ['W012']}.items():
+            v = OCFLValidator()
+            filepath = 'fixtures/1.0/warn-objects/' + warn
+            if not os.path.isdir(filepath):
+                filepath = 'extra_fixtures/warn-objects/' + warn
+            self.assertTrue(v.validate(filepath), msg="for object at " + filepath)
+            self.assertEqual(set(codes), set(v.log.codes), msg="for object at " + filepath)
+
+    def test03_good(self):
         """Check good objects pass."""
         dirs = next(os.walk('fixtures/1.0/objects'))[1]
         for dirname in dirs:
