@@ -90,10 +90,16 @@ def do_object_operation(args):
         obj.build(srcdir=args.srcdir,
                   metadata=metadata,
                   objdir=args.objdir)
+    elif args.update:
+        metadata = ocfl.VersionMetadata(args)
+        obj.update(objdir=args.objdir,
+                   digest_algorithm=args.digest,
+                   fixity=args.fixity,
+                   metadata=metadata)
     elif args.show:
-        obj.show(path=args.objdir)
+        obj.show(objdir=args.objdir)
     elif args.validate:
-        obj.validate(path=args.objdir)
+        obj.validate(objdir=args.objdir)
     elif args.extract:
         obj.extract(objdir=args.objdir,
                     version=args.extract,

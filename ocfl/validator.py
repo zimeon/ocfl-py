@@ -21,10 +21,11 @@ from .w3c_datetime import str_to_datetime
 class OCFLValidator(object):
     """Class for OCFL Validator."""
 
-    def __init__(self, log=None, warnings=False, lang='en'):
+    def __init__(self, log=None, warnings=False, check_digests=True, lang='en'):
         """Initialize OCFL validator."""
         self.log = log
         self.warnings = warnings
+        self.check_digests = check_digests
         if self.log is None:
             self.log = ValidationLogger(warnings=warnings, lang=lang)
         # Object state
@@ -146,6 +147,8 @@ class OCFLValidator(object):
         On error throws exception with debugging string intended to
         be presented to a user.
         """
+        if not self.check_digests:
+            return
         m = re.match(r'''.*\.(\w+)$''', inv_digest_file)
         if m:
             digest_algorithm = m.group(1)

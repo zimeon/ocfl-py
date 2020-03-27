@@ -137,7 +137,7 @@ class TestAll(unittest.TestCase):
         out = self.run_ocfl_store("No valid command argument",
                                   [],
                                   include_objdir=False)
-        self.assertIn('one of the arguments ', out)
+        self.assertIn('Exactly one command ', out)
         out = self.run_ocfl_store("No identifier",
                                   ['--create'],
                                   include_objdir=False)

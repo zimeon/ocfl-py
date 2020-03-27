@@ -217,22 +217,22 @@ class TestAll(unittest.TestCase):
         """Test show method."""
         s = io.StringIO()
         oo = Object(fhout=s)
-        oo.show(path='fixtures/1.0/objects/of1')
+        oo.show(objdir='fixtures/1.0/objects/of1')
         out = s.getvalue()
         if sys.version_info < (3, 0):
             out = out.encode('utf8')
-        self.assertTrue(out.startswith('[fixtures/1.0/objects/of1]'))
+        self.assertIn('[fixtures/1.0/objects/of1]', out)
         self.assertTrue('├── 0=ocfl_object_1.0' in out)
         # FIXME - need real tests in here when there is real output
 
     def test12_validate(self):
         """Test validate method."""
         oo = Object()
-        self.assertTrue(oo.validate(path='fixtures/1.0/objects/of1'))
+        self.assertTrue(oo.validate(objdir='fixtures/1.0/objects/of1'))
         # Error cases
-        self.assertFalse(oo.validate(path='fixtures/1.0/bad-objects/bad00_no_files'))
-        self.assertFalse(oo.validate(path='fixtures/1.0/bad-objects/bad01_no_decl'))
-        self.assertFalse(oo.validate(path='fixtures/1.0/bad-objects/bad02_no_id'))
+        self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/bad00_no_files'))
+        self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/bad01_no_decl'))
+        self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/bad02_no_id'))
 
     def test13_parse_inventory(self):
         """Test parse_inventory method."""
