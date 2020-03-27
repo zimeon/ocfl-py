@@ -21,11 +21,12 @@ from .w3c_datetime import str_to_datetime
 class OCFLValidator(object):
     """Class for OCFL Validator."""
 
-    def __init__(self, log=None, warnings=False, check_digests=True, lang='en'):
+    def __init__(self, log=None, warnings=False, check_digests=True, lax_digests=False, lang='en'):
         """Initialize OCFL validator."""
         self.log = log
         self.warnings = warnings
         self.check_digests = check_digests
+        self.lax_digests = lax_digests
         if self.log is None:
             self.log = ValidationLogger(warnings=warnings, lang=lang)
         # Object state
@@ -81,6 +82,8 @@ class OCFLValidator(object):
             return r'''^[0-9a-z]{128}$'''
         elif self.digest_algorithm == 'sha256':
             return r'''^[0-9a-z]{64}$'''
+        elif self.lax_digests:
+            return r'''.*$'''
         raise Exception("Bad digest algorithm %s" % (self.digest_algorithm))
 
     def is_valid_content_path(self, path):
@@ -129,7 +132,8 @@ class OCFLValidator(object):
         """
         with open(inv_file) as fh:
             inventory = json.load(fh)
-        inv_validator = InventoryValidator(log=self.log, where=where)
+        inv_validator = InventoryValidator(log=self.log, where=where,
+                                           lax_digests=self.lax_digests)
         inv_validator.validate(inventory)
         return inventory, inv_validator
 

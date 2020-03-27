@@ -22,8 +22,8 @@ def file_digest(filename, digest_type='sha512'):
         'md5', 'sha1', 'sha256', 'sha512', 'blake2b-512'
     and from OCFL extensions
         'blake2b-160', 'blake2b-256', 'blake2b-384'
-    and a truncated sha512 useful for examples
-        'sha512-spec-ex'
+    and a truncated sha512 and sha256 useful for examples
+        'sha512-spec-ex',  'sha256-spec-ex'
 
     Raises an exception if the digest_type is not supported.
     """
@@ -49,5 +49,8 @@ def file_digest(filename, digest_type='sha512'):
     elif digest_type == 'sha512-spec-ex':
         d = _file_digest(filename, hashlib.sha512())
         return d[:6] + '...' + d[-3:]
+    elif digest_type == 'sha256-spec-ex':
+        d = _file_digest(filename, hashlib.sha512())
+        return d[:4] + '...' + d[-2:]
     else:
         raise Exception("Unsupport digest type %s" % (digest_type))

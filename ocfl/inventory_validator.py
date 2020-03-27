@@ -23,7 +23,8 @@ def get_file_map(inventory, version_dir):
 class InventoryValidator(object):
     """Class for OCFL Inventory Validator."""
 
-    def __init__(self, log=None, where='???'):
+    def __init__(self, log=None, where='???',
+                 lax_digests=False):
         """Initialize OCFL Inventory Validator."""
         self.log = log
         self.where = where
@@ -34,6 +35,8 @@ class InventoryValidator(object):
         self.head = None
         self.all_versions = []
         self.manifest_files = None
+        # Validation control
+        self.lax_digests = lax_digests
 
     def error(self, code, **args):
         """Error with added context."""
@@ -63,6 +66,8 @@ class InventoryValidator(object):
             self.error("E104")
         elif inventory['digestAlgorithm'] == 'sha512':
             pass
+        elif self.lax_digests:
+            self.digest_algorithm = inventory['digestAlgorithm']
         elif inventory['digestAlgorithm'] == 'sha256':
             self.warn("W006")
             self.digest_algorithm = inventory['digestAlgorithm']
@@ -235,6 +240,8 @@ class InventoryValidator(object):
             return r'''^[0-9a-z]{128}$'''
         elif self.digest_algorithm == 'sha256':
             return r'''^[0-9a-z]{64}$'''
+        elif self.lax_digests:
+            return r'''.*$'''
         raise Exception("Bad digest algorithm %s" % (self.digest_algorithm))
 
     def is_valid_content_path(self, path):

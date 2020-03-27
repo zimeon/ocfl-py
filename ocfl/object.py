@@ -36,6 +36,9 @@ def add_object_args(parser):
                         help='do not use forward deltas')
     parser.add_argument('--no-dedupe', '--no-dedup', action='store_true',
                         help='do not use deduplicate files within a version')
+    # Validation settings
+    parser.add_argument('--lax-digests', action='store_true',
+                        help='allow use of any known digest')
     # Object files
     parser.add_argument('--objdir', '--obj',
                         help='read from or write to OCFL object directory objdir')
@@ -74,7 +77,7 @@ class Object(object):
 
     def __init__(self, identifier=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
-                 skips=None, forward_delta=True, dedupe=True,
+                 skips=None, forward_delta=True, dedupe=True, lax_digests=False,
                  ocfl_version='draft', fixity=None, fhout=sys.stdout):
         """Initialize OCFL builder.
 
@@ -93,6 +96,7 @@ class Object(object):
         self.dedupe = dedupe
         self.ocfl_version = ocfl_version
         self.fixity = fixity
+        self.lax_digests = lax_digests
         self.src_files = {}
         self.fhout = fhout
 
@@ -345,7 +349,7 @@ class Object(object):
 
     def update(self, objdir, metadata=None):
         """Update object creating a new version."""
-        validator = OCFLValidator(warnings=False, check_digests=False)
+        validator = OCFLValidator(warnings=False, check_digests=False, lax_digests=self.lax_digests)
         if not validator.validate(objdir):
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
         inventory = self.parse_inventory(objdir)
@@ -438,7 +442,7 @@ class Object(object):
 
     def show(self, objdir):
         """Show OCFL object at objdir."""
-        validator = OCFLValidator(warnings=False, check_digests=False)
+        validator = OCFLValidator(warnings=False, check_digests=False, lax_digests=self.lax_digests)
         passed = validator.validate(objdir)
         if passed:
             self.prnt("OCFL object at %s has VALID STRUCTURE (DIGESTS NOT CHECKED) " % (objdir))
@@ -487,9 +491,9 @@ class Object(object):
                 nn += 1
                 self.prnt(self._show_indent(1, last, (nn == len(v_notes))) + v_note)
 
-    def validate(self, objdir, warnings=False):
+    def validate(self, objdir, warnings=False, check_digests=True):
         """Validate OCFL object at objdir."""
-        validator = OCFLValidator(warnings=warnings)
+        validator = OCFLValidator(warnings=warnings, check_digests=check_digests, lax_digests=self.lax_digests)
         passed = validator.validate(objdir)
         self.prnt(str(validator))
         if passed:
