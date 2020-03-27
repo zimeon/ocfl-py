@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Core of OCFL Object library."""
+import copy
 import hashlib
 import json
 import os
@@ -23,7 +24,7 @@ NORMALIZATIONS = ['uri', 'md5']  # Must match possibilities in map_filepaths()
 
 
 def add_object_args(parser):
-    """Add Object settings to argparse instance parser."""
+    """Add Object settings to argparse or argument group instance parser."""
     # Disk scanning
     parser.add_argument('--skip', action='append', default=['README.md', '.DS_Store'],
                         help='directories and files to ignore')
@@ -40,6 +41,26 @@ def add_object_args(parser):
                         help='read from or write to OCFL object directory objdir')
     parser.add_argument('--ocfl-version', default='draft',
                         help='OCFL specification version')
+
+
+def next_version(version):
+    """Next version identifier following existing pattern.
+
+    Must deal with both zero-prefixed and non-zero prefixed versions.
+    """
+    m = re.match(r'''v((\d)\d*)$''', version)
+    if not m:
+        raise ObjectException("Bad version '%s'" % version)
+    next = int(m.group(1)) + 1
+    if m.group(2) == '0':
+        # Zero-padded version
+        next_version = ('v0%0' + str(len(version) - 2) + 'd') % next
+        if len(next_version) != len(version):
+            raise ObjectException("Version number overflow for zero-padded version %d to %d" % (version, next_version))
+        return next_version
+    else:
+        # Not zero-padded
+        return 'v' + str(next)
 
 
 class ObjectException(Exception):
@@ -322,40 +343,159 @@ class Object(object):
                 copyfile(srcfile, dstfile)
         logging.info("Created object %s in %s" % (self.identifier, objdir))
 
-    def _show_indent(self, level, last=False):
+    def update(self, objdir, metadata=None):
+        """Update object creating a new version."""
+        validator = OCFLValidator(warnings=False, check_digests=False)
+        if not validator.validate(objdir):
+            raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
+        inventory = self.parse_inventory(objdir)
+        id = inventory['id']
+        old_head = inventory['head']
+        versions = inventory['versions']
+        head = next_version(old_head)
+        inventory['head'] = head
+        logging.info("Will update %s %s -> %s" % (id, old_head, head))
+        # Is this a request to change the digest algorithm?
+        old_digest_algorithm = inventory['digestAlgorithm']
+        digest_algorithm = self.digest_algorithm
+        if digest_algorithm is None:
+            digest_algorithm = old_digest_algorithm
+        elif digest_algorithm != old_digest_algorithm:
+            logging.info("New version with use %s instead of %s digestAlgorithm" %
+                         (digest_algorithm, old_digest_algorithm))
+            inventory['digestAlgorithm'] = digest_algorithm
+        # Is this a request to change the set of fixity information?
+        fixity = self.fixity
+        old_fixity = set(inventory['fixity'].keys()) if 'fixity' in inventory else set()
+        if fixity is None:
+            # Not explicit, carry forward from previous version. Only change will
+            # be adding old digest information if we are changing digestAlgorithm
+            fixity = old_fixity.copy()
+            if digest_algorithm != old_digest_algorithm and old_digest_algorithm not in old_fixity:
+                # Add old manifest digests to fixity block
+                if 'fixity' not in inventory:
+                    inventory['fixity'] = {}
+                inventory['fixity'][old_digest_algorithm] = inventory['manifest'].copy()
+                fixity.add(old_digest_algorithm)
+        else:
+            # Fixity to be stored is explicit, may be a change
+            fixity = set(fixity)
+            if fixity != old_fixity:
+                for digest in old_fixity.difference(fixity):
+                    inventory['fixity'].pop(digest)
+                for digest in fixity.difference(old_fixity):
+                    logging.info("FIXME - need to add fixity with digest %s" % digest)
+        if fixity != old_fixity:
+            logging.info("New version will have %s instead of %s fixity" %
+                         (','.join(sorted(fixity)), ','.join(sorted(old_fixity))))
+        # Now look at contents, manifest and state
+        manifest = copy.deepcopy(inventory['manifest'])
+        if digest_algorithm != old_digest_algorithm:
+            old_to_new_digest = {}
+            new_manifest = {}
+            for old_digest, files in manifest.items():
+                digest = file_digest(os.path.join(objdir, files[0]), digest_algorithm)
+                old_to_new_digest[old_digest] = digest
+                for file in files[1:]:
+                    # Sanity check that any dupe files also match
+                    d = file_digest(os.path.join(objdir, file), digest_algorithm)
+                    if d != digest:
+                        raise ObjectException("Failed sanity check - files %s and %s should have same %s digest but calculated %s and %s respectively" %
+                                              files[0], file, digest_algorithm, digest, d)
+                new_manifest[digest] = manifest[old_digest]
+            manifest = new_manifest
+            # Now update all state blocks
+            for vdir in inventory['versions']:
+                old_state = inventory['versions'][vdir]['state']
+                state = {}
+                for old_digest, files in old_state.items():
+                    state[old_to_new_digest[old_digest]] = old_state[old_digest]
+                inventory['versions'][vdir]['state'] = state
+        state = copy.deepcopy(inventory['versions'][old_head]['state'])
+        # Add and remove any contents
+        # FIXME -- do something here!
+        # Update and write inventory
+        inventory['manifest'] = manifest
+        inventory['versions'][head] = metadata.as_dict(state=state)
+        # Else write out object
+        os.mkdir(os.path.join(objdir, head))
+        self.write_inventory_and_sidecar(os.path.join(objdir, head), inventory)
+        self.write_inventory_and_sidecar(objdir, inventory)
+        # Delete old inventory sidecar if we changed digest algorithm
+        if digest_algorithm != old_digest_algorithm:
+            os.remove(os.path.join(objdir, 'inventory.json.' + old_digest_algorithm))
+
+    def _show_indent(self, level, last=False, last_v=False):
+        """Indent string for tree view at level for intermediate or last."""
         tree_next = '├── '
         tree_last = '└── '
+        tree_pass = '│   '
         tree_indent = '    '
-        return tree_indent * level + (tree_last if last else tree_next)
+        if level == 0:
+            return (tree_last if last else tree_next)
+        else:
+            return (tree_indent if last else tree_pass) + (tree_last if last_v else tree_next)
 
-    def show(self, path):
-        """Show OCFL object at path."""
-        level = 0
-        dirs = sorted(os.listdir(path))
-        self.prnt('[' + path + ']')
+    def show(self, objdir):
+        """Show OCFL object at objdir."""
+        validator = OCFLValidator(warnings=False, check_digests=False)
+        passed = validator.validate(objdir)
+        if passed:
+            self.prnt("OCFL object at %s has VALID STRUCTURE (DIGESTS NOT CHECKED) " % (objdir))
+        else:
+            self.prnt("OCFL object at %s is INVALID" % (objdir))
+        self.prnt()
+        self.prnt('[' + objdir + ']')
+        entries = sorted(os.listdir(objdir))
         n = 0
-        for d in dirs:
+        seen_sidecar = False
+        for entry in entries:
             n += 1
-            note = ''
-            if re.match(r'''v\d+$''', d):
-                num_files = 0
-                for (dirpath, dirnames, filenames) in os.walk(os.path.join(path, d), followlinks=True):
-                    num_files += len(filenames)
-                note += '(%d files)' % num_files
-            elif d not in ('0=ocfl_object_1.0', 'inventory.json', 'inventory.json.sha512'):
+            note = entry + ' '
+            v_notes = []
+            if re.match(r'''v\d+$''', entry):
+                seen_v_sidecar = False
+                for v_entry in sorted(os.listdir(os.path.join(objdir, entry))):
+                    v_note = v_entry + ' '
+                    if v_entry == 'inventory.json':
+                        pass
+                    elif v_entry.startswith('inventory.json.'):
+                        if seen_v_sidecar:
+                            v_note += '<--- multiple inventory digests?'
+                            seen_v_sidecar = True
+                    elif v_entry == 'content':
+                        num_files = 0
+                        for (v_dirpath, v_dirs, v_files) in os.walk(os.path.join(objdir, entry, v_entry), followlinks=True):
+                            num_files += len(v_files)
+                        v_note += '(%d files)' % num_files
+                    else:
+                        v_note += '<--- ???'
+                    v_notes.append(v_note)
+            elif entry in ('0=ocfl_object_1.0', 'inventory.json'):
+                pass
+            elif entry.startswith('inventory.json.'):
+                if seen_sidecar:
+                    note += '<--- multiple inventory digests?'
+                seen_sidecar = True
+            else:
                 note += '<--- ???'
             # for (dirpath, dirnames, filenames) in os.walk(, followlinks=True):
-            self.prnt(self._show_indent(level, (n == len(dirs))) + d + '   ' + note)
+            last = (n == len(entries))
+            self.prnt(self._show_indent(0, last) + note)
+            nn = 0
+            for v_note in v_notes:
+                nn += 1
+                self.prnt(self._show_indent(1, last, (nn == len(v_notes))) + v_note)
 
-    def validate(self, path, warnings=False):
-        """Validate OCFL object at path."""
+    def validate(self, objdir, warnings=False):
+        """Validate OCFL object at objdir."""
         validator = OCFLValidator(warnings=warnings)
-        passed = validator.validate(path)
+        passed = validator.validate(objdir)
         self.prnt(str(validator))
         if passed:
-            self.prnt("OCFL object at %s is VALID" % (path))
+            self.prnt("OCFL object at %s is VALID" % (objdir))
         else:
-            self.prnt("OCFL object at %s is INVALID" % (path))
+            self.prnt("OCFL object at %s is INVALID" % (objdir))
         return passed
 
     def extract(self, objdir, version, dstdir):
