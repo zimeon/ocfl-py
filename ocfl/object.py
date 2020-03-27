@@ -57,9 +57,10 @@ def next_version(version):
         next_version = ('v0%0' + str(len(version) - 2) + 'd') % next
         if len(next_version) != len(version):
             raise ObjectException("Version number overflow for zero-padded version %d to %d" % (version, next_version))
+        return next_version
     else:
         # Not zero-padded
-        return('v' + str(next))
+        return 'v' + str(next)
 
 
 class ObjectException(Exception):
@@ -342,7 +343,7 @@ class Object(object):
                 copyfile(srcfile, dstfile)
         logging.info("Created object %s in %s" % (self.identifier, objdir))
 
-    def update(self, objdir, digest_algorithm=None, fixity=None, metadata=None):
+    def update(self, objdir, metadata=None):
         """Update object creating a new version."""
         validator = OCFLValidator(warnings=False, check_digests=False)
         if not validator.validate(objdir):
@@ -356,6 +357,7 @@ class Object(object):
         logging.info("Will update %s %s -> %s" % (id, old_head, head))
         # Is this a request to change the digest algorithm?
         old_digest_algorithm = inventory['digestAlgorithm']
+        digest_algorithm = self.digest_algorithm
         if digest_algorithm is None:
             digest_algorithm = old_digest_algorithm
         elif digest_algorithm != old_digest_algorithm:
@@ -363,6 +365,7 @@ class Object(object):
                          (digest_algorithm, old_digest_algorithm))
             inventory['digestAlgorithm'] = digest_algorithm
         # Is this a request to change the set of fixity information?
+        fixity = self.fixity
         old_fixity = set(inventory['fixity'].keys()) if 'fixity' in inventory else set()
         if fixity is None:
             # Not explicit, carry forward from previous version. Only change will

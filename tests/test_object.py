@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """Object tests."""
+import argparse
 import io
 import json
 import os
 import sys
 import tempfile
 import unittest
-from ocfl.object import Object, ObjectException, remove_first_directory, make_unused_filepath
+from ocfl.object import Object, ObjectException, remove_first_directory, make_unused_filepath, next_version, add_object_args
 from ocfl.version import VersionMetadata
 
 
@@ -213,7 +214,31 @@ class TestAll(unittest.TestCase):
                               'inventory.json', 'inventory.json.sha512',
                               'v1']))
 
-    def test11_show(self):
+    def test11_update(self):
+        """Test update method."""
+        tempdir = tempfile.mkdtemp(prefix='test_update')
+        oo = Object()
+        # First create and object
+        oo.identifier = 'uri:wumpus'
+        objdir = os.path.join(tempdir, '1')
+        oo.digest_algorithm = 'sha256'
+        oo.create(srcdir='fixtures/1.0/content/spec-ex-minimal/v1',
+                  metadata=VersionMetadata(),
+                  objdir=objdir)
+        self.assertEqual(set(os.listdir(objdir)),
+                         set(['0=ocfl_object_1.0',
+                              'inventory.json', 'inventory.json.sha256',
+                              'v1']))
+        # Now update
+        oo.digest_algorithm = 'sha512'
+        oo.update(objdir=objdir,
+                  metadata=VersionMetadata())
+        self.assertEqual(set(os.listdir(objdir)),
+                         set(['0=ocfl_object_1.0',
+                              'inventory.json', 'inventory.json.sha512',
+                              'v1', 'v2']))
+
+    def test12_show(self):
         """Test show method."""
         s = io.StringIO()
         oo = Object(fhout=s)
@@ -225,7 +250,7 @@ class TestAll(unittest.TestCase):
         self.assertTrue('├── 0=ocfl_object_1.0' in out)
         # FIXME - need real tests in here when there is real output
 
-    def test12_validate(self):
+    def test13_validate(self):
         """Test validate method."""
         oo = Object()
         self.assertTrue(oo.validate(objdir='fixtures/1.0/objects/of1'))
@@ -234,14 +259,14 @@ class TestAll(unittest.TestCase):
         self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/bad01_no_decl'))
         self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/bad02_no_id'))
 
-    def test13_parse_inventory(self):
+    def test14_parse_inventory(self):
         """Test parse_inventory method."""
         oo = Object()
         self.assertTrue(oo.parse_inventory(path='fixtures/1.0/objects/of1'))
         # Error cases
         self.assertRaises(ObjectException, oo.parse_inventory, path='fixtures/1.0/bad-objects/bad02_no_id')
 
-    def test14_map_filepath(self):
+    def test15_map_filepath(self):
         """Test map_filepath method."""
         oo = Object()
         # default is uri
@@ -258,7 +283,7 @@ class TestAll(unittest.TestCase):
         oo.filepath_normalization = '???'
         self.assertRaises(Exception, oo.map_filepath, 'a', 'v1', {})
 
-    def test15_extract(self):
+    def test16_extract(self):
         """Test extract method."""
         tempdir = tempfile.mkdtemp(prefix='test_extract')
         oo = Object()
@@ -280,3 +305,29 @@ class TestAll(unittest.TestCase):
         self.assertEqual(make_unused_filepath('x/y', {'x/y__2': 1}), 'x/y__3')
         self.assertEqual(make_unused_filepath('x/y', {'x/y': 1}, ''), 'x/y2')
         self.assertEqual(make_unused_filepath('x/y', ['x/y', 'x/y2', 'x/y3'], ''), 'x/y4')
+
+    def test92_next_version(self):
+        """Test next_version function."""
+        self.assertRaises(Exception, next_version, '1')
+        self.assertRaises(Exception, next_version, 1)
+        self.assertRaises(Exception, next_version, 'v1v')
+        # good non-zero padded
+        self.assertEqual(next_version('v1'), 'v2')
+        self.assertEqual(next_version('v99'), 'v100')
+        self.assertEqual(next_version('v1234'), 'v1235')
+        # good zero-padded
+        self.assertEqual(next_version('v01'), 'v02')
+        self.assertEqual(next_version('v00001'), 'v00002')
+        self.assertEqual(next_version('v00999'), 'v01000')
+        self.assertEqual(next_version('v0998'), 'v0999')
+        # overflow
+        self.assertRaises(Exception, next_version, 'v09')
+        self.assertRaises(Exception, next_version, 'v0999')
+
+    def test93_add_object_args(self):
+        """Test (kinda) adding object args."""
+        parser = argparse.ArgumentParser()
+        add_object_args(parser)
+        args = parser.parse_args(['--skip', 'aa', '--ocfl-version', '1.0'])
+        self.assertIn('aa', args.skip)
+        self.assertEqual(args.ocfl_version, '1.0')

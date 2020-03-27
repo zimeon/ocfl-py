@@ -93,8 +93,6 @@ def do_object_operation(args):
     elif args.update:
         metadata = ocfl.VersionMetadata(args)
         obj.update(objdir=args.objdir,
-                   digest_algorithm=args.digest,
-                   fixity=args.fixity,
                    metadata=metadata)
     elif args.show:
         obj.show(objdir=args.objdir)
