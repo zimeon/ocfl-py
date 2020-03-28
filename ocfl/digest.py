@@ -45,12 +45,14 @@ def file_digest(filename, digest_type='sha512'):
         return _file_digest(filename, hashlib.blake2b(digest_size=32))
     elif digest_type == 'blake2b-384':
         return _file_digest(filename, hashlib.blake2b(digest_size=48))
-    # Specification examples: 6 chars ... 3 chars
+    # Specification examples: 15/6 chars ... 3 chars. The truncated
+    # sha512 is twice as many chars as the truncated sha256 to give
+    # a appropriate impression in examples
     elif digest_type == 'sha512-spec-ex':
         d = _file_digest(filename, hashlib.sha512())
-        return d[:6] + '...' + d[-3:]
+        return d[:15] + '...' + d[-3:]
     elif digest_type == 'sha256-spec-ex':
-        d = _file_digest(filename, hashlib.sha512())
-        return d[:4] + '...' + d[-2:]
+        d = _file_digest(filename, hashlib.sha256())
+        return d[:6] + '...' + d[-3:]
     else:
         raise Exception("Unsupport digest type %s" % (digest_type))

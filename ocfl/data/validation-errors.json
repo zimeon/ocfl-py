@@ -75,7 +75,14 @@
          "en": "Cannot extract digest inventory digest file (%s)"
       }
     },
-     "E099": {
+    "E051": {
+      "type": "Error",
+      "section": "content-directory",
+      "description": {
+         "en": "Content directory must not contain a forward slash (/) or be . or .."
+      }
+    },
+    "E099": {
       "type": "Error",
       "section": "version-inventory",
       "params": ["root_inv_file", "inv_file"],
@@ -171,6 +178,14 @@
          "en": "OCFL Object includes one or more files that are not mentioned in the %s inventory (%s)"
       }
     },
+    "E304": {
+      "type": "Error",
+      "section": "manifest",
+      "params": ["where", "digest"],
+      "description": {
+         "en": "OCFL Object %s inventory manifest block includes a bad digest (%s)"
+      }
+    },
     "E305": {
       "type": "Error",
       "section": "inventory",
@@ -185,6 +200,46 @@
       "params": ["where", "entry"],
       "description": {
          "en": "OCFL Object version directory %s includes an illegal file (%s)"
+      }
+    },
+    "E307": {
+      "type": "Error",
+      "section": "manifest",
+      "params": ["where"],
+      "description": {
+         "en": "OCFL Object %s inventory manifest block is not a JSON object"
+      }
+    },
+    "E308": {
+      "type": "Error",
+      "section": "manifest",
+      "params": ["where", "digest"],
+      "description": {
+         "en": "OCFL Object %s inventory manifest file list for digest %s is not a JSON array"
+      }
+    },
+    "E310": {
+      "type": "Error",
+      "section": "version-directories",
+      "params": ["where"],
+      "description": {
+         "en": "OCFL Object %s inventory versions block is not a JSON object"
+      }
+    },
+    "E311": {
+      "type": "Error",
+      "section": "version-directories",
+      "params": ["where"],
+      "description": {
+         "en": "OCFL Object %s inventory versions block does not contain v1 or a zero padded equivalent"
+      }
+    },
+    "E312": {
+      "type": "Error",
+      "section": "version-directories",
+      "params": ["where"],
+      "description": {
+         "en": "OCFL Object %s inventory versions block includes an out-of-sequence version"
       }
     },
     "E401": {

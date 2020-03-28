@@ -25,7 +25,9 @@ class TestAll(unittest.TestCase):
         self.assertEqual(file_digest('tests/testdata/files/empty', 'blake2b-160'),
                          '3345524abf6bbe1809449224b5972c41790b6cf2')
         self.assertEqual(file_digest('tests/testdata/files/empty', 'sha512-spec-ex'),
-                         'cf83e1...a3e')
+                         'cf83e1357eefb8b...a3e')
+        self.assertEqual(file_digest('tests/testdata/files/empty', 'sha256-spec-ex'),
+                         'e3b0c4...855')
         self.assertRaises(Exception, file_digest, 'tests/testdata/files/empty', 'bad-digest-type')
 
     def test02_long(self):

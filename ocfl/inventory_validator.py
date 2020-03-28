@@ -74,10 +74,12 @@ class InventoryValidator(object):
         else:
             self.error("E105", digest_algorithm=inventory['digestAlgorithm'])
         if 'contentDirectory' in inventory:
-            self.content_directory = inventory['contentDirectory']
-            if re.match(r'''/''', self.content_directory) or self.content_directory in ['.', '..']:
-                # See https://github.com/OCFL/spec/issues/415
-                self.error("E998")
+            # Careful only to set self.content_directory if value is safe
+            cd = inventory['contentDirectory']
+            if type(cd) != str or '/' in cd or cd in ['.', '..']:
+                self.error("E051")
+            else:
+                self.content_directory = cd
         if 'manifest' not in inventory:
             self.error("E107")
         else:
@@ -103,27 +105,37 @@ class InventoryValidator(object):
         the manifest.
         """
         manifest_files = {}
-        for digest in manifest:
-            m = re.match(self.digest_regex(), digest)
-            if not m:
-                self.error('E304', digest=digest)
-            else:
-                for file in manifest[digest]:
-                    manifest_files[file] = digest
-                    if not self.is_valid_content_path(file):
-                        self.error("E913", path=file)
+        if type(manifest) != dict:
+            self.error('E307')
+        else:
+            for digest in manifest:
+                m = re.match(self.digest_regex(), digest)
+                if not m:
+                    self.error('E304', digest=digest)
+                elif type(manifest[digest]) != list:
+                    self.error('E308', digest=digest)
+                else:
+                    for file in manifest[digest]:
+                        manifest_files[file] = digest
+                        if not self.is_valid_content_path(file):
+                            self.error("E913", path=file)
         return manifest_files
 
     def validate_version_sequence(self, versions):
         """Validate sequence of version names in versions block in inventory.
 
-        Returns an array of in-sequence version directories.
+        Returns an array of in-sequence version directories that are part
+        of a valid sequences. May exclude other version directory names that are
+        not part of the valid sequence if an error is thrown.
         """
+        all_versions = []
+        if type(versions) != dict:
+            self.error('E310')
+            return all_versions
         # Validate version sequence
         # https://ocfl.io/draft/spec/#version-directories
         zero_padded = None
         max_version_num = 999999  # Excessive limit
-        all_versions = []
         if 'v1' in versions:
             fmt = 'v%d'
             zero_padded = False
@@ -135,11 +147,11 @@ class InventoryValidator(object):
                 if vkey in versions:
                     all_versions.append(vkey)
                     zero_padded = n
-                    max_version_num = (10 ** n) - 1
+                    max_version_num = (10 ** (n - 1)) - 1
                     break
             if not zero_padded:
-                self.error("E305")
-                return
+                self.error("E311")
+                return all_versions
         if zero_padded:
             self.warn("W003")
         # Have v1 and know format, work through to check sequence
@@ -149,13 +161,15 @@ class InventoryValidator(object):
                 all_versions.append(v)
             else:
                 if len(versions) != (n - 1):
-                    self.error("E306")  # Extra version dirs outside sequence
-                return(all_versions)
-        # n now exceeds the zero padding size, we might either have an object that
-        # is correct with its maximum number of versions, or else an error
-        if len(versions) != max_version_num:
-            self.error("E306")
-        return(all_versions)
+                    self.error("E312")  # Extra version dirs outside sequence
+                return all_versions
+        # We have now included all possible versions up to the zero padding
+        # size, if there are more versions than this number then we must
+        # have extra that violate the zero-padding rule or are out of
+        # sequence
+        if len(versions) > max_version_num:
+            self.error("E312")
+        return all_versions
 
     def validate_versions(self, versions, all_versions, manifest_files):
         """Validate versions block in inventory."""
