@@ -245,49 +245,49 @@
     "E401": {
       "type": "Error",
       "section": "version",
-      "params": ["where"],
+      "params": ["where", "version"],
       "description": {
-         "en": "OCFL Object %s inventory version block does not include a created date or it is malformed"
+         "en": "OCFL Object %s inventory %s version block does not include a created date or it is malformed"
       }
     },
     "E402": {
       "type": "Error",
       "section": "version",
-      "params": ["where", "description"],
+      "params": ["where", "version", "description"],
       "description": {
-         "en": "OCFL Object %s inventory version block has bad created date, must be IS8601 (%s)"
+         "en": "OCFL Object %s inventory %s version block has bad created date, must be IS8601 (%s)"
       }
     },
     "E403": {
       "type": "Error",
       "section": "version",
-      "params": ["where"],
+      "params": ["where", "version"],
       "description": {
-         "en": "OCFL Object %s inventory version block has message key with value that isn't a string"
+         "en": "OCFL Object %s inventory %s version block has message key with value that isn't a string"
       }
     },
     "E404": {
       "type": "Error",
       "section": "version",
-      "params": ["where"],
+      "params": ["where", "version"],
        "description": {
-         "en": "OCFL Object %s inventory version block has user key with value that isn't a JSON object"
+         "en": "OCFL Object %s inventory %s version block has user key with value that isn't a JSON object"
       }
     },
     "E405": {
       "type": "Error",
       "section": "version",
-      "params": ["where"],
+      "params": ["where", "version"],
        "description": {
-         "en": "OCFL Object %s inventory version block has user/name key with value that isn't a string"
+         "en": "OCFL Object %s inventory %s version block has user/name key with value that isn't a string"
       }
     },
     "E406": {
       "type": "Error",
       "section": "version",
-      "params": ["where"],
+      "params": ["where", "version"],
       "description": {
-         "en": "OCFL Object %s inventory version block has user/address key with value that isn't a string"
+         "en": "OCFL Object %s inventory %s version block has user/address key with value that isn't a string"
       }
     },
     "E407": {
@@ -312,6 +312,14 @@
       "params": ["version_dir" , "prior_head", "where"],
       "description": {
          "en": "OCFL Object inventory manifest for %s in %s doesn't have a subset of manifest entries of inventory for %s"
+      }
+    },
+    "E410": {
+      "type": "Error",
+      "section": "version",
+      "params": ["where", "version"],
+      "description": {
+         "en": "OCFL Object %s inventory %s version block has no state description"
       }
     },
     "E901": {
@@ -385,23 +393,23 @@
          "en": "No OCFL Object to validate at path %s"
       }
     },
-    "W001": {
+    "W201": {
       "type": "Warning",
       "section": "version",
-      "params": ["where"],
+      "params": ["where", "version"],
       "description": {
-         "en": "OCFL Object %s inventory version descriptions SHOULD include a message key"
+         "en": "OCFL Object %s inventory %s version block SHOULD include a message key"
       }
     },
-    "W002": {
+    "W202": {
       "type": "Warning",
       "section": "version",
-      "params": ["where"],
+      "params": ["where", "version"],
       "description": {
-         "en": "OCFL Object %s inventory version descriptions SHOULD include a user key"
+         "en": "OCFL Object %s inventory %s version block SHOULD include a user key"
       }
     },
-    "W003": {
+    "W203": {
       "type": "Warning",
       "section": "version",
       "params": ["where"],
@@ -409,7 +417,7 @@
          "en": "OCFL Object %s inventory version numbers SHOULD NOT be zero-padded"
       }
     },
-    "W004": {
+    "W204": {
       "type": "Warning",
       "section": "version-directories",
       "params": ["where", "entry"],
@@ -417,7 +425,7 @@
          "en": "OCFL Object version directory %s SHOULD NOT contain any directory except the designated content directory (found %s)"
       }
     },
-    "W005": {
+    "W205": {
       "type": "Warning",
       "section": "version-directories",
       "params": ["where"],
@@ -425,7 +433,7 @@
          "en": "OCFL Object version directory %s SHOULD NOT contain an empty content directory"
       }
     },
-    "W006": {
+    "W206": {
       "type": "Warning",
       "section": "digests",
       "params": ["where"],
@@ -433,7 +441,7 @@
          "en": "OCFL Object %s inventory SHOULD use sha512 but uses sha256 as the DigestAlgorithm"
       }
     },
-    "W007": {
+    "W207": {
       "type": "Warning",
       "section": "inventory-structure",
       "params": ["where", "id"],
@@ -441,7 +449,7 @@
          "en": "OCFL Object %s inventory id SHOULD be a URI (got %s)"
       }
     },
-    "W008": {
+    "W208": {
       "type": "Warning",
       "section": "version",
       "params": ["where", "version"],
@@ -449,7 +457,7 @@
          "en": "OCFL Object %s inventory %s version block created date SHOULD include a timezone designator"
       }
     },
-    "W009": {
+    "W209": {
       "type": "Warning",
       "section": "version",
       "params": ["where", "version"],
@@ -457,7 +465,7 @@
          "en": "OCFL Object %s inventory %s version block created date SHOULD be granular to the seconds level"
       }
     },
-    "W010": {
+    "W210": {
       "type": "Warning",
       "section": "version",
       "params": ["where", "version"],
@@ -465,7 +473,7 @@
          "en": "OCFL Object %s inventory %s version block user description SHOULD have an address"
       }
     },
-    "W011": {
+    "W211": {
       "type": "Warning",
       "section": "inventory-digest",
       "params": ["where"],
@@ -473,7 +481,7 @@
          "en": "OCFL Object %s SHOULD have an inventory file but does not"
       }
     },
-    "W012": {
+    "W212": {
       "type": "Warning",
       "section": "inventory-digest",
       "params": ["key", "version_dir" , "prior_head", "where"],

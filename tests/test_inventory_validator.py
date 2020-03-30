@@ -4,11 +4,12 @@ import unittest
 from ocfl.inventory_validator import InventoryValidator
 
 
-class TestLogger(object):
+class TLogger(object):
     """Simplified logger to replace ValidationLogger."""
 
-    errors = []
-    warns = []
+    def __init__(self):
+        """Initialize."""
+        self.clear()
 
     def error(self, code, **args):
         """Add error code, discard args."""
@@ -38,7 +39,7 @@ class TestAll(unittest.TestCase):
 
     def test_validate(self):
         """Test validate method."""
-        log = TestLogger()
+        log = TLogger()
         iv = InventoryValidator(log=log)
         iv.validate({})
         self.assertIn('E100', log.errors)
@@ -52,8 +53,8 @@ class TestAll(unittest.TestCase):
         self.assertIn('E101', log.errors)
         log.clear()
         iv.validate({"id": "not_a_uri", "digestAlgorithm": "sha256"})
-        self.assertIn('W007', log.warns)
-        self.assertIn('W006', log.warns)
+        self.assertIn('W207', log.warns)
+        self.assertIn('W206', log.warns)
         log.clear()
         iv.validate({"id": "like:uri", "type": "wrong type", "digestAlgorithm": "my_digest"})
         self.assertIn('E103', log.errors)
@@ -73,7 +74,7 @@ class TestAll(unittest.TestCase):
 
     def test_validate_manifest(self):
         """Test validate_manifest method."""
-        log = TestLogger()
+        log = TLogger()
         iv = InventoryValidator(log=log)
         self.assertEqual(iv.validate_manifest("not a manifest"), {})
         self.assertIn('E307', log.errors)
@@ -85,7 +86,7 @@ class TestAll(unittest.TestCase):
 
     def test_validate_version_sequence(self):
         """Test validate_version_sequence method."""
-        log = TestLogger()
+        log = TLogger()
         iv = InventoryValidator(log=log)
         self.assertEqual(iv.validate_version_sequence("not an object"), [])
         self.assertIn('E310', log.errors)
@@ -99,7 +100,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(iv.validate_version_sequence({"v1": {}, 'v2': {}, 'v3': {}}), ['v1', 'v2', 'v3'])
         log.clear()
         self.assertEqual(iv.validate_version_sequence({"v0001": {}, 'v0002': {}}), ['v0001', 'v0002'])
-        self.assertIn('W003', log.warns)
+        self.assertIn('W203', log.warns)
         self.assertEqual(len(log.errors), 0)
         log.clear()
         self.assertEqual(iv.validate_version_sequence({"v1": {}, 'v2': {}, 'v4': {}}), ['v1', 'v2'])
@@ -110,3 +111,63 @@ class TestAll(unittest.TestCase):
         log.clear()
         self.assertEqual(iv.validate_version_sequence({"v01": {}, 'v02': {}, 'v03': {}, "v04": {}, 'v05': {}, 'v06': {}, "v07": {}, 'v08': {}, 'v09': {}, 'v10': {}}), ['v01', 'v02', 'v03', 'v04', 'v05', 'v06', 'v07', 'v08', 'v09'])
         self.assertIn('E312', log.errors)
+
+    def test_validate_versions(self):
+        """Test validate_versions method."""
+        log = TLogger()
+        iv = InventoryValidator(log=log)
+        self.assertEqual(iv.validate_versions({}, []), [])
+        self.assertEqual(len(log.errors), 0)
+        log.clear()
+        self.assertEqual(iv.validate_versions({}, []), [])
+        self.assertEqual(len(log.errors), 0)
+        log.clear()
+        # First, no useful data
+        self.assertEqual(iv.validate_versions({'v1': {}}, ['v1']), [])
+        self.assertIn('E401', log.errors)
+        self.assertIn('E410', log.errors)
+        self.assertIn('W201', log.warns)
+        self.assertIn('W202', log.warns)
+        log.clear()
+        # Second, good data
+        versions = {'v1': {"created": "2020-03-30T21:24:00Z",
+                           "message": "A useful message",
+                           "state": {},
+                           "user": {"name": "A Person", "address": "info:uri1"}}}
+        self.assertEqual(iv.validate_versions(versions, ['v1']), [])
+        self.assertEqual(log.errors, [])
+        log.clear()
+        versions['v1']['created'] = {}  # not a string
+        self.assertEqual(iv.validate_versions(versions, ['v1']), [])
+        self.assertIn('E401', log.errors)
+        log.clear()
+        versions['v1']['created'] = "not a datetime"
+        self.assertEqual(iv.validate_versions(versions, ['v1']), [])
+        self.assertIn('E402', log.errors)
+        log.clear()
+        versions['v1']['created'] = "2020-03-30T21:24:00"  # no timezone
+        self.assertEqual(iv.validate_versions(versions, ['v1']), [])
+        self.assertIn('W208', log.warns)
+        log.clear()
+        versions['v1']['created'] = "2020-03-30T21:24Z"  # no seconds
+        self.assertEqual(iv.validate_versions(versions, ['v1']), [])
+        self.assertIn('W209', log.warns)
+        log.clear()
+        versions['v1']['created'] = "2020-03-30T21:24:00Z"
+        versions['v1']['message'] = {}  # not a string
+        self.assertEqual(iv.validate_versions(versions, ['v1']), [])
+        self.assertIn('E403', log.errors)
+        log.clear()
+        versions['v1']['message'] = "A message"
+        versions['v1']['user'] = "A string"  # not a dict
+        self.assertEqual(iv.validate_versions(versions, ['v1']), [])
+        self.assertIn('E404', log.errors)
+        log.clear()
+        versions['v1']['user'] = {"name": {}, "address": {}}  # not strings
+        self.assertEqual(iv.validate_versions(versions, ['v1']), [])
+        self.assertIn('E405', log.errors)
+        self.assertIn('E406', log.errors)
+        log.clear()
+        versions['v1']['user'] = {"name": "A Person"}  # no address
+        self.assertEqual(iv.validate_versions(versions, ['v1']), [])
+        self.assertIn('W210', log.warns)

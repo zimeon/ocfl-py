@@ -210,7 +210,7 @@ class OCFLValidator(object):
             version_path = os.path.join(path, version_dir)
             inv_file = os.path.join(version_path, 'inventory.json')
             if not os.path.exists(inv_file):
-                self.log.error('W011', where=version_dir)
+                self.log.error('W211', where=version_dir)
             elif version_dir == last_version:
                 # Don't validate in this case. Per the spec the inventory in the last version
                 # MUST be identical to the copy in the object root
@@ -261,9 +261,9 @@ class OCFLValidator(object):
                                 obj_path = os.path.relpath(os.path.join(dirpath, file), start=path)
                                 files_seen.add(obj_path)
                         if len(files_seen) == 0:
-                            self.log.warn("W005", where=version_dir)
+                            self.log.warn("W205", where=version_dir)
                     elif os.path.isdir(os.path.join(version_path, entry)):
-                        self.log.warn("W004", where=version_dir, entry=entry)
+                        self.log.warn("W204", where=version_dir, entry=entry)
                     else:
                         self.log.error("E306", where=version_dir, entry=entry)
         # Check all files in root manifest

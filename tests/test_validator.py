@@ -36,17 +36,17 @@ class TestAll(unittest.TestCase):
 
     def test02_warn(self):
         """Check warm objects pass but give expected warnings."""
-        for warn, codes in {'warn01_no_message_or_user': ['W001', 'W002'],
-                            'warn02_zero_padded_versions': ['W003'],
-                            'warn03_zero_padded_versions': ['W003', 'W006', 'W007', 'W008', 'W009'],
-                            'warn04_extra_dir_in_version_dir': ['W004'],
-                            'warn05_uses_sha256': ['W006'],
-                            'warn06_id_not_uri': ['W007'],
-                            'warn07_created_no_timezone': ['W008'],
-                            'warn08_created_not_to_seconds': ['W009'],
-                            'warn09_user_no_address': ['W010'],
-                            'warn10_versions_diff_digests': ['W006'],
-                            'warn11_version_inv_diff_metadata': ['W012']}.items():
+        for warn, codes in {'warn01_no_message_or_user': ['W201', 'W202'],
+                            'warn02_zero_padded_versions': ['W203'],
+                            'warn03_zero_padded_versions': ['W203', 'W206', 'W207', 'W208', 'W209'],
+                            'warn04_extra_dir_in_version_dir': ['W204'],
+                            'warn05_uses_sha256': ['W206'],
+                            'warn06_id_not_uri': ['W207'],
+                            'warn07_created_no_timezone': ['W208'],
+                            'warn08_created_not_to_seconds': ['W209'],
+                            'warn09_user_no_address': ['W210'],
+                            'warn10_versions_diff_digests': ['W206'],
+                            'warn11_version_inv_diff_metadata': ['W212']}.items():
             v = OCFLValidator()
             filepath = 'fixtures/1.0/warn-objects/' + warn
             if not os.path.isdir(filepath):
