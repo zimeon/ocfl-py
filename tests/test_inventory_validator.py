@@ -1,7 +1,7 @@
 """Identity dispositor tests."""
 import os.path
 import unittest
-from ocfl.inventory_validator import InventoryValidator
+from ocfl.inventory_validator import InventoryValidator, is_valid_logical_path
 
 
 class TLogger(object):
@@ -171,3 +171,33 @@ class TestAll(unittest.TestCase):
         versions['v1']['user'] = {"name": "A Person"}  # no address
         self.assertEqual(iv.validate_versions(versions, ['v1']), [])
         self.assertIn('W210', log.warns)
+
+    def test_validate_state_block(self):
+        """Test validate_state_block."""
+        log = TLogger()
+        iv = InventoryValidator(log=log)
+        iv.digest_algorithm = 'sha512'
+        self.assertEqual(iv.validate_state_block({}, "v1"), [])
+        self.assertEqual(len(log.errors), 0)
+        log.clear()
+        self.assertEqual(iv.validate_state_block("invalid", "v1"), [])
+        self.assertIn('E912', log.errors)
+        log.clear()
+        self.assertEqual(iv.validate_state_block({"not a digest": []}, "v1"), [])
+        self.assertIn('E305', log.errors)
+        log.clear()
+        d = "4a89417821564b1e1956130569c390dd6122b51296ec620cadd0555ff5aae21c2a17383a194290fc95c73c63261bd8cb77ac275c85e6300cd711fa132fe8706e"
+        self.assertEqual(iv.validate_state_block({d: "not a list"}, "v1"), [])
+        self.assertIn('E919', log.errors)
+        log.clear()
+        self.assertEqual(iv.validate_state_block({d: ["good path", '/']}, "v1"), [d])
+        self.assertIn('E920', log.errors)
+        log.clear()
+
+    def test_is_valid_logical_path(self):
+        """Test is_valid_logical_path function."""
+        self.assertTrue(is_valid_logical_path("almost anything goes"))
+        self.assertFalse(is_valid_logical_path("/but not this"))
+        self.assertFalse(is_valid_logical_path("./or this"))
+        self.assertFalse(is_valid_logical_path("or/../this"))
+        self.assertFalse(is_valid_logical_path("or this/"))

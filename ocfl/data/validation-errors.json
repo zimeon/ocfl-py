@@ -189,9 +189,9 @@
     "E305": {
       "type": "Error",
       "section": "inventory",
-      "params": ["where", "digest"],
+      "params": ["where", "version", "digest"],
       "description": {
-         "en": "OCFL Object %s inventory state block includes a bad digest (%s)"
+         "en": "OCFL Object %s inventory %s version blockstate block includes a bad digest (%s)"
       }
     },
     "E306": {
@@ -333,8 +333,9 @@
     "E912": {
       "type": "Error",
       "section": "version",
+      "params": ["where", "version"],
       "description": {
-         "en": "OCFL Object state block is not a JSON object"
+         "en": "OCFL Object %s inventory %s version block state block is not a JSON object"
       }
     },
     "E913": {
@@ -383,6 +384,22 @@
       "params": ["entry"],
       "description": {
          "en": "OCFL Object extensions direct contains an unexpected non-directory entry: %s"
+      }
+    },
+    "E919": {
+      "type": "Error",
+      "section": "version",
+      "params": ["where", "version", "digest"],
+      "description": {
+         "en": "OCFL Object %s inventory %s version block state block value for digest %s is not list"
+      }
+    },
+    "E920": {
+      "type": "Error",
+      "section": "version",
+      "params": ["where", "version", "digest", "path"],
+      "description": {
+         "en": "OCFL Object %s inventory %s version block state block value for digest %s includes an invalid path %s"
       }
     },
     "E987": {

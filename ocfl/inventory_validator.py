@@ -20,6 +20,20 @@ def get_file_map(inventory, version_dir):
     return file_map
 
 
+def is_valid_logical_path(path):
+    """True if the logical path is valid, False otherwise.
+
+    Neither a leading or trailing slash is allowed which is caught by the
+    split and then test for empty.
+
+    FIXME - https://github.com/OCFL/spec/issues/436
+    """
+    for element in path.split('/'):
+        if element in ['.', '..', '']:
+            return False
+    return True
+
+
 class InventoryValidator(object):
     """Class for OCFL Inventory Validator."""
 
@@ -200,7 +214,7 @@ class InventoryValidator(object):
                 except ValueError as e:
                     self.error('E402', version=v, description=str(e))
             if 'state' in version:
-                digests_used += self.validate_state_block(version['state'])
+                digests_used += self.validate_state_block(version['state'], version=v)
             else:
                 self.error('E410', version=v)
             if 'message' not in version:
@@ -222,23 +236,27 @@ class InventoryValidator(object):
                         self.error('E406', version=v)
         return digests_used
 
-    def validate_state_block(self, state):
+    def validate_state_block(self, state, version):
         """Validate state block in a version in an inventory.
+
+        The version is used only for error reporting.
 
         Returns a list of content digests referenced in the state block.
         """
         digests = []
         if type(state) != dict:
-            self.error('E912')
+            self.error('E912', version=version)
         else:
             digest_regex = self.digest_regex()
             for digest in state:
                 if not re.match(self.digest_regex(), digest):
-                    self.error('E305', digest=digest)
+                    self.error('E305', version=version, digest=digest)
+                elif type(state[digest]) != list:
+                    self.error('E919', version=version, digest=digest)
                 else:
-                    for file in state[digest]:
-                        # FIXME - Validate logical file names
-                        pass
+                    for path in state[digest]:
+                        if not is_valid_logical_path(path):
+                            self.error('E920', version=version, digest=digest, path=path)
                     digests.append(digest)
         return digests
 
@@ -266,7 +284,7 @@ class InventoryValidator(object):
         elif self.digest_algorithm == 'sha256':
             return r'''^[0-9a-z]{64}$'''
         elif self.lax_digests:
-            return r'''.*$'''
+            return r'''.+$'''
         raise Exception("Bad digest algorithm %s" % (self.digest_algorithm))
 
     def is_valid_content_path(self, path):
