@@ -5,7 +5,8 @@ as read with json.load(). Does not examine anything in storage.
 """
 import re
 
-from .digest import digest_regex
+from .digest import digest_regex, normalized_digest
+from .validation_logger import ValidationLogger
 from .w3c_datetime import str_to_datetime
 
 
@@ -41,7 +42,7 @@ class InventoryValidator(object):
     def __init__(self, log=None, where='???',
                  lax_digests=False):
         """Initialize OCFL Inventory Validator."""
-        self.log = log
+        self.log = ValidationLogger() if log is None else log
         self.where = where
         # Object state
         self.inventory = None
@@ -111,7 +112,7 @@ class InventoryValidator(object):
         else:
             self.error("E106")
         if 'manifest' in inventory and 'versions' in inventory:
-            self.check_digests_present_and_used(inventory['manifest'], digests_used)
+            self.check_digests_present_and_used(self.manifest_files, digests_used)
 
     def validate_manifest(self, manifest):
         """Validate manifest block in inventory.
@@ -120,6 +121,7 @@ class InventoryValidator(object):
         the manifest.
         """
         manifest_files = {}
+        manifest_digests = set()
         if type(manifest) != dict:
             self.error('E307')
         else:
@@ -131,9 +133,15 @@ class InventoryValidator(object):
                     self.error('E308', digest=digest)  # must have path list value
                 else:
                     for file in manifest[digest]:
-                        manifest_files[file] = digest
-                        if not self.is_valid_content_path(file):
-                            self.error("E913", path=file)
+                        norm_digest = normalized_digest(digest, self.digest_algorithm)
+                        if norm_digest in manifest_digests:
+                            # We have already seen this in different un-normalized form!
+                            self.error("E922", digest=norm_digest)
+                        else:
+                            manifest_files[file] = norm_digest
+                            manifest_digests.add(norm_digest)
+                            if not self.is_valid_content_path(file):
+                                self.error("E913", path=file)
         return manifest_files
 
     def validate_version_sequence(self, versions):
@@ -258,12 +266,17 @@ class InventoryValidator(object):
                     for path in state[digest]:
                         if not is_valid_logical_path(path):
                             self.error('E920', version=version, digest=digest, path=path)
-                    digests.append(digest)
+                    norm_digest = normalized_digest(digest, self.digest_algorithm)
+                    if norm_digest in digests:
+                        # We have already seen this in different un-normalized form!
+                        self.error("E923", version=version, digest=norm_digest)
+                    else:
+                        digests.append(norm_digest)
         return digests
 
-    def check_digests_present_and_used(self, manifest, digests_used):
+    def check_digests_present_and_used(self, manifest_files, digests_used):
         """Check all digests in manifest that are needed are present and used."""
-        in_manifest = set(manifest.keys())
+        in_manifest = set(manifest_files.values())
         in_state = set(digests_used)
         not_in_manifest = in_state.difference(in_manifest)
         if len(not_in_manifest) > 0:
@@ -273,7 +286,7 @@ class InventoryValidator(object):
             self.error("E302", description="in manifest but not in state: " + ", ".join(sorted(not_in_state)))
 
     def digest_regex(self):
-        """A regex for validating digest algorithm format."""
+        """A regex for validating un-normalized digest format."""
         try:
             return digest_regex(self.digest_algorithm)
         except ValueError:

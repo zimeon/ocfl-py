@@ -58,23 +58,34 @@ def file_digest(filename, digest_type='sha512'):
         raise ValueError("Unsupport digest type %s" % (digest_type))
 
 
-DIGEST_REGEXES = {  # FIXME - Issues with hex case, see https://github.com/OCFL/spec/issues/437
-    'sha512': r'''^[0-9a-f]{128}$''',
-    'sha256': r'''^[0-9a-f]{64}$''',
-    'sha1': r'''^[0-9a-f]{40}$''',
-    'md5': r'''^[0-9a-f]{32}$''',
-    'blake2b-512': r'''^[0-9a-f]{128}$''',
-    'blake2b-384': r'''^[0-9a-f]{96}$''',
-    'blake2b-256': r'''^[0-9a-f]{64}$''',
-    'blake2b-160': r'''^[0-9a-f]{40}$''',
+DIGEST_REGEXES = {
+    'sha512': r'''^[0-9a-fA-F]{128}$''',
+    'sha256': r'''^[0-9a-fA-F]{64}$''',
+    'sha1': r'''^[0-9a-fA-F]{40}$''',
+    'md5': r'''^[0-9a-fA-F]{32}$''',
+    'blake2b-512': r'''^[0-9a-fA-F]{128}$''',
+    'blake2b-384': r'''^[0-9a-fA-F]{96}$''',
+    'blake2b-256': r'''^[0-9a-fA-F]{64}$''',
+    'blake2b-160': r'''^[0-9a-fA-F]{40}$''',
     'sha512-spec-ex': r'''^[0-9a-f]{15}\.\.\.[0-9a-f]{3}$''',
     'sha256-spec-ex': r'''^[0-9a-f]{6}\.\.\.[0-9a-f]{3}$'''
 }
 
 
 def digest_regex(digest_type='sha512'):
-    """Regex to be used to check form of digest string."""
+    """Regex to be used to check the un-normalized form of a digest string."""
     try:
         return DIGEST_REGEXES[digest_type]
     except KeyError:
         raise ValueError("Unsupport digest type %s" % (digest_type))
+
+
+def normalized_digest(digest, digest_type='sha512'):
+    """Normalized version of the digest that enables string comparison.
+
+    All forms (except the spec example forms) are case insensitive. We
+    use lowercase as the normalized form.
+    """
+    if digest_type != 'sha512-spec-ex' and digest_type != 'sha256-spec-ex':
+        return digest.lower()
+    return digest

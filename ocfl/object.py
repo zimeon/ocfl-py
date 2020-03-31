@@ -14,7 +14,8 @@ try:
 except ImportError:                             # pragma: no cover -- py2
     from urllib import quote as urlquote        # pragma: no cover -- py2
 
-from .digest import file_digest
+from .digest import file_digest, normalized_digest
+from .inventory_validator import InventoryValidator
 from .object_utils import remove_first_directory, make_unused_filepath, next_version, add_object_args
 from .namaste import Namaste
 from .validator import OCFLValidator
@@ -492,13 +493,35 @@ class Object(object):
         logging.info("Extracted %s into %s" % (version, dstdir))
 
     def parse_inventory(self, path):
-        """Read JSON root inventory file for object at path."""
+        """Read JSON root inventory file for object at path.
+
+        Will validate the inventory and normalize the digests so that the rest
+        of the Object methods can assume correctness and matching string digests
+        between state and manifest blocks.
+        """
         inv_file = os.path.join(path, 'inventory.json')
         with open(inv_file) as fh:
             inventory = json.load(fh)
-        # Sanity checks
-        if 'id' not in inventory:
-            raise ObjectException("Inventory %s has no id property" % (inv_file))
+        # Validate
+        iv = InventoryValidator()
+        iv.validate(inventory)
+        if iv.log.num_errors > 0:
+            raise ObjectException("Root inventory is not valid (%d errors)" % iv.log.num_errors)
+        digest_algorithm = iv.digest_algorithm
+        # Normalize digests in place
+        manifest = inventory['manifest']
+        for digest in manifest:
+            norm_digest = normalized_digest(digest, digest_algorithm)
+            if digest != norm_digest:
+                manifest[norm_digest] = manifest[digest]
+                manifest.remove(digest)
+        for v in inventory['versions']:
+            state = inventory['versions'][v]['state']
+            for digest in state:
+                norm_digest = normalized_digest(digest, digest_algorithm)
+                if digest != norm_digest:
+                    state[norm_digest] = state[digest]
+                    state.remove(digest)
         return inventory
 
     def prnt(self, *objects):

@@ -410,6 +410,22 @@
          "en": "OCFL Object %s inventory uses unknown digest type %s"
       }
     },
+    "E922": {
+      "type": "Error",
+      "section": "digests",
+      "params": ["where", "digest"],
+      "description": {
+         "en": "OCFL Object %s inventory manifest includes digest %s more than once with different normalizations"
+      }
+    },
+    "E923": {
+      "type": "Error",
+      "section": "digests",
+      "params": ["where", "version", "digest"],
+      "description": {
+         "en": "OCFL Object %s inventory version %s state includes digest %s more than once with different normalizations"
+      }
+    },
     "E987": {
       "type": "Error",
       "section": "https://ocfl.io/draft/spec/",

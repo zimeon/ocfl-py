@@ -25,7 +25,8 @@ class TestAll(unittest.TestCase):
                            'bad12_extra_dir_in_root': ['E916'],
                            'bad13_file_in_extensions_dir': ['E918'],
                            'bad14_different_root_and_latest_inventories': ['E099'],
-                           'bad15_wrong_version_block_values': ['E302', 'E401', 'E403', 'E404', 'E912']}.items():
+                           'bad15_wrong_version_block_values': ['E302', 'E401', 'E403', 'E404', 'E912'],
+                           'bad16_digest_repeated': ['E922', 'E923']}.items():
             v = OCFLValidator()
             filepath = 'fixtures/1.0/bad-objects/' + bad
             if not os.path.isdir(filepath):

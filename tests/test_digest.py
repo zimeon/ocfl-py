@@ -1,6 +1,6 @@
 """Digest tests."""
 import unittest
-from ocfl.digest import file_digest, digest_regex
+from ocfl.digest import file_digest, digest_regex, normalized_digest
 
 
 class TestAll(unittest.TestCase):
@@ -37,5 +37,12 @@ class TestAll(unittest.TestCase):
 
     def test_digest_regex(self):
         """Test digest regex."""
-        self.assertEqual(digest_regex('md5'), r'''^[0-9a-f]{32}$''')
+        self.assertEqual(digest_regex('md5'), r'''^[0-9a-fA-F]{32}$''')
         self.assertRaises(ValueError, digest_regex, 'unknown_digest')
+
+    def test_normalized_digest(self):
+        """Test normalized_digest."""
+        self.assertEqual(normalized_digest('DA39a3ee5e6b4b0d3255BFEf95601890afd80709'), 'da39a3ee5e6b4b0d3255bfef95601890afd80709')
+        self.assertEqual(normalized_digest('DA39a3ee5e6b4b0d3255BFEf95601890afd80709', 'sha1'), 'da39a3ee5e6b4b0d3255bfef95601890afd80709')
+        # The following not changed
+        self.assertEqual(normalized_digest('E3b0c4...855', 'sha256-spec-ex'), 'E3b0c4...855')

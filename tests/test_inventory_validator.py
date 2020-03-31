@@ -197,7 +197,7 @@ class TestAll(unittest.TestCase):
         """Test check_digests_present_and_used."""
         log = TLogger()
         iv = InventoryValidator(log=log)
-        manifest = {'aaa': ['file_aaa1', 'file_aaa2'], 'bbb': ['file_bbb']}
+        manifest = {'file_aaa1': 'aaa', 'file_aaa2': 'aaa', 'file_bbb': 'bbb'}
         iv.check_digests_present_and_used(manifest, ['aaa', 'bbb'])
         self.assertEqual(len(log.errors), 0)
         iv.check_digests_present_and_used(manifest, ['aaa'])
