@@ -402,6 +402,14 @@
          "en": "OCFL Object %s inventory %s version block state block value for digest %s includes an invalid path %s"
       }
     },
+    "E921": {
+      "type": "Error",
+      "section": "digests",
+      "params": ["where", "digest"],
+      "description": {
+         "en": "OCFL Object %s inventory uses unknown digest type %s"
+      }
+    },
     "E987": {
       "type": "Error",
       "section": "https://ocfl.io/draft/spec/",

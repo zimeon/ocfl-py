@@ -5,6 +5,7 @@ as read with json.load(). Does not examine anything in storage.
 """
 import re
 
+from .digest import digest_regex
 from .w3c_datetime import str_to_datetime
 
 
@@ -125,9 +126,9 @@ class InventoryValidator(object):
             for digest in manifest:
                 m = re.match(self.digest_regex(), digest)
                 if not m:
-                    self.error('E304', digest=digest)
+                    self.error('E304', digest=digest)  # wrong form
                 elif type(manifest[digest]) != list:
-                    self.error('E308', digest=digest)
+                    self.error('E308', digest=digest)  # must have path list value
                 else:
                     for file in manifest[digest]:
                         manifest_files[file] = digest
@@ -262,30 +263,24 @@ class InventoryValidator(object):
 
     def check_digests_present_and_used(self, manifest, digests_used):
         """Check all digests in manifest that are needed are present and used."""
-        if set(manifest.keys()) != set(digests_used):
-            not_in_state = []
-            for digest in manifest:
-                if digest not in digests_used:
-                    not_in_state.append(digest)
-            not_in_manifest = []
-            for digest in digests_used:
-                if digest not in manifest:
-                    not_in_manifest.append(digest)
-            description = ''
-            if len(not_in_manifest) > 0:
-                self.error("E913", description="in state but not in manifest: " + ", ".join(not_in_manifest))
-            if len(not_in_state) > 0:
-                self.error("E302", description="in manifest but not in state: " + ", ".join(not_in_state))
+        in_manifest = set(manifest.keys())
+        in_state = set(digests_used)
+        not_in_manifest = in_state.difference(in_manifest)
+        if len(not_in_manifest) > 0:
+            self.error("E913", description="in state but not in manifest: " + ", ".join(sorted(not_in_manifest)))
+        not_in_state = in_manifest.difference(in_state)
+        if len(not_in_state) > 0:
+            self.error("E302", description="in manifest but not in state: " + ", ".join(sorted(not_in_state)))
 
     def digest_regex(self):
         """A regex for validating digest algorithm format."""
-        if self.digest_algorithm == 'sha512':
-            return r'''^[0-9a-z]{128}$'''
-        elif self.digest_algorithm == 'sha256':
-            return r'''^[0-9a-z]{64}$'''
-        elif self.lax_digests:
-            return r'''.+$'''
-        raise Exception("Bad digest algorithm %s" % (self.digest_algorithm))
+        try:
+            return digest_regex(self.digest_algorithm)
+        except ValueError:
+            if not self.lax_digests:
+                self.error('E921', digest=self.digest_algorithm)
+        # Match anything
+        return r'''^.*$'''
 
     def is_valid_content_path(self, path):
         """True if path is a valid content path."""

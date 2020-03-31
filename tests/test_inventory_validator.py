@@ -192,7 +192,19 @@ class TestAll(unittest.TestCase):
         log.clear()
         self.assertEqual(iv.validate_state_block({d: ["good path", '/']}, "v1"), [d])
         self.assertIn('E920', log.errors)
+
+    def test_check_digests_present_and_used(self):
+        """Test check_digests_present_and_used."""
+        log = TLogger()
+        iv = InventoryValidator(log=log)
+        manifest = {'aaa': ['file_aaa1', 'file_aaa2'], 'bbb': ['file_bbb']}
+        iv.check_digests_present_and_used(manifest, ['aaa', 'bbb'])
+        self.assertEqual(len(log.errors), 0)
+        iv.check_digests_present_and_used(manifest, ['aaa'])
+        self.assertIn('E302', log.errors)
         log.clear()
+        iv.check_digests_present_and_used(manifest, ['aaa', 'bbb', 'ccc'])
+        self.assertIn('E913', log.errors)
 
     def test_is_valid_logical_path(self):
         """Test is_valid_logical_path function."""

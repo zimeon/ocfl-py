@@ -55,4 +55,26 @@ def file_digest(filename, digest_type='sha512'):
         d = _file_digest(filename, hashlib.sha256())
         return d[:6] + '...' + d[-3:]
     else:
-        raise Exception("Unsupport digest type %s" % (digest_type))
+        raise ValueError("Unsupport digest type %s" % (digest_type))
+
+
+DIGEST_REGEXES = {  # FIXME - Issues with hex case, see https://github.com/OCFL/spec/issues/437
+    'sha512': r'''^[0-9a-f]{128}$''',
+    'sha256': r'''^[0-9a-f]{64}$''',
+    'sha1': r'''^[0-9a-f]{40}$''',
+    'md5': r'''^[0-9a-f]{32}$''',
+    'blake2b-512': r'''^[0-9a-f]{128}$''',
+    'blake2b-384': r'''^[0-9a-f]{96}$''',
+    'blake2b-256': r'''^[0-9a-f]{64}$''',
+    'blake2b-160': r'''^[0-9a-f]{40}$''',
+    'sha512-spec-ex': r'''^[0-9a-f]{15}\.\.\.[0-9a-f]{3}$''',
+    'sha256-spec-ex': r'''^[0-9a-f]{6}\.\.\.[0-9a-f]{3}$'''
+}
+
+
+def digest_regex(digest_type='sha512'):
+    """Regex to be used to check form of digest string."""
+    try:
+        return DIGEST_REGEXES[digest_type]
+    except KeyError:
+        raise ValueError("Unsupport digest type %s" % (digest_type))

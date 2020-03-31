@@ -1,13 +1,13 @@
 """Digest tests."""
 import unittest
-from ocfl.digest import file_digest
+from ocfl.digest import file_digest, digest_regex
 
 
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
-    def test01_empty(self):
-        """Create Digest object."""
+    def test_file_digest__empty(self):
+        """Test file_digest method with empty file."""
         self.assertEqual(file_digest('tests/testdata/files/empty', 'md5'),
                          'd41d8cd98f00b204e9800998ecf8427e')
         self.assertEqual(file_digest('tests/testdata/files/empty', 'sha1'),
@@ -30,7 +30,12 @@ class TestAll(unittest.TestCase):
                          'e3b0c4...855')
         self.assertRaises(Exception, file_digest, 'tests/testdata/files/empty', 'bad-digest-type')
 
-    def test02_long(self):
-        """Create Digest object for file with content."""
+    def test_file_digest__long(self):
+        """Test file_digest method with content."""
         self.assertEqual(file_digest('tests/testdata/files/hello_out_there.txt', 'md5'),
                          '9c7ec1389a61f1e15185bd976672bc63')
+
+    def test_digest_regex(self):
+        """Test digest regex."""
+        self.assertEqual(digest_regex('md5'), r'''^[0-9a-f]{32}$''')
+        self.assertRaises(ValueError, digest_regex, 'unknown_digest')
