@@ -23,6 +23,7 @@ class ValidationLogger(object):
         self.num_errors = 0
         self.num_warnings = 0
         self.info = 0
+        self.spec = 'https://ocfl.io/draft/spec/'
         if self.validation_codes is None:
             with open(os.path.join(os.path.dirname(__file__), 'data/validation-errors.json'), 'r') as fh:
                 self.validation_codes = json.load(fh)
@@ -53,7 +54,11 @@ class ValidationLogger(object):
             message = '[' + code + '] ' + lang_desc
         else:
             message = "Unknown " + severity + ": %s - params (%s)" % (code, str(args))
-        # Store set of codes with last message for that codes, and _full_ list of messages
+        # Add link to spec
+        m = re.match(r'''([EW](\d\d\d))''', code)
+        if m and int(m.group(2)) < 200:
+            message += ' (see ' + self.spec + '#' + m.group(1) + ')'
+        # Store set of codes with last message for that code, and _full_ list of messages
         self.codes[code] = message
         if severity == 'error' or self.warnings:
             self.messages.append(message)
