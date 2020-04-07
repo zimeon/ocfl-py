@@ -53,8 +53,8 @@ class TestAll(unittest.TestCase):
         self.assertIn('E101', log.errors)
         log.clear()
         iv.validate({"id": "not_a_uri", "digestAlgorithm": "sha256"})
-        self.assertIn('W207', log.warns)
-        self.assertIn('W206', log.warns)
+        self.assertIn('W005', log.warns)
+        self.assertIn('W004', log.warns)
         log.clear()
         iv.validate({"id": "like:uri", "type": "wrong type", "digestAlgorithm": "my_digest"})
         self.assertIn('E103', log.errors)
@@ -100,7 +100,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(iv.validate_version_sequence({"v1": {}, 'v2': {}, 'v3': {}}), ['v1', 'v2', 'v3'])
         log.clear()
         self.assertEqual(iv.validate_version_sequence({"v0001": {}, 'v0002': {}}), ['v0001', 'v0002'])
-        self.assertIn('W203', log.warns)
+        self.assertIn('W001', log.warns)
         self.assertEqual(len(log.errors), 0)
         log.clear()
         self.assertEqual(iv.validate_version_sequence({"v1": {}, 'v2': {}, 'v4': {}}), ['v1', 'v2'])
@@ -126,11 +126,11 @@ class TestAll(unittest.TestCase):
         self.assertEqual(iv.validate_versions({'v1': {}}, ['v1']), [])
         self.assertIn('E401', log.errors)
         self.assertIn('E410', log.errors)
-        self.assertIn('W201', log.warns)
-        self.assertIn('W202', log.warns)
+        self.assertIn('W007a', log.warns)
+        self.assertIn('W007b', log.warns)
         log.clear()
         # Second, good data
-        versions = {'v1': {"created": "2020-03-30T21:24:00Z",
+        versions = {'v1': {"created": "2010-03-30T21:24:00Z",
                            "message": "A useful message",
                            "state": {},
                            "user": {"name": "A Person", "address": "info:uri1"}}}
@@ -145,15 +145,15 @@ class TestAll(unittest.TestCase):
         self.assertEqual(iv.validate_versions(versions, ['v1']), [])
         self.assertIn('E402', log.errors)
         log.clear()
-        versions['v1']['created'] = "2020-03-30T21:24:00"  # no timezone
+        versions['v1']['created'] = "2010-03-30T21:24:00"  # no timezone
         self.assertEqual(iv.validate_versions(versions, ['v1']), [])
-        self.assertIn('W208', log.warns)
+        self.assertIn('E049a', log.errors)
         log.clear()
-        versions['v1']['created'] = "2020-03-30T21:24Z"  # no seconds
+        versions['v1']['created'] = "2010-03-30T21:24Z"  # no seconds
         self.assertEqual(iv.validate_versions(versions, ['v1']), [])
-        self.assertIn('W209', log.warns)
+        self.assertIn('E049b', log.errors)
         log.clear()
-        versions['v1']['created'] = "2020-03-30T21:24:00Z"
+        versions['v1']['created'] = "2010-03-30T21:24:00Z"
         versions['v1']['message'] = {}  # not a string
         self.assertEqual(iv.validate_versions(versions, ['v1']), [])
         self.assertIn('E403', log.errors)
@@ -170,7 +170,7 @@ class TestAll(unittest.TestCase):
         log.clear()
         versions['v1']['user'] = {"name": "A Person"}  # no address
         self.assertEqual(iv.validate_versions(versions, ['v1']), [])
-        self.assertIn('W210', log.warns)
+        self.assertIn('W008', log.warns)
 
     def test_validate_state_block(self):
         """Test validate_state_block."""

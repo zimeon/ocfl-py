@@ -25,7 +25,7 @@ class ValidationLogger(object):
         self.info = 0
         if self.validation_codes is None:
             with open(os.path.join(os.path.dirname(__file__), 'data/validation-errors.json'), 'r') as fh:
-                self.validation_codes = json.load(fh)['codes']
+                self.validation_codes = json.load(fh)
 
     def error_or_warning(self, code, severity='error', **args):
         """Add error or warning to self.codes."""

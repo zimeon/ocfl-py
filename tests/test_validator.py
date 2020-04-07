@@ -26,28 +26,28 @@ class TestAll(unittest.TestCase):
                            'bad13_file_in_extensions_dir': ['E918'],
                            'bad14_different_root_and_latest_inventories': ['E099'],
                            'bad15_wrong_version_block_values': ['E302', 'E401', 'E403', 'E404', 'E912'],
-                           'bad16_digest_repeated': ['E922', 'E923']}.items():
+                           'bad16_digest_repeated': ['E922', 'E923'],
+                           'E049_created_no_timezone': ['E049a'],
+                           'E049_created_not_to_seconds': ['E049b']}.items():
             v = OCFLValidator()
             filepath = 'fixtures/1.0/bad-objects/' + bad
             if not os.path.isdir(filepath):
                 filepath = 'extra_fixtures/bad-objects/' + bad
-            self.assertFalse(v.validate(filepath))
+            self.assertFalse(v.validate(filepath), msg=" for object at " + filepath)
             for code in codes:
                 self.assertIn(code, v.log.codes, msg="for object at " + filepath)
 
     def test02_warn(self):
         """Check warm objects pass but give expected warnings."""
-        for warn, codes in {'warn01_no_message_or_user': ['W201', 'W202'],
-                            'warn02_zero_padded_versions': ['W203'],
-                            'warn03_zero_padded_versions': ['W203', 'W206', 'W207', 'W208', 'W209'],
-                            'warn04_extra_dir_in_version_dir': ['W204'],
-                            'warn05_uses_sha256': ['W206'],
-                            'warn06_id_not_uri': ['W207'],
-                            'warn07_created_no_timezone': ['W208'],
-                            'warn08_created_not_to_seconds': ['W209'],
-                            'warn09_user_no_address': ['W210'],
-                            'warn10_versions_diff_digests': ['W206'],
-                            'warn11_version_inv_diff_metadata': ['W212']}.items():
+        for warn, codes in {'warn01_no_message_or_user': ['W007a', 'W007b'],
+                            'warn02_zero_padded_versions': ['W001'],
+                            'warn03_zero_padded_versions': ['W001', 'W004', 'W005'],
+                            'warn04_extra_dir_in_version_dir': ['W002'],
+                            'warn05_uses_sha256': ['W004'],
+                            'warn06_id_not_uri': ['W005'],
+                            'warn09_user_no_address': ['W008'],
+                            'warn10_versions_diff_digests': ['W004'],
+                            'warn11_version_inv_diff_metadata': ['W011']}.items():
             v = OCFLValidator()
             filepath = 'fixtures/1.0/warn-objects/' + warn
             if not os.path.isdir(filepath):
