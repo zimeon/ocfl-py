@@ -104,7 +104,7 @@ class TestAll(unittest.TestCase):
     def test04_extract(self):
         """Test extract of version."""
         out = self.run_ocfl_store("Extract v1",
-                                  ['--extract', 'v1', '--objdir', 'fixtures/1.0/objects/spec-ex-full', '-v'],
+                                  ['--extract', 'v1', '--objdir', 'fixtures/1.0/good-objects/spec-ex-full', '-v'],
                                   include_objdir=False,
                                   include_dstdir=True)
         # Excpect:
@@ -118,7 +118,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, 'v1/foo/bar.xml')), 272)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, 'v1/image.tiff')), 2021)
         out = self.run_ocfl_store("Extract v2",
-                                  ['--extract', 'v2', '--objdir', 'fixtures/1.0/objects/spec-ex-full', '-v'],
+                                  ['--extract', 'v2', '--objdir', 'fixtures/1.0/good-objects/spec-ex-full', '-v'],
                                   include_objdir=False,
                                   include_dstdir=True)
         # Expect:

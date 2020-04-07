@@ -57,9 +57,9 @@ class TestAll(unittest.TestCase):
 
     def test03_good(self):
         """Check good objects pass."""
-        dirs = next(os.walk('fixtures/1.0/objects'))[1]
+        dirs = next(os.walk('fixtures/1.0/good-objects'))[1]
         for dirname in dirs:
-            dirpath = os.path.join('fixtures/1.0/objects', dirname)
+            dirpath = os.path.join('fixtures/1.0/good-objects', dirname)
             v = OCFLValidator()
             self.assertEqual((True, dirpath),  # add dirpath for better reporting
                              (v.validate(dirpath), dirpath))
