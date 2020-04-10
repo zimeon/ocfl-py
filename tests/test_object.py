@@ -241,18 +241,18 @@ class TestAll(unittest.TestCase):
         """Test show method."""
         s = io.StringIO()
         oo = Object(fhout=s)
-        oo.show(objdir='fixtures/1.0/good-objects/of1')
+        oo.show(objdir='fixtures/1.0/good-objects/minimal_one_version_one_file')
         out = s.getvalue()
         if sys.version_info < (3, 0):
             out = out.encode('utf8')
-        self.assertIn('[fixtures/1.0/good-objects/of1]', out)
+        self.assertIn('[fixtures/1.0/good-objects/minimal_one_version_one_file]', out)
         self.assertTrue('├── 0=ocfl_object_1.0' in out)
         # FIXME - need real tests in here when there is real output
 
     def test13_validate(self):
         """Test validate method."""
         oo = Object()
-        self.assertTrue(oo.validate(objdir='fixtures/1.0/good-objects/of1'))
+        self.assertTrue(oo.validate(objdir='fixtures/1.0/good-objects/minimal_one_version_one_file'))
         # Error cases
         self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/bad00_no_files'))
         self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/bad01_no_decl'))
@@ -261,7 +261,7 @@ class TestAll(unittest.TestCase):
     def test14_parse_inventory(self):
         """Test parse_inventory method."""
         oo = Object()
-        self.assertTrue(oo.parse_inventory(path='fixtures/1.0/good-objects/of1'))
+        self.assertTrue(oo.parse_inventory(path='fixtures/1.0/good-objects/minimal_one_version_one_file'))
         # Error cases
         self.assertRaises(ObjectException, oo.parse_inventory, path='fixtures/1.0/bad-objects/bad02_no_id')
 
@@ -286,6 +286,6 @@ class TestAll(unittest.TestCase):
         """Test extract method."""
         tempdir = tempfile.mkdtemp(prefix='test_extract')
         oo = Object()
-        oo.extract('fixtures/1.0/good-objects/of1', 'v1', tempdir)
+        oo.extract('fixtures/1.0/good-objects/minimal_one_version_one_file', 'v1', tempdir)
         self.assertEqual(os.listdir(tempdir), ['v1'])
         self.assertEqual(os.listdir(os.path.join(tempdir, 'v1')), ['a_file.txt'])

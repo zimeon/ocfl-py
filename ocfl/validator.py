@@ -29,6 +29,7 @@ class OCFLValidator(object):
         self.lax_digests = lax_digests
         if self.log is None:
             self.log = ValidationLogger(warnings=warnings, lang=lang)
+        self.registered_extensions = ['FIXME']  # FIXME - add names when something registered
         # Object state
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
@@ -147,8 +148,11 @@ class OCFLValidator(object):
         extpath = os.path.join(path, 'extensions')
         for entry in os.listdir(extpath):
             filepath = os.path.join(extpath, entry)
-            if not os.path.isdir(filepath):
-                self.log.error('E918', entry=entry)
+            if os.path.isdir(filepath):
+                if entry not in self.registered_extensions:
+                    self.log.warn('W013', entry=entry)
+            else:
+                self.log.error('E067', entry=entry)
 
     def validate_version_inventories(self, path, inventory, version_dirs):
         """Each version SHOULD have an inventory up to that point."""

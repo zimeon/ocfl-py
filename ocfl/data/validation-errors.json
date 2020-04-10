@@ -61,6 +61,12 @@
        "en": "Content directory must not contain a forward slash (/) or be . or .."
     }
   },
+  "E067": {
+    "params": ["entry"],
+    "description": {
+       "en": "OCFL Object extensions direct contains an unexpected non-directory entry: %s"
+    }
+  },
   "E099": {
     "params": ["root_inv_file", "inv_file"],
     "description": {
@@ -283,12 +289,6 @@
        "en": "OCFL Object root contains unexpected entry that isn't a file or directory: %s"
     }
   },
-  "E918": {
-    "params": ["entry"],
-    "description": {
-       "en": "OCFL Object extensions direct contains an unexpected non-directory entry: %s"
-    }
-  },
   "E919": {
     "params": ["where", "version", "digest"],
     "description": {
@@ -393,5 +393,11 @@
        "en": "OCFL Object version metadata '%s' for %s in %s inventory does not match that in %s inventory"
     },
     "spec": "In the case that prior version directories include an inventory file, the values of the created, message and user keys in each version block in each prior inventory file SHOULD have the same values as the corresponding keys in the corresponding version block in the current inventory file"
+  },
+  "W013": {
+    "params": ["entry"],
+    "description": {
+       "en": "OCFL Object includes unregistered extension directory '%s'"
+    }
   }
 }

@@ -11,6 +11,7 @@ class TestAll(unittest.TestCase):
     def test01_bad(self):
         """Check bad objects fail."""
         for bad, codes in {'does_not_even_exist': ['E987'],
+                           'bad00_empty': ['E001', 'E004'],
                            'bad01_no_decl': ['E001'],
                            'bad02_no_id': ['E100'],
                            'bad03_no_inv': ['E004'],
@@ -23,7 +24,7 @@ class TestAll(unittest.TestCase):
                            'bad10_wrong_head_format': ['E914'],
                            'bad11_extra_file_in_root': ['E915'],
                            'bad12_extra_dir_in_root': ['E916'],
-                           'bad13_file_in_extensions_dir': ['E918'],
+                           'bad13_file_in_extensions_dir': ['E067'],
                            'bad14_different_root_and_latest_inventories': ['E099'],
                            'bad15_wrong_version_block_values': ['E302', 'E401', 'E403', 'E404', 'E912'],
                            'bad16_digest_repeated': ['E922', 'E923'],
