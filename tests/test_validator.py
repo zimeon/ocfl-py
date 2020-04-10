@@ -39,15 +39,15 @@ class TestAll(unittest.TestCase):
 
     def test02_warn(self):
         """Check warm objects pass but give expected warnings."""
-        for warn, codes in {'warn01_no_message_or_user': ['W007a', 'W007b'],
-                            'warn02_zero_padded_versions': ['W001'],
-                            'warn03_zero_padded_versions': ['W001', 'W004', 'W005'],
-                            'warn04_extra_dir_in_version_dir': ['W002'],
-                            'warn05_uses_sha256': ['W004'],
-                            'warn06_id_not_uri': ['W005'],
-                            'warn09_user_no_address': ['W008'],
-                            'warn10_versions_diff_digests': ['W004'],
-                            'warn11_version_inv_diff_metadata': ['W011']}.items():
+        for warn, codes in {'W007_no_message_or_user': ['W007a', 'W007b'],
+                            'W001_zero_padded_versions': ['W001'],
+                            'W001_W004_W005_zero_padded_versions': ['W001', 'W004', 'W005'],
+                            'W002_extra_dir_in_version_dir': ['W002'],
+                            'W004_uses_sha256': ['W004'],
+                            'W005_id_not_uri': ['W005'],
+                            'W008_user_no_address': ['W008'],
+                            'W004_versions_diff_digests': ['W004'],
+                            'W011_version_inv_diff_metadata': ['W011']}.items():
             v = OCFLValidator()
             filepath = 'fixtures/1.0/warn-objects/' + warn
             if not os.path.isdir(filepath):
