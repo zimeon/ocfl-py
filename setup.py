@@ -74,7 +74,8 @@ setup(
     long_description=open('README').read(),
     install_requires=[
         'pairtree>=0.8.1',
-        'dateutils>=0.6.6'
+        'dateutils>=0.6.6',
+        'bagit>=1.7.0'
     ],
     test_suite="tests",
     cmdclass={
