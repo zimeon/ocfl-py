@@ -20,8 +20,9 @@ def add_version_metadata_args(parser):
 class VersionMetadata(object):
     """Class for metadata for a version of OCFL Object's content."""
 
-    def __init__(self, args=None, inventory_file=None, vdir=None):
+    def __init__(self, args=None, inventory_file=None, inventory=None, vdir=None):
         """Initialize from command line arguments from argparse."""
+        self.id = None
         self.created = None
         self.message = None
         self.name = None
@@ -33,6 +34,8 @@ class VersionMetadata(object):
             self.address = args.address
         elif inventory_file is not None:
             self.from_inventory_file(inventory_file, vdir)
+        elif inventory is not None:
+            self.from_inventory(inventory, vdir)
 
     def from_inventory_file(self, inventory_file, vdir=None):
         """Initialize from an inventory file."""
@@ -52,6 +55,7 @@ class VersionMetadata(object):
             vdir - explicit version directory, else taken from inventory head
             inventory_file - file name used in error reporting (else '')
         """
+        self.id = inventory.get('id', None)
         if 'versions' not in inventory:
             raise Exception("No versions object in inventory %s" % (inventory_file))
         version = None

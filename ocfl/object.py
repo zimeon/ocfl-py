@@ -459,7 +459,10 @@ class Object(object):
         return passed
 
     def extract(self, objdir, version, dstdir):
-        """Extract version from object at objdir into dstdir."""
+        """Extract version from object at objdir into dstdir.
+
+        Returns the version block from the inventory.
+        """
         # Read inventory, set up version
         inv = self.parse_inventory(objdir)
         if version == 'head':
@@ -491,6 +494,7 @@ class Object(object):
                         raise
                 copyfile(os.path.join(objdir, existing_file), dstfile)
         logging.info("Extracted %s into %s" % (version, dstdir))
+        return VersionMetadata(inventory=inv, vdir=version)
 
     def parse_inventory(self, path):
         """Read JSON root inventory file for object at path.

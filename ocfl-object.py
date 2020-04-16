@@ -3,6 +3,8 @@
 import argparse
 import logging
 import ocfl
+import bagit
+import os.path
 import sys
 
 
@@ -33,6 +35,8 @@ def parse_arguments():
                           help='Validate an OCFL object')
     commands.add_argument('--extract', action='store', default=None,
                           help='Extract a specific version (or "head") into dstdir')
+    commands.add_argument('--extract-bag', action='store', default=None,
+                          help='Extract a specific version (or "head") into a Bagit bag in dstdir')
 
     src_params = parser.add_argument_group(title="Source files")
     src_params.add_argument('--srcdir', '--src', action='store',
@@ -56,7 +60,7 @@ def parse_arguments():
     args = parser.parse_args()
 
     # Require command and only one command
-    cmds = ['create', 'build', 'update', 'show', 'validate', 'extract']
+    cmds = ['create', 'build', 'update', 'show', 'validate', 'extract', 'extract_bag']
     num_cmds = 0
     for cmd in cmds:
         if getattr(args, cmd):
@@ -99,10 +103,26 @@ def do_object_operation(args):
         obj.show(objdir=args.objdir)
     elif args.validate:
         obj.validate(objdir=args.objdir)
-    elif args.extract:
-        obj.extract(objdir=args.objdir,
-                    version=args.extract,
-                    dstdir=args.dstdir)
+    elif args.extract or args.extract_bag:
+        version = args.extract or args.extract_bag
+        dst = os.path.join(args.dstdir, version)
+        version_metadata = obj.extract(objdir=args.objdir,
+                                       version=version,
+                                       dstdir=args.dstdir)
+        if args.extract_bag:
+            tags = {}
+            if version_metadata.id:
+                tags['External-Identifier'] = version_metadata.id
+            if version_metadata.message:
+                tags['External-Description'] = version_metadata.message
+            if version_metadata.name:
+                tags['Contact-Name'] = version_metadata.name
+            if version_metadata.address and version_metadata.address.startswith('mailto:'):
+                tags['Contact-Email'] = version_metadata.address[7:]
+            bag = bagit.make_bag(dst, tags)
+            print("Extracted content for %s saved as Bagit bag in %s" % (version, dst))
+        else:
+            print("Extracted content for %s in %s" % (version, dst))
     else:
         raise FatalError("Command argument not supported!")
 
