@@ -107,7 +107,7 @@ class TestAll(unittest.TestCase):
                                   ['--extract', 'v1', '--objdir', 'fixtures/1.0/good-objects/spec-ex-full', '-v'],
                                   include_objdir=False,
                                   include_dstdir=True)
-        # Excpect:
+        # Expect:
         # v1
         # ├── [          0]  empty.txt
         # ├── [        102]  foo
