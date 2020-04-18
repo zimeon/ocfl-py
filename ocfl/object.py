@@ -461,6 +461,8 @@ class Object(object):
     def extract(self, objdir, version, dstdir):
         """Extract version from object at objdir into dstdir.
 
+        The dstdir itself must not exist but the parent directory must.
+
         Returns the version block from the inventory.
         """
         # Read inventory, set up version
@@ -471,11 +473,12 @@ class Object(object):
         elif version not in inv['versions']:
             raise ObjectException("Object at %s does not include a version '%s'" % (objdir, version))
         # Sanity check on destination
-        if not os.path.isdir(dstdir):
-            raise ObjectException("Destination %s does not exist or is not directory" % (dstdir))
-        dstdir = os.path.join(dstdir, version)
-        if os.path.exists(dstdir):
-            raise ObjectException("Target directorty %s already exists, aborting!" % (dstdir))
+        if os.path.isdir(dstdir):
+            raise ObjectException("Target directory %s already exists, aborting!" % (dstdir))
+
+        (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
+        if parentdir != '' and not os.path.exists(parentdir):
+            raise ObjectException("Destination parent %s does not exist or is not directory" % (parentdir))
         os.mkdir(dstdir)
         # Now extract...
         manifest = inv['manifest']

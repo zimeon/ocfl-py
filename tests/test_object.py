@@ -286,6 +286,7 @@ class TestAll(unittest.TestCase):
         """Test extract method."""
         tempdir = tempfile.mkdtemp(prefix='test_extract')
         oo = Object()
-        oo.extract('fixtures/1.0/good-objects/minimal_one_version_one_file', 'v1', tempdir)
-        self.assertEqual(os.listdir(tempdir), ['v1'])
-        self.assertEqual(os.listdir(os.path.join(tempdir, 'v1')), ['a_file.txt'])
+        dstdir = os.path.join(tempdir, 'vvv1')
+        oo.extract('fixtures/1.0/good-objects/minimal_one_version_one_file', 'v1', dstdir)
+        self.assertEqual(os.listdir(tempdir), ['vvv1'])
+        self.assertEqual(os.listdir(dstdir), ['a_file.txt'])

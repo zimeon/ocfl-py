@@ -44,7 +44,7 @@ class TestAll(unittest.TestCase):
         if include_objdir:
             cmd += ['--objdir', os.path.join(self.tmpdir, treedir)]
         elif include_dstdir:
-            cmd += ['--dstdir', self.tmpdir]
+            cmd += ['--dstdir', os.path.join(self.tmpdir, include_dstdir)]
         cmd += options
         code = 0
         try:
@@ -106,7 +106,7 @@ class TestAll(unittest.TestCase):
         out = self.run_ocfl_store("Extract v1",
                                   ['--extract', 'v1', '--objdir', 'fixtures/1.0/good-objects/spec-ex-full', '-v'],
                                   include_objdir=False,
-                                  include_dstdir=True)
+                                  include_dstdir='v1')
         # Expect:
         # v1
         # ├── [          0]  empty.txt
@@ -120,7 +120,7 @@ class TestAll(unittest.TestCase):
         out = self.run_ocfl_store("Extract v2",
                                   ['--extract', 'v2', '--objdir', 'fixtures/1.0/good-objects/spec-ex-full', '-v'],
                                   include_objdir=False,
-                                  include_dstdir=True)
+                                  include_dstdir='v2')
         # Expect:
         # v2
         # ├── [          0]  empty.txt

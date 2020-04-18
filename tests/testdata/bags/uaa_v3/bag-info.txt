@@ -1,0 +1,6 @@
+Bagging-Date: 2020-01-03
+Contact-Email: all_seeing_spheres@miskatonic.edu
+Contact-Name: Yog-Sothoth
+External-Description: Third version
+External-Identifier: info:bb123cd4567
+Payload-Oxum: 1792588.3

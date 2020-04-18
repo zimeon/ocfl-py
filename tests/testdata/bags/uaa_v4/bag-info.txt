@@ -1,0 +1,6 @@
+Bagging-Date: 2020-01-04
+Contact-Email: all_seeing_spheres@miskatonic.edu
+Contact-Name: Yog-Sothoth
+External-Description: Ia! Ia! cthulhu fhtagn!
+External-Identifier: info:bb123cd4567
+Payload-Oxum: 1915970.4
