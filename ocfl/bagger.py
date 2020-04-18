@@ -51,7 +51,9 @@ def bag_as_source(srcbag, metadata):
         metadata.address = 'mailto:' + bag.info['Contact-Email']
     return srcdir
 
+
 def bag_extracted_version(dst, metadata):
+    """Bag the extracted files in dst using metadata from metadata."""
     tags = {}
     if metadata.id:
         tags['External-Identifier'] = metadata.id

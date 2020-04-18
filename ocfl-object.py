@@ -88,7 +88,6 @@ def do_object_operation(args):
                       ocfl_version=args.ocfl_version,
                       fixity=args.fixity)
     if args.create:
-        srcdir = args.srcdir
         metadata = ocfl.VersionMetadata(args)
         if args.srcbag:
             srcdir = ocfl.bag_as_source(args.srcbag, metadata)
@@ -114,7 +113,14 @@ def do_object_operation(args):
                   objdir=args.objdir)
     elif args.update:
         metadata = ocfl.VersionMetadata(args)
+        if args.srcbag:
+            srcdir = ocfl.bag_as_source(args.srcbag, metadata)
+        elif args.srcdir:
+            srcdir = args.srcdir
+        else:
+            raise FatalError("Must specify either --srcdir or --srcbag containing new version files when updating an OCFL object!")
         obj.update(objdir=args.objdir,
+                   srcdir=srcdir,
                    metadata=metadata)
     elif args.show:
         obj.show(objdir=args.objdir)

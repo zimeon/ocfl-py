@@ -141,17 +141,19 @@ class Object(object):
         manifest = inventory['manifest']
         digests_in_version = {}
         manifest_to_srcfile = {}
-        # Go through all files to find new files in manifest and state for each version
+        # Special case for testing -- FIXME, should remove this, used only in fixtures/1.0/content/spec-ex-full
+        inv_file = srcdir + '_inventory.json'
+        if os.path.isfile(inv_file):
+            # Read metadata for this version
+            metadata.from_inventory_file(inv_file, vdir)
+        # Go through all files to find new files in manifest and state for this version
         for (dirpath, dirnames, filenames) in os.walk(srcdir, followlinks=True):
             # Go through filenames, in sort order so the it is deterministic
             # which file is included and which is/are referenced in the case
             # of multiple additions with the same digest
             for filename in sorted(filenames):
-                if filename == "inventory.json":
-                    # Read metadata for this version
-                    metadata.from_inventory_file(os.path.join(dirpath, filename), vdir)
-                    continue
                 filepath = os.path.join(dirpath, filename)
+                print("-o-> " + filepath)
                 sfilepath = os.path.relpath(filepath, srcdir)  # path relative to this version
                 vfilepath = self.map_filepath(sfilepath, vdir, manifest_to_srcfile)
                 digest = self.digest(filepath)
@@ -206,7 +208,7 @@ class Object(object):
         # Find the versions
         versions = {}
         for vdir in os.listdir(path):
-            if vdir in self.skips:
+            if vdir in self.skips or not os.path.isdir(os.path.join(path, vdir)):
                 continue
             vn = self.parse_version_directory(vdir)
             versions[vn] = vdir
@@ -273,7 +275,12 @@ class Object(object):
     def create(self, srcdir, metadata=None, objdir=None):
         """Create a new OCFL object with v1 content from srcdir.
 
-        Write to dst if set, else just print inventory.
+        Parameters:
+          srcdir - source directory with content for v1
+          metadata - VersionMetadata object for v1
+          objdir - output directory for object (must not already exist), if not
+              set then will just write out inventories that would have been
+              created
         """
         if self.id is None:
             raise ObjectException("Identifier is not set!")
@@ -303,8 +310,18 @@ class Object(object):
                 copyfile(srcfile, dstfile)
         logging.info("Created OCFL object %s in %s" % (self.id, objdir))
 
-    def update(self, objdir, metadata=None):
-        """Update object creating a new version."""
+    def update(self, objdir, srcdir=None, metadata=None):
+        """Update object creating a new version with content matching srcdir.
+
+        Parameters:
+          objdir - directory for object to be update, must contain a valid object!
+          srcdir - source directory with version sub-directories
+          metadata - VersionMetadata object applied to all versions
+
+        If srcdir is None then the update will be just of metadata and any settings
+        (such as using a new digest). There will be no content change between
+        versions.
+        """
         validator = OCFLValidator(warnings=False, check_digests=False, lax_digests=self.lax_digests)
         if not validator.validate(objdir):
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
@@ -372,8 +389,16 @@ class Object(object):
                     state[old_to_new_digest[old_digest]] = old_state[old_digest]
                 inventory['versions'][vdir]['state'] = state
         state = copy.deepcopy(inventory['versions'][old_head]['state'])
-        # Add and remove any contents
-        # FIXME -- do something here!
+        # Add and remove any contents by comparing srcdir with existing state and manifest
+        if srcdir is not None:
+            manifest_to_srcfile = self.add_version(inventory=inventory, srcdir=srcdir, vdir=head, metadata=metadata)
+            # Copy files into this version
+            for (path, srcfile) in manifest_to_srcfile.items():
+                dstfile = os.path.join(objdir, path)
+                dstpath = os.path.dirname(dstfile)
+                if not os.path.exists(dstpath):
+                    os.makedirs(dstpath)
+                copyfile(srcfile, dstfile)
         # Update and write inventory
         inventory['manifest'] = manifest
         inventory['versions'][head] = metadata.as_dict(state=state)
