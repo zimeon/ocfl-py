@@ -31,7 +31,7 @@ class ObjectException(Exception):
 class Object(object):
     """Class for handling OCFL Object data and operations."""
 
-    def __init__(self, identifier=None, content_directory='content',
+    def __init__(self, id=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
                  skips=None, forward_delta=True, dedupe=True, lax_digests=False,
                  ocfl_version='draft', fixity=None, fhout=sys.stdout):
@@ -43,7 +43,7 @@ class Object(object):
            fixity - list of fixity types to add as fixity section
            fhout - optional overwrite of STDOUT for print outputs
         """
-        self.identifier = identifier
+        self.id = id
         self.content_directory = content_directory
         self.digest_algorithm = digest_algorithm
         self.filepath_normalization = filepath_normalization
@@ -107,7 +107,7 @@ class Object(object):
     def start_inventory(self):
         """Create inventory start with metadata from self."""
         inventory = {
-            'id': self.identifier,
+            'id': self.id,
             'type': 'https://ocfl.io/1.0/spec/#inventory',
             'digestAlgorithm': self.digest_algorithm,
             'versions': {},
@@ -244,7 +244,7 @@ class Object(object):
               set then will just write out inventories that would have been
               created
         """
-        if self.identifier is None:
+        if self.id is None:
             raise ObjectException("Identifier is not set!")
         if objdir is not None:
             os.makedirs(objdir)
@@ -268,14 +268,14 @@ class Object(object):
         # Write NAMASTE, inventory and sidecar
         self.write_object_declaration(objdir)
         self.write_inventory_and_sidecar(objdir, inventory)
-        logging.info("Built object %s with %s versions" % (self.identifier, num_versions))
+        logging.info("Built object %s with %s versions" % (self.id, num_versions))
 
     def create(self, srcdir, metadata=None, objdir=None):
         """Create a new OCFL object with v1 content from srcdir.
 
         Write to dst if set, else just print inventory.
         """
-        if self.identifier is None:
+        if self.id is None:
             raise ObjectException("Identifier is not set!")
         if objdir is not None:
             os.makedirs(objdir)
@@ -301,7 +301,7 @@ class Object(object):
                 if not os.path.exists(dstpath):
                     os.makedirs(dstpath)
                 copyfile(srcfile, dstfile)
-        logging.info("Created object %s in %s" % (self.identifier, objdir))
+        logging.info("Created OCFL object %s in %s" % (self.id, objdir))
 
     def update(self, objdir, metadata=None):
         """Update object creating a new version."""
@@ -309,12 +309,12 @@ class Object(object):
         if not validator.validate(objdir):
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
         inventory = self.parse_inventory(objdir)
-        id = inventory['id']
+        self.id = inventory['id']
         old_head = inventory['head']
         versions = inventory['versions']
         head = next_version(old_head)
         inventory['head'] = head
-        logging.info("Will update %s %s -> %s" % (id, old_head, head))
+        logging.info("Will update %s %s -> %s" % (self.id, old_head, head))
         # Is this a request to change the digest algorithm?
         old_digest_algorithm = inventory['digestAlgorithm']
         digest_algorithm = self.digest_algorithm
@@ -384,6 +384,7 @@ class Object(object):
         # Delete old inventory sidecar if we changed digest algorithm
         if digest_algorithm != old_digest_algorithm:
             os.remove(os.path.join(objdir, 'inventory.json.' + old_digest_algorithm))
+        logging.info("Updated OCFL object %s in %s by adding %s" % (self.id, objdir, head))
 
     def _show_indent(self, level, last=False, last_v=False):
         """Indent string for tree view at level for intermediate or last."""

@@ -5,6 +5,7 @@ from .version import *
 from .store import *
 from .digest import *
 from .disposition import get_dispositor
+from .bagger import bag_as_source, bag_extracted_version, BaggerError
 
 __version__ = '0.0.1'
 

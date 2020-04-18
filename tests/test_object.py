@@ -16,14 +16,14 @@ class TestAll(unittest.TestCase):
     def test01_init(self):
         """Test Object init."""
         oo = Object()
-        self.assertEqual(oo.identifier, None)
+        self.assertEqual(oo.id, None)
         self.assertEqual(oo.digest_algorithm, 'sha512')
         self.assertEqual(oo.skips, set())
         self.assertEqual(oo.ocfl_version, 'draft')
         self.assertEqual(oo.fixity, None)
-        oo = Object(identifier='a:b', digest_algorithm='sha1', skips=['1', '2'],
+        oo = Object(id='a:b', digest_algorithm='sha1', skips=['1', '2'],
                     ocfl_version='0.9.9', fixity=['md5', 'crc16'])
-        self.assertEqual(oo.identifier, 'a:b')
+        self.assertEqual(oo.id, 'a:b')
         self.assertEqual(oo.digest_algorithm, 'sha1')
         self.assertEqual(oo.skips, set(('1', '2')))
         self.assertEqual(oo.ocfl_version, '0.9.9')
@@ -53,7 +53,7 @@ class TestAll(unittest.TestCase):
 
     def test04_start_inventory(self):
         """Test start_inventory mehthod stub."""
-        oo = Object(identifier="info:a", digest_algorithm="sha256")
+        oo = Object(id="info:a", digest_algorithm="sha256")
         inventory = oo.start_inventory()
         self.assertEqual(inventory['id'], "info:a")
         self.assertEqual(inventory['digestAlgorithm'], "sha256")
@@ -61,12 +61,12 @@ class TestAll(unittest.TestCase):
         self.assertEqual(inventory['manifest'], {})
         self.assertNotIn('contentDirectory', inventory)
         self.assertNotIn('fixity', inventory)
-        oo = Object(identifier="info:b", digest_algorithm="sha256",
+        oo = Object(id="info:b", digest_algorithm="sha256",
                     fixity=['md5', 'sha1'])
         inventory = oo.start_inventory()
         self.assertEqual(inventory['fixity'], {'md5': {}, 'sha1': {}})
         #
-        oo = Object(identifier="info:b", content_directory="stuff")
+        oo = Object(id="info:b", content_directory="stuff")
         inventory = oo.start_inventory()
         self.assertEqual(inventory['id'], "info:b")
         self.assertEqual(inventory['contentDirectory'], "stuff")
@@ -187,7 +187,7 @@ class TestAll(unittest.TestCase):
         tempdir = tempfile.mkdtemp(prefix='test_write')
         oo = Object()
         self.assertRaises(ObjectException, oo.build, srcdir='fixtures/1.0/content/spec-ex-full')
-        oo.identifier = 'uri:firkin'
+        oo.id = 'uri:firkin'
         objdir = os.path.join(tempdir, '1')
         oo.build(srcdir='fixtures/1.0/content/spec-ex-full',
                  metadata=VersionMetadata(),
@@ -203,7 +203,7 @@ class TestAll(unittest.TestCase):
         tempdir = tempfile.mkdtemp(prefix='test_create')
         oo = Object()
         self.assertRaises(ObjectException, oo.create, srcdir='fixtures/1.0/content/spec-ex-full/v1')
-        oo.identifier = 'uri:kliderkin'
+        oo.id = 'uri:kliderkin'
         objdir = os.path.join(tempdir, '1')
         oo.create(srcdir='fixtures/1.0/content/spec-ex-full/v1',
                   metadata=VersionMetadata(),
@@ -218,7 +218,7 @@ class TestAll(unittest.TestCase):
         tempdir = tempfile.mkdtemp(prefix='test_update')
         oo = Object()
         # First create and object
-        oo.identifier = 'uri:wumpus'
+        oo.id = 'uri:wumpus'
         objdir = os.path.join(tempdir, '1')
         oo.digest_algorithm = 'sha256'
         oo.create(srcdir='fixtures/1.0/content/spec-ex-minimal/v1',

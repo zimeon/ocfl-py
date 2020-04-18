@@ -3,7 +3,6 @@
 import argparse
 import logging
 import ocfl
-import bagit
 import os.path
 import sys
 
@@ -79,7 +78,7 @@ def parse_arguments():
 
 def do_object_operation(args):
     """Implement object operations in a way that can be reused by ocfl-store.py."""
-    obj = ocfl.Object(identifier=args.id,
+    obj = ocfl.Object(id=args.id,
                       digest_algorithm=args.digest,
                       filepath_normalization=args.normalization,
                       skips=args.skip,
@@ -92,24 +91,13 @@ def do_object_operation(args):
         srcdir = args.srcdir
         metadata = ocfl.VersionMetadata(args)
         if args.srcbag:
-            bag = bagit.Bag(args.srcbag)
-            if not bag.is_valid():
-                raise Fatalerror("Source Bagit bag at %s is not valid" % (args.srcbag))
-            num_fetch = len(list(bag.fetch_entries()))
-            if num_fetch > 0:
-                raise Fatalerror("Source Bagit bag at %s includes fetch.txt with %d entries, only locally complete bags supported" % (args.srcbag, num_fetch))
-            srcdir = os.path.join(args.srcbag, 'data')
-            # Local arguments override but otherwise take metadata from bag-info.txt
-            if not args.id and 'External-Identifier' in bag.info:
-                obj.identifier = bag.info['External-Identifier']
-            if not metadata.created and 'Bagging-Date' in bag.info:
-                metadata.created = bag.info['Bagging-Date'] + 'T00:00:00Z'  # FIXME - timezone fudge
-            if not metadata.message and 'External-Description' in bag.info:
-                metadata.message = bag.info['External-Description']
-            if not metadata.name and 'Contact-Name' in bag.info:
-                metadata.name = bag.info['Contact-Name']
-            if not metadata.address and 'Contact-Email' in bag.info:
-                metadata.address = 'mailto:' + bag.info['Contact-Email']
+            srcdir = ocfl.bag_as_source(args.srcbag, metadata)
+            if metadata.id is not None:
+                if obj.id:
+                    if obj.id != metadata.id:
+                        raise FatalError("Identifier specified (%s) and identifier from Bagit bag (%s) do not match!" % (obj.id, metadata.id))
+                else:
+                    obj.id = metadata.id
         elif args.srcdir:
             srcdir = args.srcdir
         else:
@@ -137,22 +125,13 @@ def do_object_operation(args):
             args.dstdir = None  # Override dstdir if dstbag specified
         version = args.extract
         dst = os.path.join(args.dstdir or args.dstbag)
-        version_metadata = obj.extract(objdir=args.objdir,
-                                       version=version,
-                                       dstdir=dst)
+        metadata = obj.extract(objdir=args.objdir,
+                               version=version,
+                               dstdir=dst)
         if args.dstdir:
             print("Extracted content for %s in %s" % (version, dst))
-        else: # args.dstbag
-            tags = {}
-            if version_metadata.id:
-                tags['External-Identifier'] = version_metadata.id
-            if version_metadata.message:
-                tags['External-Description'] = version_metadata.message
-            if version_metadata.name:
-                tags['Contact-Name'] = version_metadata.name
-            if version_metadata.address and version_metadata.address.startswith('mailto:'):
-                tags['Contact-Email'] = version_metadata.address[7:]
-            bag = bagit.make_bag(dst, bag_info=tags, checksums=['sha512'])
+        else:  # args.dstbag
+            bag_extracted_version(dst, metadata)
             print("Extracted content for %s saved as Bagit bag in %s" % (version, dst))
     else:
         raise FatalError("Command argument not supported!")

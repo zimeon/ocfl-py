@@ -93,7 +93,7 @@ class TestAll(unittest.TestCase):
         """Test object creation with just v1."""
         out = self.run_ocfl_store("New object with just v1",
                                   ['--create', '--id', 'http://example.org/obj1', '--src', 'fixtures/1.0/content/cf1/v1', '-v'])
-        self.assertIn('Created object http://example.org/obj1', out)
+        self.assertIn('Created OCFL object http://example.org/obj1', out)
 
     def test03_create_multi(self):
         """Test object build with three versions."""
@@ -141,7 +141,7 @@ class TestAll(unittest.TestCase):
         out = self.run_ocfl_store("No identifier",
                                   ['--create'],
                                   include_objdir=False)
-        self.assertIn('Must specify --srcdir', out)
+        self.assertIn('Must specify either --srcdir', out)
         out = self.run_ocfl_store("No identifier",
                                   ['--create', '--srcdir', 'tmp'],
                                   include_objdir=False)
