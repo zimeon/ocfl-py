@@ -38,10 +38,10 @@ class Object(object):
         """Initialize OCFL builder.
 
         Parameters:
-           forward_delta - set False to turn off foward delta
-           dedupe - set False to turn off dedupe within versions
-           fixity - list of fixity types to add as fixity section
-           fhout - optional overwrite of STDOUT for print outputs
+          forward_delta - set False to turn off foward delta
+          dedupe - set False to turn off dedupe within versions
+          fixity - list of fixity types to add as fixity section
+          fhout - optional overwrite of STDOUT for print outputs
         """
         self.id = id
         self.content_directory = content_directory
@@ -74,17 +74,17 @@ class Object(object):
         """Map source filepath to a  name within object.
 
         The purpose of the mapping might be normalization, sanitization,
-        content distribution, or something else. Parameters:
+        content distribution, or something else.
 
-        filepath - the source filepath
-        vdir - the current version directory
-        used - disctionary used to check whether a given vfilepath has
-          been used already
+        Parameters:
+          filepath - the source filepath
+          vdir - the current version directory
+          used - disctionary used to check whether a given vfilepath has
+            been used already
 
         Returns:
-
-        vfilepath - the version filepath for this content that starts
-          with vdir/content_directory/
+          vfilepath - the version filepath for this content that starts
+            with vdir/content_directory/
         """
         if self.filepath_normalization == 'uri':
             filepath = urlquote(filepath)
@@ -128,16 +128,19 @@ class Object(object):
     def add_version(self, inventory, srcdir, vdir, metadata=None):
         """Add to inventory data for new version based on files in srcdir.
 
-        srcdir - the directory path where the files for this version exist,
-                 including any version directory that might be present
-        vdir - the version directory that these files are being added in
+        Parameters:
+          inventory - the inventory up to (vdir-1)
+          srcdir - the directory path where the files for this new version exist,
+             including any version directory that might be present
+          vdir - the version directory that these files are being added in
+          metadata - a VersionMetadata object
 
         Returns:
-
-        manifest_to_srcfile - dict mapping from paths in manifest to the full
-            path of the source file
+          manifest_to_srcfile - dict mapping from paths in manifest to the full
+            path of the source file that should be include in the content for
+            this new version
         """
-        state = {}
+        state = {}  # state for this new version
         manifest = inventory['manifest']
         digests_in_version = {}
         manifest_to_srcfile = {}
@@ -164,6 +167,7 @@ class Object(object):
                 if self.forward_delta and digest in manifest:
                     # We already have this content in a previous version and we are using
                     # forward deltas so do not need to copy in this one
+                    print("... already have content for digest %s" % (digest))
                     pass
                 else:
                     # This is a new digest so an addition in this version and
@@ -173,6 +177,7 @@ class Object(object):
                     elif not self.dedupe:
                         digests_in_version[digest].append(vfilepath)
                     manifest_to_srcfile[vfilepath] = filepath
+                    print("... %s -> %s" % (vfilepath, filepath))
         # Add any new digests in this version to the manifest
         for digest, paths in digests_in_version.items():
             if digest not in manifest:
@@ -330,8 +335,8 @@ class Object(object):
         old_head = inventory['head']
         versions = inventory['versions']
         head = next_version(old_head)
-        inventory['head'] = head
         logging.info("Will update %s %s -> %s" % (self.id, old_head, head))
+        os.mkdir(os.path.join(objdir, head))
         # Is this a request to change the digest algorithm?
         old_digest_algorithm = inventory['digestAlgorithm']
         digest_algorithm = self.digest_algorithm
@@ -388,25 +393,28 @@ class Object(object):
                 for old_digest, files in old_state.items():
                     state[old_to_new_digest[old_digest]] = old_state[old_digest]
                 inventory['versions'][vdir]['state'] = state
-        state = copy.deepcopy(inventory['versions'][old_head]['state'])
+        inventory['manifest'] = manifest
         # Add and remove any contents by comparing srcdir with existing state and manifest
-        if srcdir is not None:
+        if srcdir is None:
+            # No content Update
+            inventory['head'] = head
+            state = copy.deepcopy(inventory['versions'][old_head]['state'])
+            inventory['versions'][head] = metadata.as_dict(state=state)
+        else:
             manifest_to_srcfile = self.add_version(inventory=inventory, srcdir=srcdir, vdir=head, metadata=metadata)
+            print("m2s " + str(manifest_to_srcfile))
             # Copy files into this version
             for (path, srcfile) in manifest_to_srcfile.items():
+                print('--s-> %s %s' % (path, srcfile))
                 dstfile = os.path.join(objdir, path)
                 dstpath = os.path.dirname(dstfile)
                 if not os.path.exists(dstpath):
                     os.makedirs(dstpath)
                 copyfile(srcfile, dstfile)
-        # Update and write inventory
-        inventory['manifest'] = manifest
-        inventory['versions'][head] = metadata.as_dict(state=state)
-        # Else write out object
-        os.mkdir(os.path.join(objdir, head))
+        # Write inventory in both root and head version
         self.write_inventory_and_sidecar(os.path.join(objdir, head), inventory)
         self.write_inventory_and_sidecar(objdir, inventory)
-        # Delete old inventory sidecar if we changed digest algorithm
+        # Delete old root inventory sidecar if we changed digest algorithm
         if digest_algorithm != old_digest_algorithm:
             os.remove(os.path.join(objdir, 'inventory.json.' + old_digest_algorithm))
         logging.info("Updated OCFL object %s in %s by adding %s" % (self.id, objdir, head))

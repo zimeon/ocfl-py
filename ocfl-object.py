@@ -88,8 +88,9 @@ def do_object_operation(args):
                       ocfl_version=args.ocfl_version,
                       fixity=args.fixity)
     if args.create:
+        srcdir = args.srcdir
         metadata = ocfl.VersionMetadata(args)
-        if args.srcbag:
+        if args.srcbag is not None:
             srcdir = ocfl.bag_as_source(args.srcbag, metadata)
             if metadata.id is not None:
                 if obj.id:
@@ -97,9 +98,7 @@ def do_object_operation(args):
                         raise FatalError("Identifier specified (%s) and identifier from Bagit bag (%s) do not match!" % (obj.id, metadata.id))
                 else:
                     obj.id = metadata.id
-        elif args.srcdir:
-            srcdir = args.srcdir
-        else:
+        elif args.srcdir is None:
             raise FatalError("Must specify either --srcdir or --srcbag containing v1 files when creating an OCFL object!")
         obj.create(srcdir=srcdir,
                    metadata=metadata,
@@ -112,12 +111,11 @@ def do_object_operation(args):
                   metadata=metadata,
                   objdir=args.objdir)
     elif args.update:
+        srcdir = args.srcdir
         metadata = ocfl.VersionMetadata(args)
-        if args.srcbag:
+        if args.srcbag is not None:
             srcdir = ocfl.bag_as_source(args.srcbag, metadata)
-        elif args.srcdir:
-            srcdir = args.srcdir
-        else:
+        elif args.srcdir is None:
             raise FatalError("Must specify either --srcdir or --srcbag containing new version files when updating an OCFL object!")
         obj.update(objdir=args.objdir,
                    srcdir=srcdir,
