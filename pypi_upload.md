@@ -1,6 +1,6 @@
-=====================
-Updating iiif on pypi
-=====================
+========================
+Updating ocfl-py on pypi
+========================
 
   Notes to remind @zimeon...
 
@@ -26,4 +26,4 @@ Putting up a new version
       twine upload dist/*
       ```
     9. Check on PyPI at <https://pypi.org/project/ocfl-py>
-    10. Finally, start new version number by editing `iiif/_version.py` and `CHANGES.md`
+    10. Finally, start new version number by editing `ocfl/__init__.py` and `CHANGES.md`
