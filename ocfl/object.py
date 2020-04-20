@@ -31,19 +31,19 @@ class ObjectException(Exception):
 class Object(object):
     """Class for handling OCFL Object data and operations."""
 
-    def __init__(self, identifier=None, content_directory='content',
+    def __init__(self, id=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
                  skips=None, forward_delta=True, dedupe=True, lax_digests=False,
                  ocfl_version='draft', fixity=None, fhout=sys.stdout):
         """Initialize OCFL builder.
 
         Parameters:
-           forward_delta - set False to turn off foward delta
-           dedupe - set False to turn off dedupe within versions
-           fixity - list of fixity types to add as fixity section
-           fhout - optional overwrite of STDOUT for print outputs
+          forward_delta - set False to turn off foward delta
+          dedupe - set False to turn off dedupe within versions
+          fixity - list of fixity types to add as fixity section
+          fhout - optional overwrite of STDOUT for print outputs
         """
-        self.identifier = identifier
+        self.id = id
         self.content_directory = content_directory
         self.digest_algorithm = digest_algorithm
         self.filepath_normalization = filepath_normalization
@@ -74,17 +74,17 @@ class Object(object):
         """Map source filepath to a  name within object.
 
         The purpose of the mapping might be normalization, sanitization,
-        content distribution, or something else. Parameters:
+        content distribution, or something else.
 
-        filepath - the source filepath
-        vdir - the current version directory
-        used - disctionary used to check whether a given vfilepath has
-          been used already
+        Parameters:
+          filepath - the source filepath
+          vdir - the current version directory
+          used - disctionary used to check whether a given vfilepath has
+            been used already
 
         Returns:
-
-        vfilepath - the version filepath for this content that starts
-          with vdir/content_directory/
+          vfilepath - the version filepath for this content that starts
+            with vdir/content_directory/
         """
         if self.filepath_normalization == 'uri':
             filepath = urlquote(filepath)
@@ -107,7 +107,7 @@ class Object(object):
     def start_inventory(self):
         """Create inventory start with metadata from self."""
         inventory = {
-            'id': self.identifier,
+            'id': self.id,
             'type': 'https://ocfl.io/1.0/spec/#inventory',
             'digestAlgorithm': self.digest_algorithm,
             'versions': {},
@@ -128,30 +128,35 @@ class Object(object):
     def add_version(self, inventory, srcdir, vdir, metadata=None):
         """Add to inventory data for new version based on files in srcdir.
 
-        srcdir - the directory path where the files for this version exist,
-                 including any version directory that might be present
-        vdir - the version directory that these files are being added in
+        Parameters:
+          inventory - the inventory up to (vdir-1)
+          srcdir - the directory path where the files for this new version exist,
+             including any version directory that might be present
+          vdir - the version directory that these files are being added in
+          metadata - a VersionMetadata object
 
         Returns:
-
-        manifest_to_srcfile - dict mapping from paths in manifest to the full
-            path of the source file
+          manifest_to_srcfile - dict mapping from paths in manifest to the full
+            path of the source file that should be include in the content for
+            this new version
         """
-        state = {}
+        state = {}  # state for this new version
         manifest = inventory['manifest']
         digests_in_version = {}
         manifest_to_srcfile = {}
-        # Go through all files to find new files in manifest and state for each version
+        # Special case for testing -- FIXME, should remove this, used only in fixtures/1.0/content/spec-ex-full
+        inv_file = srcdir + '_inventory.json'
+        if os.path.isfile(inv_file):
+            # Read metadata for this version
+            metadata.from_inventory_file(inv_file, vdir)
+        # Go through all files to find new files in manifest and state for this version
         for (dirpath, dirnames, filenames) in os.walk(srcdir, followlinks=True):
             # Go through filenames, in sort order so the it is deterministic
             # which file is included and which is/are referenced in the case
             # of multiple additions with the same digest
             for filename in sorted(filenames):
-                if filename == "inventory.json":
-                    # Read metadata for this version
-                    metadata.from_inventory_file(os.path.join(dirpath, filename), vdir)
-                    continue
                 filepath = os.path.join(dirpath, filename)
+                print("-o-> " + filepath)
                 sfilepath = os.path.relpath(filepath, srcdir)  # path relative to this version
                 vfilepath = self.map_filepath(sfilepath, vdir, manifest_to_srcfile)
                 digest = self.digest(filepath)
@@ -162,6 +167,7 @@ class Object(object):
                 if self.forward_delta and digest in manifest:
                     # We already have this content in a previous version and we are using
                     # forward deltas so do not need to copy in this one
+                    print("... already have content for digest %s" % (digest))
                     pass
                 else:
                     # This is a new digest so an addition in this version and
@@ -171,6 +177,7 @@ class Object(object):
                     elif not self.dedupe:
                         digests_in_version[digest].append(vfilepath)
                     manifest_to_srcfile[vfilepath] = filepath
+                    print("... %s -> %s" % (vfilepath, filepath))
         # Add any new digests in this version to the manifest
         for digest, paths in digests_in_version.items():
             if digest not in manifest:
@@ -206,7 +213,7 @@ class Object(object):
         # Find the versions
         versions = {}
         for vdir in os.listdir(path):
-            if vdir in self.skips:
+            if vdir in self.skips or not os.path.isdir(os.path.join(path, vdir)):
                 continue
             vn = self.parse_version_directory(vdir)
             versions[vn] = vdir
@@ -244,7 +251,7 @@ class Object(object):
               set then will just write out inventories that would have been
               created
         """
-        if self.identifier is None:
+        if self.id is None:
             raise ObjectException("Identifier is not set!")
         if objdir is not None:
             os.makedirs(objdir)
@@ -268,14 +275,19 @@ class Object(object):
         # Write NAMASTE, inventory and sidecar
         self.write_object_declaration(objdir)
         self.write_inventory_and_sidecar(objdir, inventory)
-        logging.info("Built object %s with %s versions" % (self.identifier, num_versions))
+        logging.info("Built object %s with %s versions" % (self.id, num_versions))
 
     def create(self, srcdir, metadata=None, objdir=None):
         """Create a new OCFL object with v1 content from srcdir.
 
-        Write to dst if set, else just print inventory.
+        Parameters:
+          srcdir - source directory with content for v1
+          metadata - VersionMetadata object for v1
+          objdir - output directory for object (must not already exist), if not
+              set then will just write out inventories that would have been
+              created
         """
-        if self.identifier is None:
+        if self.id is None:
             raise ObjectException("Identifier is not set!")
         if objdir is not None:
             os.makedirs(objdir)
@@ -301,20 +313,30 @@ class Object(object):
                 if not os.path.exists(dstpath):
                     os.makedirs(dstpath)
                 copyfile(srcfile, dstfile)
-        logging.info("Created object %s in %s" % (self.identifier, objdir))
+        logging.info("Created OCFL object %s in %s" % (self.id, objdir))
 
-    def update(self, objdir, metadata=None):
-        """Update object creating a new version."""
+    def update(self, objdir, srcdir=None, metadata=None):
+        """Update object creating a new version with content matching srcdir.
+
+        Parameters:
+          objdir - directory for object to be update, must contain a valid object!
+          srcdir - source directory with version sub-directories
+          metadata - VersionMetadata object applied to all versions
+
+        If srcdir is None then the update will be just of metadata and any settings
+        (such as using a new digest). There will be no content change between
+        versions.
+        """
         validator = OCFLValidator(warnings=False, check_digests=False, lax_digests=self.lax_digests)
         if not validator.validate(objdir):
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
         inventory = self.parse_inventory(objdir)
-        id = inventory['id']
+        self.id = inventory['id']
         old_head = inventory['head']
         versions = inventory['versions']
         head = next_version(old_head)
-        inventory['head'] = head
-        logging.info("Will update %s %s -> %s" % (id, old_head, head))
+        logging.info("Will update %s %s -> %s" % (self.id, old_head, head))
+        os.mkdir(os.path.join(objdir, head))
         # Is this a request to change the digest algorithm?
         old_digest_algorithm = inventory['digestAlgorithm']
         digest_algorithm = self.digest_algorithm
@@ -371,19 +393,31 @@ class Object(object):
                 for old_digest, files in old_state.items():
                     state[old_to_new_digest[old_digest]] = old_state[old_digest]
                 inventory['versions'][vdir]['state'] = state
-        state = copy.deepcopy(inventory['versions'][old_head]['state'])
-        # Add and remove any contents
-        # FIXME -- do something here!
-        # Update and write inventory
         inventory['manifest'] = manifest
-        inventory['versions'][head] = metadata.as_dict(state=state)
-        # Else write out object
-        os.mkdir(os.path.join(objdir, head))
+        # Add and remove any contents by comparing srcdir with existing state and manifest
+        if srcdir is None:
+            # No content Update
+            inventory['head'] = head
+            state = copy.deepcopy(inventory['versions'][old_head]['state'])
+            inventory['versions'][head] = metadata.as_dict(state=state)
+        else:
+            manifest_to_srcfile = self.add_version(inventory=inventory, srcdir=srcdir, vdir=head, metadata=metadata)
+            print("m2s " + str(manifest_to_srcfile))
+            # Copy files into this version
+            for (path, srcfile) in manifest_to_srcfile.items():
+                print('--s-> %s %s' % (path, srcfile))
+                dstfile = os.path.join(objdir, path)
+                dstpath = os.path.dirname(dstfile)
+                if not os.path.exists(dstpath):
+                    os.makedirs(dstpath)
+                copyfile(srcfile, dstfile)
+        # Write inventory in both root and head version
         self.write_inventory_and_sidecar(os.path.join(objdir, head), inventory)
         self.write_inventory_and_sidecar(objdir, inventory)
-        # Delete old inventory sidecar if we changed digest algorithm
+        # Delete old root inventory sidecar if we changed digest algorithm
         if digest_algorithm != old_digest_algorithm:
             os.remove(os.path.join(objdir, 'inventory.json.' + old_digest_algorithm))
+        logging.info("Updated OCFL object %s in %s by adding %s" % (self.id, objdir, head))
 
     def _show_indent(self, level, last=False, last_v=False):
         """Indent string for tree view at level for intermediate or last."""
@@ -461,6 +495,8 @@ class Object(object):
     def extract(self, objdir, version, dstdir):
         """Extract version from object at objdir into dstdir.
 
+        The dstdir itself must not exist but the parent directory must.
+
         Returns the version block from the inventory.
         """
         # Read inventory, set up version
@@ -471,11 +507,12 @@ class Object(object):
         elif version not in inv['versions']:
             raise ObjectException("Object at %s does not include a version '%s'" % (objdir, version))
         # Sanity check on destination
-        if not os.path.isdir(dstdir):
-            raise ObjectException("Destination %s does not exist or is not directory" % (dstdir))
-        dstdir = os.path.join(dstdir, version)
-        if os.path.exists(dstdir):
-            raise ObjectException("Target directorty %s already exists, aborting!" % (dstdir))
+        if os.path.isdir(dstdir):
+            raise ObjectException("Target directory %s already exists, aborting!" % (dstdir))
+
+        (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
+        if parentdir != '' and not os.path.exists(parentdir):
+            raise ObjectException("Destination parent %s does not exist or is not directory" % (parentdir))
         os.mkdir(dstdir)
         # Now extract...
         manifest = inv['manifest']

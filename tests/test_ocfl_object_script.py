@@ -44,7 +44,7 @@ class TestAll(unittest.TestCase):
         if include_objdir:
             cmd += ['--objdir', os.path.join(self.tmpdir, treedir)]
         elif include_dstdir:
-            cmd += ['--dstdir', self.tmpdir]
+            cmd += ['--dstdir', os.path.join(self.tmpdir, include_dstdir)]
         cmd += options
         code = 0
         try:
@@ -93,7 +93,7 @@ class TestAll(unittest.TestCase):
         """Test object creation with just v1."""
         out = self.run_ocfl_store("New object with just v1",
                                   ['--create', '--id', 'http://example.org/obj1', '--src', 'fixtures/1.0/content/cf1/v1', '-v'])
-        self.assertIn('Created object http://example.org/obj1', out)
+        self.assertIn('Created OCFL object http://example.org/obj1', out)
 
     def test03_create_multi(self):
         """Test object build with three versions."""
@@ -106,7 +106,7 @@ class TestAll(unittest.TestCase):
         out = self.run_ocfl_store("Extract v1",
                                   ['--extract', 'v1', '--objdir', 'fixtures/1.0/good-objects/spec-ex-full', '-v'],
                                   include_objdir=False,
-                                  include_dstdir=True)
+                                  include_dstdir='v1')
         # Expect:
         # v1
         # ├── [          0]  empty.txt
@@ -120,7 +120,7 @@ class TestAll(unittest.TestCase):
         out = self.run_ocfl_store("Extract v2",
                                   ['--extract', 'v2', '--objdir', 'fixtures/1.0/good-objects/spec-ex-full', '-v'],
                                   include_objdir=False,
-                                  include_dstdir=True)
+                                  include_dstdir='v2')
         # Expect:
         # v2
         # ├── [          0]  empty.txt
@@ -141,7 +141,7 @@ class TestAll(unittest.TestCase):
         out = self.run_ocfl_store("No identifier",
                                   ['--create'],
                                   include_objdir=False)
-        self.assertIn('Must specify --srcdir', out)
+        self.assertIn('Must specify either --srcdir', out)
         out = self.run_ocfl_store("No identifier",
                                   ['--create', '--srcdir', 'tmp'],
                                   include_objdir=False)

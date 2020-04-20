@@ -3,7 +3,6 @@
 import argparse
 import logging
 import ocfl
-import bagit
 import os.path
 import sys
 
@@ -24,23 +23,23 @@ def parse_arguments():
     # so use a plain group instead and will check later
     commands = parser.add_argument_group(title="Commands (exactly one required)")
     commands.add_argument('--create', action='store_true',
-                          help='Create a new object with version 1 files in srcdir')
+                          help='Create a new object with version 1 files in --srcdir or from --srcbag')
     commands.add_argument('--build', action='store_true',
-                          help='Build a new object from version directories in srcdir')
+                          help='Build a new object from version directories in --srcdir')
     commands.add_argument('--update', action='store_true',
-                          help='Update but adding a new version to an OCFL object')
+                          help='Update an object by adding a new version from files in --srcdir or from --srcbag')
     commands.add_argument('--show', action='store_true',
                           help='Show versions and files in an OCFL object')
     commands.add_argument('--validate', action='store_true',
                           help='Validate an OCFL object')
     commands.add_argument('--extract', action='store', default=None,
-                          help='Extract a specific version (or "head") into dstdir')
-    commands.add_argument('--extract-bag', action='store', default=None,
-                          help='Extract a specific version (or "head") into a Bagit bag in dstdir')
+                          help='Extract a specific version (or "head") into --dstdir')
 
     src_params = parser.add_argument_group(title="Source files")
     src_params.add_argument('--srcdir', '--src', action='store',
-                            help='source directory path')
+                            help='Source directory path')
+    src_params.add_argument('--srcbag', action='store',
+                            help='Source Bagit bag path (alternative to --srcdir)')
 
     obj_params = parser.add_argument_group(title="OCFL object parameters")
     obj_params.add_argument('--digest', default='sha512',
@@ -49,8 +48,10 @@ def parse_arguments():
                             help='add fixity type to add')
     obj_params.add_argument('--id', default=None,
                             help='identifier of object')
-    obj_params.add_argument('--dstdir', '--dst', action='store', default='/tmp',
+    obj_params.add_argument('--dstdir', '--dst', action='store', default='/tmp/ocfl-out',
                             help='destination directory path')
+    obj_params.add_argument('--dstbag', action='store',
+                            help='destination Bagit bag path (alternative to --dstdir)')
 
     # Version metadata and object settings
     ocfl.add_version_metadata_args(obj_params)
@@ -60,19 +61,24 @@ def parse_arguments():
     args = parser.parse_args()
 
     # Require command and only one command
-    cmds = ['create', 'build', 'update', 'show', 'validate', 'extract', 'extract_bag']
+    cmds = ['create', 'build', 'update', 'show', 'validate', 'extract']
     num_cmds = 0
     for cmd in cmds:
         if getattr(args, cmd):
             num_cmds += 1
     if num_cmds != 1:
         raise FatalError("Exactly one command (%s) must be specified" % ', '.join(cmds))
+
+    # Must not specify both srcdir and srcbag
+    if args.srcdir and args.srcbag:
+        raise FatalError("Must not specify both --srcdir and --srcbag")
+
     return args
 
 
 def do_object_operation(args):
     """Implement object operations in a way that can be reused by ocfl-store.py."""
-    obj = ocfl.Object(identifier=args.id,
+    obj = ocfl.Object(id=args.id,
                       digest_algorithm=args.digest,
                       filepath_normalization=args.normalization,
                       skips=args.skip,
@@ -82,10 +88,19 @@ def do_object_operation(args):
                       ocfl_version=args.ocfl_version,
                       fixity=args.fixity)
     if args.create:
-        if args.srcdir is None:
-            raise FatalError("Must specify --srcdir containing v1 files when creating an OCFL object!")
+        srcdir = args.srcdir
         metadata = ocfl.VersionMetadata(args)
-        obj.create(srcdir=args.srcdir,
+        if args.srcbag is not None:
+            srcdir = ocfl.bag_as_source(args.srcbag, metadata)
+            if metadata.id is not None:
+                if obj.id:
+                    if obj.id != metadata.id:
+                        raise FatalError("Identifier specified (%s) and identifier from Bagit bag (%s) do not match!" % (obj.id, metadata.id))
+                else:
+                    obj.id = metadata.id
+        elif args.srcdir is None:
+            raise FatalError("Must specify either --srcdir or --srcbag containing v1 files when creating an OCFL object!")
+        obj.create(srcdir=srcdir,
                    metadata=metadata,
                    objdir=args.objdir)
     elif args.build:
@@ -96,33 +111,32 @@ def do_object_operation(args):
                   metadata=metadata,
                   objdir=args.objdir)
     elif args.update:
+        srcdir = args.srcdir
         metadata = ocfl.VersionMetadata(args)
+        if args.srcbag is not None:
+            srcdir = ocfl.bag_as_source(args.srcbag, metadata)
+        elif args.srcdir is None:
+            raise FatalError("Must specify either --srcdir or --srcbag containing new version files when updating an OCFL object!")
         obj.update(objdir=args.objdir,
+                   srcdir=srcdir,
                    metadata=metadata)
     elif args.show:
         obj.show(objdir=args.objdir)
     elif args.validate:
         obj.validate(objdir=args.objdir)
-    elif args.extract or args.extract_bag:
-        version = args.extract or args.extract_bag
-        dst = os.path.join(args.dstdir, version)
-        version_metadata = obj.extract(objdir=args.objdir,
-                                       version=version,
-                                       dstdir=args.dstdir)
-        if args.extract_bag:
-            tags = {}
-            if version_metadata.id:
-                tags['External-Identifier'] = version_metadata.id
-            if version_metadata.message:
-                tags['External-Description'] = version_metadata.message
-            if version_metadata.name:
-                tags['Contact-Name'] = version_metadata.name
-            if version_metadata.address and version_metadata.address.startswith('mailto:'):
-                tags['Contact-Email'] = version_metadata.address[7:]
-            bag = bagit.make_bag(dst, tags)
-            print("Extracted content for %s saved as Bagit bag in %s" % (version, dst))
-        else:
+    elif args.extract:
+        if args.dstdir and args.dstbag:
+            args.dstdir = None  # Override dstdir if dstbag specified
+        version = args.extract
+        dst = os.path.join(args.dstdir or args.dstbag)
+        metadata = obj.extract(objdir=args.objdir,
+                               version=version,
+                               dstdir=dst)
+        if args.dstdir:
             print("Extracted content for %s in %s" % (version, dst))
+        else:  # args.dstbag
+            bag_extracted_version(dst, metadata)
+            print("Extracted content for %s saved as Bagit bag in %s" % (version, dst))
     else:
         raise FatalError("Command argument not supported!")
 
