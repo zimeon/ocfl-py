@@ -1,8 +1,9 @@
 # ocfl-py changelog
 
-## ?????????? v0.0.2
+## 2020-04-20 v0.0.2
 
-  * ???
+  * Two in a day...
+  * Support for version creation from and extraction as Bagit bags
 
 ## 2020-04-20 v0.0.1
 
