@@ -13,6 +13,11 @@ from ocfl.version import VersionMetadata
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
+    if sys.version_info < (3, 2):
+        def assertRegex(self, *args, **kwargs):
+            """Hack for Python 2.7."""
+            return self.assertRegexpMatches(*args, **kwargs)
+
     def test01_init(self):
         """Test Object init."""
         oo = Object()
