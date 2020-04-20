@@ -16,6 +16,26 @@ See `README_*.md` files for current examples.
 
 Have dropped Python 2, it is time for Python 3.
 
+Installing
+----------
+
+This code is Alpha, in active development both to flesh out support for the
+OCFL draft specification and to track changes in it. To get the most up to 
+date version check out the ``master`` branch from github.
+
+I hope to keep a version not too far out of date on PyPI too, which can
+be installed with:
+
+    pip install ocfl-py
+
+There should then be three scripts available:
+
+- ``ocfl-validate.py`` - validate an OCFL object
+- ``ocfl-object.py`` - build and manipulate an OCFL object
+- ``ocfl-store.py`` - add or access OCFL objects under an OCFL object root
+
+Each script takes ``-h`` for help.
+
 Contributing
 ------------
 
