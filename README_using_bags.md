@@ -2,8 +2,9 @@
 
 ## Building from a set of bags 
 
-Imagine that we have 4 Bagit bags that represent the evolving state
-of and object:
+Imagine that we have a Bagit bag [`tests/testdata/bags/uaa_v1`](https://github.com/zimeon/ocfl-py/tree/master/tests/testdata/bags/uaa_v1) that represents the initial state
+of an object. We can use `--create` to make a new OCFL object `/tmp/obj` with that content as the
+`v1` state:
 
 ```
 (py38) simeon@RottenApple ocfl-py> rm -rf /tmp/obj
@@ -18,7 +19,11 @@ INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/
 -o-> tests/testdata/bags/uaa_v1/data/my_content/poe.txt
 ... v1/content/my_content/poe.txt -> tests/testdata/bags/uaa_v1/data/my_content/poe.txt
 INFO:root:Created OCFL object info:bb123cd4567 in /tmp/obj
+```
 
+Now that we have the object `/tmp/obj` it is of course valid and looking inside we see `v1` with the expected 2 content files:
+
+```
 (py38) simeon@RottenApple ocfl-py> ./ocfl-validate.py /tmp/obj
 
 OCFL object at /tmp/obj is VALID
@@ -36,7 +41,7 @@ OCFL object at /tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
     └── inventory.json.sha512 
 ```
 
-Add v2:
+If we have a bag [`tests/testdata/bags/uaa_v2`](https://github.com/zimeon/ocfl-py/tree/master/tests/testdata/bags/uaa_v2) with updated content we can `--update` the object to create v2:
 
 ```
 (py38) simeon@RottenApple ocfl-py> ./ocfl-object.py -v --update --objdir /tmp/obj --srcbag tests/testdata/bags/uaa_v2
@@ -58,11 +63,11 @@ INFO:root:Will update info:bb123cd4567 v1 -> v2
 ... already have content for digest ffc150e7944b5cf5ddb899b2f48efffbd490f97632fc258434aefc4afb92aef2e3441ddcceae11404e5805e1b6c804083c9398c28f061c9ba42dd4bac53d5a2e
 m2s {}
 INFO:root:Updated OCFL object info:bb123cd4567 in /tmp/obj by adding v2
+```
 
-(py38) simeon@RottenApple ocfl-py> ./ocfl-validate.py /tmp/obj
+Looking inside the object we now see `v1` and `v2`. There are no content files inside `v2` because although this update added two files they have identical content (and hence digest) as one of the files in `v1`:
 
-OCFL object at /tmp/obj is VALID
-
+```
 (py38) simeon@RottenApple ocfl-py> ./ocfl-object.py --show --objdir /tmp/obj
 OCFL object at /tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED) 
 
@@ -79,7 +84,7 @@ OCFL object at /tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
     └── inventory.json.sha512 
 ```
 
-Add v3:
+Similarly we can `--update` to create `v3`:
 
 ```
 (py38) simeon@RottenApple ocfl-py> ./ocfl-object.py -v --update --objdir /tmp/obj --srcbag tests/testdata/bags/uaa_v3
@@ -99,11 +104,11 @@ INFO:root:Will update info:bb123cd4567 v2 -> v3
 m2s {'v3/content/my_content/poe-nevermore.txt': 'tests/testdata/bags/uaa_v3/data/my_content/poe-nevermore.txt'}
 --s-> v3/content/my_content/poe-nevermore.txt tests/testdata/bags/uaa_v3/data/my_content/poe-nevermore.txt
 INFO:root:Updated OCFL object info:bb123cd4567 in /tmp/obj by adding v3
+```
 
-(py38) simeon@RottenApple ocfl-py> ./ocfl-validate.py /tmp/obj
+And we see that `v3` does add another file:
 
-OCFL object at /tmp/obj is VALID
-
+```
 (py38) simeon@RottenApple ocfl-py> ./ocfl-object.py --show --objdir /tmp/obj
 OCFL object at /tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED) 
 
@@ -124,7 +129,7 @@ OCFL object at /tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
     └── inventory.json.sha512 
 ```
 
-Add v4:
+Finally we can `--update` again to create `v4`:
 
 ```
 (py38) simeon@RottenApple ocfl-py> ./ocfl-object.py -v --update --objdir /tmp/obj --srcbag tests/testdata/bags/uaa_v4
@@ -147,7 +152,11 @@ INFO:root:Will update info:bb123cd4567 v3 -> v4
 m2s {'v4/content/my_content/dunwich.txt': 'tests/testdata/bags/uaa_v4/data/my_content/dunwich.txt'}
 --s-> v4/content/my_content/dunwich.txt tests/testdata/bags/uaa_v4/data/my_content/dunwich.txt
 INFO:root:Updated OCFL object info:bb123cd4567 in /tmp/obj by adding v4
+```
 
+The complete object now has the expected 4 versions with 1 new file in `v4`:
+
+```
 (py38) simeon@RottenApple ocfl-py> ./ocfl-validate.py /tmp/obj
 
 OCFL object at /tmp/obj is VALID
@@ -178,7 +187,7 @@ OCFL object at /tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
 
 ## Extracting a version as a bag
 
-Let's extract v4 from the object and compare:
+Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` content as a Bagit bag:
 
 ```
 (py38) simeon@RottenApple ocfl-py> ./ocfl-object.py -v --extract v4 --objdir /tmp/obj --dstbag /tmp/uaa_v4 
@@ -198,7 +207,7 @@ INFO:bagit:Creating /tmp/uaa_v4/tagmanifest-sha512.txt
 Extracted content for v4 saved as Bagit bag in /tmp/uaa_v4
 ```
 
-Comparing that with the original bag:
+We note that the OCFL object had only one `content` file in `v4` but the extracted object state for `v4` includes 4 files, two of which have identical content (`dracula.txt` and `another_directory/a_third_copy_of_dracula.txt`). We can now compare the extracted bag `/tmp/uaa_v4` that with the bag we used to create `v4` `tests/testdata/bags/uaa_v4` using a recursive `diff`:
 
 ```
 (py38) simeon@RottenApple ocfl-py> diff -r /tmp/uaa_v4 tests/testdata/bags/uaa_v4
@@ -214,3 +223,5 @@ diff -r /tmp/uaa_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagmanifes
 ---
 > 10624e6d45462def7af66d1a0d977606c7b073b01809c1d42258cfab5c34a275480943cbe78044416aee1f23822cc3762f92247b8f39b5c6ddc5ae32a8f94ce5 bag-info.txt
 ```
+
+The only differences are in the `bag-info.txt` file and the checksum file for that file (`tagmanifest-sha512.txt`). The content matches.
