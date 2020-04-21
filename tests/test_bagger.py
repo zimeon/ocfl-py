@@ -1,8 +1,11 @@
 """Bagger tests."""
 import unittest
 import bagit
+import os.path
+import tempfile
 from ocfl.bagger import BaggerError, bag_as_source, bag_extracted_version
 from ocfl.version import VersionMetadata
+
 
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
@@ -31,3 +34,33 @@ class TestAll(unittest.TestCase):
 
     def test_bag_extracted_version(self):
         """Test bag_extracted_version method."""
+        # Write bag with no metadata
+        tempdir = tempfile.mkdtemp(prefix='test_bag1')
+        with open(os.path.join(tempdir, 'my_file'), 'w') as fh:
+            fh.write("Something\n")
+        metadata = VersionMetadata()
+        bag_extracted_version(tempdir, metadata)
+        with open(os.path.join(tempdir, 'bag-info.txt'), 'r') as fh:
+            info = fh.read()
+        self.assertNotIn('Contact-Email', info)
+        self.assertNotIn('Contact-Name', info)
+        self.assertNotIn('External-Description', info)
+        self.assertNotIn('External-Identifier', info)
+        self.assertIn('Payload-Oxum', info)
+        # Write bag with all metadata
+        tempdir = tempfile.mkdtemp(prefix='test_bag2')
+        with open(os.path.join(tempdir, 'my_file2'), 'w') as fh:
+            fh.write("Something else\n")
+        metadata = VersionMetadata()
+        metadata.message = "hello"
+        metadata.name = "A Person"
+        metadata.address = "mailto:a.person@example.org"
+        metadata.id = 'info:a-bag-2'
+        bag_extracted_version(tempdir, metadata)
+        with open(os.path.join(tempdir, 'bag-info.txt'), 'r') as fh:
+            info = fh.read()
+        self.assertIn('Contact-Email: a.person@example.org', info)
+        self.assertIn('Contact-Name: A Person', info)
+        self.assertIn('External-Description: hello', info)
+        self.assertIn('External-Identifier: info:a-bag-2', info)
+        self.assertIn('Payload-Oxum', info)
