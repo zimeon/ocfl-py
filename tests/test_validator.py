@@ -40,14 +40,15 @@ class TestAll(unittest.TestCase):
 
     def test02_warn(self):
         """Check warm objects pass but give expected warnings."""
-        for warn, codes in {'W007_no_message_or_user': ['W007a', 'W007b'],
-                            'W001_zero_padded_versions': ['W001'],
+        for warn, codes in {'W001_zero_padded_versions': ['W001'],
                             'W001_W004_W005_zero_padded_versions': ['W001', 'W004', 'W005'],
                             'W002_extra_dir_in_version_dir': ['W002'],
                             'W004_uses_sha256': ['W004'],
-                            'W005_id_not_uri': ['W005'],
-                            'W008_user_no_address': ['W008'],
                             'W004_versions_diff_digests': ['W004'],
+                            'W005_id_not_uri': ['W005'],
+                            'W007_no_message_or_user': ['W007a', 'W007b'],
+                            'W008_user_no_address': ['W008'],
+                            'W010_no_version_inventory': ['W010'],
                             'W011_version_inv_diff_metadata': ['W011']}.items():
             v = OCFLValidator()
             filepath = 'fixtures/1.0/warn-objects/' + warn

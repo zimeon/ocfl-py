@@ -162,7 +162,7 @@ class OCFLValidator(object):
             version_path = os.path.join(path, version_dir)
             inv_file = os.path.join(version_path, 'inventory.json')
             if not os.path.exists(inv_file):
-                self.log.error('W010', where=version_dir)
+                self.log.warn('W010', where=version_dir)
             elif version_dir == last_version:
                 # Don't validate in this case. Per the spec the inventory in the last version
                 # MUST be identical to the copy in the object root
