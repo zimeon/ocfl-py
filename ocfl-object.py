@@ -135,7 +135,7 @@ def do_object_operation(args):
         if args.dstdir:
             print("Extracted content for %s in %s" % (version, dst))
         else:  # args.dstbag
-            bag_extracted_version(dst, metadata)
+            ocfl.bag_extracted_version(dst, metadata)
             print("Extracted content for %s saved as Bagit bag in %s" % (version, dst))
     else:
         raise FatalError("Command argument not supported!")
