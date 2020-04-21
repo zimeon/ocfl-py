@@ -1,4 +1,4 @@
-# OCFL 
+# OCFL Object manipulation using Bagit bags to import and export versions
 
 ## Building from a set of bags 
 
@@ -21,7 +21,7 @@ INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/
 INFO:root:Created OCFL object info:bb123cd4567 in /tmp/obj
 ```
 
-Now that we have the object `/tmp/obj` it is of course valid and looking inside we see `v1` with the expected 2 content files:
+Now that we have the object `/tmp/obj` it is of course valid. Looking inside it we see `v1` with the expected 2 content files:
 
 ```
 (py38) simeon@RottenApple ocfl-py> ./ocfl-validate.py /tmp/obj
@@ -41,7 +41,7 @@ OCFL object at /tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
     └── inventory.json.sha512 
 ```
 
-If we have a bag [`tests/testdata/bags/uaa_v2`](https://github.com/zimeon/ocfl-py/tree/master/tests/testdata/bags/uaa_v2) with updated content we can `--update` the object to create v2:
+If we have a bag [`tests/testdata/bags/uaa_v2`](https://github.com/zimeon/ocfl-py/tree/master/tests/testdata/bags/uaa_v2) with updated content we can `--update` the object to create `v2`:
 
 ```
 (py38) simeon@RottenApple ocfl-py> ./ocfl-object.py -v --update --objdir /tmp/obj --srcbag tests/testdata/bags/uaa_v2
@@ -84,7 +84,7 @@ OCFL object at /tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
     └── inventory.json.sha512 
 ```
 
-Similarly we can `--update` to create `v3`:
+Similarly we can `--update` with [`tests/testdata/bags/uaa_v3`](https://github.com/zimeon/ocfl-py/tree/master/tests/testdata/bags/uaa_v3) to create `v3`:
 
 ```
 (py38) simeon@RottenApple ocfl-py> ./ocfl-object.py -v --update --objdir /tmp/obj --srcbag tests/testdata/bags/uaa_v3
@@ -129,7 +129,7 @@ OCFL object at /tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
     └── inventory.json.sha512 
 ```
 
-Finally we can `--update` again to create `v4`:
+Finally, we can `--update` again with [`tests/testdata/bags/uaa_v4`](https://github.com/zimeon/ocfl-py/tree/master/tests/testdata/bags/uaa_v4) to create `v4`:
 
 ```
 (py38) simeon@RottenApple ocfl-py> ./ocfl-object.py -v --update --objdir /tmp/obj --srcbag tests/testdata/bags/uaa_v4
