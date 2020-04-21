@@ -1,6 +1,6 @@
 # OCFL 
 
-# Building from a set of bags 
+## Building from a set of bags 
 
 Imagine that we have 4 Bagit bags that represent the evolving state
 of and object:
@@ -176,7 +176,9 @@ OCFL object at /tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
     └── inventory.json.sha512 
 ```
 
-Now, let's extract v4 from the object and compare with the original v4 bag:
+## Extracting a version as a bag
+
+Let's extract v4 from the object and compare:
 
 ```
 (py38) simeon@RottenApple ocfl-py> ./ocfl-object.py -v --extract v4 --objdir /tmp/obj --dstbag /tmp/uaa_v4 
@@ -194,7 +196,11 @@ INFO:bagit:Creating bagit.txt
 INFO:bagit:Creating bag-info.txt
 INFO:bagit:Creating /tmp/uaa_v4/tagmanifest-sha512.txt
 Extracted content for v4 saved as Bagit bag in /tmp/uaa_v4
+```
 
+Comparing that with the original bag:
+
+```
 (py38) simeon@RottenApple ocfl-py> diff -r /tmp/uaa_v4 tests/testdata/bags/uaa_v4
 diff -r /tmp/uaa_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
 1,2c1
