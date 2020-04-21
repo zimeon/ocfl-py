@@ -5,7 +5,7 @@ Two scenarios:
 1) A Bagit bag is used as the source for the content of one version of an
 OCFL object.
 
-2) A Bagit bags if used as the output destination for the content extracted
+2) A Bagit bag is used as the output destination for the content extracted
 from one version of an OCFL object.
 
 This code relies upon the https://github.com/LibraryOfCongress/bagit-python
@@ -28,16 +28,22 @@ class BaggerError(Exception):
 def bag_as_source(srcbag, metadata):
     """Validate and read metadata from srcbag as input.
 
-    Returns the srcdir for OCFL object content as it should be expressed
-    in the state block.
+    The notion of a bag being valid includes it being complete, ie. not having
+    a fetch.txt to provide URLs for files that are not included in local
+    filesystem. We thus don't need to test for that case, bagit.is_valid() is
+    enough.
+
+    Parameters:
+        srcbag - The directory of the bag on disk
+        metadata - A VersionMetadata object that will be updated with metadata
+            from the bag
+
+    Returns the srcdir for OCFL object content within the bag as it should be
+    expressed in the state block.
     """
     bag = bagit.Bag(srcbag)
     if not bag.is_valid():
         raise BaggerError("Source Bagit bag at %s is not valid" % (srcbag))
-    num_fetch = len(list(bag.fetch_entries()))
-    if num_fetch > 0:
-        raise BaggerError("Source Bagit bag at %s includes fetch.txt with %d entries, only locally complete bags supported" % (srcbag, num_fetch))
-    srcdir = os.path.join(srcbag, 'data')
     # Local arguments override but otherwise take metadata from bag-info.txt
     if not metadata.id and 'External-Identifier' in bag.info:
         metadata.id = bag.info['External-Identifier']
@@ -49,11 +55,18 @@ def bag_as_source(srcbag, metadata):
         metadata.name = bag.info['Contact-Name']
     if not metadata.address and 'Contact-Email' in bag.info:
         metadata.address = 'mailto:' + bag.info['Contact-Email']
-    return srcdir
+    return os.path.join(srcbag, 'data')
 
 
 def bag_extracted_version(dst, metadata):
-    """Bag the extracted files in dst using metadata from metadata."""
+    """Bag the extracted files in dst using metadata from metadata.
+
+    Paramaters:
+        dst - Destination location for the bag that initially contains the
+            content to be bagged (ie. end up in the data directory)
+        metadata - A VersionMetadata object that has metadata to add into
+            the bag information
+    """
     tags = {}
     if metadata.id:
         tags['External-Identifier'] = metadata.id
