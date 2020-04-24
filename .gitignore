@@ -11,3 +11,4 @@ htmlcov/
 ocfl_py.egg-info/
 .eggs/
 .tox/
+extra_fixtures/warn-objects/W003_empty_content_dir
