@@ -62,6 +62,7 @@ class TestAll(unittest.TestCase):
                             'W005_id_not_uri': ['W005'],
                             'W007_no_message_or_user': ['W007a', 'W007b'],
                             'W008_user_no_address': ['W008'],
+                            'W009_user_address_not_uri': ['W009'],
                             'W010_no_version_inventory': ['W010'],
                             'W011_version_inv_diff_metadata': ['W011']}.items():
             v = OCFLValidator()
