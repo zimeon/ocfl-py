@@ -208,11 +208,13 @@ class OCFLValidator(object):
                     elif entry == self.content_directory:
                         # Check content_directory
                         content_path = os.path.join(version_path, self.content_directory)
+                        num_content_files_in_version = 0
                         for dirpath, dirs, files in os.walk(content_path, topdown=True):
                             for file in files:
                                 obj_path = os.path.relpath(os.path.join(dirpath, file), start=path)
                                 files_seen.add(obj_path)
-                        if len(files_seen) == 0:
+                                num_content_files_in_version += 1
+                        if num_content_files_in_version == 0:
                             self.log.warn("W003", where=version_dir)
                     elif os.path.isdir(os.path.join(version_path, entry)):
                         self.log.warn("W002", where=version_dir, entry=entry)

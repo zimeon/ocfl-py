@@ -1,8 +1,21 @@
 """Test validation."""
 import os
 import os.path
+import shutil
+from zipfile import ZipFile
 import unittest
 from ocfl.validator import OCFLValidator
+
+# Setup to unpack a test case with an empty content directory
+# that we can't store in git
+if os.path.isdir('extra_fixtures/warn-objects/W003_empty_content_dir'):
+    shutil.rmtree('extra_fixtures/warn-objects/W003_empty_content_dir')
+if os.path.isfile('extra_fixtures/warn-objects/W003_empty_content_dir.zip'):
+    zf = ZipFile('extra_fixtures/warn-objects/W003_empty_content_dir.zip', 'r')
+    zf.extractall('extra_fixtures/warn-objects')
+    zf.close()
+if not os.path.isdir('extra_fixtures/warn-objects/W003_empty_content_dir'):
+    raise Exception("Oops, something went wrong with unzipping extra_fixtures/warn-objects/W003_empty_content_dir.zip")
 
 
 class TestAll(unittest.TestCase):
@@ -43,6 +56,7 @@ class TestAll(unittest.TestCase):
         for warn, codes in {'W001_zero_padded_versions': ['W001'],
                             'W001_W004_W005_zero_padded_versions': ['W001', 'W004', 'W005'],
                             'W002_extra_dir_in_version_dir': ['W002'],
+                            'W003_empty_content_dir': ['W003'],
                             'W004_uses_sha256': ['W004'],
                             'W004_versions_diff_digests': ['W004'],
                             'W005_id_not_uri': ['W005'],
