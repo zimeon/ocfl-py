@@ -243,6 +243,8 @@ class InventoryValidator(object):
                         self.warn('W008', version=v)
                     elif type(user['address']) != str:
                         self.error('E406', version=v)
+                    elif not re.match(r'''\w{3,6}:''', user['address']):
+                        self.warn('W009', version=v)
         return digests_used
 
     def validate_state_block(self, state, version):

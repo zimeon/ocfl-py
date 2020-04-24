@@ -380,6 +380,13 @@
     },
     "spec": "In the OCFL Object Inventory, in the version block, the value of the user key SHOULD contain an address key, address"
   },
+  "W009": {
+    "params": ["where", "version"],
+    "description": {
+       "en": "OCFL Object %s inventory %s version block user description SHOULD be a mailto: or person identifier URI"
+    },
+    "spec": "In the OCFL Object Inventory, in the version block, the address value SHOULD be a URI: either a mailto URI [RFC6068] with the e-mail address of the user or a URL to a personal identifier, e.g., an ORCID iD."
+  },
   "W010": {
     "params": ["where"],
     "description": {
