@@ -58,7 +58,7 @@ setup(
     author='Simeon Warner',
     author_email='simeon.warner@cornell.edu',
     packages=['ocfl'],
-    package_data={'ocfl': ['data/*'],
+    package_data={'ocfl': ['data/*']},
     scripts=['ocfl-object.py', 'ocfl-store.py', 'ocfl-validate.py'],
     classifiers=["Development Status :: 2 - Pre-Alpha",
                  "Intended Audience :: Developers",
