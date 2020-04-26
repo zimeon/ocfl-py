@@ -1,5 +1,9 @@
 # ocfl-py changelog
 
+## ??? v0.0.4
+
+  * ...
+
 ## 2020-04-26 v0.0.3
 
   * Add missing package data to install
