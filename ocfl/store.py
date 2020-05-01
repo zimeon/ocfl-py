@@ -179,6 +179,8 @@ class Store(object):
                                       lax_digests=self.lax_digests)
                 if validator.validate(dirpath):
                     good_objects += 1
+                else:
+                    logging.info("Object at %s in INVALID" % (dirpath))
                 num_objects += 1
         if validate_objects:
             if good_objects == num_objects:
