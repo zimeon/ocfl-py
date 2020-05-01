@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 """Utility functions to support the OCFL Object library."""
-import copy
-import hashlib
 import os
 import os.path
 import re
-import logging
-import sys
 try:
     from urllib.parse import quote as urlquote  # py3
 except ImportError:                             # pragma: no cover -- py2

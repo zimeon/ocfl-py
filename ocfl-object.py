@@ -31,7 +31,7 @@ def parse_arguments():
     commands.add_argument('--show', action='store_true',
                           help='Show versions and files in an OCFL object')
     commands.add_argument('--validate', action='store_true',
-                          help='Validate an OCFL object')
+                          help='Validate an OCFL object (use ocfl-validate.py for more control)')
     commands.add_argument('--extract', action='store', default=None,
                           help='Extract a specific version (or "head") into --dstdir')
 

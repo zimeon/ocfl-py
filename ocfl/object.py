@@ -327,7 +327,7 @@ class Object(object):
         (such as using a new digest). There will be no content change between
         versions.
         """
-        validator = OCFLValidator(warnings=False, check_digests=False, lax_digests=self.lax_digests)
+        validator = OCFLValidator(check_digests=False, lax_digests=self.lax_digests)
         if not validator.validate(objdir):
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
         inventory = self.parse_inventory(objdir)
@@ -432,7 +432,10 @@ class Object(object):
 
     def show(self, objdir):
         """Show OCFL object at objdir."""
-        validator = OCFLValidator(warnings=False, check_digests=False, lax_digests=self.lax_digests)
+        validator = OCFLValidator(show_warnings=False,
+                                  show_errors=True,
+                                  check_digests=False,
+                                  lax_digests=self.lax_digests)
         passed = validator.validate(objdir)
         if passed:
             self.prnt("OCFL object at %s has VALID STRUCTURE (DIGESTS NOT CHECKED) " % (objdir))
@@ -481,9 +484,12 @@ class Object(object):
                 nn += 1
                 self.prnt(self._show_indent(1, last, (nn == len(v_notes))) + v_note)
 
-    def validate(self, objdir, warnings=False, check_digests=True):
+    def validate(self, objdir, show_warnings=False, show_errors=True, check_digests=True):
         """Validate OCFL object at objdir."""
-        validator = OCFLValidator(warnings=warnings, check_digests=check_digests, lax_digests=self.lax_digests)
+        validator = OCFLValidator(show_warnings=show_warnings,
+                                  show_errors=show_errors,
+                                  check_digests=check_digests,
+                                  lax_digests=self.lax_digests)
         passed = validator.validate(objdir)
         self.prnt(str(validator))
         if passed:
