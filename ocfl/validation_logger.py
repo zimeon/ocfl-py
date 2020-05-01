@@ -14,9 +14,10 @@ class ValidationLogger(object):
 
     validation_codes = None
 
-    def __init__(self, warnings=False, lang='en'):
+    def __init__(self, show_warnings=False, show_errors=True, lang='en'):
         """Initialize OCFL validation logger."""
-        self.warnings = warnings
+        self.show_warnings = show_warnings
+        self.show_errors = show_errors
         self.lang = lang
         self.codes = {}
         self.messages = []
@@ -60,7 +61,7 @@ class ValidationLogger(object):
             message += ' (see ' + self.spec + '#' + m.group(1) + ')'
         # Store set of codes with last message for that code, and _full_ list of messages
         self.codes[code] = message
-        if severity == 'error' or self.warnings:
+        if (severity == 'error' and self.show_errors) or (severity != 'error' and self.show_warnings):
             self.messages.append(message)
 
     def error(self, code, **args):

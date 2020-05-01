@@ -21,14 +21,13 @@ from .w3c_datetime import str_to_datetime
 class OCFLValidator(object):
     """Class for OCFL Validator."""
 
-    def __init__(self, log=None, warnings=False, check_digests=True, lax_digests=False, lang='en'):
+    def __init__(self, log=None, show_warnings=False, show_errors=True, check_digests=True, lax_digests=False, lang='en'):
         """Initialize OCFL validator."""
         self.log = log
-        self.warnings = warnings
         self.check_digests = check_digests
         self.lax_digests = lax_digests
         if self.log is None:
-            self.log = ValidationLogger(warnings=warnings, lang=lang)
+            self.log = ValidationLogger(show_warnings=show_warnings, show_errors=show_errors, lang=lang)
         self.registered_extensions = ['FIXME']  # FIXME - add names when something registered
         # Object state
         self.digest_algorithm = 'sha512'
@@ -37,7 +36,7 @@ class OCFLValidator(object):
         self.root_inv_validator = None
 
     def __str__(self):
-        """String representation."""
+        """String representation of validation log."""
         return str(self.log)
 
     def validate(self, path):
