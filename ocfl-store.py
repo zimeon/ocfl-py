@@ -54,7 +54,9 @@ args = parser.parse_args()
 logging.basicConfig(level=logging.INFO if args.verbose else logging.WARN)
 
 try:
-    store = ocfl.Store(root=args.root, disposition=args.disposition)
+    store = ocfl.Store(root=args.root,
+                       disposition=args.disposition,
+                       lax_digests=args.lax_digests)
     if args.init:
         store.initialize()
     elif args.list:

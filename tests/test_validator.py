@@ -4,7 +4,7 @@ import os.path
 import shutil
 from zipfile import ZipFile
 import unittest
-from ocfl.validator import OCFLValidator
+from ocfl.validator import Validator
 
 # Setup to unpack a test case with an empty content directory
 # that we can't store in git
@@ -43,7 +43,7 @@ class TestAll(unittest.TestCase):
                            'bad16_digest_repeated': ['E922', 'E923'],
                            'E049_created_no_timezone': ['E049a'],
                            'E049_created_not_to_seconds': ['E049b']}.items():
-            v = OCFLValidator()
+            v = Validator()
             filepath = 'fixtures/1.0/bad-objects/' + bad
             if not os.path.isdir(filepath):
                 filepath = 'extra_fixtures/bad-objects/' + bad
@@ -65,7 +65,7 @@ class TestAll(unittest.TestCase):
                             'W009_user_address_not_uri': ['W009'],
                             'W010_no_version_inventory': ['W010'],
                             'W011_version_inv_diff_metadata': ['W011']}.items():
-            v = OCFLValidator()
+            v = Validator()
             filepath = 'fixtures/1.0/warn-objects/' + warn
             if not os.path.isdir(filepath):
                 filepath = 'extra_fixtures/warn-objects/' + warn
@@ -77,6 +77,6 @@ class TestAll(unittest.TestCase):
         dirs = next(os.walk('fixtures/1.0/good-objects'))[1]
         for dirname in dirs:
             dirpath = os.path.join('fixtures/1.0/good-objects', dirname)
-            v = OCFLValidator()
+            v = Validator()
             self.assertEqual((True, dirpath),  # add dirpath for better reporting
                              (v.validate(dirpath), dirpath))

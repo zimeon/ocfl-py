@@ -29,11 +29,6 @@ class TestAll(unittest.TestCase):
         s.root = 'a/b/c'
         self.assertEqual(s.declaration_file, 'a/b/c/0=ocfl_1.0')
 
-    def test03_disposition_file(self):
-        """Test disposition_file property."""
-        s = Store(root='x', disposition='y')
-        self.assertEqual(s.disposition_file, 'x/1=y')
-
     def test04_dispositor(self):
         """Test dispositor property."""
         s = Store(root='x', disposition='identity')
@@ -59,13 +54,13 @@ class TestAll(unittest.TestCase):
         tempdir = os.path.join(tempfile.mkdtemp(prefix='test_root'), 'rrr')
         s = Store(root=tempdir, disposition='identity')
         # Not present
-        self.assertRaises(StoreException, s.check_root)
+        self.assertRaises(StoreException, s.check_root_structure)
         # File not dir
         with open(tempdir, 'w') as fh:
             fh.close()
-        self.assertRaises(StoreException, s.check_root)
+        self.assertRaises(StoreException, s.check_root_structure)
         os.remove(tempdir)
         # No declaration
         os.mkdir(tempdir)
-        self.assertRaises(StoreException, s.check_root)
+        self.assertRaises(StoreException, s.check_root_structure)
         # Add correct declaration

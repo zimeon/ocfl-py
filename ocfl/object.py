@@ -18,7 +18,7 @@ from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
 from .object_utils import remove_first_directory, make_unused_filepath, next_version, add_object_args
 from .namaste import Namaste
-from .validator import OCFLValidator
+from .validator import Validator
 from .version import VersionMetadata
 
 
@@ -327,7 +327,7 @@ class Object(object):
         (such as using a new digest). There will be no content change between
         versions.
         """
-        validator = OCFLValidator(check_digests=False, lax_digests=self.lax_digests)
+        validator = Validator(check_digests=False, lax_digests=self.lax_digests)
         if not validator.validate(objdir):
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
         inventory = self.parse_inventory(objdir)
@@ -432,10 +432,10 @@ class Object(object):
 
     def show(self, objdir):
         """Show OCFL object at objdir."""
-        validator = OCFLValidator(show_warnings=False,
-                                  show_errors=True,
-                                  check_digests=False,
-                                  lax_digests=self.lax_digests)
+        validator = Validator(show_warnings=False,
+                              show_errors=True,
+                              check_digests=False,
+                              lax_digests=self.lax_digests)
         passed = validator.validate(objdir)
         if passed:
             self.prnt("OCFL object at %s has VALID STRUCTURE (DIGESTS NOT CHECKED) " % (objdir))
@@ -486,10 +486,10 @@ class Object(object):
 
     def validate(self, objdir, show_warnings=False, show_errors=True, check_digests=True):
         """Validate OCFL object at objdir."""
-        validator = OCFLValidator(show_warnings=show_warnings,
-                                  show_errors=show_errors,
-                                  check_digests=check_digests,
-                                  lax_digests=self.lax_digests)
+        validator = Validator(show_warnings=show_warnings,
+                              show_errors=show_errors,
+                              check_digests=check_digests,
+                              lax_digests=self.lax_digests)
         passed = validator.validate(objdir)
         self.prnt(str(validator))
         if passed:
@@ -570,6 +570,18 @@ class Object(object):
                     state[norm_digest] = state[digest]
                     state.remove(digest)
         return inventory
+
+    def id_from_inventory(self, path, failure_value='UNKNOWN-ID'):
+        """Read JSON root inventory file for object at path and extract id.
+
+        Returns the id from the inventory or failure_value is none can
+        be extracted.
+        """
+        try:
+            inventory = self.parse_inventory(path)
+            return inventory['id']
+        except ObjectException:
+            return failure_value
 
     def prnt(self, *objects):
         """Print method that uses object fhout property.

@@ -18,7 +18,7 @@ from .validation_logger import ValidationLogger
 from .w3c_datetime import str_to_datetime
 
 
-class OCFLValidator(object):
+class Validator(object):
     """Class for OCFL Validator."""
 
     def __init__(self, log=None, show_warnings=False, show_errors=True, check_digests=True, lax_digests=False, lang='en'):
@@ -29,7 +29,13 @@ class OCFLValidator(object):
         if self.log is None:
             self.log = ValidationLogger(show_warnings=show_warnings, show_errors=show_errors, lang=lang)
         self.registered_extensions = ['FIXME']  # FIXME - add names when something registered
-        # Object state
+        self.initialize()
+
+    def initialize(self):
+        """Initialize object state.
+
+        Must be called between attempts to validate objects.
+        """
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
         self.inventory_digest_files = {}  # index by version_dir, algorithms may differ
@@ -44,6 +50,7 @@ class OCFLValidator(object):
 
         Returns True if valid (warnings permitted), False otherwise.
         """
+        self.initialize()
         if not os.path.isdir(path):
             self.log.error('E987', path=path)
             return False
