@@ -1,0 +1,4 @@
+<info:fedora/3141bf18-f488-447b-8c77-f696363cc6da> <http://www.w3.org/ns/auth/acl#accessTo> <info:fedora> .
+<info:fedora/3141bf18-f488-447b-8c77-f696363cc6da> <http://www.w3.org/ns/auth/acl#mode> <http://www.w3.org/ns/auth/acl#Read> .
+<info:fedora/3141bf18-f488-447b-8c77-f696363cc6da> <http://www.w3.org/ns/auth/acl#agent> "smith123" .
+<info:fedora/3141bf18-f488-447b-8c77-f696363cc6da> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/auth/acl#Authorization> .

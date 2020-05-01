@@ -1,0 +1,1 @@
+{"id":"1a42d362-482d-43c8-9d66-c0e61dc90bfd","type":"https://ocfl.io/1.0/spec/#inventory","digestAlgorithm":"sha512","head":"v1","contentDirectory":"content","fixity":{},"manifest":{},"versions":{"v1":{"created":"2020-05-01T13:49:55Z","message":"Auto-generated empty object version.","user":{"name":"ocfl-java"},"state":{}}}}

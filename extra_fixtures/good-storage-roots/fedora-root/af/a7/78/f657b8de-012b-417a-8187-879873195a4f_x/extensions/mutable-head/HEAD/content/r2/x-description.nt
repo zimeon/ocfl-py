@@ -1,0 +1,2 @@
+<http://localhost:8080/f657b8de-012b-417a-8187-879873195a4f/x> <http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#filename> "x.txt" .
+<http://localhost:8080/f657b8de-012b-417a-8187-879873195a4f/x> <http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#hasMimeType> "text/awesome" .

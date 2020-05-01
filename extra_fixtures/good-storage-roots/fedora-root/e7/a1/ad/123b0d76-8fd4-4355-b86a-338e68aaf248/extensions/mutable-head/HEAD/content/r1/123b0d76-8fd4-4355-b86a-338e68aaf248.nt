@@ -1,0 +1,2 @@
+<info:fedora/123b0d76-8fd4-4355-b86a-338e68aaf248> <http://purl.org/dc/elements/1.1/title> "this is an english title"@en .
+<info:fedora/123b0d76-8fd4-4355-b86a-338e68aaf248> <http://purl.org/dc/elements/1.1/title> "ceci n'est pas un titre français"@fr .
