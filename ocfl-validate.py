@@ -22,7 +22,7 @@ ocfl = ocfl.Object(lax_digests=args.lax_digests)
 num_bad = 0
 for objdir in args.objdir:
     if not ocfl.validate(objdir,
-                         show_warnings=args.verbose and not args_quiet,
+                         show_warnings=args.verbose and not args.quiet,
                          show_errors=not args.quiet,
                          check_digests=not args.no_check_digests):
         num_bad += 1

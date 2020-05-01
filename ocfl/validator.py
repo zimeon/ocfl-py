@@ -40,7 +40,10 @@ class OCFLValidator(object):
         return str(self.log)
 
     def validate(self, path):
-        """Validate OCFL object at path."""
+        """Validate OCFL object at path.
+
+        Returns True if valid (warnings permitted), False otherwise.
+        """
         if not os.path.isdir(path):
             self.log.error('E987', path=path)
             return False
