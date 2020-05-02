@@ -128,7 +128,7 @@ class InventoryValidator(object):
             for digest in manifest:
                 m = re.match(self.digest_regex(), digest)
                 if not m:
-                    self.error('E304', digest=digest)  # wrong form
+                    self.error('E304', digest=digest, algorithm=self.digest_algorithm)  # wrong form of digest
                 elif type(manifest[digest]) != list:
                     self.error('E308', digest=digest)  # must have path list value
                 else:

@@ -11,7 +11,7 @@ import os
 import os.path
 import re
 
-from .digest import file_digest
+from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
 from .namaste import find_namastes, NamasteException
 from .validation_logger import ValidationLogger
@@ -209,7 +209,7 @@ class Validator(object):
             if not os.path.isdir(version_path):
                 self.log.error('E301', version_path=version_path)
             else:
-                # Check contents of version directory execpt content_directory
+                # Check contents of version directory except content_directory
                 for entry in os.listdir(version_path):
                     if ((entry == 'inventory.json')
                             or (version_dir in self.inventory_digest_files and entry == self.inventory_digest_files[version_dir])):
@@ -235,7 +235,10 @@ class Validator(object):
                 if filepath not in files_seen:
                     self.log.error('E302', where='root', content_path=filepath)
                 else:
-                    # FIXME - check digest
+                    if self.check_digests:
+                        content_digest = file_digest(os.path.join(path, filepath), digest_type=self.digest_algorithm)
+                        if content_digest != normalized_digest(digest, digest_type=self.digest_algorithm):
+                            self.log.error('E309', where='root', digest=digest, content_path=filepath, content_digest=content_digest)
                     files_seen.discard(filepath)
         # Anything left in files_seen is not mentioned in the inventory
         if len(files_seen) > 0:

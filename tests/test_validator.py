@@ -42,7 +42,8 @@ class TestAll(unittest.TestCase):
                            'bad15_wrong_version_block_values': ['E302', 'E401', 'E403', 'E404', 'E912'],
                            'bad16_digest_repeated': ['E922', 'E923'],
                            'E049_created_no_timezone': ['E049a'],
-                           'E049_created_not_to_seconds': ['E049b']}.items():
+                           'E049_created_not_to_seconds': ['E049b'],
+                           'E309_bad_manifest_digest': ['E309']}.items():
             v = Validator()
             filepath = 'fixtures/1.0/bad-objects/' + bad
             if not os.path.isdir(filepath):

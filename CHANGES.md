@@ -1,8 +1,9 @@
 # ocfl-py changelog
 
-## ??? v0.0.4
+## 2020-05-02 v0.0.4
 
-  * ...
+  * Actually check digests for content during validation!
+  * Add --validate to ocfl-store.py to check all of storage root
 
 ## 2020-04-26 v0.0.3
 

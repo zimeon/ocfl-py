@@ -16,7 +16,7 @@ def _file_digest(filename, digester):
 
 
 def file_digest(filename, digest_type='sha512'):
-    """Digest of digest_type for file filename.
+    """Digest of digest_type for file filename in normalized form.
 
     Supports digest_type values from OCFL spec:
         'md5', 'sha1', 'sha256', 'sha512', 'blake2b-512'
