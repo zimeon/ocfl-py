@@ -1,5 +1,9 @@
 # ocfl-py changelog
 
+## 2020-... v0.0.5
+
+  * ...
+
 ## 2020-05-02 v0.0.4
 
   * Actually check digests for content during validation!
