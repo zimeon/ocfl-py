@@ -140,9 +140,9 @@
     }
   },
   "E304": {
-    "params": ["where", "digest"],
+    "params": ["where", "digest", "algorithm"],
     "description": {
-       "en": "OCFL Object %s inventory manifest block includes a bad digest (%s)"
+       "en": "OCFL Object %s inventory manifest block includes a digest (%s) that doesn't have the correct form for the %s algorithm"
     }
   },
   "E305": {
@@ -167,6 +167,12 @@
     "params": ["where", "digest"],
     "description": {
        "en": "OCFL Object %s inventory manifest file list for digest %s is not a JSON array"
+    }
+  },
+  "E309": {
+    "params": ["where", "digest", "content_path", "content_digest"],
+    "description": {
+       "en": "OCFL Object %s inventory manifest has digest %s for file %s which doesn't match calculated digest %s for that file"
     }
   },
   "E310": {

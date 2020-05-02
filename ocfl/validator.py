@@ -11,14 +11,14 @@ import os
 import os.path
 import re
 
-from .digest import file_digest
+from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
 from .namaste import find_namastes, NamasteException
 from .validation_logger import ValidationLogger
 from .w3c_datetime import str_to_datetime
 
 
-class OCFLValidator(object):
+class Validator(object):
     """Class for OCFL Validator."""
 
     def __init__(self, log=None, show_warnings=False, show_errors=True, check_digests=True, lax_digests=False, lang='en'):
@@ -29,7 +29,13 @@ class OCFLValidator(object):
         if self.log is None:
             self.log = ValidationLogger(show_warnings=show_warnings, show_errors=show_errors, lang=lang)
         self.registered_extensions = ['FIXME']  # FIXME - add names when something registered
-        # Object state
+        self.initialize()
+
+    def initialize(self):
+        """Initialize object state.
+
+        Must be called between attempts to validate objects.
+        """
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
         self.inventory_digest_files = {}  # index by version_dir, algorithms may differ
@@ -44,6 +50,7 @@ class OCFLValidator(object):
 
         Returns True if valid (warnings permitted), False otherwise.
         """
+        self.initialize()
         if not os.path.isdir(path):
             self.log.error('E987', path=path)
             return False
@@ -202,7 +209,7 @@ class OCFLValidator(object):
             if not os.path.isdir(version_path):
                 self.log.error('E301', version_path=version_path)
             else:
-                # Check contents of version directory execpt content_directory
+                # Check contents of version directory except content_directory
                 for entry in os.listdir(version_path):
                     if ((entry == 'inventory.json')
                             or (version_dir in self.inventory_digest_files and entry == self.inventory_digest_files[version_dir])):
@@ -228,7 +235,10 @@ class OCFLValidator(object):
                 if filepath not in files_seen:
                     self.log.error('E302', where='root', content_path=filepath)
                 else:
-                    # FIXME - check digest
+                    if self.check_digests:
+                        content_digest = file_digest(os.path.join(path, filepath), digest_type=self.digest_algorithm)
+                        if content_digest != normalized_digest(digest, digest_type=self.digest_algorithm):
+                            self.log.error('E309', where='root', digest=digest, content_path=filepath, content_digest=content_digest)
                     files_seen.discard(filepath)
         # Anything left in files_seen is not mentioned in the inventory
         if len(files_seen) > 0:
