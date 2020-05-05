@@ -73,13 +73,13 @@ class InventoryValidator(object):
             elif not re.match(r'''(\w+):.+''', iid):
                 self.warn("W005", id=iid)
         else:
-            self.error("E100")
+            self.error("E036a")
         if 'type' not in inventory:
-            self.error("E102")
+            self.error("E036b")
         elif inventory['type'] != 'https://ocfl.io/1.0/spec/#inventory':
             self.error("E103")
         if 'digestAlgorithm' not in inventory:
-            self.error("E104")
+            self.error("E036c")
         elif inventory['digestAlgorithm'] == 'sha512':
             pass
         elif self.lax_digests:
@@ -93,7 +93,7 @@ class InventoryValidator(object):
             # Careful only to set self.content_directory if value is safe
             cd = inventory['contentDirectory']
             if type(cd) != str or '/' in cd or cd in ['.', '..']:
-                self.error("E051")
+                self.error("E018")
             else:
                 self.content_directory = cd
         if 'manifest' not in inventory:
@@ -108,9 +108,9 @@ class InventoryValidator(object):
         if 'head' in inventory:
             self.head = self.all_versions[-1]
             if inventory['head'] != self.head:
-                self.error("E914", got=inventory['head'], expected=self.head)
+                self.error("E040", got=inventory['head'], expected=self.head)
         else:
-            self.error("E106")
+            self.error("E036d")
         if 'manifest' in inventory and 'versions' in inventory:
             self.check_digests_present_and_used(self.manifest_files, digests_used)
 
@@ -141,7 +141,7 @@ class InventoryValidator(object):
                             manifest_files[file] = norm_digest
                             manifest_digests.add(norm_digest)
                             if not self.is_valid_content_path(file):
-                                self.error("E913", path=file)
+                                self.error("E042", path=file)
         return manifest_files
 
     def validate_version_sequence(self, versions):
@@ -210,8 +210,10 @@ class InventoryValidator(object):
         digests_used = []
         for v in all_versions:
             version = versions[v]
-            if 'created' not in version or type(versions[v]['created']) != str:
-                self.error('E401', version=v)  # No created
+            if 'created' not in version:
+                self.error('E048a', version=v)  # No created
+            elif type(versions[v]['created']) != str:
+                self.error('E049d', version=v)  # Bad created
             else:
                 created = versions[v]['created']
                 try:
@@ -221,7 +223,7 @@ class InventoryValidator(object):
                     if not re.search(r'''T\d\d:\d\d:\d\d''', created):  # FIXME - kludge
                         self.error('E049b', version=v)
                 except ValueError as e:
-                    self.error('E402', version=v, description=str(e))
+                    self.error('E049c', version=v, description=str(e))
             if 'state' in version:
                 digests_used += self.validate_state_block(version['state'], version=v)
             else:
@@ -229,20 +231,20 @@ class InventoryValidator(object):
             if 'message' not in version:
                 self.warn('W007a', version=v)
             elif type(version['message']) != str:
-                self.error('E403', version=v)
+                self.error('E403', version=v)  # FIXME https://github.com/OCFL/spec/issues/460
             if 'user' not in version:
                 self.warn('W007b', version=v)
             else:
                 user = version['user']
                 if type(user) != dict:
-                    self.error('E404', version=v)
+                    self.error('E054a', version=v)
                 else:
                     if 'name' not in user or type(user['name']) != str:
-                        self.error('E405', version=v)
+                        self.error('E054b', version=v)
                     if 'address' not in user:
                         self.warn('W008', version=v)
                     elif type(user['address']) != str:
-                        self.error('E406', version=v)
+                        self.error('E054c', version=v)
                     elif not re.match(r'''\w{3,6}:''', user['address']):
                         self.warn('W009', version=v)
         return digests_used
@@ -256,7 +258,7 @@ class InventoryValidator(object):
         """
         digests = []
         if type(state) != dict:
-            self.error('E912', version=version)
+            self.error('E050c', version=version)
         else:
             digest_regex = self.digest_regex()
             for digest in state:
@@ -267,7 +269,7 @@ class InventoryValidator(object):
                 else:
                     for path in state[digest]:
                         if not is_valid_logical_path(path):
-                            self.error('E920', version=version, digest=digest, path=path)
+                            self.error('E051', version=version, digest=digest, path=path)
                     norm_digest = normalized_digest(digest, self.digest_algorithm)
                     if norm_digest in digests:
                         # We have already seen this in different un-normalized form!
@@ -282,10 +284,10 @@ class InventoryValidator(object):
         in_state = set(digests_used)
         not_in_manifest = in_state.difference(in_manifest)
         if len(not_in_manifest) > 0:
-            self.error("E913", description="in state but not in manifest: " + ", ".join(sorted(not_in_manifest)))
+            self.error("E050a", digests=", ".join(sorted(not_in_manifest)))
         not_in_state = in_manifest.difference(in_state)
         if len(not_in_state) > 0:
-            self.error("E302", description="in manifest but not in state: " + ", ".join(sorted(not_in_state)))
+            self.error("E050b", digests=", ".join(sorted(not_in_state)))
 
     def digest_regex(self):
         """A regex for validating un-normalized digest format."""

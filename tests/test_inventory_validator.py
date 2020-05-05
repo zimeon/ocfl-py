@@ -42,10 +42,10 @@ class TestAll(unittest.TestCase):
         log = TLogger()
         iv = InventoryValidator(log=log)
         iv.validate({})
-        self.assertIn('E100', log.errors)
-        self.assertIn('E102', log.errors)
-        self.assertIn('E104', log.errors)
-        self.assertIn('E106', log.errors)
+        self.assertIn('E036a', log.errors)
+        self.assertIn('E036b', log.errors)
+        self.assertIn('E036c', log.errors)
+        self.assertIn('E036d', log.errors)
         self.assertIn('E107', log.errors)
         self.assertIn('E108', log.errors)
         log.clear()
@@ -67,10 +67,10 @@ class TestAll(unittest.TestCase):
         iv = InventoryValidator(log=log)
         log.clear()
         iv.validate({"id": "like:uri", "contentDirectory": "not/allowed"})
-        self.assertIn('E051', log.errors)
+        self.assertIn('E018', log.errors)
         log.clear()
         iv.validate({"id": "like:uri", "contentDirectory": ".."})
-        self.assertIn('E051', log.errors)
+        self.assertIn('E018', log.errors)
 
     def test_validate_manifest(self):
         """Test validate_manifest method."""
@@ -124,7 +124,7 @@ class TestAll(unittest.TestCase):
         log.clear()
         # First, no useful data
         self.assertEqual(iv.validate_versions({'v1': {}}, ['v1']), [])
-        self.assertIn('E401', log.errors)
+        self.assertIn('E048a', log.errors)
         self.assertIn('E410', log.errors)
         self.assertIn('W007a', log.warns)
         self.assertIn('W007b', log.warns)
@@ -139,11 +139,11 @@ class TestAll(unittest.TestCase):
         log.clear()
         versions['v1']['created'] = {}  # not a string
         self.assertEqual(iv.validate_versions(versions, ['v1']), [])
-        self.assertIn('E401', log.errors)
+        self.assertIn('E049d', log.errors)
         log.clear()
         versions['v1']['created'] = "not a datetime"
         self.assertEqual(iv.validate_versions(versions, ['v1']), [])
-        self.assertIn('E402', log.errors)
+        self.assertIn('E049c', log.errors)
         log.clear()
         versions['v1']['created'] = "2010-03-30T21:24:00"  # no timezone
         self.assertEqual(iv.validate_versions(versions, ['v1']), [])
@@ -161,12 +161,12 @@ class TestAll(unittest.TestCase):
         versions['v1']['message'] = "A message"
         versions['v1']['user'] = "A string"  # not a dict
         self.assertEqual(iv.validate_versions(versions, ['v1']), [])
-        self.assertIn('E404', log.errors)
+        self.assertIn('E054a', log.errors)
         log.clear()
         versions['v1']['user'] = {"name": {}, "address": {}}  # not strings
         self.assertEqual(iv.validate_versions(versions, ['v1']), [])
-        self.assertIn('E405', log.errors)
-        self.assertIn('E406', log.errors)
+        self.assertIn('E054b', log.errors)
+        self.assertIn('E054c', log.errors)
         log.clear()
         versions['v1']['user'] = {"name": "A Person"}  # no address
         self.assertEqual(iv.validate_versions(versions, ['v1']), [])
@@ -181,7 +181,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(len(log.errors), 0)
         log.clear()
         self.assertEqual(iv.validate_state_block("invalid", "v1"), [])
-        self.assertIn('E912', log.errors)
+        self.assertIn('E050c', log.errors)
         log.clear()
         self.assertEqual(iv.validate_state_block({"not a digest": []}, "v1"), [])
         self.assertIn('E305', log.errors)
@@ -191,7 +191,7 @@ class TestAll(unittest.TestCase):
         self.assertIn('E919', log.errors)
         log.clear()
         self.assertEqual(iv.validate_state_block({d: ["good path", '/']}, "v1"), [d])
-        self.assertIn('E920', log.errors)
+        self.assertIn('E051', log.errors)
 
     def test_check_digests_present_and_used(self):
         """Test check_digests_present_and_used."""
@@ -201,10 +201,10 @@ class TestAll(unittest.TestCase):
         iv.check_digests_present_and_used(manifest, ['aaa', 'bbb'])
         self.assertEqual(len(log.errors), 0)
         iv.check_digests_present_and_used(manifest, ['aaa'])
-        self.assertIn('E302', log.errors)
+        self.assertIn('E050b', log.errors)
         log.clear()
         iv.check_digests_present_and_used(manifest, ['aaa', 'bbb', 'ccc'])
-        self.assertIn('E913', log.errors)
+        self.assertIn('E050a', log.errors)
 
     def test_is_valid_logical_path(self):
         """Test is_valid_logical_path function."""

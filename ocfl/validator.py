@@ -57,15 +57,15 @@ class Validator(object):
         # Object declaration
         namastes = find_namastes(0, path)
         if len(namastes) == 0:
-            self.log.error('E001')
+            self.log.error('E003a')
         elif len(namastes) > 1:
-            self.log.error('E901', files=len(namastes))
+            self.log.error('E003b', files=len(namastes))
         elif not namastes[0].content_ok(path):
-            self.log.error('E003')
+            self.log.error('E007')
         # Object root inventory file
         inv_file = os.path.join(path, 'inventory.json')
         if not os.path.exists(inv_file):
-            self.log.error('E004')
+            self.log.error('E034')
             return False
         inventory, inv_validator = self.validate_inventory(inv_file)
         self.root_inv_validator = inv_validator
@@ -104,7 +104,7 @@ class Validator(object):
             self.validate_inventory_digest_match(inv_file, inv_digest_file)
 
     def validate_inventory_digest_match(self, inv_file, inv_digest_file):
-        """Validate a given inventory digest for a give inventory file.
+        """Validate a given inventory digest for a given inventory file.
 
         On error throws exception with debugging string intended to
         be presented to a user.
@@ -118,11 +118,11 @@ class Validator(object):
                 digest_recorded = self.read_inventory_digest(inv_digest_file)
                 digest_actual = file_digest(inv_file, digest_algorithm)
                 if digest_actual != digest_recorded:
-                    self.log.error("E006", inv_file=inv_file, actual=digest_actual, recorded=digest_recorded, inv_digest_file=inv_digest_file)
+                    self.log.error("E060", inv_file=inv_file, actual=digest_actual, recorded=digest_recorded, inv_digest_file=inv_digest_file)
             except Exception as e:
-                self.log.error("E008", description=str(e))
+                self.log.error("E061", description=str(e))
         else:
-            self.log.error("E007", inv_digest_file=inv_digest_file)
+            self.log.error("E058b", inv_digest_file=inv_digest_file)
 
     def validate_object_root(self, path, version_dirs):
         """Validate object root at path.
@@ -136,16 +136,16 @@ class Validator(object):
             filepath = os.path.join(path, entry)
             if os.path.isfile(filepath):
                 if entry not in expected_files:
-                    self.log.error('E915', file=entry)
+                    self.log.error('E001a', file=entry)
             elif os.path.isdir(filepath):
                 if entry in version_dirs:
                     pass
                 elif entry == 'extensions':
                     self.validate_extensions_dir(path)
                 else:
-                    self.log.error('E916', dir=entry)
+                    self.log.error('E001b', dir=entry)
             else:
-                self.log.error('E917', entry=entry)
+                self.log.error('E001c', entry=entry)
 
     def validate_extensions_dir(self, path):
         """Validate content of extensions directory inside object root at path.
@@ -182,7 +182,7 @@ class Validator(object):
                 with open(root_inv_file, 'r') as rifh:
                     root_inv = rifh.read()
                 if inv != root_inv:
-                    self.log.error('E099', root_inv_file=root_inv_file, inv_file=inv_file)
+                    self.log.error('E064', root_inv_file=root_inv_file, inv_file=inv_file)
                 else:
                     # FIXME - could just compare digest files...
                     self.validate_inventory_digest(inv_file, self.digest_algorithm, where=version_dir)
@@ -228,12 +228,12 @@ class Validator(object):
                     elif os.path.isdir(os.path.join(version_path, entry)):
                         self.log.warn("W002", where=version_dir, entry=entry)
                     else:
-                        self.log.error("E306", where=version_dir, entry=entry)
+                        self.log.error("E015", where=version_dir, entry=entry)
         # Check all files in root manifest
         for digest in inventory['manifest']:
             for filepath in inventory['manifest'][digest]:
                 if filepath not in files_seen:
-                    self.log.error('E302', where='root', content_path=filepath)
+                    self.log.error('E023a', where='root', content_path=filepath)
                 else:
                     if self.check_digests:
                         content_digest = file_digest(os.path.join(path, filepath), digest_type=self.digest_algorithm)
@@ -242,7 +242,7 @@ class Validator(object):
                     files_seen.discard(filepath)
         # Anything left in files_seen is not mentioned in the inventory
         if len(files_seen) > 0:
-            self.log.error('E303', where='root', extra_files=', '.join(sorted(files_seen)))
+            self.log.error('E023b', where='root', extra_files=', '.join(sorted(files_seen)))
 
     def read_inventory_digest(self, inv_digest_file):
         """Read inventory digest from sidecar file.

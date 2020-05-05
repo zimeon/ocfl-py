@@ -259,16 +259,16 @@ class TestAll(unittest.TestCase):
         oo = Object()
         self.assertTrue(oo.validate(objdir='fixtures/1.0/good-objects/minimal_one_version_one_file'))
         # Error cases
-        self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/bad00_no_files'))
-        self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/bad01_no_decl'))
-        self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/bad02_no_id'))
+        self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/E001_E004_no_files'))
+        self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/E001_no_decl'))
+        self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/E036_no_id'))
 
     def test14_parse_inventory(self):
         """Test parse_inventory method."""
         oo = Object()
         self.assertTrue(oo.parse_inventory(path='fixtures/1.0/good-objects/minimal_one_version_one_file'))
         # Error cases
-        self.assertRaises(ObjectException, oo.parse_inventory, path='fixtures/1.0/bad-objects/bad02_no_id')
+        self.assertRaises(ObjectException, oo.parse_inventory, path='fixtures/1.0/bad-objects/E036_no_id')
 
     def test15_map_filepath(self):
         """Test map_filepath method."""
