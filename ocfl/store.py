@@ -13,6 +13,7 @@ except ImportError:                      # pragma: no cover -- py2
 
 from .digest import file_digest
 from .disposition import get_dispositor
+from .namaste import find_namastes, Namaste
 from .object import Object
 from .validator import Validator
 
@@ -33,12 +34,8 @@ class Store(object):
         self.lax_digests = lax_digests
         self._dispositor = None
         #
+        self.declaration_tvalue = 'ocfl_1.0'
         self.num_traversal_errors = 0
-
-    @property
-    def declaration_file(self):
-        """Path of storage root declaration file."""
-        return os.path.join(self.root, '0=ocfl_1.0')
 
     @property
     def spec_file(self):
@@ -76,8 +73,7 @@ class Store(object):
         os.makedirs(self.root)
         logging.debug("Created root directory %s" % (self.root))
         # Create root declaration
-        with open(self.declaration_file, 'w') as fh:
-            fh.close()
+        Namaste(d=0, content=self.declaration_tvalue).write(self.root)
         # Create a layout declaration
         if self.disposition is not None:
             with open(self.layout_file, 'w') as fh:
@@ -95,13 +91,23 @@ class Store(object):
             raise StoreException("Storage root %s does not exist!" % (self.root))
         if not os.path.isdir(self.root):
             raise StoreException("Storage root %s is not a directory" % (self.root))
-        if not os.path.isfile(self.declaration_file):
+        # Storage root declaration
+        namastes = find_namastes(0, self.root)
+        if len(namastes) == 0:
             raise StoreException("Storage root %s lacks required 0= declaration file" % (self.root))
+        elif len(namastes) > 1:
+            raise StoreException("Storage root %s has more than one 0= style declaration file" % (self.root))
+        elif namastes[0].tvalue != self.declaration_tvalue:
+            raise StoreException("Storage root %s declaration file not as expected, got %s" % (self.root, namastes[0].filename))
+        elif not namastes[0].content_ok(self.root):
+            raise StoreException("Storage root %s required declaration file %s has invalid content" % (self.root, namastes[0].filename))
+        # Specification file and layout file
         if os.path.exists(self.spec_file) and not os.path.isfile(self.spec_file):
-            raise StoreException("Storage root %s lacks include specification entry that isn't a file" % (self.root))
+            raise StoreException("Storage root %s includes a specification entry that isn't a file" % (self.root))
         if os.path.exists(self.layout_file):
             self.parse_layout_file()
-        # Other files are allowed
+        # Other files are allowed...
+        return True
 
     def parse_layout_file(self):
         """Read and parse layout file.
@@ -202,6 +208,7 @@ class Store(object):
             logging.info("Storage root %s is VALID", self.root)
         else:
             logging.info("Storage root %s is INVALID", self.root)
+        return valid
 
     def add(self, object_path):
         """Add pre-constructed object from object_path."""

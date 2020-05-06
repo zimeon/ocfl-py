@@ -13,7 +13,7 @@ from ocfl.identity import Identity
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
-    def test01_init(self):
+    def test_init(self):
         """Test Store init."""
         s = Store()
         self.assertEqual(s.root, None)
@@ -22,24 +22,22 @@ class TestAll(unittest.TestCase):
         self.assertEqual(s.root, 'a')
         self.assertEqual(s.disposition, 'b')
 
-    def test02_declaration_file(self):
-        """Test declaration_file property."""
-        s = Store(root='')
-        self.assertEqual(s.declaration_file, '0=ocfl_1.0')
-        s.root = 'a/b/c'
-        self.assertEqual(s.declaration_file, 'a/b/c/0=ocfl_1.0')
+    def test_spec_file(self):
+        """Test spec_file property."""
+        s = Store(root='thingy')
+        self.assertEqual(s.spec_file, 'thingy/ocfl_1.0.txt')
 
-    def test04_dispositor(self):
+    def test_dispositor(self):
         """Test dispositor property."""
         s = Store(root='x', disposition='identity')
         self.assertTrue(isinstance(s.dispositor, Identity))
 
-    def test05_object_path(self):
+    def test_object_path(self):
         """Test object_path method."""
         s = Store(root='x/y', disposition='identity')
         self.assertEqual(s.object_path('id1'), 'x/y/id1')
 
-    def test06_initialize(self):
+    def test_initialize(self):
         """Test initialize method."""
         tempdir = tempfile.mkdtemp(prefix='test_init')
         s = Store(root=tempdir, disposition='identity')
@@ -47,10 +45,10 @@ class TestAll(unittest.TestCase):
         tempdir = os.path.join(tempdir, 'aaa')
         s = Store(root=tempdir, disposition='identity')
         s.initialize()
-        self.assertTrue(os.path.isfile(s.declaration_file))
+        self.assertTrue(os.path.isfile(os.path.join(tempdir,'0=ocfl_1.0')))
 
-    def test07_check_root(self):
-        """Test check_root method."""
+    def test_check_root_structure(self):
+        """Test check_root_structure method."""
         tempdir = os.path.join(tempfile.mkdtemp(prefix='test_root'), 'rrr')
         s = Store(root=tempdir, disposition='identity')
         # Not present
@@ -63,4 +61,34 @@ class TestAll(unittest.TestCase):
         # No declaration
         os.mkdir(tempdir)
         self.assertRaises(StoreException, s.check_root_structure)
-        # Add correct declaration
+        # Wrong declaration
+        decl = os.path.join(tempdir, '0=something_else')
+        with open(decl, 'w') as fh:
+            fh.close()
+        self.assertRaises(StoreException, s.check_root_structure)
+        # Two declarations
+        decl2 = os.path.join(tempdir, '0=ocfl_1.0')
+        with open(decl2, 'w') as fh:
+            fh.write("not correct")
+            fh.close()
+        self.assertRaises(StoreException, s.check_root_structure)
+        os.remove(decl)
+        # Right file, wrong content
+        self.assertRaises(StoreException, s.check_root_structure)
+        os.remove(decl2)
+        # Finally, all good
+        with open(decl2, 'w') as fh:
+            fh.write("ocfl_1.0\n")
+            fh.close()
+        self.assertTrue(s.check_root_structure())
+
+    def test_object_paths(self):
+        """Test object_paths generator."""
+        s = Store(root='extra_fixtures/good-storage-roots/fedora-root')
+        paths = list(s.object_paths())
+        self.assertEqual(len(paths), 176)
+
+    def test_validate(self):
+        """Test validate method."""
+        s = Store(root='extra_fixtures/good-storage-roots/fedora-root')
+        self.assertTrue(s.validate())

@@ -43,7 +43,7 @@ def get_namaste(d, dir):
     """
     namastes = find_namastes(d, dir, max=1)
     if len(namastes) != 1:
-        raise NamasteException("Failed to find on Namaste file with tag %s in %s" % (str(d), dir))
+        raise NamasteException("Failed to find one Namaste file with tag %s in %s" % (str(d), dir))
     return namastes[0]
 
 
