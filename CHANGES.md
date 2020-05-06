@@ -1,5 +1,9 @@
 # ocfl-py changelog
 
+## ... v0.0.6
+
+  * ...
+
 ## 2020-05-05 v0.0.5
 
   * Renumber errors to align somewhat with the canonical code set extracted 
