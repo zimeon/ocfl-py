@@ -24,11 +24,13 @@ class TestAll(unittest.TestCase):
         if self.demo:
             print("\n## %d. %s\n" % (self.n, self.shortDescription()))
 
-    def run_ocfl_validate(self, desc, options):
+    def run_ocfl_validate(self, desc, options, text=None):
         """Run the ocfl-validate.py script."""
         self.m += 1
         if self.demo:
             print("\n### %d.%d %s\n" % (self.n, self.m, desc))
+        if text:
+            print(text + '\n')
         cmd = ['python', 'ocfl-validate.py'] + options
         code = 0
         try:
@@ -39,6 +41,13 @@ class TestAll(unittest.TestCase):
         if self.demo:
             print("```\n> " + ' '.join(cmd) + "\n" + out + "```\n")
         return out
+
+    def test00_version(self):
+        """Test showing version number."""
+        out = self.run_ocfl_validate("Show version number",
+                                     ['--version'],
+                                     text="The `--version` argument will show version number and exit")
+        self.assertIn('ocfl-validate.py is part of ocfl-py version', out)
 
     def test01_good(self):
         """Test simple good case."""

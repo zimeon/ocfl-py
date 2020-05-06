@@ -56,9 +56,9 @@ def parse_arguments():
     # Version metadata and object settings
     ocfl.add_version_metadata_args(obj_params)
     ocfl.add_object_args(obj_params)
-    parser.add_argument('--verbose', '-v', action='store_true',
-                        help="be more verbose")
+    ocfl.add_shared_args(parser)
     args = parser.parse_args()
+    ocfl.check_shared_args(args)
 
     # Require command and only one command
     cmds = ['create', 'build', 'update', 'show', 'validate', 'extract']

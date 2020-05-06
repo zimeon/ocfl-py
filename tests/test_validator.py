@@ -11,17 +11,16 @@ from ocfl.validator import Validator
 for unpacked_directory in ['extra_fixtures/warn-objects/W003_empty_content_dir',
                            'extra_fixtures/bad-objects/E024_empty_dir_in_content']:
     zip_file = unpacked_directory + '.zip'
-if not os.path.isfile(zip_file):
-    sys.exit(1)
-if os.path.isdir(unpacked_directory):
-    shutil.rmtree(unpacked_directory)
-if os.path.isfile(zip_file):
-    parent = os.path()
-    zf = ZipFile(zip_file, 'r')
-    zf.extractall(os.path.dirname(unpacked_directory))
-    zf.close()
-if not os.path.isdir(unpacked_directory):
-    raise Exception("Oops, something went wrong with unzipping extra_fixtures/warn-objects/W003_empty_content_dir.zip")
+    if not os.path.isfile(zip_file):
+        sys.exit(1)
+    if os.path.isdir(unpacked_directory):
+        shutil.rmtree(unpacked_directory)
+    if os.path.isfile(zip_file):
+        zf = ZipFile(zip_file, 'r')
+        zf.extractall(os.path.dirname(unpacked_directory))
+        zf.close()
+    if not os.path.isdir(unpacked_directory):
+        raise Exception("Oops, something went wrong with unzipping extra_fixtures/warn-objects/W003_empty_content_dir.zip")
 
 
 class TestAll(unittest.TestCase):

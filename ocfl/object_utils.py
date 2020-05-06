@@ -3,10 +3,13 @@
 import os
 import os.path
 import re
+import sys
 try:
     from urllib.parse import quote as urlquote  # py3
 except ImportError:                             # pragma: no cover -- py2
     from urllib import quote as urlquote        # pragma: no cover -- py2
+
+from ._version import __version__
 
 
 NORMALIZATIONS = ['uri', 'md5']  # Must match possibilities in map_filepaths()
@@ -33,6 +36,21 @@ def add_object_args(parser):
                         help='read from or write to OCFL object directory objdir')
     parser.add_argument('--ocfl-version', default='draft',
                         help='OCFL specification version')
+
+
+def add_shared_args(parser):
+    """Add arguments to be shared by any ocfl-py scripts."""
+    parser.add_argument('--verbose', '-v', action='store_true',
+                        help="be more verbose")
+    parser.add_argument('--version', action='store_true',
+                        help='Show version number and exit')
+
+
+def check_shared_args(args):
+    """Check arguments set with add_shared_args."""
+    if args.version:
+        print("%s is part of ocfl-py version %s" % (os.path.basename(sys.argv[0]), __version__))
+        sys.exit(0)
 
 
 def next_version(version):

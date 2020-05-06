@@ -1,8 +1,10 @@
 # ocfl-py changelog
 
-## 2020-... v0.0.5
+## 2020-05-05 v0.0.5
 
-  * ...
+  * Renumber errors to align somewhat with the canonical code set extracted 
+    at https://github.com/OCFL/spec/blob/master/validation/validation-codes.md
+  * Add --version parameter to scripts to show version number
 
 ## 2020-05-02 v0.0.4
 

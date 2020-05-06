@@ -4,7 +4,7 @@ import os
 import re
 
 # Extract version number
-verfile = open("ocfl/__init__.py", "rt").read()
+verfile = open("ocfl/_version.py", "rt").read()
 match = re.search(r"^__version__ = '(\d\.\d.\d+(\.\d+)?)'",
                   verfile, re.MULTILINE)
 if match:

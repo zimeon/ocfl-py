@@ -41,9 +41,9 @@ class Validator(object):
         self.inventory_digest_files = {}  # index by version_dir, algorithms may differ
         self.root_inv_validator = None
 
-    def __str__(self):
+    def __str__(self, prefix=''):
         """String representation of validation log."""
-        return str(self.log)
+        return self.log.__str__(prefix=prefix)
 
     def validate(self, path):
         """Validate OCFL object at path.

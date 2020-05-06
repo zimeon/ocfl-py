@@ -74,9 +74,9 @@ class ValidationLogger(object):
         self.error_or_warning(code, severity='warning', **args)
         self.num_warnings += 1
 
-    def __str__(self):
+    def __str__(self, prefix=''):
         """String of validator status."""
         s = ''
         for message in sorted(self.messages):
-            s += message + '\n'
+            s += prefix + message + '\n'
         return s

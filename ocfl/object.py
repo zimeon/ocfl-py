@@ -16,7 +16,7 @@ except ImportError:                             # pragma: no cover -- py2
 
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
-from .object_utils import remove_first_directory, make_unused_filepath, next_version, add_object_args
+from .object_utils import remove_first_directory, make_unused_filepath, next_version
 from .namaste import Namaste
 from .validator import Validator
 from .version import VersionMetadata

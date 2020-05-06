@@ -32,11 +32,13 @@ class TestAll(unittest.TestCase):
         if self.tmpdir is not None and not self.keep_tmpdirs:
             shutil.rmtree(self.tmpdir)
 
-    def run_ocfl_store(self, desc, options, treedir='store'):
+    def run_ocfl_store(self, desc, options, treedir='store', text=None):
         """Run the ocfl-store.py script."""
         self.m += 1
         if self.demo:
             print("\n### %d.%d %s\n" % (self.n, self.m, desc))
+        if text:
+            print(text + '\n')
         cmd = ['python', 'ocfl-store.py',
                '--root', os.path.join(self.tmpdir, treedir)] + options
         code = 0
@@ -59,6 +61,13 @@ class TestAll(unittest.TestCase):
         else:
             print("Exited with code %d" % (code))
         return out
+
+    def test00_version(self):
+        """Test showing version number."""
+        out = self.run_ocfl_store("Show version number",
+                                  ['--version', '--root=/tmp/a', '--list'],
+                                  text="The `--version` argument will show version number and exit (but we still tave to specify a root and an action)")
+        self.assertIn('ocfl-store.py is part of ocfl-py version', out)
 
     def test01_create_add(self):
         """Test store initialization and object addition."""

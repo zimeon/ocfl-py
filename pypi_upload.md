@@ -10,7 +10,7 @@ Updating ocfl-py on pypi
 Putting up a new version
 ------------------------
 
-    1. Check version number working branch in `ocfl/__init__.py`
+    1. Check version number working branch in `ocfl/_version.py`
     2. Check all changes described in `CHANGES.md`
     3. Check code is up-to-date with master github version
     4. Check out master and merge in working branch
@@ -26,4 +26,4 @@ Putting up a new version
       twine upload dist/*
       ```
     9. Check on PyPI at <https://pypi.org/project/ocfl-py>
-    10. Finally, start new version number by editing `ocfl/__init__.py` and `CHANGES.md`
+    10. Finally, start new version number by editing `ocfl/_version.py` and `CHANGES.md`

@@ -45,11 +45,9 @@ parser.add_argument('--fixity', action='append',
 # Version metadata and object settings
 ocfl.add_version_metadata_args(parser)
 ocfl.add_object_args(parser)
-
-parser.add_argument('--verbose', '-v', action='store_true',
-                    help="be more verbose")
-
+ocfl.add_shared_args(parser)
 args = parser.parse_args()
+ocfl.check_shared_args(args)
 
 logging.basicConfig(level=logging.INFO if args.verbose else logging.WARN)
 
@@ -62,7 +60,7 @@ try:
     elif args.list:
         store.list()
     elif args.validate:
-        store.validate()
+        store.validate(show_warnings=args.verbose)  # -v is doing double duty here, messy
     elif args.add:
         if not args.src:
             raise ocfl.StoreException("Must specify object path with --src")

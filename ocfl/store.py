@@ -162,7 +162,7 @@ class Store(object):
         # FIXME - do some stuff in here
         logging.info("Found %d OCFL Objects under root %s" % (num_objects, self.root))
 
-    def validate(self, validate_objects=True, check_digests=True):
+    def validate(self, validate_objects=True, check_digests=True, show_warnings=False):
         """Validate storage root and optionally all objects."""
         valid = True
         try:
@@ -176,11 +176,15 @@ class Store(object):
         for dirpath in self.object_paths():
             if validate_objects:
                 validator = Validator(check_digests=check_digests,
-                                      lax_digests=self.lax_digests)
+                                      lax_digests=self.lax_digests,
+                                      show_warnings=show_warnings)
                 if validator.validate(dirpath):
                     good_objects += 1
                 else:
                     logging.info("Object at %s in INVALID" % (dirpath))
+                warnings = validator.__str__(prefix='[[' + dirpath + ']]')
+                if warnings != '':
+                    print(warnings)
                 num_objects += 1
         if validate_objects:
             if good_objects == num_objects:

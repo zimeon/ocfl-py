@@ -32,8 +32,8 @@ class TestAll(unittest.TestCase):
         if self.tmpdir is not None and not self.keep_tmpdirs:
             shutil.rmtree(self.tmpdir)
 
-    def run_ocfl_store(self, desc, options, text=None, treedir='object',
-                       include_objdir=True, include_dstdir=False):
+    def run_ocfl_object(self, desc, options, text=None, treedir='object',
+                        include_objdir=True, include_dstdir=False):
         """Run the ocfl-store.py script."""
         self.m += 1
         if self.demo:
@@ -72,18 +72,26 @@ class TestAll(unittest.TestCase):
             print("Exited with code %d" % (code))
         return out
 
+    def test00_version(self):
+        """Test showing version number."""
+        out = self.run_ocfl_object("Show version number",
+                                   ['--version'],
+                                   text="The `--version` argument will show version number and exit",
+                                   include_objdir=False)
+        self.assertIn('ocfl-object.py is part of ocfl-py version', out)
+
     def test01_create_inventory_dryrun(self):
         """Test object inventory creation with output to stdout."""
-        out = self.run_ocfl_store("Inventory for new object with just v1",
-                                  ['--create', '--id', 'http://example.org/obj1', '--src', 'fixtures/1.0/content/cf1/v1'],
-                                  text="Without an `--objdir` argument the script just writes out the inventory for the object that would have been created.",
-                                  include_objdir=False)
+        out = self.run_ocfl_object("Inventory for new object with just v1",
+                                   ['--create', '--id', 'http://example.org/obj1', '--src', 'fixtures/1.0/content/cf1/v1'],
+                                   text="Without an `--objdir` argument the script just writes out the inventory for the object that would have been created.",
+                                   include_objdir=False)
         self.assertIn('"id": "http://example.org/obj1"', out)
         self.assertIn('### Inventory for v1', out)
-        out = self.run_ocfl_store("Inventory for new object with three versions",
-                                  ['--build', '--id', 'http://example.org/obj2', '--src', 'fixtures/1.0/content/cf3'],
-                                  text="Without an `--objdir` argument the script just writes out the inventory for each version in the object that would have been created.",
-                                  include_objdir=False)
+        out = self.run_ocfl_object("Inventory for new object with three versions",
+                                   ['--build', '--id', 'http://example.org/obj2', '--src', 'fixtures/1.0/content/cf3'],
+                                   text="Without an `--objdir` argument the script just writes out the inventory for each version in the object that would have been created.",
+                                   include_objdir=False)
         self.assertIn('"id": "http://example.org/obj2"', out)
         self.assertIn('### Inventory for v1', out)
         self.assertIn('### Inventory for v2', out)
@@ -91,22 +99,22 @@ class TestAll(unittest.TestCase):
 
     def test02_create_v1(self):
         """Test object creation with just v1."""
-        out = self.run_ocfl_store("New object with just v1",
-                                  ['--create', '--id', 'http://example.org/obj1', '--src', 'fixtures/1.0/content/cf1/v1', '-v'])
+        out = self.run_ocfl_object("New object with just v1",
+                                   ['--create', '--id', 'http://example.org/obj1', '--src', 'fixtures/1.0/content/cf1/v1', '-v'])
         self.assertIn('Created OCFL object http://example.org/obj1', out)
 
     def test03_create_multi(self):
         """Test object build with three versions."""
-        out = self.run_ocfl_store("New object with three versions",
-                                  ['--build', '--id', 'http://example.org/obj2', '--src', 'fixtures/1.0/content/cf3', '-v'])
+        out = self.run_ocfl_object("New object with three versions",
+                                   ['--build', '--id', 'http://example.org/obj2', '--src', 'fixtures/1.0/content/cf3', '-v'])
         self.assertIn('Built object http://example.org/obj2 with 3 versions', out)
 
     def test04_extract(self):
         """Test extract of version."""
-        out = self.run_ocfl_store("Extract v1",
-                                  ['--extract', 'v1', '--objdir', 'fixtures/1.0/good-objects/spec-ex-full', '-v'],
-                                  include_objdir=False,
-                                  include_dstdir='v1')
+        out = self.run_ocfl_object("Extract v1",
+                                   ['--extract', 'v1', '--objdir', 'fixtures/1.0/good-objects/spec-ex-full', '-v'],
+                                   include_objdir=False,
+                                   include_dstdir='v1')
         # Expect:
         # v1
         # ├── [          0]  empty.txt
@@ -117,10 +125,10 @@ class TestAll(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.join(self.tmpdir, 'v1/empty2.txt')))
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, 'v1/foo/bar.xml')), 272)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, 'v1/image.tiff')), 2021)
-        out = self.run_ocfl_store("Extract v2",
-                                  ['--extract', 'v2', '--objdir', 'fixtures/1.0/good-objects/spec-ex-full', '-v'],
-                                  include_objdir=False,
-                                  include_dstdir='v2')
+        out = self.run_ocfl_object("Extract v2",
+                                   ['--extract', 'v2', '--objdir', 'fixtures/1.0/good-objects/spec-ex-full', '-v'],
+                                   include_objdir=False,
+                                   include_dstdir='v2')
         # Expect:
         # v2
         # ├── [          0]  empty.txt
@@ -134,17 +142,17 @@ class TestAll(unittest.TestCase):
 
     def test20_errors(self):
         """Test error conditions."""
-        out = self.run_ocfl_store("No valid command argument",
-                                  [],
-                                  include_objdir=False)
+        out = self.run_ocfl_object("No valid command argument",
+                                   [],
+                                   include_objdir=False)
         self.assertIn('Exactly one command ', out)
-        out = self.run_ocfl_store("No identifier",
-                                  ['--create'],
-                                  include_objdir=False)
+        out = self.run_ocfl_object("No identifier",
+                                   ['--create'],
+                                   include_objdir=False)
         self.assertIn('Must specify either --srcdir', out)
-        out = self.run_ocfl_store("No identifier",
-                                  ['--create', '--srcdir', 'tmp'],
-                                  include_objdir=False)
+        out = self.run_ocfl_object("No identifier",
+                                   ['--create', '--srcdir', 'tmp'],
+                                   include_objdir=False)
         self.assertIn('Identifier is not set!', out)
 
 
