@@ -8,13 +8,19 @@ from ocfl.validator import Validator
 
 # Setup to unpack a test case with an empty content directory
 # that we can't store in git
-if os.path.isdir('extra_fixtures/warn-objects/W003_empty_content_dir'):
-    shutil.rmtree('extra_fixtures/warn-objects/W003_empty_content_dir')
-if os.path.isfile('extra_fixtures/warn-objects/W003_empty_content_dir.zip'):
-    zf = ZipFile('extra_fixtures/warn-objects/W003_empty_content_dir.zip', 'r')
-    zf.extractall('extra_fixtures/warn-objects')
+for unpacked_directory in ['extra_fixtures/warn-objects/W003_empty_content_dir',
+                           'extra_fixtures/bad-objects/E024_empty_dir_in_content']:
+    zip_file = unpacked_directory + '.zip'
+if not os.path.isfile(zip_file):
+    sys.exit(1)
+if os.path.isdir(unpacked_directory):
+    shutil.rmtree(unpacked_directory)
+if os.path.isfile(zip_file):
+    parent = os.path()
+    zf = ZipFile(zip_file, 'r')
+    zf.extractall(os.path.dirname(unpacked_directory))
     zf.close()
-if not os.path.isdir('extra_fixtures/warn-objects/W003_empty_content_dir'):
+if not os.path.isdir(unpacked_directory):
     raise Exception("Oops, something went wrong with unzipping extra_fixtures/warn-objects/W003_empty_content_dir.zip")
 
 
@@ -23,27 +29,27 @@ class TestAll(unittest.TestCase):
 
     def test01_bad(self):
         """Check bad objects fail."""
-        for bad, codes in {'does_not_even_exist': ['E987'],
+        for bad, codes in {'does_not_even_exist': ['E003c'],
+                           'E001_extra_dir_in_root': ['E001b'],
+                           'E001_extra_file_in_root': ['E001a'],
                            'E003_E034_empty': ['E003a', 'E034'],
                            'E003_no_decl': ['E003a'],
-                           'E036_no_id': ['E036a'],
-                           'E034_no_inv': ['E034'],
                            'E005_no_sidecar': ['E005'],
-                           'E023_missing_file': ['E023a'],
-                           'E023_extra_file': ['E023b'],
-                           'E050_file_in_manifest_not_used': ['E050b'],
                            'E015_content_not_in_content_dir': ['E015'],
+                           'E023_extra_file': ['E023b'],
+                           'E023_missing_file': ['E023a'],
+                           'E034_no_inv': ['E034'],
+                           'E036_no_id': ['E036a'],
                            'E040_wrong_head_doesnt_exist': ['E040'],
                            'E040_wrong_head_format': ['E040'],
-                           'E001_extra_file_in_root': ['E001a'],
-                           'E001_extra_dir_in_root': ['E001b'],
-                           'E067_file_in_extensions_dir': ['E067'],
-                           'E064_different_root_and_latest_inventories': ['E064'],
-                           'E049_E050_E054_bad_version_block_values': ['E049d', 'E050b', 'E050c', 'E054a', 'E403'],
-                           'bad16_digest_repeated': ['E922', 'E923'],
+                           'E049_E050_E054_bad_version_block_values': ['E049d', 'E050b', 'E050c', 'E054a', 'E048b'],
                            'E049_created_no_timezone': ['E049a'],
                            'E049_created_not_to_seconds': ['E049b'],
-                           'E309_bad_manifest_digest': ['E309']}.items():
+                           'E050_file_in_manifest_not_used': ['E050b'],
+                           'E064_different_root_and_latest_inventories': ['E064'],
+                           'E067_file_in_extensions_dir': ['E067'],
+                           'E093_bad_manifest_digest': ['E093'],
+                           'bad16_digest_repeated': ['E922', 'E923']}.items():
             v = Validator()
             filepath = 'fixtures/1.0/bad-objects/' + bad
             if not os.path.isdir(filepath):

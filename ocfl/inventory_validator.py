@@ -69,7 +69,7 @@ class InventoryValidator(object):
         if 'id' in inventory:
             iid = inventory['id']
             if type(iid) != str or iid == '':
-                self.error("E101")
+                self.error("E037")
             elif not re.match(r'''(\w+):.+''', iid):
                 self.warn("W005", id=iid)
         else:
@@ -77,7 +77,7 @@ class InventoryValidator(object):
         if 'type' not in inventory:
             self.error("E036b")
         elif inventory['type'] != 'https://ocfl.io/1.0/spec/#inventory':
-            self.error("E103")
+            self.error("E038")
         if 'digestAlgorithm' not in inventory:
             self.error("E036c")
         elif inventory['digestAlgorithm'] == 'sha512':
@@ -88,7 +88,7 @@ class InventoryValidator(object):
             self.warn("W004")
             self.digest_algorithm = inventory['digestAlgorithm']
         else:
-            self.error("E105", digest_algorithm=inventory['digestAlgorithm'])
+            self.error("E039", digest_algorithm=inventory['digestAlgorithm'])
         if 'contentDirectory' in inventory:
             # Careful only to set self.content_directory if value is safe
             cd = inventory['contentDirectory']
@@ -97,11 +97,11 @@ class InventoryValidator(object):
             else:
                 self.content_directory = cd
         if 'manifest' not in inventory:
-            self.error("E107")
+            self.error("E041a")
         else:
             self.manifest_files = self.validate_manifest(inventory['manifest'])
         if 'versions' not in inventory:
-            self.error("E108")
+            self.error("E041b")
         else:
             self.all_versions = self.validate_version_sequence(inventory['versions'])
             digests_used = self.validate_versions(inventory['versions'], self.all_versions)
@@ -123,14 +123,14 @@ class InventoryValidator(object):
         manifest_files = {}
         manifest_digests = set()
         if type(manifest) != dict:
-            self.error('E307')
+            self.error('E041c')
         else:
             for digest in manifest:
                 m = re.match(self.digest_regex(), digest)
                 if not m:
-                    self.error('E304', digest=digest, algorithm=self.digest_algorithm)  # wrong form of digest
+                    self.error('E025a', digest=digest, algorithm=self.digest_algorithm)  # wrong form of digest
                 elif type(manifest[digest]) != list:
-                    self.error('E308', digest=digest)  # must have path list value
+                    self.error('E092', digest=digest)  # must have path list value
                 else:
                     for file in manifest[digest]:
                         norm_digest = normalized_digest(digest, self.digest_algorithm)
@@ -153,7 +153,7 @@ class InventoryValidator(object):
         """
         all_versions = []
         if type(versions) != dict:
-            self.error('E310')
+            self.error('E044')
             return all_versions
         # Validate version sequence
         # https://ocfl.io/draft/spec/#version-directories
@@ -173,7 +173,7 @@ class InventoryValidator(object):
                     max_version_num = (10 ** (n - 1)) - 1
                     break
             if not zero_padded:
-                self.error("E311")
+                self.error("E008")
                 return all_versions
         if zero_padded:
             self.warn("W001")
@@ -184,14 +184,14 @@ class InventoryValidator(object):
                 all_versions.append(v)
             else:
                 if len(versions) != (n - 1):
-                    self.error("E312")  # Extra version dirs outside sequence
+                    self.error("E009")  # Extra version dirs outside sequence
                 return all_versions
         # We have now included all possible versions up to the zero padding
         # size, if there are more versions than this number then we must
         # have extra that violate the zero-padding rule or are out of
         # sequence
         if len(versions) > max_version_num:
-            self.error("E312")
+            self.error("E009")
         return all_versions
 
     def validate_versions(self, versions, all_versions):
@@ -211,7 +211,7 @@ class InventoryValidator(object):
         for v in all_versions:
             version = versions[v]
             if 'created' not in version:
-                self.error('E048a', version=v)  # No created
+                self.error('E048', version=v)  # No created
             elif type(versions[v]['created']) != str:
                 self.error('E049d', version=v)  # Bad created
             else:
@@ -231,7 +231,7 @@ class InventoryValidator(object):
             if 'message' not in version:
                 self.warn('W007a', version=v)
             elif type(version['message']) != str:
-                self.error('E403', version=v)  # FIXME https://github.com/OCFL/spec/issues/460
+                self.error('E048b', version=v)  # FIXME https://github.com/OCFL/spec/issues/460
             if 'user' not in version:
                 self.warn('W007b', version=v)
             else:
@@ -263,9 +263,9 @@ class InventoryValidator(object):
             digest_regex = self.digest_regex()
             for digest in state:
                 if not re.match(self.digest_regex(), digest):
-                    self.error('E305', version=version, digest=digest)
+                    self.error('E050d', version=version, digest=digest)
                 elif type(state[digest]) != list:
-                    self.error('E919', version=version, digest=digest)
+                    self.error('E050e', version=version, digest=digest)
                 else:
                     for path in state[digest]:
                         if not is_valid_logical_path(path):
@@ -295,7 +295,7 @@ class InventoryValidator(object):
             return digest_regex(self.digest_algorithm)
         except ValueError:
             if not self.lax_digests:
-                self.error('E921', digest=self.digest_algorithm)
+                self.error('E026a', digest=self.digest_algorithm)
         # Match anything
         return r'''^.*$'''
 
@@ -311,9 +311,9 @@ class InventoryValidator(object):
         """
         # Must have a subset of versions which also check zero padding format etc.
         if not set(prior.all_versions).issubset(set(self.all_versions)):
-            self.error('E407', prior_head=prior.head)
+            self.error('E066a', prior_head=prior.head)
         elif not set(prior.manifest_files.keys()).issubset(self.manifest_files.keys()):
-            self.error('E408', prior_head=prior.head)
+            self.error('E066b', prior_head=prior.head)
         else:
             # Check references to files but realize that there might be different
             # digest algorithms between versions
@@ -321,12 +321,12 @@ class InventoryValidator(object):
                 prior_map = get_file_map(prior.inventory, version_dir)
                 self_map = get_file_map(self.inventory, version_dir)
                 if prior_map.keys() != self_map.keys():
-                    self.error('E409', version_dir=version_dir, prior_head=prior.head)
+                    self.error('E066c', version_dir=version_dir, prior_head=prior.head)
                 else:
                     # Check them all...
                     for file in prior_map:
                         if prior_map[file] != self_map[file]:
-                            self.error('E410', version_dir=version_dir, prior_head=prior.head, file=file)
+                            self.error('E066d', version_dir=version_dir, prior_head=prior.head, file=file)
             # Check metadata
             prior_version = prior.inventory['versions'][version_dir]
             self_version = self.inventory['versions'][version_dir]

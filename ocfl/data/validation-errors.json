@@ -28,9 +28,27 @@
        "en": "OCFL Object includes more that one file that looks like an object declaration (got %s)"
     }
   },
+  "E003c": {
+    "params": ["path"],
+    "description": {
+       "en": "No OCFL Object to validate at path %s. The root of an OCFL Object must be a directory containing an object declaration"
+    }
+  },
   "E007": {
     "description": {
        "en": "OCFL Object declaration file contents do not match file name without leading 0="
+    }
+  },
+  "E008": {
+    "params": ["where"],
+    "description": {
+       "en": "OCFL Object %s inventory versions block does not contain v1 or a zero padded equivalent"
+    }
+  },
+  "E009": {
+    "params": ["where"],
+    "description": {
+       "en": "OCFL Object %s inventory versions block includes an out-of-sequence version"
     }
   },
   "E015": {
@@ -54,6 +72,24 @@
     "params": ["where", "extra_files"],
     "description": {
        "en": "OCFL Object includes one or more files that are not mentioned in the %s inventory manifest (%s)"
+    }
+  },
+  "E025a": {
+    "params": ["where", "digest", "algorithm"],
+    "description": {
+       "en": "OCFL Object %s inventory manifest block includes a digest (%s) that doesn't have the correct form for the %s algorithm"
+    }
+  },
+  "E024": {
+    "params": ["where", "path"],
+    "description": {
+       "en": "OCFL Object version %s content directory includes empty path %s"
+    }
+  },
+  "E026a": {
+    "params": ["where", "digest"],
+    "description": {
+       "en": "OCFL Object %s inventory uses unknown digest type %s"
     }
   },
   "E034": {
@@ -85,10 +121,46 @@
        "en": "OCFL Object %s inventory missing `head` attribute"
     }
   },
+  "E037": {
+    "params": ["where"],
+    "description": {
+       "en": "OCFL Object %s inventory `id` attribute is empty or badly formed"
+    }
+  },
+  "E038": {
+    "params": ["where"],
+    "description": {
+       "en": "OCFL Object %s inventory `type` attribute has wrong value"
+    }
+  },
+  "E039": {
+    "params": ["where", "digest_algorithm"],
+    "description": {
+       "en": "OCFL Object %s inventory `digestAlgorithm` attribute not an allowed value (got '%s')"
+    }
+  },
   "E040": {
     "params": ["where", "got", "expected"],
     "description": {
        "en": "OCFL Object %s inventory head attribute doesn't match versions (got %s, expected %s)"
+    }
+  },
+  "E041a": {
+    "params": ["where"],
+    "description": {
+       "en": "OCFL Object %s inventory missing `manifest` attribute"
+    }
+  },
+  "E041b": {
+    "params": ["where"],
+    "description": {
+       "en": "OCFL Object %s inventory missing `versions` attribute"
+    }
+  },
+  "E041c": {
+    "params": ["where"],
+    "description": {
+       "en": "OCFL Object %s inventory manifest block is not a JSON object"
     }
   },
   "E042": {
@@ -97,10 +169,22 @@
        "en": "OCFL Object %s inventory manifest includes invalid content path %s"
     }
   },
-  "E048a": {
+  "E044": {
+    "params": ["where"],
+    "description": {
+       "en": "OCFL Object %s inventory versions block is not a JSON object"
+    }
+  },
+  "E048": {
     "params": ["where", "version"],
     "description": {
        "en": "OCFL Object %s inventory %s version block does not include a created date or it is malformed"
+    }
+  },
+  "E048b": {
+    "params": ["where", "version"],
+    "description": {
+       "en": "OCFL Object %s inventory %s version block has message key with value that isn't a string -- FIXME https://github.com/OCFL/spec/issues/460"
     }
   },
   "E049a": {
@@ -121,7 +205,7 @@
        "en": "OCFL Object %s inventory %s version block has bad created date, must be IS8601 (%s)"
     }
   },
-  "E049c": {
+  "E049d": {
     "params": ["where", "version"],
     "description": {
        "en": "OCFL Object %s inventory %s version block created value is not a JSON string"
@@ -143,6 +227,18 @@
     "params": ["where", "version"],
     "description": {
        "en": "OCFL Object %s inventory %s version block state block is not a JSON object"
+    }
+  },
+  "E050d": {
+    "params": ["where", "version", "digest"],
+    "description": {
+       "en": "OCFL Object %s inventory %s version state block includes a bad digest (%s)"
+    }
+  },
+  "E050e": {
+    "params": ["where", "version", "digest"],
+    "description": {
+       "en": "OCFL Object %s inventory %s version block state block value for digest %s is not list"
     }
   },
   "E051": {
@@ -199,133 +295,49 @@
        "en": "Object root inventory and copy in last version MUST be identical but are not (%s and %s)"
     }
   },
+  "E066a": {
+    "params": ["prior_head", "where"],
+    "description": {
+       "en": "OCFL Object inventory for %s doesn't have a subset of version blocks of inventory for %s"
+    }
+  },
+ "E066b": {
+    "params": ["prior_head", "where"],
+    "description": {
+       "en": "OCFL Object inventory for %s doesn't have a subset of manifest entries of inventory for %s"
+    }
+  },
+ "E066c": {
+    "params": ["version_dir" , "prior_head", "where"],
+    "description": {
+       "en": "OCFL Object inventory manifest for %s in %s doesn't have a subset of manifest entries of inventory for %s"
+    }
+  },
+  "E066d": {
+    "params": ["where", "version"],
+    "description": {
+       "en": "OCFL Object %s inventory %s version block has no state description"
+    }
+  },
   "E067": {
     "params": ["entry"],
     "description": {
        "en": "OCFL Object extensions direct contains an unexpected non-directory entry: %s"
     }
   },
-  "E101": {
-    "params": ["where"],
-    "description": {
-       "en": "OCFL Object %s inventory `id` attribute is empty or badly formed"
-    }
-  },
-  "E103": {
-    "params": ["where"],
-    "description": {
-       "en": "OCFL Object %s inventory `type` attribute has wrong value"
-    }
-  },
-  "E105": {
-    "params": ["where", "digest_algorithm"],
-    "description": {
-       "en": "OCFL Object %s inventory `digestAlgorithm` attribute not an allowed value (got '%s')"
-    }
-  },
-  "E107": {
-    "params": ["where"],
-    "description": {
-       "en": "OCFL Object %s inventory missing `manifest` attribute"
-    }
-  },
-  "E108": {
-    "params": ["where"],
-    "description": {
-       "en": "OCFL Object %s inventory missing `versions` attribute"
-    }
-  },
-
-  "E304": {
-    "params": ["where", "digest", "algorithm"],
-    "description": {
-       "en": "OCFL Object %s inventory manifest block includes a digest (%s) that doesn't have the correct form for the %s algorithm"
-    }
-  },
-  "E305": {
-    "params": ["where", "version", "digest"],
-    "description": {
-       "en": "OCFL Object %s inventory %s version blockstate block includes a bad digest (%s)"
-    }
-  },
-  "E307": {
-    "params": ["where"],
-    "description": {
-       "en": "OCFL Object %s inventory manifest block is not a JSON object"
-    }
-  },
-  "E308": {
+  "E091": {
     "params": ["where", "digest"],
     "description": {
        "en": "OCFL Object %s inventory manifest file list for digest %s is not a JSON array"
     }
   },
-  "E309": {
+  "E093": {
     "params": ["where", "digest", "content_path", "content_digest"],
     "description": {
        "en": "OCFL Object %s inventory manifest has digest %s for file %s which doesn't match calculated digest %s for that file"
     }
   },
-  "E310": {
-    "params": ["where"],
-    "description": {
-       "en": "OCFL Object %s inventory versions block is not a JSON object"
-    }
-  },
-  "E311": {
-    "params": ["where"],
-    "description": {
-       "en": "OCFL Object %s inventory versions block does not contain v1 or a zero padded equivalent"
-    }
-  },
-  "E312": {
-    "params": ["where"],
-    "description": {
-       "en": "OCFL Object %s inventory versions block includes an out-of-sequence version"
-    }
-  },
-  "E403": {
-    "params": ["where", "version"],
-    "description": {
-       "en": "OCFL Object %s inventory %s version block has message key with value that isn't a string"
-    }
-  },
-  "E407": {
-    "params": ["prior_head", "where"],
-    "description": {
-       "en": "OCFL Object inventory for %s doesn't have a subset of version blocks of inventory for %s"
-    }
-  },
- "E408": {
-    "params": ["prior_head", "where"],
-    "description": {
-       "en": "OCFL Object inventory for %s doesn't have a subset of manifest entries of inventory for %s"
-    }
-  },
- "E409": {
-    "params": ["version_dir" , "prior_head", "where"],
-    "description": {
-       "en": "OCFL Object inventory manifest for %s in %s doesn't have a subset of manifest entries of inventory for %s"
-    }
-  },
-  "E410": {
-    "params": ["where", "version"],
-    "description": {
-       "en": "OCFL Object %s inventory %s version block has no state description"
-    }
-  },
-  "E919": {
-    "params": ["where", "version", "digest"],
-    "description": {
-       "en": "OCFL Object %s inventory %s version block state block value for digest %s is not list"
-    }
-  },
-  "E921": {
-    "params": ["where", "digest"],
-    "description": {
-       "en": "OCFL Object %s inventory uses unknown digest type %s"
-    }
-  },
+
   "E922": {
     "params": ["where", "digest"],
     "description": {
@@ -338,12 +350,7 @@
        "en": "OCFL Object %s inventory version %s state includes digest %s more than once with different normalizations"
     }
   },
-  "E987": {
-    "params": ["path"],
-    "description": {
-       "en": "No OCFL Object to validate at path %s"
-    }
-  },
+
   "W001": {
     "params": ["where"],
     "description": {

@@ -12,3 +12,4 @@ ocfl_py.egg-info/
 .eggs/
 .tox/
 extra_fixtures/warn-objects/W003_empty_content_dir
+extra_fixtures/bad-objects/E024_empty_dir_in_content

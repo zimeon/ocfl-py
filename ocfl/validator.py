@@ -52,7 +52,7 @@ class Validator(object):
         """
         self.initialize()
         if not os.path.isdir(path):
-            self.log.error('E987', path=path)
+            self.log.error('E003c', path=path)
             return False
         # Object declaration
         namastes = find_namastes(0, path)
@@ -219,6 +219,8 @@ class Validator(object):
                         content_path = os.path.join(version_path, self.content_directory)
                         num_content_files_in_version = 0
                         for dirpath, dirs, files in os.walk(content_path, topdown=True):
+                            if dirpath != content_path and (len(dirs) + len(files)) == 0:
+                                self.log.error("E024", where=version_dir, path=dirpath)
                             for file in files:
                                 obj_path = os.path.relpath(os.path.join(dirpath, file), start=path)
                                 files_seen.add(obj_path)
@@ -238,7 +240,7 @@ class Validator(object):
                     if self.check_digests:
                         content_digest = file_digest(os.path.join(path, filepath), digest_type=self.digest_algorithm)
                         if content_digest != normalized_digest(digest, digest_type=self.digest_algorithm):
-                            self.log.error('E309', where='root', digest=digest, content_path=filepath, content_digest=content_digest)
+                            self.log.error('E093', where='root', digest=digest, content_path=filepath, content_digest=content_digest)
                     files_seen.discard(filepath)
         # Anything left in files_seen is not mentioned in the inventory
         if len(files_seen) > 0:
