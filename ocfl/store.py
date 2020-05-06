@@ -182,7 +182,7 @@ class Store(object):
                     good_objects += 1
                 else:
                     logging.info("Object at %s in INVALID" % (dirpath))
-                warnings = validator.__str__(prefix='[[' + dirpath + ']]')
+                warnings = validator.__str__(prefix='[[' + dirpath + ']]')  # FIXME - how to show warnings sensibly?
                 if warnings != '':
                     print(warnings)
                 num_objects += 1
