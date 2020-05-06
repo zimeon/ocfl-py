@@ -45,7 +45,7 @@ class TestAll(unittest.TestCase):
         tempdir = os.path.join(tempdir, 'aaa')
         s = Store(root=tempdir, disposition='identity')
         s.initialize()
-        self.assertTrue(os.path.isfile(os.path.join(tempdir,'0=ocfl_1.0')))
+        self.assertTrue(os.path.isfile(os.path.join(tempdir, '0=ocfl_1.0')))
 
     def test_check_root_structure(self):
         """Test check_root_structure method."""
