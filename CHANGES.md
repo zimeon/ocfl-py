@@ -3,6 +3,7 @@
 ## ... v0.0.6
 
   * Handle case of no versions https://ocfl.io/draft/spec/#E008
+  * Handle case of no manifest https://ocfl.io/draft/spec/#E041
 
 ## 2020-05-05 v0.0.5
 

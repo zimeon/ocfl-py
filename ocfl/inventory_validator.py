@@ -304,8 +304,13 @@ class InventoryValidator(object):
 
     def is_valid_content_path(self, path):
         """True if path is a valid content path."""
-        m = re.match(r'''^v\d+/''' + self.content_directory + r'''/''', path)
-        return m is not None
+        m = re.match(r'''^v\d+/''' + self.content_directory + r'''/(.*)''', path)
+        if not m:
+            return False
+        for element in m.group(1).split('/'):
+            if element in ('', '.', '..'):
+                return False
+        return True
 
     def validate_as_prior_version(self, prior):
         """Check that prior is a valid InventoryValidator for a prior version of the current inventory object.
@@ -313,10 +318,8 @@ class InventoryValidator(object):
         Both inventories are assumed to have been checked for internal consistency.
         """
         # Must have a subset of versions which also check zero padding format etc.
-        if not set(prior.all_versions).issubset(set(self.all_versions)):
+        if not set(prior.all_versions) < set(self.all_versions):
             self.error('E066a', prior_head=prior.head)
-        elif not set(prior.manifest_files.keys()).issubset(self.manifest_files.keys()):
-            self.error('E066b', prior_head=prior.head)
         else:
             # Check references to files but realize that there might be different
             # digest algorithms between versions
@@ -324,12 +327,12 @@ class InventoryValidator(object):
                 prior_map = get_file_map(prior.inventory, version_dir)
                 self_map = get_file_map(self.inventory, version_dir)
                 if prior_map.keys() != self_map.keys():
-                    self.error('E066c', version_dir=version_dir, prior_head=prior.head)
+                    self.error('E066b', version_dir=version_dir, prior_head=prior.head)
                 else:
                     # Check them all...
                     for file in prior_map:
                         if prior_map[file] != self_map[file]:
-                            self.error('E066d', version_dir=version_dir, prior_head=prior.head, file=file)
+                            self.error('E066c', version_dir=version_dir, prior_head=prior.head, file=file)
             # Check metadata
             prior_version = prior.inventory['versions'][version_dir]
             self_version = self.inventory['versions'][version_dir]

@@ -42,6 +42,7 @@ class TestAll(unittest.TestCase):
                            'E036_no_id': ['E036a'],
                            'E040_wrong_head_doesnt_exist': ['E040'],
                            'E040_wrong_head_format': ['E040'],
+                           'E041_no_manifest': ['E041a'],
                            'E049_E050_E054_bad_version_block_values': ['E049d', 'E050b', 'E050c', 'E054a', 'E048b'],
                            'E049_created_no_timezone': ['E049a'],
                            'E049_created_not_to_seconds': ['E049b'],

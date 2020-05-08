@@ -234,16 +234,17 @@ class Validator(object):
                     else:
                         self.log.error("E015", where=version_dir, entry=entry)
         # Check all files in root manifest
-        for digest in inventory['manifest']:
-            for filepath in inventory['manifest'][digest]:
-                if filepath not in files_seen:
-                    self.log.error('E023a', where='root', content_path=filepath)
-                else:
-                    if self.check_digests:
-                        content_digest = file_digest(os.path.join(path, filepath), digest_type=self.digest_algorithm)
-                        if content_digest != normalized_digest(digest, digest_type=self.digest_algorithm):
-                            self.log.error('E093', where='root', digest=digest, content_path=filepath, content_digest=content_digest)
-                    files_seen.discard(filepath)
+        if 'manifest' in inventory:
+            for digest in inventory['manifest']:
+                for filepath in inventory['manifest'][digest]:
+                    if filepath not in files_seen:
+                        self.log.error('E023a', where='root', content_path=filepath)
+                    else:
+                        if self.check_digests:
+                            content_digest = file_digest(os.path.join(path, filepath), digest_type=self.digest_algorithm)
+                            if content_digest != normalized_digest(digest, digest_type=self.digest_algorithm):
+                                self.log.error('E093', where='root', digest=digest, content_path=filepath, content_digest=content_digest)
+                        files_seen.discard(filepath)
         # Anything left in files_seen is not mentioned in the inventory
         if len(files_seen) > 0:
             self.log.error('E023b', where='root', extra_files=', '.join(sorted(files_seen)))

@@ -308,18 +308,12 @@
     }
   },
  "E066b": {
-    "params": ["prior_head", "where"],
-    "description": {
-       "en": "OCFL Object inventory for %s doesn't have a subset of manifest entries of inventory for %s"
-    }
-  },
- "E066c": {
     "params": ["version_dir" , "prior_head", "where"],
     "description": {
        "en": "OCFL Object inventory manifest for %s in %s doesn't have a subset of manifest entries of inventory for %s"
     }
   },
-  "E066d": {
+  "E066c": {
     "params": ["where", "version"],
     "description": {
        "en": "OCFL Object %s inventory %s version block has no state description"

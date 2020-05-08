@@ -206,6 +206,80 @@ class TestAll(unittest.TestCase):
         iv.check_digests_present_and_used(manifest, ['aaa', 'bbb', 'ccc'])
         self.assertIn('E050a', log.errors)
 
+    def test_digest_regex(self):
+        """Test digest_regex."""
+        log = TLogger()
+        iv = InventoryValidator(log=log)
+        iv.digest_algorithm = 'md5'
+        self.assertEqual(iv.digest_regex(), '^[0-9a-fA-F]{32}$')
+        iv.digest_algorithm = 'not a digest'
+        self.assertEqual(iv.digest_regex(), '^.*$')
+        self.assertEqual(log.errors, ['E026a'])
+        log.clear()
+        iv.lax_digests = True
+        self.assertEqual(iv.digest_regex(), '^.*$')
+        self.assertEqual(log.errors, [])
+
+    def test_is_valid_content_path(self):
+        """Test is_valid_content_path method."""
+        log = TLogger()
+        iv = InventoryValidator(log=log)
+        self.assertTrue(iv.is_valid_content_path('v1/content/anything'))
+        iv.content_directory = 'xyz'
+        self.assertFalse(iv.is_valid_content_path('v1/content/anything'))
+        self.assertTrue(iv.is_valid_content_path('v1/xyz/anything'))
+        # Error cases
+        self.assertFalse(iv.is_valid_content_path('1/xyz/1'))
+        self.assertFalse(iv.is_valid_content_path('vv1/xyz/1'))
+        self.assertFalse(iv.is_valid_content_path('/xyz/1'))
+        self.assertFalse(iv.is_valid_content_path('v1/x/1'))
+        self.assertFalse(iv.is_valid_content_path('v1//1'))
+        self.assertFalse(iv.is_valid_content_path('v1/x/1'))
+        self.assertFalse(iv.is_valid_content_path('v1/xyz/'))
+        self.assertFalse(iv.is_valid_content_path('v1/xyz/abc/'))
+        self.assertFalse(iv.is_valid_content_path('v1/xyz/abc//d'))
+        self.assertFalse(iv.is_valid_content_path('v1/xyz/abc/./d'))
+        self.assertFalse(iv.is_valid_content_path('v1/xyz/abc/../d'))
+        self.assertFalse(iv.is_valid_content_path('v1/xyz/.'))
+        # Good cases
+        self.assertTrue(iv.is_valid_content_path('v1/xyz/.secret/d'))
+        self.assertTrue(iv.is_valid_content_path('v1/xyz/.a'))
+
+    def test_validate_as_prior_version(self):
+        """Test validate_as_prior_version method."""
+        log = TLogger()
+        iv = InventoryValidator(log=log)
+        prior = InventoryValidator(log=TLogger())
+        # Same versions won't work...
+        iv.all_versions = ['v1']
+        prior.all_versions = ['v1']
+        iv.validate_as_prior_version(prior)
+        self.assertEqual(log.errors, ['E066a'])
+        log.clear()
+        # Good inventory in spite of diferent digests
+        iv.all_versions = ['v1', 'v2']
+        iv.inventory = {"manifest": {"a1d1": ["v1/content/f1"],
+                                     "a1d2": ["v1/content/f2"],
+                                     "a1d3": ["v2/content/f3"]},
+                        "versions": {"v1": {"state": {"a1d1": ["f1"], "a1d2": ["f2"]}},
+                                     "v2": {"state": {"a1d1": ["f1"], "a1d3": ["f3"]}}}}
+        prior.inventory = {"manifest": {"a2d1": ["v1/content/f1"],
+                                        "a2d2": ["v1/content/f2"]},
+                           "versions": {"v1": {"state": {"a2d1": ["f1"], "a2d2": ["f2"]}}}}
+        iv.validate_as_prior_version(prior)
+        self.assertEqual(log.errors, [])
+        log.clear()
+        # Now let's add a copy file in the state in prior so as not to match
+        prior.inventory["versions"]["v1"]["state"]["a2d2"] = ["f2", "f2-copy"]
+        iv.validate_as_prior_version(prior)
+        self.assertEqual(log.errors, ["E066b"])
+        log.clear()
+        # Now move that back but change a a manifest location
+        prior.inventory["versions"]["v1"]["state"]["a2d2"] = ["f2"]
+        prior.inventory["manifest"]["a2d2"] = ["v1/content/f2--moved"]
+        iv.validate_as_prior_version(prior)
+        self.assertEqual(log.errors, ["E066c"])
+
     def test_is_valid_logical_path(self):
         """Test is_valid_logical_path function."""
         self.assertTrue(is_valid_logical_path("almost anything goes"))
