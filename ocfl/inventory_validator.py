@@ -48,9 +48,9 @@ class InventoryValidator(object):
         self.inventory = None
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
-        self.head = None
         self.all_versions = []
         self.manifest_files = None
+        self.head = 'UNKNOWN'
         # Validation control
         self.lax_digests = lax_digests
 
@@ -106,7 +106,7 @@ class InventoryValidator(object):
             self.all_versions = self.validate_version_sequence(inventory['versions'])
             digests_used = self.validate_versions(inventory['versions'], self.all_versions)
         if 'head' in inventory:
-            self.head = self.all_versions[-1]
+            self.head = 'THERE_ARE_NO_VERSIONS' if len(self.all_versions) == 0 else self.all_versions[-1]
             if inventory['head'] != self.head:
                 self.error("E040", got=inventory['head'], expected=self.head)
         else:
@@ -153,7 +153,10 @@ class InventoryValidator(object):
         """
         all_versions = []
         if type(versions) != dict:
-            self.error('E044')
+            self.error("E044")
+            return all_versions
+        elif len(versions) == 0:
+            self.error("E008b")
             return all_versions
         # Validate version sequence
         # https://ocfl.io/draft/spec/#version-directories
@@ -173,7 +176,7 @@ class InventoryValidator(object):
                     max_version_num = (10 ** (n - 1)) - 1
                     break
             if not zero_padded:
-                self.error("E008")
+                self.error("E008a")
                 return all_versions
         if zero_padded:
             self.warn("W001")

@@ -165,6 +165,8 @@ class Validator(object):
 
     def validate_version_inventories(self, path, inventory, version_dirs):
         """Each version SHOULD have an inventory up to that point."""
+        if len(version_dirs) == 0:
+            return
         inv_digest_files = {}  # index by version_dir
         last_version = version_dirs[-1]
         for version_dir in version_dirs:

@@ -39,12 +39,18 @@
        "en": "OCFL Object declaration file contents do not match file name without leading 0="
     }
   },
-  "E008": {
+  "E008a": {
     "params": ["where"],
     "description": {
        "en": "OCFL Object %s inventory versions block does not contain v1 or a zero padded equivalent"
     }
   },
+  "E008b": {
+      "params": ["where"],
+      "description": {
+         "en": "OCFL Object %s inventory versions block does not contain any versions, there must be at least version 1"
+      }
+    },
   "E009": {
     "params": ["where"],
     "description": {

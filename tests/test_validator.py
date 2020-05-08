@@ -34,6 +34,7 @@ class TestAll(unittest.TestCase):
                            'E003_E034_empty': ['E003a', 'E034'],
                            'E003_no_decl': ['E003a'],
                            'E005_no_sidecar': ['E005'],
+                           'E008_E036_no_versions_no_head': ['E008b', 'E036d'],
                            'E015_content_not_in_content_dir': ['E015'],
                            'E023_extra_file': ['E023b'],
                            'E023_missing_file': ['E023a'],
