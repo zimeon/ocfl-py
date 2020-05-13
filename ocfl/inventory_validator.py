@@ -27,8 +27,6 @@ def is_valid_logical_path(path):
 
     Neither a leading or trailing slash is allowed which is caught by the
     split and then test for empty.
-
-    FIXME - https://github.com/OCFL/spec/issues/436
     """
     for element in path.split('/'):
         if element in ['.', '..', '']:
@@ -234,7 +232,7 @@ class InventoryValidator(object):
             if 'message' not in version:
                 self.warn('W007a', version=v)
             elif type(version['message']) != str:
-                self.error('E048b', version=v)  # FIXME https://github.com/OCFL/spec/issues/460
+                self.error('E048b', version=v)
             if 'user' not in version:
                 self.warn('W007b', version=v)
             else:

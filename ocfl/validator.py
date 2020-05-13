@@ -150,9 +150,11 @@ class Validator(object):
     def validate_extensions_dir(self, path):
         """Validate content of extensions directory inside object root at path.
 
-        So far this is just to check that there aren't any entries in the
-        extensions directory that aren't directories themselves. Should refine/check
-        when https://github.com/OCFL/spec/issues/403 is resolved.
+        Validate the extensions directory by checking that there aren't any
+        entries in the extensions directory that aren't directories themselves.
+        Where there are extension directories they SHOULD be registered and
+        this code relies up the registered_extensions property to list known
+        extensions.
         """
         extpath = os.path.join(path, 'extensions')
         for entry in os.listdir(extpath):
