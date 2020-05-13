@@ -1,7 +1,7 @@
 """Identity dispositor tests."""
 import os.path
 import unittest
-from ocfl.inventory_validator import InventoryValidator, is_valid_logical_path
+from ocfl.inventory_validator import InventoryValidator
 
 
 class TLogger(object):
@@ -280,10 +280,16 @@ class TestAll(unittest.TestCase):
         iv.validate_as_prior_version(prior)
         self.assertEqual(log.errors, ["E066c"])
 
-    def test_is_valid_logical_path(self):
-        """Test is_valid_logical_path function."""
-        self.assertTrue(is_valid_logical_path("almost anything goes"))
-        self.assertFalse(is_valid_logical_path("/but not this"))
-        self.assertFalse(is_valid_logical_path("./or this"))
-        self.assertFalse(is_valid_logical_path("or/../this"))
-        self.assertFalse(is_valid_logical_path("or this/"))
+    def test_check_logical_path(self):
+        """Test check_logical_path method."""
+        log = TLogger()
+        iv = InventoryValidator(log=log)
+        lp = set()
+        ld = set()
+        self.assertTrue(iv.check_logical_path("almost anything goes", lp, ld))
+        self.assertFalse(iv.check_logical_path("/but not this", lp, ld))
+        self.assertFalse(iv.check_logical_path("./or this", lp, ld))
+        self.assertFalse(iv.check_logical_path("or this/", lp, ld))
+        # And check paths recorded
+        self.assertEqual(lp, set(('almost anything goes', 'or this/', './or this', '/but not this')))
+        self.assertEqual(ld, set(('', 'or this', '.')))

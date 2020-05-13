@@ -22,18 +22,6 @@ def get_file_map(inventory, version_dir):
     return file_map
 
 
-def is_valid_logical_path(path):
-    """True if the logical path is valid, False otherwise.
-
-    Neither a leading or trailing slash is allowed which is caught by the
-    split and then test for empty.
-    """
-    for element in path.split('/'):
-        if element in ['.', '..', '']:
-            return False
-    return True
-
-
 class InventoryValidator(object):
     """Class for OCFL Inventory Validator."""
 
@@ -258,6 +246,8 @@ class InventoryValidator(object):
         Returns a list of content digests referenced in the state block.
         """
         digests = []
+        logical_paths = set()
+        logical_directories = set()
         if type(state) != dict:
             self.error('E050c', version=version)
         else:
@@ -269,7 +259,7 @@ class InventoryValidator(object):
                     self.error('E050e', version=version, digest=digest)
                 else:
                     for path in state[digest]:
-                        if not is_valid_logical_path(path):
+                        if not self.check_logical_path(path, logical_paths, logical_directories):
                             self.error('E051', version=version, digest=digest, path=path)
                     norm_digest = normalized_digest(digest, self.digest_algorithm)
                     if norm_digest in digests:
@@ -277,7 +267,30 @@ class InventoryValidator(object):
                         self.error("E923", version=version, digest=norm_digest)
                     else:
                         digests.append(norm_digest)
+            # Check for conflicting logical paths
+            for path in logical_directories:
+                if path in logical_paths:
+                    self.error("E095", version=version, path=path)
         return digests
+
+    def check_logical_path(self, path, logical_paths, logical_directories):
+        """Check logical path and accumulate paths/directories for E095 check.
+
+        Neither a leading or trailing slash is allowed which is caught by the
+        split and then test for empty.
+
+        logical_paths and logical_directories are expected to sets.
+        """
+        valid = True
+        elements = path.split('/')
+        for element in elements:
+            if element in ['.', '..', '']:
+                valid = False
+                break
+        # Accumulate paths and directories
+        logical_paths.add(path)
+        logical_directories.add('/'.join(elements[0:-1]))
+        return valid
 
     def check_digests_present_and_used(self, manifest_files, digests_used):
         """Check all digests in manifest that are needed are present and used."""
