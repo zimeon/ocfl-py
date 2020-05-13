@@ -50,6 +50,7 @@ class TestAll(unittest.TestCase):
                            'E064_different_root_and_latest_inventories': ['E064'],
                            'E067_file_in_extensions_dir': ['E067'],
                            'E093_bad_manifest_digest': ['E093'],
+                           'E095_conflicting_logical_paths': ['E095'],
                            'bad16_digest_repeated': ['E922', 'E923']}.items():
             v = Validator()
             filepath = 'fixtures/1.0/bad-objects/' + bad

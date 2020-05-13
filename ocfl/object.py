@@ -484,7 +484,7 @@ class Object(object):
                 nn += 1
                 self.prnt(self._show_indent(1, last, (nn == len(v_notes))) + v_note)
 
-    def validate(self, objdir, show_warnings=False, show_errors=True, check_digests=True):
+    def validate(self, objdir, show_warnings=True, show_errors=True, check_digests=True):
         """Validate OCFL object at objdir."""
         validator = Validator(show_warnings=show_warnings,
                               show_errors=show_errors,

@@ -2,6 +2,7 @@
 
 ## ... v0.0.6
 
+  * When validating, show warnings and errors by default (https://github.com/zimeon/ocfl-py/issues/22)
   * Handle case of no versions https://ocfl.io/draft/spec/#E008
   * Handle case of bad JSON inventory https://ocfl.io/draft/spec/#E033
   * Handle case of no manifest https://ocfl.io/draft/spec/#E041

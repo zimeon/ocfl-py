@@ -56,10 +56,10 @@ class TestAll(unittest.TestCase):
 
     def test02_warnings(self):
         """Test warning cases."""
-        out = self.run_ocfl_validate("Warning test without -v", ['fixtures/1.0/warn-objects/W004_uses_sha256'])
+        out = self.run_ocfl_validate("Warning test with -q", ['-q', 'fixtures/1.0/warn-objects/W004_uses_sha256'])
         self.assertIn('fixtures/1.0/warn-objects/W004_uses_sha256 is VALID', out)
         self.assertNotIn('[W004]', out)
-        out = self.run_ocfl_validate("Warning test with -v", ['-v', 'fixtures/1.0/warn-objects/W004_uses_sha256'])
+        out = self.run_ocfl_validate("Warning test without -q", ['fixtures/1.0/warn-objects/W004_uses_sha256'])
         self.assertIn('fixtures/1.0/warn-objects/W004_uses_sha256 is VALID', out)
         self.assertIn('[W004]', out)
 

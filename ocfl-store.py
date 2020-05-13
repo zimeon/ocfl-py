@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-"""OCFL Object Store Tool."""
+"""OCFL Storage Root Tool."""
 import argparse
 import logging
 import ocfl
 import sys
 
-parser = argparse.ArgumentParser(description='Manpulate an OCFL Object Store.',
+parser = argparse.ArgumentParser(description='Manpulate or validate an OCFL Storage Root.',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--root', required=True,
-                    help='OCFL Storage Root for this object store')
+                    help='OCFL Storage Root (must be supplied)')
 parser.add_argument('--disposition', '-d', default=None,
                     help='Disposition of objects under root')
 

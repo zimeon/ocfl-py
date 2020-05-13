@@ -15,7 +15,7 @@ class FatalError(Exception):
 
 def parse_arguments():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description='Manipulate an OCFL object or inventory.',
+    parser = argparse.ArgumentParser(description='Manipulate or validate an OCFL object or inventory.',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # This should really be done with add_mutually_exclusive_group() but
