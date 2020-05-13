@@ -98,6 +98,12 @@
        "en": "OCFL Object %s inventory uses unknown digest type %s"
     }
   },
+  "E033": {
+    "params": ["where", "explanation"],
+    "description": {
+      "en": "OCFL Object %s inventory is not valid JSON (%s)"
+    }
+  },
   "E034": {
     "description": {
        "en": "OCFL Object root inventory is missing"

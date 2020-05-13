@@ -18,6 +18,12 @@ from .validation_logger import ValidationLogger
 from .w3c_datetime import str_to_datetime
 
 
+class ValidatorAbortException(Exception):
+    """Exception class to bail out of validation."""
+
+    pass
+
+
 class Validator(object):
     """Class for OCFL Validator."""
 
@@ -67,18 +73,21 @@ class Validator(object):
         if not os.path.exists(inv_file):
             self.log.error('E034')
             return False
-        inventory, inv_validator = self.validate_inventory(inv_file)
-        self.root_inv_validator = inv_validator
-        all_versions = inv_validator.all_versions
-        self.content_directory = inv_validator.content_directory
-        self.digest_algorithm = inv_validator.digest_algorithm
-        self.validate_inventory_digest(inv_file, self.digest_algorithm)
-        # Object root
-        self.validate_object_root(path, all_versions)
-        # Version inventory files
-        self.validate_version_inventories(path, inventory, all_versions)
-        # Object content
-        self.validate_content(path, inventory, all_versions)
+        try:
+            inventory, inv_validator = self.validate_inventory(inv_file)
+            self.root_inv_validator = inv_validator
+            all_versions = inv_validator.all_versions
+            self.content_directory = inv_validator.content_directory
+            self.digest_algorithm = inv_validator.digest_algorithm
+            self.validate_inventory_digest(inv_file, self.digest_algorithm)
+            # Object root
+            self.validate_object_root(path, all_versions)
+            # Version inventory files
+            self.validate_version_inventories(path, inventory, all_versions)
+            # Object content
+            self.validate_content(path, inventory, all_versions)
+        except ValidatorAbortException:
+            pass
         return self.log.num_errors == 0
 
     def validate_inventory(self, inv_file, where='root'):
@@ -88,8 +97,12 @@ class Validator(object):
         of object content. Does not look at anything else in the
         object itself.
         """
-        with open(inv_file) as fh:
-            inventory = json.load(fh)
+        try:
+            with open(inv_file) as fh:
+                inventory = json.load(fh)
+        except json.decoder.JSONDecodeError as e:
+            self.log.error('E033', where=where, explanation=str(e))
+            raise ValidatorAbortException
         inv_validator = InventoryValidator(log=self.log, where=where,
                                            lax_digests=self.lax_digests)
         inv_validator.validate(inventory)
