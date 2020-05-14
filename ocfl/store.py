@@ -168,7 +168,7 @@ class Store(object):
         # FIXME - do some stuff in here
         logging.info("Found %d OCFL Objects under root %s" % (num_objects, self.root))
 
-    def validate(self, validate_objects=True, check_digests=True, show_warnings=False):
+    def validate(self, validate_objects=True, show_warnings=False, show_errors=True, check_digests=True):
         """Validate storage root and optionally all objects."""
         valid = True
         try:

@@ -2,6 +2,7 @@
 """Object tests."""
 import io
 import json
+import logging
 import os
 import sys
 import tempfile
@@ -245,11 +246,10 @@ class TestAll(unittest.TestCase):
     def test12_show(self):
         """Test show method."""
         s = io.StringIO()
-        oo = Object(fhout=s)
+        oo = Object()
+        oo.log.addHandler(logging.StreamHandler(s))
         oo.show(objdir='fixtures/1.0/good-objects/minimal_one_version_one_file')
         out = s.getvalue()
-        if sys.version_info < (3, 0):
-            out = out.encode('utf8')
         self.assertIn('[fixtures/1.0/good-objects/minimal_one_version_one_file]', out)
         self.assertTrue('├── 0=ocfl_object_1.0' in out)
         # FIXME - need real tests in here when there is real output

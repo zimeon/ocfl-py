@@ -146,7 +146,7 @@ if __name__ == "__main__":
         args = parse_arguments()
         logging.basicConfig(level=logging.INFO if args.verbose else logging.WARN)
         do_object_operation(args)
-    except FatalError as e:
+    except (FatalError, ocfl.ObjectException) as e:
         # Show message but otherwise exit quietly
         print('Error - ' + str(e))
         sys.exit(1)

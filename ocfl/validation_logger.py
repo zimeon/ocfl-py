@@ -79,4 +79,4 @@ class ValidationLogger(object):
         s = ''
         for message in sorted(self.messages):
             s += prefix + message + '\n'
-        return s
+        return s[:-1]

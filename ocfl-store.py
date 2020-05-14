@@ -11,6 +11,8 @@ parser.add_argument('--root', required=True,
                     help='OCFL Storage Root (must be supplied)')
 parser.add_argument('--disposition', '-d', default=None,
                     help='Disposition of objects under root')
+parser.add_argument('--quiet', '-q', action='store_true',
+                    help="be quiet, do not show warnings")
 
 commands = parser.add_mutually_exclusive_group(required=True)
 # These commands are actions on the store
@@ -60,7 +62,7 @@ try:
     elif args.list:
         store.list()
     elif args.validate:
-        store.validate(show_warnings=args.verbose)  # -v is doing double duty here, messy
+        store.validate(show_warnings=not args.quiet)
     elif args.add:
         if not args.src:
             raise ocfl.StoreException("Must specify object path with --src")

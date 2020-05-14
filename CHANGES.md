@@ -1,7 +1,8 @@
 # ocfl-py changelog
 
-## ... v0.0.6
+## 2020-05-15 v0.0.6
 
+  * ocfl-validate.py script now handles storage roots and objects
   * When validating, show warnings and errors by default (https://github.com/zimeon/ocfl-py/issues/22)
   * Handle case of no versions https://ocfl.io/draft/spec/#E008
   * Handle case of bad JSON inventory https://ocfl.io/draft/spec/#E033

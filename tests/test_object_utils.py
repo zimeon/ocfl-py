@@ -2,7 +2,7 @@
 """Object tests."""
 import argparse
 import unittest
-from ocfl.object_utils import remove_first_directory, make_unused_filepath, next_version, add_object_args
+from ocfl.object_utils import remove_first_directory, make_unused_filepath, next_version, add_object_args, find_path_type
 
 
 class TestAll(unittest.TestCase):
@@ -48,3 +48,13 @@ class TestAll(unittest.TestCase):
         args = parser.parse_args(['--skip', 'aa', '--ocfl-version', '1.0'])
         self.assertIn('aa', args.skip)
         self.assertEqual(args.ocfl_version, '1.0')
+
+    def test_find_path_type(self):
+        """Test find_path_type function."""
+        self.assertIn("does not exist", find_path_type("this_path_does_not_exist"))
+        self.assertIn("not a directory", find_path_type("ocfl-object.py"))
+        self.assertEqual(find_path_type("ocfl"), "no 0= declaration file")
+        self.assertIn("more than one 0= declaration file", find_path_type("extra_fixtures/misc/multiple_declarations"))
+        self.assertIn("unrecognized", find_path_type("extra_fixtures/misc/unknown_declaration"))
+        self.assertEqual(find_path_type("extra_fixtures/good-storage-roots/fedora-root"), "root")
+        self.assertEqual(find_path_type("fixtures/1.0/good-objects/minimal_one_version_one_file"), "object")

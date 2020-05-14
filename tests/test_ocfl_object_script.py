@@ -146,7 +146,7 @@ class TestAll(unittest.TestCase):
                                    [],
                                    include_objdir=False)
         self.assertIn('Exactly one command ', out)
-        out = self.run_ocfl_object("No identifier",
+        out = self.run_ocfl_object("No source directory (--srcdir)",
                                    ['--create'],
                                    include_objdir=False)
         self.assertIn('Must specify either --srcdir', out)

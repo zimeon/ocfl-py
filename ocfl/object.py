@@ -34,14 +34,14 @@ class Object(object):
     def __init__(self, id=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
                  skips=None, forward_delta=True, dedupe=True, lax_digests=False,
-                 ocfl_version='draft', fixity=None, fhout=sys.stdout):
+                 ocfl_version='draft', fixity=None, verbose=True):
         """Initialize OCFL builder.
 
         Parameters:
           forward_delta - set False to turn off foward delta
           dedupe - set False to turn off dedupe within versions
           fixity - list of fixity types to add as fixity section
-          fhout - optional overwrite of STDOUT for print outputs
+          verbose - set logging level to INFO rather than WARN
         """
         self.id = id
         self.content_directory = content_directory
@@ -54,7 +54,8 @@ class Object(object):
         self.fixity = fixity
         self.lax_digests = lax_digests
         self.src_files = {}
-        self.fhout = fhout
+        self.log = logging.getLogger(name="ocfl.object")
+        self.log.setLevel(level=logging.INFO if verbose else logging.WARN)
 
     def parse_version_directory(self, dirname):
         """Get version number from version directory name."""
@@ -156,7 +157,6 @@ class Object(object):
             # of multiple additions with the same digest
             for filename in sorted(filenames):
                 filepath = os.path.join(dirpath, filename)
-                print("-o-> " + filepath)
                 sfilepath = os.path.relpath(filepath, srcdir)  # path relative to this version
                 vfilepath = self.map_filepath(sfilepath, vdir, manifest_to_srcfile)
                 digest = self.digest(filepath)
@@ -167,7 +167,6 @@ class Object(object):
                 if self.forward_delta and digest in manifest:
                     # We already have this content in a previous version and we are using
                     # forward deltas so do not need to copy in this one
-                    print("... already have content for digest %s" % (digest))
                     pass
                 else:
                     # This is a new digest so an addition in this version and
@@ -177,7 +176,6 @@ class Object(object):
                     elif not self.dedupe:
                         digests_in_version[digest].append(vfilepath)
                     manifest_to_srcfile[vfilepath] = filepath
-                    print("... %s -> %s" % (vfilepath, filepath))
         # Add any new digests in this version to the manifest
         for digest, paths in digests_in_version.items():
             if digest not in manifest:
@@ -259,8 +257,8 @@ class Object(object):
         for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(srcdir, metadata=metadata):
             num_versions += 1
             if objdir is None:
-                self.prnt("\n\n### Inventory for %s\n" % (vdir))
-                self.prnt(json.dumps(inventory, sort_keys=True, indent=2))
+                self.log.warning("### Inventory for %s\n" % (vdir)
+                                 + json.dumps(inventory, sort_keys=True, indent=2))
             else:
                 self.write_inventory_and_sidecar(os.path.join(objdir, vdir), inventory)
                 # Copy files into this version
@@ -296,8 +294,8 @@ class Object(object):
         manifest_to_srcfile = self.add_version(inventory, srcdir, vdir,
                                                metadata=metadata)
         if objdir is None:
-            self.prnt("\n\n### Inventory for %s\n" % (vdir))
-            self.prnt(json.dumps(inventory, sort_keys=True, indent=2))
+            self.log.warning("### Inventory for %s\n" % (vdir)
+                             + json.dumps(inventory, sort_keys=True, indent=2))
             return
         # Else write out object
         self.write_inventory_and_sidecar(os.path.join(objdir, vdir), inventory)
@@ -402,10 +400,8 @@ class Object(object):
             inventory['versions'][head] = metadata.as_dict(state=state)
         else:
             manifest_to_srcfile = self.add_version(inventory=inventory, srcdir=srcdir, vdir=head, metadata=metadata)
-            print("m2s " + str(manifest_to_srcfile))
             # Copy files into this version
             for (path, srcfile) in manifest_to_srcfile.items():
-                print('--s-> %s %s' % (path, srcfile))
                 dstfile = os.path.join(objdir, path)
                 dstpath = os.path.dirname(dstfile)
                 if not os.path.exists(dstpath):
@@ -438,11 +434,10 @@ class Object(object):
                               lax_digests=self.lax_digests)
         passed = validator.validate(objdir)
         if passed:
-            self.prnt("OCFL object at %s has VALID STRUCTURE (DIGESTS NOT CHECKED) " % (objdir))
+            self.log.warning("OCFL object at %s has VALID STRUCTURE (DIGESTS NOT CHECKED) " % (objdir))
         else:
-            self.prnt("OCFL object at %s is INVALID" % (objdir))
-        self.prnt()
-        self.prnt('[' + objdir + ']')
+            self.log.warning("OCFL object at %s is INVALID" % (objdir))
+        tree = '[' + objdir + ']\n'
         entries = sorted(os.listdir(objdir))
         n = 0
         seen_sidecar = False
@@ -478,11 +473,12 @@ class Object(object):
                 note += '<--- ???'
             # for (dirpath, dirnames, filenames) in os.walk(, followlinks=True):
             last = (n == len(entries))
-            self.prnt(self._show_indent(0, last) + note)
+            tree += self._show_indent(0, last) + note + "\n"
             nn = 0
             for v_note in v_notes:
                 nn += 1
-                self.prnt(self._show_indent(1, last, (nn == len(v_notes))) + v_note)
+                tree += self._show_indent(1, last, (nn == len(v_notes))) + v_note + "\n"
+            self.log.warning("Object tree\n" + tree)
 
     def validate(self, objdir, show_warnings=True, show_errors=True, check_digests=True):
         """Validate OCFL object at objdir."""
@@ -491,11 +487,13 @@ class Object(object):
                               check_digests=check_digests,
                               lax_digests=self.lax_digests)
         passed = validator.validate(objdir)
-        self.prnt(str(validator))
+        messages = str(validator)
+        if messages != '':
+            print(messages)
         if passed:
-            self.prnt("OCFL object at %s is VALID" % (objdir))
+            self.log.info("OCFL object at %s is VALID" % (objdir))
         else:
-            self.prnt("OCFL object at %s is INVALID" % (objdir))
+            self.log.info("OCFL object at %s is INVALID" % (objdir))
         return passed
 
     def extract(self, objdir, version, dstdir):
@@ -582,16 +580,3 @@ class Object(object):
             return inventory['id']
         except ObjectException:
             return failure_value
-
-    def prnt(self, *objects):
-        """Print method that uses object fhout property.
-
-        Avoid using Python 3 print function so we can run on 2.7 still.
-
-        Can't call this 'print' in 2.7, hence 'prnt'.
-        """
-        s = ' '.join(str(o) for o in objects) + '\n'
-        if sys.version_info > (3, 0):
-            self.fhout.write(s)
-        else:
-            self.fhout.write(s.decode('utf-8'))

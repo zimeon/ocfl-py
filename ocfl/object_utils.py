@@ -10,6 +10,7 @@ except ImportError:                             # pragma: no cover -- py2
     from urllib import quote as urlquote        # pragma: no cover -- py2
 
 from ._version import __version__
+from .namaste import find_namastes
 
 
 NORMALIZATIONS = ['uri', 'md5']  # Must match possibilities in map_filepaths()
@@ -101,3 +102,22 @@ def make_unused_filepath(filepath, used, separator='__'):
         f = filepath + separator + str(n)
         if f not in used:
             return f
+
+
+def find_path_type(path):
+    """Return a string indicating the type of thing, object or root, at path.
+
+    Looks only at "0=*" Namaste files to determing the path type. Will return
+    an error description if not an `object` or storage `root`.
+    """
+    if not os.path.isdir(path):
+        return("does not exist or is not a directory")
+    namastes = find_namastes(0, path)
+    if len(namastes) == 0:
+        return("no 0= declaration file")
+    elif len(namastes) > 1:
+        return("more than one 0= declaration file")
+    m = re.match(r'''ocfl(_object)?_(\d+\.\d+)$''', namastes[0].tvalue)
+    if m:
+        return('root' if m.group(1) is None else 'object')
+    return("unrecognized 0= declaration file 0=%s" % (namastes[0].tvalue))
