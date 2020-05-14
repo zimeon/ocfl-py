@@ -1,5 +1,9 @@
 # ocfl-py changelog
 
+## ??? v0.0.7
+
+  * ??
+
 ## 2020-05-15 v0.0.6
 
   * ocfl-validate.py script now handles storage roots and objects
