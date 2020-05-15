@@ -1,0 +1,30 @@
+{
+  "digestAlgorithm": "sha512",
+  "head": "v1",
+  "id": "http://example.org/E096_manifest_repeated_digest",
+  "manifest": {
+    "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
+      "v1/content/a_file.txt"
+    ],
+    "43A43FE8A8A082D3B5343DFAF2FD0C8B8E370675B1F376E92E9994612C33EA255B11298269D72F797399EBB94EDEEFE53DF243643676548F584FB8603CA53A0F": [
+      "v1/content/duplicate_of_a_file.txt"
+    ]
+  },
+  "type": "https://ocfl.io/1.0/spec/#inventory",
+  "versions": {
+    "v1": {
+      "created": "2019-01-01T02:03:04Z",
+      "message": "Example illustrating error E096",
+      "state": {
+        "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
+          "a_file.txt",
+	  "duplicate_of_a_file.txt"
+        ]
+      },
+      "user": {
+        "address": "mailto:a_person@example.org",
+        "name": "A Person"
+      }
+    }
+  }
+}

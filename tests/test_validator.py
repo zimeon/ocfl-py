@@ -49,9 +49,11 @@ class TestAll(unittest.TestCase):
                            'E050_file_in_manifest_not_used': ['E050b'],
                            'E064_different_root_and_latest_inventories': ['E064'],
                            'E067_file_in_extensions_dir': ['E067'],
-                           'E093_bad_manifest_digest': ['E093'],
+                           'E092_bad_manifest_digest': ['E092'],
                            'E095_conflicting_logical_paths': ['E095'],
-                           'bad16_digest_repeated': ['E922', 'E923']}.items():
+                           'E096_manifest_repeated_digest': ['E096'],
+                           'E097_fixity_repeated_digest': ['E097'],
+                           'E098_state_repeated_digest': ['E098']}.items():
             v = Validator()
             filepath = 'fixtures/1.0/bad-objects/' + bad
             if not os.path.isdir(filepath):

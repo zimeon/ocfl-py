@@ -99,6 +99,9 @@ class InventoryValidator(object):
             self.error("E036d")
         if 'manifest' in inventory and 'versions' in inventory:
             self.check_digests_present_and_used(self.manifest_files, digests_used)
+        if 'fixity' in inventory:
+            self.validate_fixity(inventory['fixity'], self.manifest_files)
+
 
     def validate_manifest(self, manifest):
         """Validate manifest block in inventory.
@@ -118,17 +121,62 @@ class InventoryValidator(object):
                 elif type(manifest[digest]) != list:
                     self.error('E092', digest=digest)  # must have path list value
                 else:
+                    norm_digest = normalized_digest(digest, self.digest_algorithm)
+                    if norm_digest in manifest_digests:
+                        # We have already seen this in different un-normalized form!
+                        self.error("E096", digest=norm_digest)
+                    else:
+                        manifest_digests.add(norm_digest)
                     for file in manifest[digest]:
-                        norm_digest = normalized_digest(digest, self.digest_algorithm)
-                        if norm_digest in manifest_digests:
-                            # We have already seen this in different un-normalized form!
-                            self.error("E922", digest=norm_digest)
-                        else:
-                            manifest_files[file] = norm_digest
-                            manifest_digests.add(norm_digest)
-                            if not self.is_valid_content_path(file):
-                                self.error("E042", path=file)
+                        manifest_files[file] = norm_digest
+                        if not self.is_valid_content_path(file):
+                            self.error("E042", path=file)
         return manifest_files
+
+    def validate_fixity(self, fixity, manifest_files):
+        """Validate fixity block in inventory.
+
+        Check the structure of the fixity block and makes sure that only files
+        listed in the manifest are referenced.
+        """
+        if type(fixity) != dict:
+            self.error('E056a')
+        else:
+            for digest_algorithm in fixity:
+                known_digest = True
+                try:
+                    regex = digest_regex(digest_algorithm)
+                except ValueError:
+                    if not self.lax_digests:
+                        self.error('E056b', algorithm=self.digest_algorithm)
+                        continue
+                    # Match anything
+                    regex = r'''^.*$'''
+                    known_digest = False
+                fixity_algoritm_block = fixity[digest_algorithm]
+                if type(fixity_algoritm_block) != dict:
+                    self.error('E057a', algorithm=self.digest_algorithm)
+                else:
+                    digests_seen = set()
+                    for digest in fixity_algoritm_block:
+                        m = re.match(regex, digest)
+                        if not m:
+                            self.error('E057b', digest=digest, algorithm=digest_algorithm)  # wrong form of digest
+                        elif type(fixity_algoritm_block[digest]) != list:
+                            self.error('E057c', digest=digest, algorithm=digest_algorithm)  # must have path list value
+                        else:
+                            if known_digest:
+                                norm_digest = normalized_digest(digest, digest_algorithm)
+                            else:
+                                norm_digest = digest
+                            if norm_digest in digests_seen:
+                                # We have already seen this in different un-normalized form!
+                                self.error("E097", digest=norm_digest, algorithm=digest_algorithm)
+                            else:
+                                digests_seen.add(norm_digest)
+                            for file in fixity_algoritm_block[digest]:
+                                if file not in manifest_files:
+                                    self.error("E057d", digest=norm_digest, algorithm=digest_algorithm, path=file)
 
     def validate_version_sequence(self, versions):
         """Validate sequence of version names in versions block in inventory.
@@ -264,7 +312,7 @@ class InventoryValidator(object):
                     norm_digest = normalized_digest(digest, self.digest_algorithm)
                     if norm_digest in digests:
                         # We have already seen this in different un-normalized form!
-                        self.error("E923", version=version, digest=norm_digest)
+                        self.error("E098", version=version, digest=norm_digest)
                     else:
                         digests.append(norm_digest)
             # Check for conflicting logical paths

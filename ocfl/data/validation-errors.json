@@ -277,6 +277,42 @@
        "en": "OCFL Object %s inventory %s version block has user/address key with value that isn't a string"
     }
   },
+  "E056a": {
+    "params": ["where"],
+    "description": {
+       "en": "OCFL Object %s inventory includes a fixity key with value that isn't a JSON object"
+    }
+  },
+  "E056b": {
+    "params": ["where", "algorithm"],
+    "description": {
+       "en": "OCFL Object %s inventory fixity block includes and unknown digest algorithm name %s"
+    }
+  },
+  "E057a": {
+    "params": ["where", "algorithm"],
+    "description": {
+       "en": "OCFL Object %s inventory fixity block entry for digest algorithm name %s is not a JSON object"
+    }
+  },
+  "E057b": {
+    "params": ["where", "algorithm", "digest"],
+    "description": {
+       "en": "OCFL Object %s inventory fixity block entry for digest algorithm %s includes digest %s which has the wrong form"
+    }
+  },
+  "E057c": {
+    "params": ["where", "algorithm", "digest"],
+    "description": {
+       "en": "OCFL Object %s inventory fixity block entry for digest algorithm %s, digest %s is not a JSON list"
+    }
+  },
+  "E057d": {
+    "params": ["where", "algorithm", "digest", "path"],
+    "description": {
+       "en": "OCFL Object %s inventory fixity block entry for digest algorithm %s, digest %s includes a content path %s that is not in the manifest"
+    }
+  },
   "E058a": {
     "params": ["where", "path"],
     "description": {
@@ -337,10 +373,16 @@
        "en": "OCFL Object %s inventory manifest file list for digest %s is not a JSON array"
     }
   },
-  "E093": {
+  "E092": {
     "params": ["where", "digest", "content_path", "content_digest"],
     "description": {
        "en": "OCFL Object %s inventory manifest has digest %s for file %s which doesn't match calculated digest %s for that file"
+    }
+  },
+  "E093": {
+    "params": ["where", "digest_algorithm", "digest", "content_path", "content_digest"],
+    "description": {
+       "en": "OCFL Object %s inventory fixity block for digest algorithm %s has digest %s for file %s which doesn't match calculated digest %s for that file"
     }
   },
   "E095": {
@@ -349,14 +391,19 @@
        "en": "OCFL Object %s inventory version %s state has logical path %s used as both a directory and a file path."
     }
   },
-
-  "E922": {
+  "E096": {
     "params": ["where", "digest"],
     "description": {
-       "en": "OCFL Object %s inventory manifest includes digest %s more than once with different normalizations"
+       "en": "OCFL Object %s inventory manifest block includes digest %s more than once with different normalizations"
     }
   },
-  "E923": {
+  "E097": {
+    "params": ["where", "algoritm", "digest"],
+    "description": {
+       "en": "OCFL Object %s inventory fixity block for digest algorithm %s, includes digest %s more than once with different normalizations"
+    }
+  },
+  "E098": {
     "params": ["where", "version", "digest"],
     "description": {
        "en": "OCFL Object %s inventory version %s state includes digest %s more than once with different normalizations"

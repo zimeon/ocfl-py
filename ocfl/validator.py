@@ -258,8 +258,17 @@ class Validator(object):
                         if self.check_digests:
                             content_digest = file_digest(os.path.join(path, filepath), digest_type=self.digest_algorithm)
                             if content_digest != normalized_digest(digest, digest_type=self.digest_algorithm):
-                                self.log.error('E093', where='root', digest=digest, content_path=filepath, content_digest=content_digest)
+                                self.log.error('E092', where='root', digest=digest, content_path=filepath, content_digest=content_digest)
                         files_seen.discard(filepath)
+        # Check any additional digests in root fixity block
+        if 'fixity' in inventory and self.check_digests:
+            for digest_algorithm in inventory['fixity']:
+                for digest in inventory['fixity'][digest_algorithm]:
+                    if digest != self.digest_algorithm:  # don't recheck things we check from manifest
+                        for filepath in inventory['fixity'][digest_algorithm][digest]:
+                            content_digest = file_digest(os.path.join(path, filepath), digest_type=digest_algorithm)
+                            if content_digest != normalized_digest(digest, digest_type=digest_algorithm):
+                                self.log.error('E093', where='root', digest_algorith=digest_algorithm, digest=digest, content_path=filepath, content_digest=content_digest)
         # Anything left in files_seen is not mentioned in the inventory
         if len(files_seen) > 0:
             self.log.error('E023b', where='root', extra_files=', '.join(sorted(files_seen)))
