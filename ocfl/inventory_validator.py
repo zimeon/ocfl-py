@@ -102,7 +102,6 @@ class InventoryValidator(object):
         if 'fixity' in inventory:
             self.validate_fixity(inventory['fixity'], self.manifest_files)
 
-
     def validate_manifest(self, manifest):
         """Validate manifest block in inventory.
 
