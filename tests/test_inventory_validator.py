@@ -84,6 +84,46 @@ class TestAll(unittest.TestCase):
         self.assertEqual(iv.validate_manifest({"067eca3f5b024afa00aeac03a3c42dc0042bf43cba56104037abea8b365c0cf672f0e0c14c91b82bbce6b1464e231ac285d630a82cd4d4a7b194bea04d4b2eb7": "not an array"}), {})
         self.assertIn('E092', log.errors)
 
+    def test_validate_fixity(self):
+        """Test validate_fixity method."""
+        log = TLogger()
+        iv = InventoryValidator(log=log)
+        iv.validate_fixity("not a fixity block", [])
+        self.assertIn('E056a', log.errors)
+        log.clear()
+        iv.validate_fixity({'a': 'b'}, [])
+        self.assertIn('E056b', log.errors)
+        log.clear()
+        iv.validate_fixity({'md5': 'f1'}, [])
+        self.assertIn('E057a', log.errors)
+        log.clear()
+        iv.validate_fixity({'md5': {'d1': 'f1'}}, [])
+        self.assertIn('E057b', log.errors)
+        log.clear()
+        iv.validate_fixity({'md5': {'68b329da9893e34099c7d8ad5cb9c940': 'f1'}}, [])
+        self.assertIn('E057c', log.errors)
+        log.clear()
+        iv.validate_fixity({'md5': {'68b329da9893e34099c7d8ad5cb9c940': ['f1']}}, [])
+        self.assertIn('E057d', log.errors)
+        log.clear()
+        iv.validate_fixity({'md5': {'68b329da9893e34099c7d8ad5cb9c940': ['f1'],
+                                    '68B329DA9893e34099c7d8ad5cb9c940': ['f2']}}, [])
+        self.assertIn('E097', log.errors)
+        log.clear()
+        # Good case
+        iv.validate_fixity({'md5': {'68b329da9893e34099c7d8ad5cb9c940': ['f1a', 'f1b'],
+                                    '06c7aa0ab7739f5fde7cb8504af3e851': ['f2']},
+                            'sha1': {'adc83b19e793491b1c6ea0fd8b46cd9f32e592fc': ['f1a', 'f1b'],
+                                     '00be977f5f719e87c17704954341f50d929bc070': ['f2']}},
+                           ['f1a', 'f1b', 'f2'])
+        self.assertEqual(len(log.errors), 0)
+        # Good case when lax_digests
+        iv.lax_digests = True
+        iv.validate_fixity({'XXX': {'digest1': ['f1a', 'f1b'],
+                                    'digest2': ['f2']}},
+                           ['f1a', 'f1b', 'f2'])
+        self.assertEqual(len(log.errors), 0)
+
     def test_validate_version_sequence(self):
         """Test validate_version_sequence method."""
         log = TLogger()
