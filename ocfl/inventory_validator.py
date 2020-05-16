@@ -36,6 +36,7 @@ class InventoryValidator(object):
         self.content_directory = 'content'
         self.all_versions = []
         self.manifest_files = None
+        self.unnormalized_digests = None
         self.head = 'UNKNOWN'
         # Validation control
         self.lax_digests = lax_digests
@@ -85,12 +86,12 @@ class InventoryValidator(object):
         if 'manifest' not in inventory:
             self.error("E041a")
         else:
-            self.manifest_files = self.validate_manifest(inventory['manifest'])
+            (self.manifest_files, self.unnormalized_digests) = self.validate_manifest(inventory['manifest'])
         if 'versions' not in inventory:
             self.error("E041b")
         else:
             self.all_versions = self.validate_version_sequence(inventory['versions'])
-            digests_used = self.validate_versions(inventory['versions'], self.all_versions)
+            digests_used = self.validate_versions(inventory['versions'], self.all_versions, self.unnormalized_digests)
         if 'head' in inventory:
             self.head = 'THERE_ARE_NO_VERSIONS' if len(self.all_versions) == 0 else self.all_versions[-1]
             if inventory['head'] != self.head:
@@ -105,10 +106,14 @@ class InventoryValidator(object):
     def validate_manifest(self, manifest):
         """Validate manifest block in inventory.
 
-        Returns manifest_files, a mapping from file to digest for each file in
-        the manifest.
+        Returns:
+          * manifest_files, a mapping from file to digest for each file in
+              the manifest
+          * unnormalized_digests - a set of the original digests in unnormalized
+              form that MUST match exactly the values used in state blocks
         """
         manifest_files = {}
+        unnormalized_digests = set()
         manifest_digests = set()
         if type(manifest) != dict:
             self.error('E041c')
@@ -120,6 +125,7 @@ class InventoryValidator(object):
                 elif type(manifest[digest]) != list:
                     self.error('E092', digest=digest)  # must have path list value
                 else:
+                    unnormalized_digests.add(digest)
                     norm_digest = normalized_digest(digest, self.digest_algorithm)
                     if norm_digest in manifest_digests:
                         # We have already seen this in different un-normalized form!
@@ -130,7 +136,7 @@ class InventoryValidator(object):
                         manifest_files[file] = norm_digest
                         if not self.is_valid_content_path(file):
                             self.error("E042", path=file)
-        return manifest_files
+        return (manifest_files, unnormalized_digests)
 
     def validate_fixity(self, fixity, manifest_files):
         """Validate fixity block in inventory.
@@ -230,7 +236,7 @@ class InventoryValidator(object):
             self.error("E009")
         return all_versions
 
-    def validate_versions(self, versions, all_versions):
+    def validate_versions(self, versions, all_versions, unnormalized_digests):
         """Validate versions blocks in inventory.
 
         Requires as input two things which are assumed to be structurally correct
@@ -261,9 +267,9 @@ class InventoryValidator(object):
                 except ValueError as e:
                     self.error('E049c', version=v, description=str(e))
             if 'state' in version:
-                digests_used += self.validate_state_block(version['state'], version=v)
+                digests_used += self.validate_state_block(version['state'], version=v, unnormalized_digests=unnormalized_digests)
             else:
-                self.error('E410', version=v)
+                self.error('E048c', version=v)
             if 'message' not in version:
                 self.warn('W007a', version=v)
             elif type(version['message']) != str:
@@ -285,7 +291,7 @@ class InventoryValidator(object):
                         self.warn('W009', version=v)
         return digests_used
 
-    def validate_state_block(self, state, version):
+    def validate_state_block(self, state, version, unnormalized_digests):
         """Validate state block in a version in an inventory.
 
         The version is used only for error reporting.
@@ -308,12 +314,11 @@ class InventoryValidator(object):
                     for path in state[digest]:
                         if not self.check_logical_path(path, logical_paths, logical_directories):
                             self.error('E051', version=version, digest=digest, path=path)
+                    if digest not in unnormalized_digests:
+                        # Exact string value must match, not just normalized
+                        self.error("E050f", version=version, digest=digest)
                     norm_digest = normalized_digest(digest, self.digest_algorithm)
-                    if norm_digest in digests:
-                        # We have already seen this in different un-normalized form!
-                        self.error("E098", version=version, digest=norm_digest)
-                    else:
-                        digests.append(norm_digest)
+                    digests.append(norm_digest)
             # Check for conflicting logical paths
             for path in logical_directories:
                 if path in logical_paths:

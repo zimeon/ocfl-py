@@ -1,0 +1,26 @@
+{
+  "digestAlgorithm": "sha512",
+  "head": "v1",
+  "id": "http://example.org/E050_state_digest_different_case",
+  "manifest": {
+    "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e": [
+      "v1/content/empty1"
+    ]
+  },
+  "type": "https://ocfl.io/1.0/spec/#inventory",
+  "versions": {
+    "v1": {
+      "created": "2019-01-01T02:03:04Z",
+      "message": "Example with state digest value that has a different case than the value in the manifest",
+      "state": {
+        "CF83E1357EEFB8BDF1542850D66D8007D620E4050B5715DC83F4A921D36CE9CE47D0D13C5D85F2B0FF8318D2877EEC2F63B931BD47417A81A538327AF927DA3E": [
+          "empty1"
+        ]
+      },
+      "user": {
+        "address": "mailto:a_person@example.org",
+	"name": "A Person"
+      }
+    }
+  }
+}

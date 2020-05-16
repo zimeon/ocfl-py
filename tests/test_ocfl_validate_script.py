@@ -17,6 +17,14 @@ class TestAll(unittest.TestCase):
     m = 0
     demo = False
 
+    @classmethod
+    def setUpClass(cls):
+        """Setup for class that tests to see should run in demo mode."""
+        if __name__ == '__main__':
+            # Run in demo mode if run directly instead of through py.test
+            cls.demo = True
+            print("# Demo output from " + __file__)
+
     def setUp(self):
         """Setup for each test."""
         type(self).n += 1  # access class variable not copy
@@ -29,8 +37,8 @@ class TestAll(unittest.TestCase):
         self.m += 1
         if self.demo:
             print("\n### %d.%d %s\n" % (self.n, self.m, desc))
-        if text:
-            print(text + '\n')
+            if text:
+                print(text + '\n')
         cmd = ['python', 'ocfl-validate.py'] + options
         code = 0
         try:
@@ -65,7 +73,4 @@ class TestAll(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    # Run in demo mode if run directly instead of through py.test
-    TestAll.demo = True
-    print("# Demo output from " + __file__)
     unittest.main()

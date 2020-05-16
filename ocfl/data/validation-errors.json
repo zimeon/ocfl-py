@@ -199,6 +199,12 @@
        "en": "OCFL Object %s inventory %s version block has message key with value that isn't a string -- FIXME https://github.com/OCFL/spec/issues/460"
     }
   },
+  "E048c": {
+    "params": ["where", "version"],
+    "description": {
+       "en": "OCFL Object %s inventory %s version block does not include a state block"
+    }
+  },
   "E049a": {
     "params": ["where", "version"],
     "description": {
@@ -251,6 +257,12 @@
     "params": ["where", "version", "digest"],
     "description": {
        "en": "OCFL Object %s inventory %s version block state block value for digest %s is not list"
+    }
+  },
+  "E050f": {
+    "params": ["where", "version", "digest"],
+    "description": {
+       "en": "OCFL Object %s inventory version %s state includes digest value %s that is not listed in the manifest block"
     }
   },
   "E051": {
@@ -401,12 +413,6 @@
     "params": ["where", "algoritm", "digest"],
     "description": {
        "en": "OCFL Object %s inventory fixity block for digest algorithm %s, includes digest %s more than once with different normalizations"
-    }
-  },
-  "E098": {
-    "params": ["where", "version", "digest"],
-    "description": {
-       "en": "OCFL Object %s inventory version %s state includes digest %s more than once with different normalizations"
     }
   },
 

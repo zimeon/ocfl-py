@@ -80,6 +80,9 @@ class Validator(object):
             self.content_directory = inv_validator.content_directory
             self.digest_algorithm = inv_validator.digest_algorithm
             self.validate_inventory_digest(inv_file, self.digest_algorithm)
+            if self.log.num_errors > 0:
+                # Don't look at storage if inventory fails validation
+                return False
             # Object root
             self.validate_object_root(path, all_versions)
             # Version inventory files
