@@ -13,11 +13,9 @@ Putting up a new version
     1. Check version number working branch in `ocfl/_version.py`
     2. Check all changes described in `CHANGES.md`
     3. Check code is up-to-date with master github version
-    4. Check out master and merge in working branch
-    5. Check all tests good (`tox`)
-    6. Check branches are as expected (`git branch -a`)
-    7. Check local build and version reported OK (`python setup.py build; python setup.py install`)
-    8. Upload new version to PyPI:
+    4. Check all tests good (`tox`)
+    5. Check out master and merge in working branch
+    6. Upload new version to PyPI:
 
       ```
       pip install --upgrade setuptools wheel twine
@@ -25,5 +23,5 @@ Putting up a new version
       ls dist
       twine upload dist/*
       ```
-    9. Check on PyPI at <https://pypi.org/project/ocfl-py>
-    10. Finally, start new version number by editing `ocfl/_version.py` and `CHANGES.md`
+    7. Check on PyPI at <https://pypi.org/project/ocfl-py>
+    8. Finally, in develop, start new version number by editing `ocfl/_version.py` and `CHANGES.md`

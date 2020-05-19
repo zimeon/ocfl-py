@@ -1,5 +1,9 @@
 # ocfl-py changelog
 
+## ??? v0.0.8
+
+  * ?
+
 ## 2020-05-18 v0.0.7
 
   * Validator now checks fixity block structure, additional fixity values in fixity block
