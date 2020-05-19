@@ -20,7 +20,7 @@ class TestAll(DemoTestCase):
                "stripped out and replaced with an ellipsis. This is inventory should " \
                "match the example in <https://ocfl.io/draft/spec/#example-minimal-object>."
         out = self.run_script("Minimal example",
-                              ["ocfl-object.py",
+                              ["python", "ocfl-object.py",
                                "--build",
                                "--src", "fixtures/1.0/content/spec-ex-minimal",
                                "--id", "http://example.org/minimal",
@@ -38,7 +38,7 @@ class TestAll(DemoTestCase):
         text = "This is inventory should match the example with 3 versions in " \
                "<https://ocfl.io/draft/spec/#example-versioned-object>."
         out = self.run_script("Versioned example",
-                              ["ocfl-object.py",
+                              ["python", "ocfl-object.py",
                                "--build",
                                "--src", "fixtures/1.0/content/spec-ex-full",
                                "--id", "ark:/12345/bcd987",
@@ -55,7 +55,7 @@ class TestAll(DemoTestCase):
                "paths may differ from logical paths in " \
                "<https://ocfl.io/draft/spec/#example-object-diff-paths>."
         out = self.run_script("Versioned example",
-                              ["ocfl-object.py",
+                              ["python", "ocfl-object.py",
                                "--build",
                                "--src", "fixtures/1.0/content/spec-ex-diff-paths",
                                "--id", "http://example.org/diff-paths",

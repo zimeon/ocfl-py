@@ -1,17 +1,28 @@
-# Demo output from tests/test_ocfl_object_script.py
+# OCFL Object manipulation script
 
-## 1. Test object inventory creation with output to stdout.
+_Output from `tests/test_demo_ocfl_object_script.py`._
 
-### 1.1 Inventory for new object with just v1
+## 1. Test showing version number.
+
+### 1.1 Show version number
+
+The `--version` argument will show version number and exit
+
+```
+> python ocfl-object.py --version
+ocfl-object.py is part of ocfl-py version 0.0.7
+```
+
+
+## 2. Test object inventory creation with output to stdout.
+
+### 2.1 Inventory for new object with just v1
 
 Without an `--objdir` argument the script just writes out the inventory for the object that would have been created.
 
 ```
 > python ocfl-object.py --create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1
-
-
-### Inventory for v1
-
+WARNING:ocfl.object:### Inventory for v1
 {
   "digestAlgorithm": "sha512",
   "head": "v1",
@@ -21,38 +32,28 @@ Without an `--objdir` argument the script just writes out the inventory for the 
       "v1/content/a_file.txt"
     ]
   },
-  "type": "Object",
+  "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2019-02-14T15:08:04.417349Z",
-      "message": "",
+      "created": "2020-05-19T02:26:10.055842Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
         ]
-      },
-      "type": "Version",
-      "user": {
-        "address": "somewhere",
-        "name": "someone"
       }
     }
   }
 }
 ```
 
-Exited with code 0
 
-### 1.2 Inventory for new object with three versions
+### 2.2 Inventory for new object with three versions
 
 Without an `--objdir` argument the script just writes out the inventory for each version in the object that would have been created.
 
 ```
 > python ocfl-object.py --build --id http://example.org/obj2 --src fixtures/1.0/content/cf3
-
-
-### Inventory for v1
-
+WARNING:ocfl.object:### Inventory for v1
 {
   "digestAlgorithm": "sha512",
   "head": "v1",
@@ -62,28 +63,19 @@ Without an `--objdir` argument the script just writes out the inventory for each
       "v1/content/a_file.txt"
     ]
   },
-  "type": "Object",
+  "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2019-02-14T15:08:04.548836Z",
-      "message": "",
+      "created": "2020-05-19T02:26:10.278553Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
         ]
-      },
-      "type": "Version",
-      "user": {
-        "address": "somewhere",
-        "name": "someone"
       }
     }
   }
 }
-
-
-### Inventory for v2
-
+WARNING:ocfl.object:### Inventory for v2
 {
   "digestAlgorithm": "sha512",
   "head": "v2",
@@ -96,42 +88,27 @@ Without an `--objdir` argument the script just writes out the inventory for each
       "v1/content/a_file.txt"
     ]
   },
-  "type": "Object",
+  "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2019-02-14T15:08:04.548836Z",
-      "message": "",
+      "created": "2020-05-19T02:26:10.278553Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
         ]
-      },
-      "type": "Version",
-      "user": {
-        "address": "somewhere",
-        "name": "someone"
       }
     },
     "v2": {
-      "created": "2019-02-14T15:08:04.549309Z",
-      "message": "",
+      "created": "2020-05-19T02:26:10.279231Z",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
           "a_file.txt"
         ]
-      },
-      "type": "Version",
-      "user": {
-        "address": "somewhere",
-        "name": "someone"
       }
     }
   }
 }
-
-
-### Inventory for v3
-
+WARNING:ocfl.object:### Inventory for v3
 {
   "digestAlgorithm": "sha512",
   "head": "v3",
@@ -144,187 +121,111 @@ Without an `--objdir` argument the script just writes out the inventory for each
       "v1/content/a_file.txt"
     ]
   },
-  "type": "Object",
+  "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2019-02-14T15:08:04.548836Z",
-      "message": "",
+      "created": "2020-05-19T02:26:10.278553Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
         ]
-      },
-      "type": "Version",
-      "user": {
-        "address": "somewhere",
-        "name": "someone"
       }
     },
     "v2": {
-      "created": "2019-02-14T15:08:04.549309Z",
-      "message": "",
+      "created": "2020-05-19T02:26:10.279231Z",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
           "a_file.txt"
         ]
-      },
-      "type": "Version",
-      "user": {
-        "address": "somewhere",
-        "name": "someone"
       }
     },
     "v3": {
-      "created": "2019-02-14T15:08:04.549780Z",
-      "message": "",
+      "created": "2020-05-19T02:26:10.279866Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
         ]
-      },
-      "type": "Version",
-      "user": {
-        "address": "somewhere",
-        "name": "someone"
       }
     }
   }
 }
 ```
 
-Exited with code 0
 
-## 2. Test object creation with just v1.
+## 3. Test object creation with just v1.
 
-### 2.1 New object with just v1
-
-```
-> python ocfl-object.py --objdir tmp/object --create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1 -v
-INFO:root:Created object http://example.org/obj1 in tmp/object
-```
+### 3.1 New object with just v1
 
 ```
-object
-├── 0=ocfl_object_1.0
-├── inventory.json
-├── inventory.json.sha512
-└── v1
-    ├── content
-    │   └── a_file.txt
-    ├── inventory.json
-    └── inventory.json.sha512
-
-2 directories, 6 files
+> python ocfl-object.py --create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1 --objdir tmp/obj1 -v
+INFO:root:Created OCFL object http://example.org/obj1 in tmp/obj1
 ```
 
 
-## 3. Test object build with three versions.
+## 4. Test object build with three versions.
 
-### 3.1 New object with three versions
+### 4.1 New object with three versions
 
 ```
-> python ocfl-object.py --objdir tmp/object --build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 -v
+> python ocfl-object.py --build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 --objdir tmp/obj2 -v
 INFO:root:Built object http://example.org/obj2 with 3 versions
 ```
 
-```
-object
-├── 0=ocfl_object_1.0
-├── inventory.json
-├── inventory.json.sha512
-├── v1
-│   ├── content
-│   │   └── a_file.txt
-│   ├── inventory.json
-│   └── inventory.json.sha512
-├── v2
-│   ├── content
-│   │   └── a_file.txt
-│   ├── inventory.json
-│   └── inventory.json.sha512
-└── v3
-    ├── inventory.json
-    └── inventory.json.sha512
 
-5 directories, 11 files
-```
+## 5. Test extract of version.
 
-
-## 4. Test extract of version.
-
-### 4.1 Extract v1
+### 5.1 Extract v1
 
 ```
-> python ocfl-object.py --dstdir tmp --extract v1 --objdir fixtures/1.0/objects/spec-ex-full -v
+> python ocfl-object.py --extract v1 --objdir fixtures/1.0/good-objects/spec-ex-full --dstdir tmp/v1 -v
 INFO:root:Extracted v1 into tmp/v1
-```
-
-```
-.
-└── v1
-    ├── empty.txt
-    ├── foo
-    │   └── bar.xml
-    └── image.tiff
-
-2 directories, 3 files
+Extracted content for v1 in tmp/v1
 ```
 
 
-### 4.2 Extract v2
+### 5.2 Extract v2
 
 ```
-> python ocfl-object.py --dstdir tmp --extract v2 --objdir fixtures/1.0/objects/spec-ex-full -v
+> python ocfl-object.py --extract v2 --objdir fixtures/1.0/good-objects/spec-ex-full --dstdir tmp/v2 -v
 INFO:root:Extracted v2 into tmp/v2
-```
-
-```
-.
-├── v1
-│   ├── empty.txt
-│   ├── foo
-│   │   └── bar.xml
-│   └── image.tiff
-└── v2
-    ├── empty.txt
-    ├── empty2.txt
-    └── foo
-        └── bar.xml
-
-4 directories, 6 files
+Extracted content for v2 in tmp/v2
 ```
 
 
-## 5. Test error conditions.
+## 6. Test error conditions.
 
-### 5.1 No valid command argument
+### 6.1 No valid command argument
+
+With no argument and error and suggections are shown.
 
 ```
 > python ocfl-object.py
-usage: ocfl-object.py [-h] [--srcdir SRCDIR] [--digest DIGEST]
-                      [--fixity FIXITY] [--id ID] [--dstdir DSTDIR]
-                      (--create | --build | --show | --validate | --extract EXTRACT)
-                      [--created CREATED] [--message MESSAGE] [--name NAME]
-                      [--address ADDRESS] [--skip SKIP] [--no-forward-delta]
-                      [--no-dedupe] [--objdir OBJDIR]
-                      [--ocfl-version OCFL_VERSION] [--verbose]
-ocfl-object.py: error: one of the arguments --create --build --show --validate --extract is required
+Error - Exactly one command (create, build, update, show, validate, extract) must be specified
 ```
 
-Exited with code 2
+(last command exited with return code 1)
 
-### 5.2 No identifier
+
+### 6.2 No source directory (--srcdir)
+
+The `--create` action requires a source.
 
 ```
 > python ocfl-object.py --create
-Traceback (most recent call last):
-  File "ocfl-object.py", line 76, in <module>
-    do_object_operation(args)
-  File "ocfl-object.py", line 55, in do_object_operation
-    objdir=args.objdir)
-  File "/Users/simeon/src/ocfl-py/ocfl/object.py", line 255, in create
-    raise ObjectException("Identifier is not set!")
-ocfl.object.ObjectException: Identifier is not set!
+Error - Must specify either --srcdir or --srcbag containing v1 files when creating an OCFL object!
 ```
 
-Exited with code 1
+(last command exited with return code 1)
+
+
+### 6.3 No identifier
+
+The `--create` action requires an identifier.
+
+```
+> python ocfl-object.py --create --srcdir tmp
+Error - Identifier is not set!
+```
+
+(last command exited with return code 1)
+

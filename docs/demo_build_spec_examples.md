@@ -1,4 +1,4 @@
-# Building the specification examples
+# Build the specification examples
 
 _Output from `tests/test_demo_build_spec_examples.py`._
 
@@ -39,7 +39,6 @@ WARNING:ocfl.object:### Inventory for v1
 }
 ```
 
-Exited with code 0
 
 ## 2. Test for versioned example.
 
@@ -314,7 +313,6 @@ WARNING:ocfl.object:### Inventory for v3
 }
 ```
 
-Exited with code 0
 
 ## 3. Test for different paths example.
 
@@ -354,4 +352,3 @@ WARNING:ocfl.object:### Inventory for v1
 }
 ```
 
-Exited with code 0

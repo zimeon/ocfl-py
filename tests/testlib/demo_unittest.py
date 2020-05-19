@@ -40,7 +40,7 @@ class DemoTestCase(unittest.TestCase):
             print("\n### %d.%d %s\n" % (self.n, self.m, desc))
         if text:
             print(text + '\n')
-        cmd = ['python']
+        cmd = []
         for option in options:
             cmd.append(option.replace('TMPDIR', self.tmpdir))
         code = 0
@@ -53,16 +53,25 @@ class DemoTestCase(unittest.TestCase):
         if self.demo:
             out = re.sub(self.tmpdir, 'tmp', out)
             print(out)
-        else:
-            return out
-        if code == 0 and treedir:
-            tree = subprocess.check_output('cd %s; tree -a %s' % (self.tmpdir, treedir),
+            if code != 0:
+                print("(last command exited with return code %d)\n" % (code))
+        return out
+
+    def demo_tree(self, treedir, text=None):
+        """Show directory tree from treedir under TMPDIR if in demo mode."""
+        if self.demo:
+            if text is not None:
+                print(text + "\n")
+            ree = subprocess.check_output('cd %s; tree -a %s' % (self.tmpdir, treedir),
                                            stderr=subprocess.STDOUT,
                                            shell=True).decode('utf-8')
             print("```\n" + tree + "```\n")
-        else:
-            print("Exited with code %d" % (code))
-        return out
+
+    def demo_text(self, text=None):
+        """Show text if in demo mode."""
+        if self.demo:
+            if text is not None:
+                print(text + "\n")
 
     @classmethod
     def run_as_demo(cls, title="Demo output"):

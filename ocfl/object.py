@@ -478,7 +478,7 @@ class Object(object):
             for v_note in v_notes:
                 nn += 1
                 tree += self._show_indent(1, last, (nn == len(v_notes))) + v_note + "\n"
-            self.log.warning("Object tree\n" + tree)
+        self.log.warning("Object tree\n" + tree)
 
     def validate(self, objdir, show_warnings=True, show_errors=True, check_digests=True):
         """Validate OCFL object at objdir."""
