@@ -196,7 +196,7 @@
   "E048b": {
     "params": ["where", "version"],
     "description": {
-       "en": "OCFL Object %s inventory %s version block has message key with value that isn't a string -- FIXME https://github.com/OCFL/spec/issues/460"
+       "en": "OCFL Object %s inventory %s version block has message key with value that isn't a string"
     }
   },
   "E048c": {
