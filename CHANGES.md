@@ -2,7 +2,7 @@
 
 ## ??? v0.0.8
 
-  * ?
+  * Add checks for paths in manifest (https://ocfl.io/draft/spec/#E098, https://ocfl.io/draft/spec/#E099, https://ocfl.io/draft/spec/#E100, https://ocfl.io/draft/spec/#E101)
 
 ## 2020-05-18 v0.0.7
 

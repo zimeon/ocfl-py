@@ -12,13 +12,13 @@ parser = argparse.ArgumentParser(
 parser.add_argument('path', type=str, nargs='*',
                     help='OCFL object or storage root path(s) to validate')
 parser.add_argument('--quiet', '-q', action='store_true',
-                    help="be quiet, do not show warnings")
+                    help="Be quiet, do not show warnings")
 parser.add_argument('--very-quiet', '-Q', action='store_true',
-                    help="be very quiet, show only validation status (implies -q)")
+                    help="Be very quiet, show only validation status (implies -q)")
 parser.add_argument('--lax-digests', action='store_true',
-                    help='allow use of any known digest')
+                    help='Allow use of any known digest')
 parser.add_argument('--no-check-digests', action='store_true',
-                    help='do not check digest values')
+                    help='Do not check digest values')
 
 ocfl.add_shared_args(parser)
 args = parser.parse_args()

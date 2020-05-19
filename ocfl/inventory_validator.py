@@ -118,6 +118,8 @@ class InventoryValidator(object):
         if type(manifest) != dict:
             self.error('E041c')
         else:
+            content_paths = set()
+            content_directories = set()
             for digest in manifest:
                 m = re.match(self.digest_regex(), digest)
                 if not m:
@@ -134,8 +136,12 @@ class InventoryValidator(object):
                         manifest_digests.add(norm_digest)
                     for file in manifest[digest]:
                         manifest_files[file] = norm_digest
-                        if not self.is_valid_content_path(file):
-                            self.error("E042", path=file)
+                        self.check_content_path(file, content_paths, content_directories)
+            # Check for conflicting content paths
+            for path in content_directories:
+                if path in content_paths:
+                    self.error("E101", path=path)
+
         return (manifest_files, unnormalized_digests)
 
     def validate_fixity(self, fixity, manifest_files):
@@ -365,15 +371,23 @@ class InventoryValidator(object):
         # Match anything
         return r'''^.*$'''
 
-    def is_valid_content_path(self, path):
+    def check_content_path(self, path, content_paths, content_directories):
         """True if path is a valid content path."""
-        m = re.match(r'''^v\d+/''' + self.content_directory + r'''/(.*)''', path)
-        if not m:
-            return False
-        for element in m.group(1).split('/'):
-            if element in ('', '.', '..'):
-                return False
-        return True
+        if path.startswith('/') or path.endswith('/'):
+            self.error("E100", path=path)
+        else:
+            m = re.match(r'''^(v\d+/''' + self.content_directory + r''')/(.*)''', path)
+            if m:
+                elements = m.group(2).split('/')
+                for element in elements:
+                    if element in ('', '.', '..'):
+                        self.error("E099", path=path)
+                        break
+                # Accumulate paths and directories
+                content_paths.add(path)
+                content_directories.add('/'.join([m.group(1)] + elements[0:-1]))
+            else:
+                self.error("E042", path=path)
 
     def validate_as_prior_version(self, prior):
         """Check that prior is a valid InventoryValidator for a prior version of the current inventory object.

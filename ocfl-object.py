@@ -43,15 +43,15 @@ def parse_arguments():
 
     obj_params = parser.add_argument_group(title="OCFL object parameters")
     obj_params.add_argument('--digest', default='sha512',
-                            help='digest type to use')
+                            help='Digest algorithm to use')
     obj_params.add_argument('--fixity', action='append',
-                            help='add fixity type to add')
+                            help='Add fixity type to add')
     obj_params.add_argument('--id', default=None,
-                            help='identifier of object')
+                            help='Identifier of object')
     obj_params.add_argument('--dstdir', '--dst', action='store', default='/tmp/ocfl-out',
-                            help='destination directory path')
+                            help='Destination directory path')
     obj_params.add_argument('--dstbag', action='store',
-                            help='destination Bagit bag path (alternative to --dstdir)')
+                            help='Destination Bagit bag path (alternative to --dstdir)')
 
     # Version metadata and object settings
     ocfl.add_version_metadata_args(obj_params)

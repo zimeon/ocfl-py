@@ -21,6 +21,8 @@ from .namaste import Namaste
 from .validator import Validator
 from .version import VersionMetadata
 
+INVENTORY_FILENAME = 'inventory.json'
+
 
 class ObjectException(Exception):
     """Exception class for OCFL Object."""
@@ -146,7 +148,7 @@ class Object(object):
         digests_in_version = {}
         manifest_to_srcfile = {}
         # Special case for testing -- FIXME, should remove this, used only in fixtures/1.0/content/spec-ex-full
-        inv_file = srcdir + '_inventory.json'
+        inv_file = srcdir + '_' + INVENTORY_FILENAME
         if os.path.isfile(inv_file):
             # Read metadata for this version
             metadata.from_inventory_file(inv_file, vdir)
@@ -228,16 +230,24 @@ class Object(object):
 
     def write_inventory_and_sidecar(self, objdir, inventory):
         """Write inventory and sidecar to objdir."""
-        invfilename = 'inventory.json'
         if not os.path.exists(objdir):
             os.makedirs(objdir)
-        invfile = os.path.join(objdir, invfilename)
+        invfile = os.path.join(objdir, INVENTORY_FILENAME)
         with open(invfile, 'w') as fh:
             json.dump(inventory, fh, sort_keys=True, indent=2)
-        sidecar = os.path.join(objdir, invfilename + '.' + self.digest_algorithm)
+        self.write_inventory_sidecar(objdir)
+
+    def write_inventory_sidecar(self, objdir):
+        """Write a sidecare for the inventory file invfile.
+
+        Returns the inventory sidecar filename.
+        """
+        invfile = os.path.join(objdir, INVENTORY_FILENAME)
+        sidecar = invfile + '.' + self.digest_algorithm
         digest = file_digest(invfile, self.digest_algorithm)
         with open(sidecar, 'w') as fh:
-            fh.write(digest + ' ' + invfilename + '\n')
+            fh.write(digest + ' ' + INVENTORY_FILENAME + '\n')
+        return sidecar
 
     def build(self, srcdir, metadata=None, objdir=None):
         """Build an OCFL object and write to objdir if set, else print inventories.
@@ -412,7 +422,7 @@ class Object(object):
         self.write_inventory_and_sidecar(objdir, inventory)
         # Delete old root inventory sidecar if we changed digest algorithm
         if digest_algorithm != old_digest_algorithm:
-            os.remove(os.path.join(objdir, 'inventory.json.' + old_digest_algorithm))
+            os.remove(os.path.join(objdir, INVENTORY_FILENAME + '.' + old_digest_algorithm))
         logging.info("Updated OCFL object %s in %s by adding %s" % (self.id, objdir, head))
 
     def _show_indent(self, level, last=False, last_v=False):
@@ -449,9 +459,9 @@ class Object(object):
                 seen_v_sidecar = False
                 for v_entry in sorted(os.listdir(os.path.join(objdir, entry))):
                     v_note = v_entry + ' '
-                    if v_entry == 'inventory.json':
+                    if v_entry == INVENTORY_FILENAME:
                         pass
-                    elif v_entry.startswith('inventory.json.'):
+                    elif v_entry.startswith(INVENTORY_FILENAME + '.'):
                         if seen_v_sidecar:
                             v_note += '<--- multiple inventory digests?'
                             seen_v_sidecar = True
@@ -463,9 +473,9 @@ class Object(object):
                     else:
                         v_note += '<--- ???'
                     v_notes.append(v_note)
-            elif entry in ('0=ocfl_object_1.0', 'inventory.json'):
+            elif entry in ('0=ocfl_object_1.0', INVENTORY_FILENAME):
                 pass
-            elif entry.startswith('inventory.json.'):
+            elif entry.startswith(INVENTORY_FILENAME + '.'):
                 if seen_sidecar:
                     note += '<--- multiple inventory digests?'
                 seen_sidecar = True
@@ -544,7 +554,7 @@ class Object(object):
         of the Object methods can assume correctness and matching string digests
         between state and manifest blocks.
         """
-        inv_file = os.path.join(path, 'inventory.json')
+        inv_file = os.path.join(path, INVENTORY_FILENAME)
         with open(inv_file) as fh:
             inventory = json.load(fh)
         # Validate
