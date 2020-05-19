@@ -12,12 +12,10 @@ ocfl-py - An OCFL implementation in Python
 Attempts to follow `current draft of OCFL specification
 <https://ocfl.io/draft/spec/>`_
 
-See `README_*.md` files for current examples.
-
 Installing
 ----------
 
-This code requires Python 3, it doeHave dropped Python 2, it is time for Python 3.
+This code requires Python 3.
 
 This code is Alpha, in active development both to flesh out support for the
 OCFL draft specification and to track changes in it. To get the most up to 
@@ -29,6 +27,9 @@ be installed or upgraded to the current version with:
 
     pip install --upgrade ocfl-py
 
+Use
+---
+
 There should then be three scripts available:
 
 - ``ocfl-validate.py`` - validate OCFL objects or OCFL storage roots
@@ -37,8 +38,17 @@ There should then be three scripts available:
 
 Each script takes ``-h`` for help.
 
+See `examples in docs folder
+<https://github.com/zimeon/ocfl-py/tree/master/docs>`_ for use.
+
+The code is also available as a module `ocfl` for other python code to use. However,
+the interfaces should not be considered stable at the moment.
+
 Contributing
 ------------
+
+Bug reports welcome as `github issues
+<https://github.com/zimeon/ocfl-py/issues>`_
 
 See `CONTRIBUTING.md
 <https://github.com/zimeon/ocfl-py/blob/master/CONTRIBUTING.md>`_

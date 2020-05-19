@@ -1,10 +1,11 @@
 # ocfl-py changelog
 
-## ??? v0.0.7
+## 2020-05-18 v0.0.7
 
   * Validator now checks fixity block structure, additional fixity values in fixity block
   * Validator now checks for repeated digests in manifest, fixity and state blocks (https://ocfl.io/draft/spec/#E096, https://ocfl.io/draft/spec/#E097, https://ocfl.io/draft/spec/#E098) 
   * Move all the many README_*.md demos into docs folder
+  * Add build_demo_docs.sh to build demo descriptions in docs folder
 
 ## 2020-05-15 v0.0.6
 
