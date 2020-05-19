@@ -39,16 +39,16 @@ There should then be three scripts available:
 Each script takes ``-h`` for help.
 
 See `examples in docs folder
-<https://github.com/zimeon/ocfl-py/tree/master/docs>`_ for use.
+<https://github.com/zimeon/ocfl-py/tree/master/docs>`_ for use of these scripts.
 
-The code is also available as a module `ocfl` for other python code to use. However,
+The code is also available as a module ``ocfl`` for other python code to use. However,
 the interfaces should not be considered stable at the moment.
 
 Contributing
 ------------
 
 Bug reports welcome as `github issues
-<https://github.com/zimeon/ocfl-py/issues>`_
+<https://github.com/zimeon/ocfl-py/issues>`_.
 
 See `CONTRIBUTING.md
 <https://github.com/zimeon/ocfl-py/blob/master/CONTRIBUTING.md>`_
