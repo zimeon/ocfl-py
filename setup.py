@@ -40,18 +40,6 @@ class Coverage(ShellCommand):
         print("See htmlcov/index.html for details.")
 
 
-class Readmes(ShellCommand):
-    """Class to make readme files for demo runs."""
-
-    description = "make README_ files"
-
-    def run(self):
-        """Run coverage program."""
-        os.system("python tests/test_ocfl_object_script.py > README_object.md")
-        os.system("python tests/test_ocfl_store_script.py > README_store.md")
-        print("Built README_object.md and README_store.md.")
-
-
 setup(
     name='ocfl-py',
     version=version,
@@ -59,7 +47,7 @@ setup(
     author_email='simeon.warner@cornell.edu',
     packages=['ocfl'],
     package_data={'ocfl': ['data/*']},
-    scripts=['ocfl-object.py', 'ocfl-store.py', 'ocfl-validate.py'],
+    scripts=['ocfl-object.py', 'ocfl-sidecar.py', 'ocfl-store.py', 'ocfl-validate.py'],
     classifiers=["Development Status :: 2 - Pre-Alpha",
                  "Intended Audience :: Developers",
                  "Operating System :: OS Independent",
@@ -80,7 +68,6 @@ setup(
     ],
     test_suite="tests",
     cmdclass={
-        'coverage': Coverage,
-        'readmes': Readmes,
+        'coverage': Coverage
     },
 )

@@ -92,12 +92,16 @@ class InventoryValidator(object):
         else:
             self.all_versions = self.validate_version_sequence(inventory['versions'])
             digests_used = self.validate_versions(inventory['versions'], self.all_versions, self.unnormalized_digests)
-        if 'head' in inventory:
-            self.head = 'THERE_ARE_NO_VERSIONS' if len(self.all_versions) == 0 else self.all_versions[-1]
+        if 'head' not in inventory:
+            self.error("E036d")
+        elif len(self.all_versions) > 0:
+            self.head = self.all_versions[-1]
             if inventory['head'] != self.head:
                 self.error("E040", got=inventory['head'], expected=self.head)
-        else:
-            self.error("E036d")
+        if len(self.all_versions) == 0:
+            # Abort tests is we don't have a valid version sequence, otherwise
+            # there will likely be spurious subsequent error reports
+            return
         if 'manifest' in inventory and 'versions' in inventory:
             self.check_digests_present_and_used(self.manifest_files, digests_used)
         if 'fixity' in inventory:
@@ -201,7 +205,7 @@ class InventoryValidator(object):
             self.error("E044")
             return all_versions
         elif len(versions) == 0:
-            self.error("E008b")
+            self.error("E008")
             return all_versions
         # Validate version sequence
         # https://ocfl.io/draft/spec/#version-directories
@@ -221,7 +225,7 @@ class InventoryValidator(object):
                     max_version_num = (10 ** (n - 1)) - 1
                     break
             if not zero_padded:
-                self.error("E008a")
+                self.error("E009")
                 return all_versions
         if zero_padded:
             self.warn("W001")
@@ -232,14 +236,14 @@ class InventoryValidator(object):
                 all_versions.append(v)
             else:
                 if len(versions) != (n - 1):
-                    self.error("E009")  # Extra version dirs outside sequence
+                    self.error("E010")  # Extra version dirs outside sequence
                 return all_versions
         # We have now included all possible versions up to the zero padding
         # size, if there are more versions than this number then we must
         # have extra that violate the zero-padding rule or are out of
         # sequence
         if len(versions) > max_version_num:
-            self.error("E009")
+            self.error("E011")
         return all_versions
 
     def validate_versions(self, versions, all_versions, unnormalized_digests):
@@ -279,7 +283,7 @@ class InventoryValidator(object):
             if 'message' not in version:
                 self.warn('W007a', version=v)
             elif type(version['message']) != str:
-                self.error('E048b', version=v)
+                self.error('E094', version=v)
             if 'user' not in version:
                 self.warn('W007b', version=v)
             else:

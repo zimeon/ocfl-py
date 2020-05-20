@@ -3,6 +3,9 @@
 ## ??? v0.0.8
 
   * Add checks for paths in manifest (https://ocfl.io/draft/spec/#E098, https://ocfl.io/draft/spec/#E099, https://ocfl.io/draft/spec/#E100, https://ocfl.io/draft/spec/#E101)
+  * Separate message not a string test (https://ocfl.io/draft/spec/#E094) from others
+  * Sort out version sequence tests (https://ocfl.io/draft/spec/#E008, https://ocfl.io/draft/spec/#E009, https://ocfl.io/draft/spec/#E010, https://ocfl.io/draft/spec/#E011)
+  * Add ocfl-sidecar.py script to generate inventory sidecar
 
 ## 2020-05-18 v0.0.7
 

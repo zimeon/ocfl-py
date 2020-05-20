@@ -148,10 +148,10 @@ class TestAll(unittest.TestCase):
         self.assertIn('E044', log.errors)
         log.clear()
         self.assertEqual(iv.validate_version_sequence({"v2": {}}), [])
-        self.assertIn('E008a', log.errors)
+        self.assertIn('E009', log.errors)
         log.clear()
         self.assertEqual(iv.validate_version_sequence({"v02": {}}), [])
-        self.assertIn('E008a', log.errors)
+        self.assertIn('E009', log.errors)
         log.clear()
         self.assertEqual(iv.validate_version_sequence({"v1": {}, 'v2': {}, 'v3': {}}), ['v1', 'v2', 'v3'])
         log.clear()
@@ -160,13 +160,13 @@ class TestAll(unittest.TestCase):
         self.assertEqual(len(log.errors), 0)
         log.clear()
         self.assertEqual(iv.validate_version_sequence({"v1": {}, 'v2': {}, 'v4': {}}), ['v1', 'v2'])
-        self.assertIn('E009', log.errors)
+        self.assertIn('E010', log.errors)
         log.clear()
         self.assertEqual(iv.validate_version_sequence({"v01": {}, 'v02': {}, 'v03': {}, "v04": {}, 'v05': {}, 'v06': {}, "v07": {}, 'v08': {}, 'v09': {}}), ['v01', 'v02', 'v03', 'v04', 'v05', 'v06', 'v07', 'v08', 'v09'])
         self.assertEqual(len(log.errors), 0)
         log.clear()
         self.assertEqual(iv.validate_version_sequence({"v01": {}, 'v02': {}, 'v03': {}, "v04": {}, 'v05': {}, 'v06': {}, "v07": {}, 'v08': {}, 'v09': {}, 'v10': {}}), ['v01', 'v02', 'v03', 'v04', 'v05', 'v06', 'v07', 'v08', 'v09'])
-        self.assertIn('E009', log.errors)
+        self.assertIn('E011', log.errors)
 
     def test_validate_versions(self):
         """Test validate_versions method."""
@@ -212,7 +212,7 @@ class TestAll(unittest.TestCase):
         versions['v1']['created'] = "2010-03-30T21:24:00Z"
         versions['v1']['message'] = {}  # not a string
         self.assertEqual(iv.validate_versions(versions, ['v1'], set()), [])
-        self.assertIn('E048b', log.errors)
+        self.assertIn('E094', log.errors)
         log.clear()
         versions['v1']['message'] = "A message"
         versions['v1']['user'] = "A string"  # not a dict

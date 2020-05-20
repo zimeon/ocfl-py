@@ -39,19 +39,19 @@
        "en": "OCFL Object declaration file contents do not match file name without leading 0="
     }
   },
-  "E008a": {
+  "E008": {
+    "params": ["where"],
+    "description": {
+       "en": "OCFL Object %s inventory versions block does not contain any versions, there must be at least version 1"
+    }
+  },
+  "E009": {
     "params": ["where"],
     "description": {
        "en": "OCFL Object %s inventory versions block does not contain v1 or a zero padded equivalent"
     }
   },
-  "E008b": {
-      "params": ["where"],
-      "description": {
-         "en": "OCFL Object %s inventory versions block does not contain any versions, there must be at least version 1"
-      }
-    },
-  "E009": {
+  "E010": {
     "params": ["where"],
     "description": {
        "en": "OCFL Object %s inventory versions block includes an out-of-sequence version"
@@ -191,12 +191,6 @@
     "params": ["where", "version"],
     "description": {
        "en": "OCFL Object %s inventory %s version block does not include a created date or it is malformed"
-    }
-  },
-  "E048b": {
-    "params": ["where", "version"],
-    "description": {
-       "en": "OCFL Object %s inventory %s version block has message key with value that isn't a string"
     }
   },
   "E048c": {
@@ -395,6 +389,12 @@
     "params": ["where", "digest_algorithm", "digest", "content_path", "content_digest"],
     "description": {
        "en": "OCFL Object %s inventory fixity block for digest algorithm %s has digest %s for file %s which doesn't match calculated digest %s for that file"
+    }
+  },
+  "E094": {
+    "params": ["where", "version"],
+    "description": {
+       "en": "OCFL Object %s inventory %s version block has message key with value that isn't a string"
     }
   },
   "E095": {
