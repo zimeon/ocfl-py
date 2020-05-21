@@ -16,9 +16,9 @@ def parse_arguments():
                         help="OCFL inventory files or directories containing them")
     parser.add_argument("--digest", default=None,
                         help="Digest algorithm to use overriding any in inventory")
-    parser.add_argument("--verbose", "-v", action="store_true",
-                        help="Be more verbose")
+    ocfl.add_shared_args(parser)
     args = parser.parse_args()
+    ocfl.check_shared_args(args)
     return args
 
 
