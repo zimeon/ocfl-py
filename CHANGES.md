@@ -2,7 +2,7 @@
 
 ## ?? 0.0.8
 
-  * ...
+  * Add --version for ocfl-sidevar.py
 
 ## 2020-05-21 v0.0.8
 
