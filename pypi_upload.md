@@ -19,9 +19,8 @@ Putting up a new version
 
       ```
       pip install --upgrade setuptools wheel twine
-      python setup.py sdist bdist_wheel
-      ls dist
-      twine upload dist/*
+      python setup.py sdist bdist_wheel; ls dist
+      twine upload dist/*0.X.X*
       ```
     7. Check on PyPI at <https://pypi.org/project/ocfl-py>
     8. Finally, in develop, start new version number by editing `ocfl/_version.py` and `CHANGES.md`

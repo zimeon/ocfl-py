@@ -1,6 +1,10 @@
 # ocfl-py changelog
 
-## ??? v0.0.8
+## ?? 0.0.8
+
+  * ...
+
+## 2020-05-21 v0.0.8
 
   * Add checks for paths in manifest (https://ocfl.io/draft/spec/#E098, https://ocfl.io/draft/spec/#E099, https://ocfl.io/draft/spec/#E100, https://ocfl.io/draft/spec/#E101)
   * Separate message not a string test (https://ocfl.io/draft/spec/#E094) from others
