@@ -17,6 +17,11 @@
        "en": "OCFL Object root contains unexpected entry that isn't a file or directory: %s"
     }
   },
+  "E002": {
+    "description": {
+       "en": "NOTE - E002 is redundant to more specific errors E003, E004, E005, E006."
+    }
+  },
   "E003a": {
     "description": {
        "en": "OCFL Object version declaration file is missing"
@@ -36,7 +41,7 @@
   },
   "E007": {
     "description": {
-       "en": "OCFL Object declaration file contents do not match file name without leading 0="
+       "en": "OCFL Object declaration file contents do not match file name without leading 0= (the 'dvalue')"
     }
   },
   "E008": {
@@ -260,9 +265,20 @@
     }
   },
   "E051": {
-    "params": ["where", "version", "digest", "path"],
     "description": {
-       "en": "OCFL Object %s inventory %s version block state block value for digest %s includes an invalid path %s"
+       "en": "NOTE - E051 is essentially a processing instruction and can't be tested for."
+    }
+  },
+  "E052": {
+    "params": ["where", "version", "path"],
+    "description": {
+       "en": "OCFL Object %s inventory %s version block state block includes an invalid path %s that starts or ends with /"
+    }
+  },
+  "E053": {
+    "params": ["where", "version", "path"],
+    "description": {
+       "en": "OCFL Object %s inventory %s version block state block includes an invalid path %s that includes . .. or //"
     }
   },
   "E054a": {
@@ -371,6 +387,11 @@
     "params": ["entry"],
     "description": {
        "en": "OCFL Object extensions direct contains an unexpected non-directory entry: %s"
+    }
+  },
+  "E090": {
+    "description": {
+       "en": "NOTE - E090 is essentially a processing instruction and can't be tested for."
     }
   },
   "E091": {

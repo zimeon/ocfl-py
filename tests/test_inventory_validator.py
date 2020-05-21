@@ -246,8 +246,11 @@ class TestAll(unittest.TestCase):
         self.assertEqual(iv.validate_state_block({d: "not a list"}, "v1", set()), [])
         self.assertIn('E050e', log.errors)
         log.clear()
+        self.assertEqual(iv.validate_state_block({d: ["good path", 'a/./b']}, "v1", set()), [d])
+        self.assertIn('E052', log.errors)
+        log.clear()
         self.assertEqual(iv.validate_state_block({d: ["good path", '/']}, "v1", set()), [d])
-        self.assertIn('E051', log.errors)
+        self.assertIn('E053', log.errors)
         log.clear()
         # Finally a good case
         d2 = "ae16b7632ee42fafd6b510e94a4951b2346ad90a1eff4baae2d7c0d5481515de61dcbc9a8d01f4824ab5215f033858189331859fb5b75fea5809230c63bad34a"
@@ -280,6 +283,41 @@ class TestAll(unittest.TestCase):
         iv.lax_digests = True
         self.assertEqual(iv.digest_regex(), '^.*$')
         self.assertEqual(log.errors, [])
+
+    def test_validate_as_prior_version(self):
+        """Test validate_as_prior_version method."""
+        log = TLogger()
+        iv = InventoryValidator(log=log)
+        prior = InventoryValidator(log=TLogger())
+        # Same versions won't work...
+        iv.all_versions = ['v1']
+        prior.all_versions = ['v1']
+        iv.validate_as_prior_version(prior)
+        self.assertEqual(log.errors, ['E066a'])
+        log.clear()
+        # Good inventory in spite of diferent digests
+        iv.all_versions = ['v1', 'v2']
+        iv.inventory = {"manifest": {"a1d1": ["v1/content/f1"],
+                                     "a1d2": ["v1/content/f2"],
+                                     "a1d3": ["v2/content/f3"]},
+                        "versions": {"v1": {"state": {"a1d1": ["f1"], "a1d2": ["f2"]}},
+                                     "v2": {"state": {"a1d1": ["f1"], "a1d3": ["f3"]}}}}
+        prior.inventory = {"manifest": {"a2d1": ["v1/content/f1"],
+                                        "a2d2": ["v1/content/f2"]},
+                           "versions": {"v1": {"state": {"a2d1": ["f1"], "a2d2": ["f2"]}}}}
+        iv.validate_as_prior_version(prior)
+        self.assertEqual(log.errors, [])
+        log.clear()
+        # Now let's add a copy file in the state in prior so as not to match
+        prior.inventory["versions"]["v1"]["state"]["a2d2"] = ["f2", "f2-copy"]
+        iv.validate_as_prior_version(prior)
+        self.assertEqual(log.errors, ["E066b"])
+        log.clear()
+        # Now move that back but change a a manifest location
+        prior.inventory["versions"]["v1"]["state"]["a2d2"] = ["f2"]
+        prior.inventory["manifest"]["a2d2"] = ["v1/content/f2--moved"]
+        iv.validate_as_prior_version(prior)
+        self.assertEqual(log.errors, ["E066c"])
 
     def test_check_content_path(self):
         """Test check_content_path method."""
@@ -339,41 +377,9 @@ class TestAll(unittest.TestCase):
         log.clear()
         iv.check_content_path('v1/xyz/.a', cp, cd)
         self.assertEqual(log.errors, [])
-
-    def test_validate_as_prior_version(self):
-        """Test validate_as_prior_version method."""
-        log = TLogger()
-        iv = InventoryValidator(log=log)
-        prior = InventoryValidator(log=TLogger())
-        # Same versions won't work...
-        iv.all_versions = ['v1']
-        prior.all_versions = ['v1']
-        iv.validate_as_prior_version(prior)
-        self.assertEqual(log.errors, ['E066a'])
-        log.clear()
-        # Good inventory in spite of diferent digests
-        iv.all_versions = ['v1', 'v2']
-        iv.inventory = {"manifest": {"a1d1": ["v1/content/f1"],
-                                     "a1d2": ["v1/content/f2"],
-                                     "a1d3": ["v2/content/f3"]},
-                        "versions": {"v1": {"state": {"a1d1": ["f1"], "a1d2": ["f2"]}},
-                                     "v2": {"state": {"a1d1": ["f1"], "a1d3": ["f3"]}}}}
-        prior.inventory = {"manifest": {"a2d1": ["v1/content/f1"],
-                                        "a2d2": ["v1/content/f2"]},
-                           "versions": {"v1": {"state": {"a2d1": ["f1"], "a2d2": ["f2"]}}}}
-        iv.validate_as_prior_version(prior)
-        self.assertEqual(log.errors, [])
-        log.clear()
-        # Now let's add a copy file in the state in prior so as not to match
-        prior.inventory["versions"]["v1"]["state"]["a2d2"] = ["f2", "f2-copy"]
-        iv.validate_as_prior_version(prior)
-        self.assertEqual(log.errors, ["E066b"])
-        log.clear()
-        # Now move that back but change a a manifest location
-        prior.inventory["versions"]["v1"]["state"]["a2d2"] = ["f2"]
-        prior.inventory["manifest"]["a2d2"] = ["v1/content/f2--moved"]
-        iv.validate_as_prior_version(prior)
-        self.assertEqual(log.errors, ["E066c"])
+        # Check good paths accumulated
+        self.assertEqual(cp, set(('v1/xyz/anything', 'v1/xyz/.a', 'v1/content/anything', 'v1/xyz/.secret/d')))
+        self.assertEqual(cd, set(('v1/xyz', 'v1/content', 'v1/xyz/.secret')))
 
     def test_check_logical_path(self):
         """Test check_logical_path method."""
@@ -381,10 +387,18 @@ class TestAll(unittest.TestCase):
         iv = InventoryValidator(log=log)
         lp = set()
         ld = set()
-        self.assertTrue(iv.check_logical_path("almost anything goes", lp, ld))
-        self.assertFalse(iv.check_logical_path("/but not this", lp, ld))
-        self.assertFalse(iv.check_logical_path("./or this", lp, ld))
-        self.assertFalse(iv.check_logical_path("or this/", lp, ld))
-        # And check paths recorded
-        self.assertEqual(lp, set(('almost anything goes', 'or this/', './or this', '/but not this')))
-        self.assertEqual(ld, set(('', 'or this', '.')))
+        iv.check_logical_path("almost anything goes", "root", lp, ld)
+        self.assertEqual(log.errors, [])
+        iv.check_logical_path("including/this/long/path", "root", lp, ld)
+        self.assertEqual(log.errors, [])
+        iv.check_logical_path("/but not this", "root", lp, ld)
+        self.assertEqual(log.errors, ['E053'])
+        log.clear()
+        iv.check_logical_path("./or this", "root", lp, ld)
+        self.assertEqual(log.errors, ['E052'])
+        log.clear()
+        iv.check_logical_path("or this/", "root", lp, ld)
+        self.assertEqual(log.errors, ['E053'])
+        # And check only good paths recorded
+        self.assertEqual(lp, set(('almost anything goes', 'including/this/long/path')))
+        self.assertEqual(ld, set(('', 'including/this/long')))

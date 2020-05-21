@@ -322,8 +322,7 @@ class InventoryValidator(object):
                     self.error('E050e', version=version, digest=digest)
                 else:
                     for path in state[digest]:
-                        if not self.check_logical_path(path, logical_paths, logical_directories):
-                            self.error('E051', version=version, digest=digest, path=path)
+                        self.check_logical_path(path, version, logical_paths, logical_directories)
                     if digest not in unnormalized_digests:
                         # Exact string value must match, not just normalized
                         self.error("E050f", version=version, digest=digest)
@@ -334,25 +333,6 @@ class InventoryValidator(object):
                 if path in logical_paths:
                     self.error("E095", version=version, path=path)
         return digests
-
-    def check_logical_path(self, path, logical_paths, logical_directories):
-        """Check logical path and accumulate paths/directories for E095 check.
-
-        Neither a leading or trailing slash is allowed which is caught by the
-        split and then test for empty.
-
-        logical_paths and logical_directories are expected to sets.
-        """
-        valid = True
-        elements = path.split('/')
-        for element in elements:
-            if element in ['.', '..', '']:
-                valid = False
-                break
-        # Accumulate paths and directories
-        logical_paths.add(path)
-        logical_directories.add('/'.join(elements[0:-1]))
-        return valid
 
     def check_digests_present_and_used(self, manifest_files, digests_used):
         """Check all digests in manifest that are needed are present and used."""
@@ -375,8 +355,30 @@ class InventoryValidator(object):
         # Match anything
         return r'''^.*$'''
 
+    def check_logical_path(self, path, version, logical_paths, logical_directories):
+        """Check logical path and accumulate paths/directories for E095 check.
+
+        logical_paths and logical_directories are expected to be sets.
+
+        Only adds good paths to the accumulated paths/directories.
+        """
+        if path.startswith('/') or path.endswith('/'):
+            self.error("E053", version=version, path=path)
+        else:
+            elements = path.split('/')
+            for element in elements:
+                if element in ['.', '..', '']:
+                    self.error("E052", version=version, path=path)
+                    return
+            # Accumulate paths and directories
+            logical_paths.add(path)
+            logical_directories.add('/'.join(elements[0:-1]))
+
     def check_content_path(self, path, content_paths, content_directories):
-        """True if path is a valid content path."""
+        """Check logical path and accumulate paths/directories for E101 check.
+
+        Only adds good paths to the accumulated paths/directories.
+        """
         if path.startswith('/') or path.endswith('/'):
             self.error("E100", path=path)
         else:
@@ -386,7 +388,7 @@ class InventoryValidator(object):
                 for element in elements:
                     if element in ('', '.', '..'):
                         self.error("E099", path=path)
-                        break
+                        return
                 # Accumulate paths and directories
                 content_paths.add(path)
                 content_directories.add('/'.join([m.group(1)] + elements[0:-1]))

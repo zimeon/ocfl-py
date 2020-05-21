@@ -115,7 +115,7 @@ class Validator(object):
         """Validate the appropriate inventory digest file in path."""
         inv_digest_file = inv_file + '.' + digest_algorithm
         if not os.path.exists(inv_digest_file):
-            self.log.error('E005', where=where, path=inv_digest_file)
+            self.log.error('E058a', where=where, path=inv_digest_file)
         else:
             self.validate_inventory_digest_match(inv_file, inv_digest_file)
 

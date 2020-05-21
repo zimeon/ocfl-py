@@ -33,7 +33,6 @@ class TestAll(unittest.TestCase):
                            'E001_extra_file_in_root': ['E001a'],
                            'E003_E034_empty': ['E003a', 'E034'],
                            'E003_no_decl': ['E003a'],
-                           'E005_no_sidecar': ['E005'],
                            'E008_E036_no_versions_no_head': ['E008', 'E036d'],
                            'E009_version_two_only': ['E009'],
                            'E015_content_not_in_content_dir': ['E042'],  # FIXME - What should test case and error be?
@@ -52,6 +51,7 @@ class TestAll(unittest.TestCase):
                            'E049_created_not_to_seconds': ['E049b'],
                            'E050_file_in_manifest_not_used': ['E050b'],
                            'E050_state_repeated_digest': ['E050f'],
+                           'E058_no_sidecar': ['E058a'],
                            'E064_different_root_and_latest_inventories': ['E064'],
                            'E067_file_in_extensions_dir': ['E067'],
                            'E092_bad_manifest_digest': ['E092'],
