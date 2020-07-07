@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Core of OCFL Object library."""
 import copy
+import fs
 import hashlib
 import json
 import os
@@ -232,9 +233,9 @@ class Object(object):
         """Write inventory and sidecar to objdir."""
         if not os.path.exists(objdir):
             os.makedirs(objdir)
-        invfile = os.path.join(objdir, INVENTORY_FILENAME)
-        with open(invfile, 'w') as fh:
-            json.dump(inventory, fh, sort_keys=True, indent=2)
+        with fs.open_fs(objdir) as obj_fs:
+            with obj_fs.open(INVENTORY_FILENAME, 'w') as fh:
+                json.dump(inventory, fh, sort_keys=True, indent=2)
         self.write_inventory_sidecar(objdir)
 
     def write_inventory_sidecar(self, objdir):
@@ -243,10 +244,11 @@ class Object(object):
         Returns the inventory sidecar filename.
         """
         invfile = os.path.join(objdir, INVENTORY_FILENAME)
-        sidecar = invfile + '.' + self.digest_algorithm
         digest = file_digest(invfile, self.digest_algorithm)
-        with open(sidecar, 'w') as fh:
-            fh.write(digest + ' ' + INVENTORY_FILENAME + '\n')
+        sidecar = INVENTORY_FILENAME + '.' + self.digest_algorithm
+        with fs.open_fs(objdir) as obj_fs:
+            with obj_fs.open(sidecar, 'w') as fh:
+                fh.write(digest + ' ' + INVENTORY_FILENAME + '\n')
         return sidecar
 
     def build(self, srcdir, metadata=None, objdir=None):
@@ -554,9 +556,9 @@ class Object(object):
         of the Object methods can assume correctness and matching string digests
         between state and manifest blocks.
         """
-        inv_file = os.path.join(path, INVENTORY_FILENAME)
-        with open(inv_file) as fh:
-            inventory = json.load(fh)
+        with fs.open_fs(path) as obj_fs:
+            with obj_fs.open(INVENTORY_FILENAME) as fh:
+                inventory = json.load(fh)
         # Validate
         iv = InventoryValidator()
         iv.validate(inventory)

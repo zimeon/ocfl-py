@@ -1,6 +1,7 @@
 """Digest handling for OCFL."""
+import fs
 import hashlib
-
+import os.path
 
 def _file_digest(filename, digester):
     """Generate a digest for filename using the supplied digester object.
@@ -9,9 +10,11 @@ def _file_digest(filename, digester):
     support the .update() and .hexdigest() methods.
     """
     BUFSIZE = 64 * 1024  # 64kB for want of better info...
-    with open(filename, 'rb', buffering=0) as f:
-        for b in iter(lambda: f.read(BUFSIZE), b''):
-            digester.update(b)
+    (dir, name) = os.path.split(filename)
+    with fs.open_fs(dir) as dir_fs:
+        with dir_fs.open(name, 'rb', buffering=0) as f:
+            for b in iter(lambda: f.read(BUFSIZE), b''):
+                digester.update(b)
     return digester.hexdigest()
 
 

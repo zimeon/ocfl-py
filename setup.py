@@ -62,9 +62,10 @@ setup(
     description='ocfl-py - A Python implementation of OCFL',
     long_description=open('README').read(),
     install_requires=[
-        'pairtree>=0.8.1',
+        'bagit>=1.7.0',
         'dateutils>=0.6.6',
-        'bagit>=1.7.0'
+        'fs>2.4.0',
+        'pairtree>=0.8.1'
     ],
     test_suite="tests",
     cmdclass={
