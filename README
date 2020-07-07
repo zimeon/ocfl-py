@@ -9,18 +9,17 @@ ocfl-py - An OCFL implementation in Python
 
 **WORK IN PROGRESS - NO GUARANTEE, NO MONEY BACK :-)**
 
-Attempts to follow `current draft of OCFL specification
-<https://ocfl.io/draft/spec/>`_
+Attempts to follow `OCFL specification v1.0
+<https://ocfl.io/1.0/spec/>`_
 
 Installing
 ----------
 
 This code requires Python 3.
 
-This code is Alpha, in active development both to flesh out support for the
-OCFL draft specification and to track changes in it. To get the most up to 
-date version check out the ``master`` branch from github (or if you are reckless
-you can try the ``develop`` branch).
+This code attempts to support the OCFL specification v1.0 and to additional
+developments. To get the most up to date version check out the ``master``
+branch from github (or if you are reckless you can try the ``develop`` branch).
 
 I hope to keep a version not too far out of date on PyPI too, which can
 be installed or upgraded to the current version with:
