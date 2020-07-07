@@ -48,7 +48,7 @@ setup(
     packages=['ocfl'],
     package_data={'ocfl': ['data/*']},
     scripts=['ocfl-object.py', 'ocfl-sidecar.py', 'ocfl-store.py', 'ocfl-validate.py'],
-    classifiers=["Development Status :: 2 - Pre-Alpha",
+    classifiers=["Development Status :: 4 - Beta",
                  "Intended Audience :: Developers",
                  "Operating System :: OS Independent",
                  "Programming Language :: Python",
@@ -62,9 +62,9 @@ setup(
     description='ocfl-py - A Python implementation of OCFL',
     long_description=open('README').read(),
     install_requires=[
-        'pairtree>=0.8.1',
+        'bagit>=1.7.0',
         'dateutils>=0.6.6',
-        'bagit>=1.7.0'
+        'pairtree>=0.8.1'
     ],
     test_suite="tests",
     cmdclass={

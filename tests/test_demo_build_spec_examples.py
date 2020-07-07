@@ -18,7 +18,7 @@ class TestAll(DemoTestCase):
         """Test for minumal example."""
         text = "The digest type sha512-spec-ex is sha512 with most of the content " \
                "stripped out and replaced with an ellipsis. This is inventory should " \
-               "match the example in <https://ocfl.io/draft/spec/#example-minimal-object>."
+               "match the example in <https://ocfl.io/1.0/spec/#example-minimal-object>."
         out = self.run_script("Minimal example",
                               ["python", "ocfl-object.py",
                                "--build",
@@ -36,7 +36,7 @@ class TestAll(DemoTestCase):
     def test01_versioned_example(self):
         """Test for versioned example."""
         text = "This is inventory should match the example with 3 versions in " \
-               "<https://ocfl.io/draft/spec/#example-versioned-object>."
+               "<https://ocfl.io/1.0/spec/#example-versioned-object>."
         out = self.run_script("Versioned example",
                               ["python", "ocfl-object.py",
                                "--build",
@@ -53,7 +53,7 @@ class TestAll(DemoTestCase):
         """Test for different paths example."""
         text = "This is inventory should match the example showing how content " \
                "paths may differ from logical paths in " \
-               "<https://ocfl.io/draft/spec/#example-object-diff-paths>."
+               "<https://ocfl.io/1.0/spec/#example-object-diff-paths>."
         out = self.run_script("Versioned example",
                               ["python", "ocfl-object.py",
                                "--build",
