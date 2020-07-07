@@ -3,6 +3,7 @@
 ## Errors
 
 | Code | Specification text | Implementation status |
+| --- | --- | --- |
 | [E001](https://ocfl.io/1.0/spec#E001) | 'The OCFL Object Root must not contain files or directories other than those specified in the following sections.' | See multiple cases identified with suffixes below |
 | | E001a | OCFL Object root contains unexpected file: %s \[[ocfl/validator.py#L155](https://github.com/zimeon/ocfl-py/blob/master/ocfl/validator.py#L155)\] |
 | | E001b | OCFL Object root contains unexpected directory: %s \[[ocfl/validator.py#L162](https://github.com/zimeon/ocfl-py/blob/master/ocfl/validator.py#L162)\] |
@@ -135,7 +136,7 @@
 | [E089](https://ocfl.io/1.0/spec#E089) | 'If the preservation of non-OCFL-compliant features is required then the content MUST be wrapped in a suitable disk or filesystem image format which OCFL can treat as a regular file.' | Not implemented |
 | [E090](https://ocfl.io/1.0/spec#E090) | 'Hard and soft (symbolic) links are not portable and MUST NOT be used within OCFL Storage hierachies.' | NOTE - E090 is essentially a processing instruction and can't be tested for. \[Not implemented\] |
 | [E091](https://ocfl.io/1.0/spec#E091) | 'Filesystems MUST preserve the case of OCFL filepaths and filenames.' | OCFL Object %s inventory manifest file list for digest %s is not a JSON array \[Not implemented\] |
-| [E092](https://ocfl.io/1.0/spec#E092) | 'The value for each key in the manifest must be an array containing the content paths of files in the OCFL Object that have content with the given digest.' | OCFL Object %s inventory manifest has digest %s for file %s which doesn't match calculated digest %s for that file \[[ocfl/validator.py#L264](https://github.com/zimeon/ocfl-py/blob/master/ocfl/validator.py#L264) [ocfl/inventory_validator.py#L132](https://github.com/zimeon/ocfl-py/blob/master/ocfl/inventory_validator.py#L132)\] |
+| [E092](https://ocfl.io/1.0/spec#E092) | 'The value for each key in the manifest must be an array containing the content paths of files in the OCFL Object that have content with the given digest.' | OCFL Object %s inventory manifest has digest %s for file %s which doesn't match calculated digest %s for that file \[[ocfl/inventory_validator.py#L132](https://github.com/zimeon/ocfl-py/blob/master/ocfl/inventory_validator.py#L132) [ocfl/validator.py#L264](https://github.com/zimeon/ocfl-py/blob/master/ocfl/validator.py#L264)\] |
 | [E093](https://ocfl.io/1.0/spec#E093) | 'Where included in the fixity block, the digest values given must match the digests of the files at the corresponding content paths.' | OCFL Object %s inventory fixity block for digest algorithm %s has digest %s for file %s which doesn't match calculated digest %s for that file \[[ocfl/validator.py#L274](https://github.com/zimeon/ocfl-py/blob/master/ocfl/validator.py#L274)\] |
 | [E094](https://ocfl.io/1.0/spec#E094) | 'The value of [the message] key is freeform text, used to record the rationale for creating this version. It must be a JSON string.' | OCFL Object %s inventory %s version block has message key with value that isn't a string \[[ocfl/inventory_validator.py#L286](https://github.com/zimeon/ocfl-py/blob/master/ocfl/inventory_validator.py#L286)\] |
 | [E095](https://ocfl.io/1.0/spec#E095) | 'Within a version, logical paths must be unique and non-conflicting, so the logical path for a file cannot appear as the initial part of another logical path.' | OCFL Object %s inventory version %s state has logical path %s used as both a directory and a file path. \[[ocfl/inventory_validator.py#L334](https://github.com/zimeon/ocfl-py/blob/master/ocfl/inventory_validator.py#L334)\] |
@@ -151,6 +152,7 @@
 ## Warnings
 
 | Code | Specification text | Implementation status |
+| --- | --- | --- |
 | [W001](https://ocfl.io/1.0/spec#W001) | 'Implementations SHOULD use version directory names constructed without zero-padding the version number, ie. v1, v2, v3, etc.'' | OCFL Object %s inventory version numbers SHOULD NOT be zero-padded \[[ocfl/inventory_validator.py#L231](https://github.com/zimeon/ocfl-py/blob/master/ocfl/inventory_validator.py#L231)\] |
 | [W002](https://ocfl.io/1.0/spec#W002) | 'The version directory SHOULD NOT contain any directories other than the designated content sub-directory. Once created, the contents of a version directory are expected to be immutable.' | OCFL Object version directory %s SHOULD NOT contain any directory except the designated content directory (found %s) \[[ocfl/validator.py#L251](https://github.com/zimeon/ocfl-py/blob/master/ocfl/validator.py#L251)\] |
 | [W003](https://ocfl.io/1.0/spec#W003) | 'Version directories must contain a designated content sub-directory if the version contains files to be preserved, and SHOULD NOT contain this sub-directory otherwise.' | OCFL Object version directory %s SHOULD NOT contain an empty content directory \[[ocfl/validator.py#L249](https://github.com/zimeon/ocfl-py/blob/master/ocfl/validator.py#L249)\] |
