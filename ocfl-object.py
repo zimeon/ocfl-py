@@ -3,7 +3,6 @@
 import argparse
 import logging
 import ocfl
-import os.path
 import sys
 
 
@@ -128,7 +127,7 @@ def do_object_operation(args):
         if args.dstdir and args.dstbag:
             args.dstdir = None  # Override dstdir if dstbag specified
         version = args.extract
-        dst = os.path.join(args.dstdir or args.dstbag)
+        dst = args.dstdir or args.dstbag
         metadata = obj.extract(objdir=args.objdir,
                                version=version,
                                dstdir=dst)

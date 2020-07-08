@@ -37,7 +37,8 @@ class Object(object):
     def __init__(self, id=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
                  skips=None, forward_delta=True, dedupe=True, lax_digests=False,
-                 ocfl_version='draft', fixity=None, verbose=True):
+                 ocfl_version='draft', fixity=None, verbose=True,
+                 obj_fs=None):
         """Initialize OCFL builder.
 
         Parameters:
@@ -59,6 +60,16 @@ class Object(object):
         self.src_files = {}
         self.log = logging.getLogger(name="ocfl.object")
         self.log.setLevel(level=logging.INFO if verbose else logging.WARN)
+        self.obj_fs = obj_fs  # fs filesystem (or sub-filesystem) for object
+        self.obj_fs_dir = None  # FIXME - TEMPORARY HACK TO STORE DIRECTORY NAME FOR TRANSITION TO fs
+
+    def open_fs(self, objdir, create=False):
+        """Open an fs filesystem for this object."""
+        try:
+            self.obj_fs = fs.open_fs(fs_url=objdir, create=create)
+            self.obj_fs_dir = objdir  # FIXME - TEMPORARY HACK TO STORE DIRECTORY NAME FOR TRANSITION TO fs
+        except fs.opener.errors.OpenerError as e:
+            raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, str(e)))
 
     def parse_version_directory(self, dirname):
         """Get version number from version directory name."""
@@ -225,31 +236,41 @@ class Object(object):
                                                    metadata=metadata)
             yield (vdir, inventory, manifest_to_srcfile)
 
-    def write_object_declaration(self, objdir):
-        """Write NAMASTE object declaration to objdir."""
-        Namaste(0, 'ocfl_object_1.0').write(objdir)
+    def write_object_declaration(self):
+        """Write NAMASTE object declaration.
 
-    def write_inventory_and_sidecar(self, objdir, inventory):
-        """Write inventory and sidecar to objdir."""
-        if not os.path.exists(objdir):
-            os.makedirs(objdir)
-        with fs.open_fs(objdir) as obj_fs:
-            with obj_fs.open(INVENTORY_FILENAME, 'w') as fh:
-                json.dump(inventory, fh, sort_keys=True, indent=2)
-        self.write_inventory_sidecar(objdir)
+        Assumes self.obj_fs is open for this object.
+        """
+        Namaste(0, 'ocfl_object_1.0').write(obj_fs=self.obj_fs)
 
-    def write_inventory_sidecar(self, objdir):
-        """Write a sidecare for the inventory file invfile.
+    def write_inventory_and_sidecar(self, inventory, vdir='', write_inventory=True):
+        """Write inventory and sidecar to vdir in the current object.
+
+        Assumes self.obj_fs is open for this object. Will create vdir if that
+        does not exist. If vdir is not specified then will write to root of
+        the object.
 
         Returns the inventory sidecar filename.
         """
-        invfile = os.path.join(objdir, INVENTORY_FILENAME)
-        digest = file_digest(invfile, self.digest_algorithm)
-        sidecar = INVENTORY_FILENAME + '.' + self.digest_algorithm
-        with fs.open_fs(objdir) as obj_fs:
-            with obj_fs.open(sidecar, 'w') as fh:
-                fh.write(digest + ' ' + INVENTORY_FILENAME + '\n')
+        if not self.obj_fs.exists(vdir):
+            self.obj_fs.makedir(vdir)
+        invfile = fs.path.join(vdir, INVENTORY_FILENAME)
+        if write_inventory:
+            with self.obj_fs.open(invfile, 'w') as fh:
+                json.dump(inventory, fh, sort_keys=True, indent=2)
+        digest = file_digest(invfile, self.digest_algorithm, pyfs=self.obj_fs)
+        sidecar = fs.path.join(vdir, INVENTORY_FILENAME + '.' + self.digest_algorithm)
+        with self.obj_fs.open(sidecar, 'w') as fh:
+            fh.write(digest + ' ' + INVENTORY_FILENAME + '\n')
         return sidecar
+
+    def write_inventory_sidecar(self, invdir):
+        """Write just sidecare for the already existing inventory file in invdir.
+
+        Returns the inventory sidecar filename.
+        """
+        self.open_fs(invdir)
+        return self.write_inventory_and_sidecar(None, write_inventory=False)
 
     def build(self, srcdir, metadata=None, objdir=None):
         """Build an OCFL object and write to objdir if set, else print inventories.
@@ -264,7 +285,7 @@ class Object(object):
         if self.id is None:
             raise ObjectException("Identifier is not set!")
         if objdir is not None:
-            os.makedirs(objdir)
+            self.open_fs(objdir, create=True)
         num_versions = 0
         for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(srcdir, metadata=metadata):
             num_versions += 1
@@ -272,7 +293,7 @@ class Object(object):
                 self.log.warning("### Inventory for %s\n" % (vdir)
                                  + json.dumps(inventory, sort_keys=True, indent=2))
             else:
-                self.write_inventory_and_sidecar(os.path.join(objdir, vdir), inventory)
+                self.write_inventory_and_sidecar(inventory, vdir)
                 # Copy files into this version
                 for (path, srcfile) in manifest_to_srcfile.items():
                     dstfile = os.path.join(objdir, path)
@@ -282,9 +303,9 @@ class Object(object):
                     copyfile(srcfile, dstfile)
         if objdir is None:
             return
-        # Write NAMASTE, inventory and sidecar
-        self.write_object_declaration(objdir)
-        self.write_inventory_and_sidecar(objdir, inventory)
+        # Write object declaration, inventory and sidecar
+        self.write_object_declaration()
+        self.write_inventory_and_sidecar(inventory)
         logging.info("Built object %s with %s versions" % (self.id, num_versions))
 
     def create(self, srcdir, metadata=None, objdir=None):
@@ -300,7 +321,7 @@ class Object(object):
         if self.id is None:
             raise ObjectException("Identifier is not set!")
         if objdir is not None:
-            os.makedirs(objdir)
+            self.open_fs(objdir, create=True)
         inventory = self.start_inventory()
         vdir = 'v1'
         manifest_to_srcfile = self.add_version(inventory, srcdir, vdir,
@@ -310,10 +331,10 @@ class Object(object):
                              + json.dumps(inventory, sort_keys=True, indent=2))
             return
         # Else write out object
-        self.write_inventory_and_sidecar(os.path.join(objdir, vdir), inventory)
-        # Write NAMASTE, inventory and sidecar
-        self.write_object_declaration(objdir)
-        self.write_inventory_and_sidecar(objdir, inventory)
+        self.write_inventory_and_sidecar(inventory, vdir)
+        # Write object declaration, inventory and sidecar
+        self.write_object_declaration()
+        self.write_inventory_and_sidecar(inventory)
         # Write version files
         for digest, paths in inventory['manifest'].items():
             for path in paths:
@@ -420,8 +441,8 @@ class Object(object):
                     os.makedirs(dstpath)
                 copyfile(srcfile, dstfile)
         # Write inventory in both root and head version
-        self.write_inventory_and_sidecar(os.path.join(objdir, head), inventory)
-        self.write_inventory_and_sidecar(objdir, inventory)
+        self.write_inventory_and_sidecar(inventory, head)
+        self.write_inventory_and_sidecar(inventory)
         # Delete old root inventory sidecar if we changed digest algorithm
         if digest_algorithm != old_digest_algorithm:
             os.remove(os.path.join(objdir, INVENTORY_FILENAME + '.' + old_digest_algorithm))
@@ -556,9 +577,9 @@ class Object(object):
         of the Object methods can assume correctness and matching string digests
         between state and manifest blocks.
         """
-        with fs.open_fs(path) as obj_fs:
-            with obj_fs.open(INVENTORY_FILENAME) as fh:
-                inventory = json.load(fh)
+        self.open_fs(path)
+        with self.obj_fs.open(INVENTORY_FILENAME) as fh:
+            inventory = json.load(fh)
         # Validate
         iv = InventoryValidator()
         iv.validate(inventory)

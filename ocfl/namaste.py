@@ -4,6 +4,7 @@ NAMASTE spec: http://www.cdlib.org/inside/diglib/namaste/namastespec.html
 
 See also command line tool: http://github.com/mjgiarlo/namaste
 """
+import fs
 import os
 import os.path
 import re
@@ -84,14 +85,23 @@ class Namaste(object):
         else:
             return self._tr_func(self.content)
 
-    def write(self, dir):
-        """Write NAMASTE file to dir.
+    def write(self, dir='/', obj_fs=None):
+        """Write NAMASTE file to dir, optionally in fs.
+
+        Handle both a dirctory with in a fs filesystem (if fs is set) or else
+        just a directory with plain os file support.
 
         e.g.
+            Namaste(0, 'ocfl_1.0').write(fs=obj_fs)
+        or
             Namaste(0, 'ocfl_1.0').write(dir)
         """
-        with open(os.path.join(dir, self.filename), 'w') as fh:
-            fh.write(self.content + "\n")
+        if obj_fs is not None:
+            obj_fs.writetext(fs.path.join(dir, self.filename), self.content + "\n")
+        else:
+            with open(os.path.join(dir, self.filename), 'w') as fh:
+                fh.write(self.content + "\n")
+
 
     def check_content(self, dir):
         """Check that the file content is compatible with the tvalue based on tr_func, else raise NamasteException."""

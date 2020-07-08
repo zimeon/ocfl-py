@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Object tests."""
+import fs
+import fs.tempfs
 import io
 import json
 import logging
@@ -160,31 +162,30 @@ class TestAll(unittest.TestCase):
 
     def test07_write_object_declaration(self):
         """Test write_object_declaration."""
-        tempdir = tempfile.mkdtemp(prefix='test_write_object_declaration')
-        oo = Object()
-        oo.write_object_declaration(tempdir)
-        self.assertEqual(os.listdir(tempdir), ['0=ocfl_object_1.0'])
+        tmpfs = fs.tempfs.TempFS(identifier='test_write_object_declaration')
+        oo = Object(obj_fs=tmpfs)
+        oo.write_object_declaration()
+        self.assertEqual(tmpfs.listdir('/'), ['0=ocfl_object_1.0'])
 
     def test08_write_inventory_and_sidecar(self):
         """Test write_object_and_sidecar."""
-        tempdir = tempfile.mkdtemp(prefix='test_write_inventory_and_sidecar')
-        oo = Object()
-        oo.write_inventory_and_sidecar(tempdir, {'abc': 'def'})
-        self.assertEqual(set(os.listdir(tempdir)),
+        tmpfs = fs.tempfs.TempFS(identifier='test_write_inventory_and_sidecar')
+        oo = Object(obj_fs=tmpfs)
+        oo.write_inventory_and_sidecar({'abc': 'def'})
+        self.assertEqual(set(tmpfs.listdir('')),
                          set(['inventory.json', 'inventory.json.sha512']))
-        with open(os.path.join(tempdir, 'inventory.json')) as fh:
+        with tmpfs.open('inventory.json') as fh:
             j = json.load(fh)
         self.assertEqual(j, {'abc': 'def'})
-        with open(os.path.join(tempdir, 'inventory.json.sha512')) as fh:
-            digest = fh.read()
+        digest = tmpfs.readtext('inventory.json.sha512')
         self.assertRegex(digest, r'''[0-9a-f]{128} inventory.json\n''')
-        # and now makind directory
-        oo = Object()
-        invdir = os.path.join(tempdir, 'xxx')
-        oo.write_inventory_and_sidecar(invdir, {'gh': 'ik'})
-        self.assertEqual(set(os.listdir(invdir)),
+        # and now making directory
+        oo = Object(obj_fs=tmpfs)
+        invdir = 'xxx'
+        oo.write_inventory_and_sidecar({'gh': 'ik'}, invdir)
+        self.assertEqual(set(tmpfs.listdir(invdir)),
                          set(['inventory.json', 'inventory.json.sha512']))
-        with open(os.path.join(invdir, 'inventory.json')) as fh:
+        with tmpfs.open(fs.path.join(invdir, 'inventory.json')) as fh:
             j = json.load(fh)
         self.assertEqual(j, {'gh': 'ik'})
 

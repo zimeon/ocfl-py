@@ -1,4 +1,6 @@
 """Namaste tests."""
+import fs
+import fs.tempfs
 import os.path
 import tempfile
 import unittest
@@ -63,12 +65,19 @@ class TestAll(unittest.TestCase):
     def test14_write(self):
         """Test write method."""
         tempdir = tempfile.mkdtemp(prefix='test_namaste')
+        # Plain OS method
         n = Namaste(0, 'balloon')
         n.write(tempdir)
         filepath = os.path.join(tempdir, '0=balloon')
         self.assertTrue(os.path.isfile(filepath))
         with open(filepath, 'r') as fh:
             self.assertEqual(fh.read(), 'balloon\n')
+        # With fs filesystem
+        tmpfs = fs.tempfs.TempFS()
+        n = Namaste(1, 'jelly')
+        n.write(obj_fs=tmpfs)
+        self.assertTrue(tmpfs.isfile('1=jelly'))
+        self.assertEqual(tmpfs.readtext('1=jelly'), 'jelly\n')
 
     def test15_check_content(self):
         """Test check_content method."""

@@ -3,22 +3,33 @@ import fs
 import hashlib
 import os.path
 
-def _file_digest(filename, digester):
+BUFSIZE = 64 * 1024  # 64kB for want of better info...
+
+
+def _fs_digest(pyfs, filename, digester):
+    """Update digester reading from fh."""
+    with pyfs.open(filename, 'rb', buffering=0) as fh:
+        for b in iter(lambda: fh.read(BUFSIZE), b''):
+            digester.update(b)
+
+
+def _file_digest(pyfs, filename, digester):
     """Generate a digest for filename using the supplied digester object.
 
     Like haslib.sha256 and hashlib.sha512, the digester object must
     support the .update() and .hexdigest() methods.
     """
-    BUFSIZE = 64 * 1024  # 64kB for want of better info...
-    (dir, name) = os.path.split(filename)
-    with fs.open_fs(dir) as dir_fs:
-        with dir_fs.open(name, 'rb', buffering=0) as f:
-            for b in iter(lambda: f.read(BUFSIZE), b''):
-                digester.update(b)
+
+    if pyfs is None:
+        (dir, name) = fs.path.split(filename)
+        with fs.open_fs(dir) as dir_fs:
+            _fs_digest(dir_fs, name, digester)
+    else:
+        _fs_digest(pyfs, filename, digester)
     return digester.hexdigest()
 
 
-def file_digest(filename, digest_type='sha512'):
+def file_digest(filename, digest_type='sha512', pyfs=None):
     """Digest of digest_type for file filename in normalized form.
 
     Supports digest_type values from OCFL spec:
@@ -32,30 +43,30 @@ def file_digest(filename, digest_type='sha512'):
     """
     # From spec
     if digest_type == 'sha512':
-        return _file_digest(filename, hashlib.sha512())
+        return _file_digest(pyfs, filename, hashlib.sha512())
     elif digest_type == 'sha256':
-        return _file_digest(filename, hashlib.sha256())
+        return _file_digest(pyfs, filename, hashlib.sha256())
     elif digest_type == 'sha1':
-        return _file_digest(filename, hashlib.sha1())
+        return _file_digest(pyfs, filename, hashlib.sha1())
     elif digest_type == 'md5':
-        return _file_digest(filename, hashlib.md5())
+        return _file_digest(pyfs, filename, hashlib.md5())
     elif digest_type == 'blake2b-512':
-        return _file_digest(filename, hashlib.blake2b())
+        return _file_digest(pyfs, filename, hashlib.blake2b())
     # From extensions
     elif digest_type == 'blake2b-160':
-        return _file_digest(filename, hashlib.blake2b(digest_size=20))
+        return _file_digest(pyfs, filename, hashlib.blake2b(digest_size=20))
     elif digest_type == 'blake2b-256':
-        return _file_digest(filename, hashlib.blake2b(digest_size=32))
+        return _file_digest(pyfs, filename, hashlib.blake2b(digest_size=32))
     elif digest_type == 'blake2b-384':
-        return _file_digest(filename, hashlib.blake2b(digest_size=48))
+        return _file_digest(pyfs, filename, hashlib.blake2b(digest_size=48))
     # Specification examples: 15/6 chars ... 3 chars. The truncated
     # sha512 is twice as many chars as the truncated sha256 to give
     # a appropriate impression in examples
     elif digest_type == 'sha512-spec-ex':
-        d = _file_digest(filename, hashlib.sha512())
+        d = _file_digest(pyfs, filename, hashlib.sha512())
         return d[:15] + '...' + d[-3:]
     elif digest_type == 'sha256-spec-ex':
-        d = _file_digest(filename, hashlib.sha256())
+        d = _file_digest(pyfs, filename, hashlib.sha256())
         return d[:6] + '...' + d[-3:]
     else:
         raise ValueError("Unsupport digest type %s" % (digest_type))
