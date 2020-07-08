@@ -48,7 +48,7 @@ setup(
     packages=['ocfl'],
     package_data={'ocfl': ['data/*']},
     scripts=['ocfl-object.py', 'ocfl-sidecar.py', 'ocfl-store.py', 'ocfl-validate.py'],
-    classifiers=["Development Status :: 2 - Pre-Alpha",
+    classifiers=["Development Status :: 4 - Beta",
                  "Intended Audience :: Developers",
                  "Operating System :: OS Independent",
                  "Programming Language :: Python",
