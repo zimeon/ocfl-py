@@ -19,7 +19,6 @@ def _file_digest(pyfs, filename, digester):
     Like haslib.sha256 and hashlib.sha512, the digester object must
     support the .update() and .hexdigest() methods.
     """
-
     if pyfs is None:
         (dir, name) = fs.path.split(filename)
         with fs.open_fs(dir) as dir_fs:

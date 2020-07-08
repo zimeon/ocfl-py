@@ -102,7 +102,6 @@ class Namaste(object):
             with open(os.path.join(dir, self.filename), 'w') as fh:
                 fh.write(self.content + "\n")
 
-
     def check_content(self, dir):
         """Check that the file content is compatible with the tvalue based on tr_func, else raise NamasteException."""
         filepath = os.path.join(dir, self.filename)
