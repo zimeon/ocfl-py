@@ -85,8 +85,9 @@ class TestAll(unittest.TestCase):
         self.maxDiff = None
         oo = Object(digest_algorithm="md5")
         inventory = {'manifest': {}, 'versions': {}}
-        oo.add_version(inventory, 'fixtures/1.0/content/spec-ex-full/v1', vdir='v1',
-                       metadata=VersionMetadata())
+        metadata = VersionMetadata()
+        metadata.from_inventory_file('fixtures/1.0/content/spec-ex-full/v1_inventory.json', 'v1')
+        oo.add_version(inventory, 'fixtures/1.0/content/spec-ex-full/v1', vdir='v1', metadata=metadata)
         self.assertEqual(inventory['head'], 'v1')
         self.assertEqual(inventory['manifest'],
                          {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],
@@ -103,8 +104,9 @@ class TestAll(unittest.TestCase):
                            'user': {'address': 'alice@example.com', 'name': 'Alice'}}})
         self.assertNotIn('fixity', inventory)
         # Now add second version to check forward delta
-        oo.add_version(inventory, 'fixtures/1.0/content/spec-ex-full/v2', vdir='v2',
-                       metadata=VersionMetadata())
+        metadata = VersionMetadata()
+        metadata.from_inventory_file('fixtures/1.0/content/spec-ex-full/v2_inventory.json', 'v2')
+        oo.add_version(inventory, 'fixtures/1.0/content/spec-ex-full/v2', vdir='v2', metadata=metadata)
         self.assertEqual(inventory['head'], 'v2')
         self.assertEqual(inventory['manifest'],
                          {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],
@@ -121,8 +123,9 @@ class TestAll(unittest.TestCase):
         # Now with fixity
         oo = Object(digest_algorithm="md5", fixity=['sha1'])
         inventory = {'manifest': {}, 'versions': {}, 'fixity': {'sha1': {}}}
-        manifest_to_srcfile = oo.add_version(inventory, 'fixtures/1.0/content/spec-ex-full/v1', vdir='v1',
-                                             metadata=VersionMetadata())
+        md1 = VersionMetadata()
+        md1.from_inventory_file('fixtures/1.0/content/spec-ex-full/v1_inventory.json', 'v1')
+        manifest_to_srcfile = oo.add_version(inventory, 'fixtures/1.0/content/spec-ex-full/v1', vdir='v1', metadata=md1)
         self.assertEqual(manifest_to_srcfile, {
             'v1/content/image.tiff': 'fixtures/1.0/content/spec-ex-full/v1/image.tiff',
             'v1/content/empty.txt': 'fixtures/1.0/content/spec-ex-full/v1/empty.txt',

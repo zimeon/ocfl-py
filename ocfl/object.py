@@ -121,7 +121,7 @@ class Object(object):
             filepath = hashlib.md5(filepath.encode('utf-8')).hexdigest()[0:16]
         elif self.filepath_normalization is not None:
             raise Exception("Unknown filepath normalization '%s' requested" % (self.filepath_normalization))
-        vfilepath = os.path.join(vdir, self.content_directory, filepath)  # path relative to root, inc v#/content
+        vfilepath = fs.path.join(vdir, self.content_directory, filepath)  # path relative to root, inc v#/content
         # Check we don't already have this vfilepath from many to one normalization,
         # add suffix to distinguish if necessary
         if vfilepath in used:
@@ -168,11 +168,6 @@ class Object(object):
         manifest = inventory['manifest']
         digests_in_version = {}
         manifest_to_srcfile = {}
-        # Special case for testing -- FIXME, should remove this, used only in fixtures/1.0/content/spec-ex-full
-        inv_file = srcdir + '_' + INVENTORY_FILENAME
-        if os.path.isfile(inv_file):
-            # Read metadata for this version
-            metadata.from_inventory_file(inv_file, vdir)
         # Go through all files to find new files in manifest and state for this version
         for (dirpath, dirnames, filenames) in os.walk(srcdir, followlinks=True):
             # Go through filenames, in sort order so the it is deterministic
