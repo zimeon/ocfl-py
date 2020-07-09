@@ -56,7 +56,10 @@ class TestAll(unittest.TestCase):
     def test03_digest(self):
         """Test digest wrapper mathod."""
         oo = Object(digest_algorithm='md5')
-        self.assertEqual(oo.digest('tests/testdata/files/empty'),
+        src_fs = fs.open_fs('tests/testdata')
+        self.assertEqual(oo.digest(src_fs, 'files/empty'),
+                         'd41d8cd98f00b204e9800998ecf8427e')
+        self.assertEqual(oo.digest(src_fs, '/files/empty'),
                          'd41d8cd98f00b204e9800998ecf8427e')
 
     def test04_start_inventory(self):
@@ -87,7 +90,8 @@ class TestAll(unittest.TestCase):
         inventory = {'manifest': {}, 'versions': {}}
         metadata = VersionMetadata()
         metadata.from_inventory_file('fixtures/1.0/content/spec-ex-full/v1_inventory.json', 'v1')
-        oo.add_version(inventory, 'fixtures/1.0/content/spec-ex-full/v1', vdir='v1', metadata=metadata)
+        src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
+        oo.add_version(inventory, src_fs, src_dir='v1', vdir='v1', metadata=metadata)
         self.assertEqual(inventory['head'], 'v1')
         self.assertEqual(inventory['manifest'],
                          {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],
@@ -106,7 +110,8 @@ class TestAll(unittest.TestCase):
         # Now add second version to check forward delta
         metadata = VersionMetadata()
         metadata.from_inventory_file('fixtures/1.0/content/spec-ex-full/v2_inventory.json', 'v2')
-        oo.add_version(inventory, 'fixtures/1.0/content/spec-ex-full/v2', vdir='v2', metadata=metadata)
+        src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full/v2')
+        oo.add_version(inventory, src_fs, src_dir='', vdir='v2', metadata=metadata)
         self.assertEqual(inventory['head'], 'v2')
         self.assertEqual(inventory['manifest'],
                          {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],
@@ -125,17 +130,19 @@ class TestAll(unittest.TestCase):
         inventory = {'manifest': {}, 'versions': {}, 'fixity': {'sha1': {}}}
         md1 = VersionMetadata()
         md1.from_inventory_file('fixtures/1.0/content/spec-ex-full/v1_inventory.json', 'v1')
-        manifest_to_srcfile = oo.add_version(inventory, 'fixtures/1.0/content/spec-ex-full/v1', vdir='v1', metadata=md1)
+        src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full/v1')
+        manifest_to_srcfile = oo.add_version(inventory, src_fs, src_dir='', vdir='v1', metadata=md1)
         self.assertEqual(manifest_to_srcfile, {
-            'v1/content/image.tiff': 'fixtures/1.0/content/spec-ex-full/v1/image.tiff',
-            'v1/content/empty.txt': 'fixtures/1.0/content/spec-ex-full/v1/empty.txt',
-            'v1/content/foo/bar.xml': 'fixtures/1.0/content/spec-ex-full/v1/foo/bar.xml'
+            'v1/content/image.tiff': 'image.tiff',
+            'v1/content/empty.txt': 'empty.txt',
+            'v1/content/foo/bar.xml': 'foo/bar.xml'
         })
 
     def test06_build_inventory(self):
         """Test build_inventory."""
         oo = Object(digest_algorithm="md5")
-        for (vdir, inventory, manifest_to_srcfile) in oo.build_inventory('fixtures/1.0/content/spec-ex-full',
+        src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
+        for (vdir, inventory, manifest_to_srcfile) in oo.build_inventory(src_fs,
                                                                          metadata=VersionMetadata()):
             pass
         self.assertEqual(inventory['type'], 'https://ocfl.io/1.0/spec/#inventory')
@@ -148,17 +155,18 @@ class TestAll(unittest.TestCase):
         self.assertEqual(len(inventory['versions']), 3)
         # test skips by skipping 'v3'
         oo = Object(digest_algorithm="md5", skips=['v3'])
-        for (vdir, inventory, manifest_to_srcfile) in oo.build_inventory('fixtures/1.0/content/spec-ex-full',
+        src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
+        for (vdir, inventory, manifest_to_srcfile) in oo.build_inventory(src_fs,
                                                                          metadata=VersionMetadata()):
             if vdir == 'v1':
                 self.assertEqual(manifest_to_srcfile, {
-                    'v1/content/image.tiff': 'fixtures/1.0/content/spec-ex-full/v1/image.tiff',
-                    'v1/content/empty.txt': 'fixtures/1.0/content/spec-ex-full/v1/empty.txt',
-                    'v1/content/foo/bar.xml': 'fixtures/1.0/content/spec-ex-full/v1/foo/bar.xml'
+                    'v1/content/image.tiff': 'v1/image.tiff',
+                    'v1/content/empty.txt': 'v1/empty.txt',
+                    'v1/content/foo/bar.xml': 'v1/foo/bar.xml'
                 })
             else:
                 self.assertEqual(manifest_to_srcfile, {
-                    'v2/content/foo/bar.xml': 'fixtures/1.0/content/spec-ex-full/v2/foo/bar.xml'
+                    'v2/content/foo/bar.xml': 'v2/foo/bar.xml'
                 })
         self.assertEqual(inventory['head'], 'v2')
         self.assertEqual(len(inventory['versions']), 2)

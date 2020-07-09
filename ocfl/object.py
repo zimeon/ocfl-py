@@ -71,14 +71,12 @@ class Object(object):
         except fs.opener.errors.OpenerError as e:
             raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, str(e)))
 
-    def copy_into_object(self, srcfile, filepath, create_dirs=False):
+    def copy_into_object(self, src_fs, srcfile, filepath, create_dirs=False):
         """Copy from srcfile to filepath in object."""
-        (srcpath, srcname) = fs.path.split(srcfile)
         dstpath = fs.path.dirname(filepath)
         if create_dirs and not self.obj_fs.exists(dstpath):
             self.obj_fs.makedirs(dstpath)
-        with fs.open_fs(srcpath) as src_fs:
-            fs.copy.copy_file(src_fs, srcname, self.obj_fs, filepath)
+        fs.copy.copy_file(src_fs, srcfile, self.obj_fs, filepath)
 
     def parse_version_directory(self, dirname):
         """Get version number from version directory name."""
@@ -90,12 +88,12 @@ class Object(object):
             raise Exception("Bad version directory name: %s, v0 no allowed" % (dirname))
         return v
 
-    def digest(self, filename):
-        """Digest for file filename."""
-        return file_digest(filename, self.digest_algorithm)
+    def digest(self, pyfs, filename):
+        """Digest for file filename in the object filesystem."""
+        return file_digest(filename, self.digest_algorithm, pyfs=pyfs)
 
     def map_filepath(self, filepath, vdir, used):
-        """Map source filepath to a  name within object.
+        """Map source filepath to a content path within the object.
 
         The purpose of the mapping might be normalization, sanitization,
         content distribution, or something else.
@@ -122,6 +120,7 @@ class Object(object):
         elif self.filepath_normalization is not None:
             raise Exception("Unknown filepath normalization '%s' requested" % (self.filepath_normalization))
         vfilepath = fs.path.join(vdir, self.content_directory, filepath)  # path relative to root, inc v#/content
+        print(vdir + '#' + self.content_directory + '#' + filepath + ' --> ' + vfilepath)
         # Check we don't already have this vfilepath from many to one normalization,
         # add suffix to distinguish if necessary
         if vfilepath in used:
@@ -149,51 +148,45 @@ class Object(object):
             self.fixity = None
         return inventory
 
-    def add_version(self, inventory, srcdir, vdir, metadata=None):
+    def add_version(self, inventory, src_fs, src_dir, vdir, metadata=None):
         """Add to inventory data for new version based on files in srcdir.
 
         Parameters:
           inventory - the inventory up to (vdir-1)
-          srcdir - the directory path where the files for this new version exist,
-             including any version directory that might be present
+          src_fs - pyfs filesystem where this new version exist
           vdir - the version directory that these files are being added in
           metadata - a VersionMetadata object
 
         Returns:
-          manifest_to_srcfile - dict mapping from paths in manifest to the full
-            path of the source file that should be include in the content for
-            this new version
+          manifest_to_srcfile - dict mapping from paths in manifest to the path
+            of the source file in src_fs that should be include in the content
+            for this new version
         """
         state = {}  # state for this new version
         manifest = inventory['manifest']
         digests_in_version = {}
         manifest_to_srcfile = {}
         # Go through all files to find new files in manifest and state for this version
-        for (dirpath, dirnames, filenames) in os.walk(srcdir):
-            # Go through filenames, in sort order so the it is deterministic
-            # which file is included and which is/are referenced in the case
-            # of multiple additions with the same digest
-            for filename in sorted(filenames):
-                filepath = os.path.join(dirpath, filename)
-                sfilepath = os.path.relpath(filepath, srcdir)  # path relative to this version
-                vfilepath = self.map_filepath(sfilepath, vdir, manifest_to_srcfile)
-                digest = self.digest(filepath)
-                # Always add file to state
-                if digest not in state:
-                    state[digest] = []
-                state[digest].append(sfilepath)
-                if self.forward_delta and digest in manifest:
-                    # We already have this content in a previous version and we are using
-                    # forward deltas so do not need to copy in this one
-                    pass
-                else:
-                    # This is a new digest so an addition in this version and
-                    # we save the information for later includes
-                    if digest not in digests_in_version:
-                        digests_in_version[digest] = [vfilepath]
-                    elif not self.dedupe:
-                        digests_in_version[digest].append(vfilepath)
-                    manifest_to_srcfile[vfilepath] = filepath
+        for filepath in src_fs.walk.files(src_dir):
+            sfilepath = os.path.relpath(filepath, src_dir)
+            vfilepath = self.map_filepath(sfilepath, vdir, used=manifest_to_srcfile)
+            digest = self.digest(src_fs, filepath)
+            # Always add file to state
+            if digest not in state:
+                state[digest] = []
+            state[digest].append(sfilepath)
+            if self.forward_delta and digest in manifest:
+                # We already have this content in a previous version and we are using
+                # forward deltas so do not need to copy in this one
+                pass
+            else:
+                # This is a new digest so an addition in this version and
+                # we save the information for later includes
+                if digest not in digests_in_version:
+                    digests_in_version[digest] = [vfilepath]
+                elif not self.dedupe:
+                    digests_in_version[digest].append(vfilepath)
+                manifest_to_srcfile[vfilepath] = filepath
         # Add any new digests in this version to the manifest
         for digest, paths in digests_in_version.items():
             if digest not in manifest:
@@ -207,7 +200,7 @@ class Object(object):
                 fixities = inventory['fixity'][fixity_type]
                 for digest, vfilepaths in digests_in_version.items():
                     for vfilepath in vfilepaths:
-                        fixity_digest = file_digest(manifest_to_srcfile[vfilepath], fixity_type)
+                        fixity_digest = file_digest(manifest_to_srcfile[vfilepath], fixity_type, pyfs=src_fs)
                         if fixity_digest not in fixities:
                             fixities[fixity_digest] = [vfilepath]
                         else:
@@ -217,8 +210,12 @@ class Object(object):
         inventory['versions'][vdir] = metadata.as_dict(state=state)
         return manifest_to_srcfile
 
-    def build_inventory(self, path, metadata=None):
-        """Generator for building an OCFL inventory.
+    def build_inventory(self, src_fs, metadata=None):
+        """Generator for building an OCFL inventory from a set of source files.
+
+        Parameters:
+            src_fc - pyfs filesystem of source files
+            metadata - metadata to apply to each version
 
         Yields (vdir, inventory, manifest_to_srcfile) for each version in sequence,
         where vdir is the version directory name, inventory is the inventory for that
@@ -228,15 +225,15 @@ class Object(object):
         inventory = self.start_inventory()
         # Find the versions
         versions = {}
-        for vdir in os.listdir(path):
-            if vdir in self.skips or not os.path.isdir(os.path.join(path, vdir)):
+        for vdir in src_fs.listdir('/'):
+            if vdir in self.skips or not src_fs.isdir(vdir):
                 continue
             vn = self.parse_version_directory(vdir)
             versions[vn] = vdir
         # Go through versions in order building versions array, deduping if selected
         for vn in sorted(versions.keys()):
             vdir = versions[vn]
-            manifest_to_srcfile = self.add_version(inventory, os.path.join(path, vdir), vdir,
+            manifest_to_srcfile = self.add_version(inventory, src_fs, vdir, vdir,
                                                    metadata=metadata)
             yield (vdir, inventory, manifest_to_srcfile)
 
@@ -291,7 +288,8 @@ class Object(object):
         if objdir is not None:
             self.open_fs(objdir, create=True)
         num_versions = 0
-        for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(srcdir, metadata=metadata):
+        src_fs = fs.open_fs(srcdir)
+        for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(src_fs, metadata):
             num_versions += 1
             if objdir is None:
                 self.log.warning("### Inventory for %s\n" % (vdir)
@@ -300,7 +298,7 @@ class Object(object):
                 self.write_inventory_and_sidecar(inventory, vdir)
                 # Copy files into this version
                 for (path, srcfile) in manifest_to_srcfile.items():
-                    self.copy_into_object(srcfile, path, create_dirs=True)
+                    self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
         if objdir is None:
             return
         # Write object declaration, inventory and sidecar
@@ -320,12 +318,12 @@ class Object(object):
         """
         if self.id is None:
             raise ObjectException("Identifier is not set!")
+        src_fs = fs.open_fs(srcdir)
         if objdir is not None:
             self.open_fs(objdir, create=True)
         inventory = self.start_inventory()
         vdir = 'v1'
-        manifest_to_srcfile = self.add_version(inventory, srcdir, vdir,
-                                               metadata=metadata)
+        manifest_to_srcfile = self.add_version(inventory, src_fs, '', vdir, metadata=metadata)
         if objdir is None:
             self.log.warning("### Inventory for %s\n" % (vdir)
                              + json.dumps(inventory, sort_keys=True, indent=2))
@@ -339,7 +337,7 @@ class Object(object):
         for digest, paths in inventory['manifest'].items():
             for path in paths:
                 srcfile = manifest_to_srcfile[path]
-                self.copy_into_object(srcfile, path, create_dirs=True)
+                self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
         logging.info("Created OCFL object %s in %s" % (self.id, objdir))
 
     def update(self, objdir, srcdir=None, metadata=None):
@@ -354,6 +352,7 @@ class Object(object):
         (such as using a new digest). There will be no content change between
         versions.
         """
+        self.open_fs(objdir)
         validator = Validator(check_digests=False, lax_digests=self.lax_digests)
         if not validator.validate(objdir):
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
@@ -428,10 +427,11 @@ class Object(object):
             state = copy.deepcopy(inventory['versions'][old_head]['state'])
             inventory['versions'][head] = metadata.as_dict(state=state)
         else:
-            manifest_to_srcfile = self.add_version(inventory=inventory, srcdir=srcdir, vdir=head, metadata=metadata)
+            src_fs = fs.open_fs(srcdir)
+            manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs, src_dir='', vdir=head, metadata=metadata)
             # Copy files into this version
             for (path, srcfile) in manifest_to_srcfile.items():
-                self.copy_into_object(srcfile, path, create_dirs=True)
+                self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
         # Write inventory in both root and head version
         self.write_inventory_and_sidecar(inventory, head)
         self.write_inventory_and_sidecar(inventory)
