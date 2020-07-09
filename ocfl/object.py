@@ -169,7 +169,7 @@ class Object(object):
         digests_in_version = {}
         manifest_to_srcfile = {}
         # Go through all files to find new files in manifest and state for this version
-        for (dirpath, dirnames, filenames) in os.walk(srcdir, followlinks=True):
+        for (dirpath, dirnames, filenames) in os.walk(srcdir):
             # Go through filenames, in sort order so the it is deterministic
             # which file is included and which is/are referenced in the case
             # of multiple additions with the same digest
@@ -463,7 +463,8 @@ class Object(object):
         else:
             self.log.warning("OCFL object at %s is INVALID" % (objdir))
         tree = '[' + objdir + ']\n'
-        entries = sorted(os.listdir(objdir))
+        self.open_fs(objdir)
+        entries = sorted(self.obj_fs.listdir(''))
         n = 0
         seen_sidecar = False
         for entry in entries:
@@ -472,7 +473,7 @@ class Object(object):
             v_notes = []
             if re.match(r'''v\d+$''', entry):
                 seen_v_sidecar = False
-                for v_entry in sorted(os.listdir(os.path.join(objdir, entry))):
+                for v_entry in sorted(self.obj_fs.listdir(entry)):
                     v_note = v_entry + ' '
                     if v_entry == INVENTORY_FILENAME:
                         pass
@@ -482,7 +483,7 @@ class Object(object):
                             seen_v_sidecar = True
                     elif v_entry == 'content':
                         num_files = 0
-                        for (v_dirpath, v_dirs, v_files) in os.walk(os.path.join(objdir, entry, v_entry), followlinks=True):
+                        for (v_dirpath, v_dirs, v_files) in self.obj_fs.walk(fs.path.join(entry, v_entry)):
                             num_files += len(v_files)
                         v_note += '(%d files)' % num_files
                     else:
@@ -496,7 +497,6 @@ class Object(object):
                 seen_sidecar = True
             else:
                 note += '<--- ???'
-            # for (dirpath, dirnames, filenames) in os.walk(, followlinks=True):
             last = (n == len(entries))
             tree += self._show_indent(0, last) + note + "\n"
             nn = 0
