@@ -5,7 +5,6 @@ import fs
 import fs.copy
 import hashlib
 import json
-import os
 import os.path
 import re
 import logging
@@ -362,7 +361,7 @@ class Object(object):
         versions = inventory['versions']
         head = next_version(old_head)
         logging.info("Will update %s %s -> %s" % (self.id, old_head, head))
-        os.mkdir(os.path.join(objdir, head))
+        self.obj_fs.makedir(head)
         # Is this a request to change the digest algorithm?
         old_digest_algorithm = inventory['digestAlgorithm']
         digest_algorithm = self.digest_algorithm
@@ -402,11 +401,11 @@ class Object(object):
             old_to_new_digest = {}
             new_manifest = {}
             for old_digest, files in manifest.items():
-                digest = file_digest(os.path.join(objdir, files[0]), digest_algorithm)
+                digest = file_digest(files[0], digest_algorithm, pyfs=self.obj_fs)
                 old_to_new_digest[old_digest] = digest
                 for file in files[1:]:
                     # Sanity check that any dupe files also match
-                    d = file_digest(os.path.join(objdir, file), digest_algorithm)
+                    d = file_digest(file, digest_algorithm, pyfs=self.obj_fs)
                     if d != digest:
                         raise ObjectException("Failed sanity check - files %s and %s should have same %s digest but calculated %s and %s respectively" %
                                               files[0], file, digest_algorithm, digest, d)
@@ -437,7 +436,7 @@ class Object(object):
         self.write_inventory_and_sidecar(inventory)
         # Delete old root inventory sidecar if we changed digest algorithm
         if digest_algorithm != old_digest_algorithm:
-            os.remove(os.path.join(objdir, INVENTORY_FILENAME + '.' + old_digest_algorithm))
+            self.obj_fs.remove(INVENTORY_FILENAME + '.' + old_digest_algorithm)
         logging.info("Updated OCFL object %s in %s by adding %s" % (self.id, objdir, head))
 
     def _show_indent(self, level, last=False, last_v=False):
