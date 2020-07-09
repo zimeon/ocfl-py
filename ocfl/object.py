@@ -2,13 +2,13 @@
 """Core of OCFL Object library."""
 import copy
 import fs
+import fs.copy
 import hashlib
 import json
 import os
 import os.path
 import re
 import logging
-from shutil import copyfile
 import sys
 try:
     from urllib.parse import quote as urlquote  # py3
@@ -70,6 +70,15 @@ class Object(object):
             self.obj_fs_dir = objdir  # FIXME - TEMPORARY HACK TO STORE DIRECTORY NAME FOR TRANSITION TO fs
         except fs.opener.errors.OpenerError as e:
             raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, str(e)))
+
+    def copy_into_object(self, srcfile, filepath, create_dirs=False):
+        """Copy from srcfile to filepath in object."""
+        (srcpath, srcname) = fs.path.split(srcfile)
+        dstpath = fs.path.dirname(filepath)
+        if create_dirs and not self.obj_fs.exists(dstpath):
+            self.obj_fs.makedirs(dstpath)
+        with fs.open_fs(srcpath) as src_fs:
+            fs.copy.copy_file(src_fs, srcname, self.obj_fs, filepath)
 
     def parse_version_directory(self, dirname):
         """Get version number from version directory name."""
@@ -296,11 +305,7 @@ class Object(object):
                 self.write_inventory_and_sidecar(inventory, vdir)
                 # Copy files into this version
                 for (path, srcfile) in manifest_to_srcfile.items():
-                    dstfile = os.path.join(objdir, path)
-                    dstpath = os.path.dirname(dstfile)
-                    if not os.path.exists(dstpath):
-                        os.makedirs(dstpath)
-                    copyfile(srcfile, dstfile)
+                    self.copy_into_object(srcfile, path, create_dirs=True)
         if objdir is None:
             return
         # Write object declaration, inventory and sidecar
@@ -339,11 +344,7 @@ class Object(object):
         for digest, paths in inventory['manifest'].items():
             for path in paths:
                 srcfile = manifest_to_srcfile[path]
-                dstfile = os.path.join(objdir, path)
-                dstpath = os.path.dirname(dstfile)
-                if not os.path.exists(dstpath):
-                    os.makedirs(dstpath)
-                copyfile(srcfile, dstfile)
+                self.copy_into_object(srcfile, path, create_dirs=True)
         logging.info("Created OCFL object %s in %s" % (self.id, objdir))
 
     def update(self, objdir, srcdir=None, metadata=None):
@@ -435,11 +436,7 @@ class Object(object):
             manifest_to_srcfile = self.add_version(inventory=inventory, srcdir=srcdir, vdir=head, metadata=metadata)
             # Copy files into this version
             for (path, srcfile) in manifest_to_srcfile.items():
-                dstfile = os.path.join(objdir, path)
-                dstpath = os.path.dirname(dstfile)
-                if not os.path.exists(dstpath):
-                    os.makedirs(dstpath)
-                copyfile(srcfile, dstfile)
+                self.copy_into_object(srcfile, path, create_dirs=True)
         # Write inventory in both root and head version
         self.write_inventory_and_sidecar(inventory, head)
         self.write_inventory_and_sidecar(inventory)
@@ -548,25 +545,21 @@ class Object(object):
             raise ObjectException("Target directory %s already exists, aborting!" % (dstdir))
 
         (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
-        if parentdir != '' and not os.path.exists(parentdir):
-            raise ObjectException("Destination parent %s does not exist or is not directory" % (parentdir))
-        os.mkdir(dstdir)
+        try:
+            parent_fs = fs.open_fs(parentdir)
+        except fs.opener.errors.OpenerError:
+            raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, str(e)))
+        parent_fs.makedir(dir)
+        dst_fs = parent_fs.opendir(dir)  # Open a sub-filesystem as our destination
         # Now extract...
         manifest = inv['manifest']
         state = inv['versions'][version]['state']
         for (digest, logical_files) in state.items():
             existing_file = manifest[digest][0]  # FIXME - pick "best" (closest version?) not first?
             for logical_file in logical_files:
-                # FIXME -- need to abstract access so we can, for example, implement S3->local extraction
                 logging.debug("Copying %s -> %s" % (digest, logical_file))
-                dstfile = os.path.join(dstdir, logical_file)
-                dstpath = os.path.dirname(dstfile)
-                try:
-                    os.makedirs(dstpath)  # exist_ok parameter only in Python 3.2+
-                except OSError as e:
-                    if not os.path.isdir(dstpath):
-                        raise
-                copyfile(os.path.join(objdir, existing_file), dstfile)
+                dst_fs.makedirs(fs.path.dirname(logical_file), recreate=True)
+                fs.copy.copy_file(self.obj_fs, existing_file, dst_fs, logical_file)
         logging.info("Extracted %s into %s" % (version, dstdir))
         return VersionMetadata(inventory=inv, vdir=version)
 
