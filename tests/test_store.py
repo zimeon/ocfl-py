@@ -22,11 +22,6 @@ class TestAll(unittest.TestCase):
         self.assertEqual(s.root, 'a')
         self.assertEqual(s.disposition, 'b')
 
-    def test_spec_file(self):
-        """Test spec_file property."""
-        s = Store(root='thingy')
-        self.assertEqual(s.spec_file, 'thingy/ocfl_1.0.txt')
-
     def test_dispositor(self):
         """Test dispositor property."""
         s = Store(root='x', disposition='identity')
@@ -35,7 +30,9 @@ class TestAll(unittest.TestCase):
     def test_object_path(self):
         """Test object_path method."""
         s = Store(root='x/y', disposition='identity')
-        self.assertEqual(s.object_path('id1'), 'x/y/id1')
+        self.assertEqual(s.object_path('id1'), 'id1')
+        s = Store(root='z/a', disposition='uuid_quadtree')
+        self.assertEqual(s.object_path('urn:uuid:6ba7b810-9dad-11d1-80b4-00c04fd430c8'), '6ba7/b810/9dad/11d1/80b4/00c0/4fd4/30c8')
 
     def test_initialize(self):
         """Test initialize method."""
@@ -51,15 +48,9 @@ class TestAll(unittest.TestCase):
         """Test check_root_structure method."""
         tempdir = os.path.join(tempfile.mkdtemp(prefix='test_root'), 'rrr')
         s = Store(root=tempdir, disposition='identity')
-        # Not present
-        self.assertRaises(StoreException, s.check_root_structure)
-        # File not dir
-        with open(tempdir, 'w') as fh:
-            fh.close()
-        self.assertRaises(StoreException, s.check_root_structure)
-        os.remove(tempdir)
         # No declaration
         os.mkdir(tempdir)
+        s.open_root_fs()
         self.assertRaises(StoreException, s.check_root_structure)
         # Wrong declaration
         decl = os.path.join(tempdir, '0=something_else')
@@ -85,8 +76,10 @@ class TestAll(unittest.TestCase):
     def test_object_paths(self):
         """Test object_paths generator."""
         s = Store(root='extra_fixtures/good-storage-roots/fedora-root')
+        s.open_root_fs()
         paths = list(s.object_paths())
         self.assertEqual(len(paths), 176)
+        self.assertIn('61/38/37/3fede0e4-d168-475a-9b51-edbed6f0d972', paths)
 
     def test_validate(self):
         """Test validate method."""

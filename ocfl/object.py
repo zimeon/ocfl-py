@@ -241,7 +241,7 @@ class Object(object):
 
         Assumes self.obj_fs is open for this object.
         """
-        Namaste(0, 'ocfl_object_1.0').write(obj_fs=self.obj_fs)
+        Namaste(0, 'ocfl_object_1.0').write(pyfs=self.obj_fs)
 
     def write_inventory_and_sidecar(self, inventory, vdir='', write_inventory=True):
         """Write inventory and sidecar to vdir in the current object.

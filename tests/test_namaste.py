@@ -22,9 +22,15 @@ class TestAll(unittest.TestCase):
 
     def test02_find_namastes(self):
         """Test find_namastes."""
-        namastes = find_namastes(0, 'tests/testdata/namaste')
-        self.assertEqual(set([x.tvalue for x in namastes]), set(['frog', 'bison', 'snake']))
+        # With plain filesystem
+        namastes1 = find_namastes(0, 'tests/testdata/namaste')
+        self.assertEqual(set([x.tvalue for x in namastes1]), set(['frog', 'bison', 'snake']))
         self.assertRaises(NamasteException, find_namastes, 0, 'tests/testdata/namaste', max=2)
+        # With pysf filesystem
+        tdfs = fs.open_fs('tests/testdata')
+        namastes2 = find_namastes(0, 'namaste', pyfs=tdfs)
+        self.assertEqual(set([x.tvalue for x in namastes2]), set(['frog', 'bison', 'snake']))
+        self.assertRaises(NamasteException, find_namastes, 0, 'namaste', pyfs=tdfs, max=1)
 
     def test03_get_namaste(self):
         """Test get_namaste."""
@@ -75,7 +81,7 @@ class TestAll(unittest.TestCase):
         # With fs filesystem
         tmpfs = fs.tempfs.TempFS()
         n = Namaste(1, 'jelly')
-        n.write(obj_fs=tmpfs)
+        n.write(pyfs=tmpfs)
         self.assertTrue(tmpfs.isfile('1=jelly'))
         self.assertEqual(tmpfs.readtext('1=jelly'), 'jelly\n')
 
