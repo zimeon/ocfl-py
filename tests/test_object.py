@@ -278,7 +278,20 @@ class TestAll(unittest.TestCase):
     def test14_parse_inventory(self):
         """Test parse_inventory method."""
         oo = Object()
-        self.assertTrue(oo.parse_inventory(path='fixtures/1.0/good-objects/minimal_one_version_one_file'))
+        inv = oo.parse_inventory(path='fixtures/1.0/good-objects/minimal_one_version_one_file')
+        self.assertEqual(inv['id'], "ark:123/abc")
+        digest = "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f"
+        self.assertEqual(inv['manifest'][digest],
+                         ["v1/content/a_file.txt"])
+        self.assertEqual(inv['versions']['v1']['state'][digest],
+                         ["a_file.txt"])
+        # Digest normalization on read -- file has mixed case but result should be same
+        inv = oo.parse_inventory(path='fixtures/1.0/good-objects/minimal_mixed_digests')
+        self.assertEqual(inv['id'], "http://example.org/minimal_mixed_digests")
+        self.assertEqual(inv['manifest'][digest],
+                         ["v1/content/a_file.txt"])
+        self.assertEqual(inv['versions']['v1']['state'][digest],
+                         ["a_file.txt"])
         # Error cases
         self.assertRaises(ObjectException, oo.parse_inventory, path='fixtures/1.0/bad-objects/E036_no_id')
 

@@ -574,18 +574,22 @@ class Object(object):
         digest_algorithm = iv.digest_algorithm
         # Normalize digests in place
         manifest = inventory['manifest']
+        from_to = {}
         for digest in manifest:
             norm_digest = normalized_digest(digest, digest_algorithm)
             if digest != norm_digest:
-                manifest[norm_digest] = manifest[digest]
-                manifest.remove(digest)
+                from_to[digest] = norm_digest
+        for (digest, norm_digest) in from_to.items():
+            manifest[norm_digest] = manifest.pop(digest)
         for v in inventory['versions']:
             state = inventory['versions'][v]['state']
+            from_to = {}
             for digest in state:
                 norm_digest = normalized_digest(digest, digest_algorithm)
                 if digest != norm_digest:
-                    state[norm_digest] = state[digest]
-                    state.remove(digest)
+                    from_to[digest] = norm_digest
+            for (digest, norm_digest) in from_to.items():
+                state[norm_digest] = state.pop(digest)
         return inventory
 
     def id_from_inventory(self, path, failure_value='UNKNOWN-ID'):
