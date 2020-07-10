@@ -228,10 +228,10 @@ class Validator(object):
         of file paths etc..
         """
         files_seen = set()
-        # Check on disk in each version directory
+        # Check files in each version directory
         for version_dir in version_dirs:
             if not self.obj_fs.isdir(version_dir):
-                self.log.error('E301', version_path=version_dir)
+                self.log.error('E046', version_dir=version_dir)
             else:
                 # Check contents of version directory except content_directory
                 for entry in self.obj_fs.listdir(version_dir):
