@@ -17,7 +17,7 @@ class TestAll(DemoTestCase):
     def test00_build_from_bags(self):
         """Test building from bags."""
         text = "Imagine that we have a Bagit bag [`tests/testdata/bags/uaa_v1`]" \
-               "(https://github.com/zimeon/ocfl-py/tree/master/tests/testdata/bags/uaa_v1) " \
+               "(https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v1) " \
                "that represents the initial state of an object. We can use `--create` to " \
                "make a new OCFL object `/tmp/obj` with that content as the " \
                "`v1` state:"
@@ -41,7 +41,7 @@ class TestAll(DemoTestCase):
                               text="Looking inside the object we see `v1` with the expected 2 content files.")
         self.assertIn("├── content (2 files)", out)
         text = "If we have a bag " \
-               "[`tests/testdata/bags/uaa_v2`](https://github.com/zimeon/ocfl-py/tree/master/tests/testdata/bags/uaa_v2) " \
+               "[`tests/testdata/bags/uaa_v2`](https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v2) " \
                "with updated content we can `--update` the object to create `v2`."
         out = self.run_script("Update with v2",
                               ["python", "ocfl-object.py",
@@ -59,7 +59,7 @@ class TestAll(DemoTestCase):
                               text="Looking inside the object we now see `v1` and `v2`. There are no content files inside `v2` because although this update added two files they have identical content (and hence digest) as one of the files in `v1`")
         self.assertIn("└── v2 \n    ├── inventory.json \n    └── inventory.json.sha512", out)
         text = "Similarly we can `--update` with " \
-               "[`tests/testdata/bags/uaa_v3`](https://github.com/zimeon/ocfl-py/tree/master/tests/testdata/bags/uaa_v3) " \
+               "[`tests/testdata/bags/uaa_v3`](https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v3) " \
                "to create `v3`."
         out = self.run_script("Update with v3",
                               ["python", "ocfl-object.py",
@@ -77,7 +77,7 @@ class TestAll(DemoTestCase):
                               text="Looking inside again we see that `v3` does add another content file.")
         self.assertIn("└── v3 \n    ├── content (1 files)\n    ├── inventory.json \n    └── inventory.json.sha512", out)
         text = "Finally, we can `--update` again with " \
-               "[`tests/testdata/bags/uaa_v4`](https://github.com/zimeon/ocfl-py/tree/master/tests/testdata/bags/uaa_v4) " \
+               "[`tests/testdata/bags/uaa_v4`](https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v4) " \
                "to create `v4`."
         out = self.run_script("Update with v4",
                               ["python", "ocfl-object.py",
