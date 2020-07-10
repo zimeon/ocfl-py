@@ -1,12 +1,15 @@
-"""OCFL Storage Root library."""
+"""OCFL Storage Root library.
+
+This code uses PyFilesystem (import fs) exclusively for access to files. This
+should enable application beyond the operating system filesystem.
+"""
 import fs
+import fs.copy
 import fs.walk
 import hashlib
 import json
-import os.path
 import re
 import logging
-from shutil import copyfile, copytree
 try:
     from urllib.parse import quote_plus  # py3
 except ImportError:                      # pragma: no cover -- py2
@@ -71,7 +74,7 @@ class Store(object):
         """Open pyfs filesystem for this OCFL storage root."""
         try:
             self.root_fs = fs.open_fs(self.root, create=create)
-        except fs.opener.errors.OpenerError as e:
+        except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
             raise StoreException("Failed to OCFL storage root filesystem '%s' (%s)" % (self.root, str(e)))
 
     @property
@@ -192,8 +195,8 @@ class Store(object):
         num_objects = 0
         for dirpath in self.object_paths():
             # Parse inventory to extract id
-            id = Object().id_from_inventory(dirpath)
-            print("%s -- id=%s" % (os.path.relpath(dirpath, self.root), id))
+            id = Object().id_from_inventory(fs.path.join(self.root, dirpath))  # FIXME - use root_fs.opendir
+            print("%s -- id=%s" % (dirpath, id))
             num_objects += 1
         # FIXME - do some stuff in here
         logging.info("Found %d OCFL Objects under root %s" % (num_objects, self.root))
@@ -244,14 +247,17 @@ class Store(object):
 
     def add(self, object_path):
         """Add pre-constructed object from object_path."""
+        self.open_root_fs()
+        self.check_root_structure()
         # Sanity check
         o = Object()
         inventory = o.parse_inventory(object_path)
         identifier = inventory['id']
+        # Now copy
         path = self.object_path(identifier)
-        logging.info("Copying from %s to %s" % (object_path, path))
+        logging.info("Copying from %s to %s" % (object_path, fs.path.join(self.root, path)))
         try:
-            copytree(object_path, path)
+            fs.copy.copy_dir(o.obj_fs, '/', self.root_fs, path)
             logging.info("Copied")
         except Exception as e:
             logging.error("Copy failed: " + str(e))
