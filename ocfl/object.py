@@ -60,14 +60,12 @@ class Object(object):
         self.log = logging.getLogger(name="ocfl.object")
         self.log.setLevel(level=logging.INFO if verbose else logging.WARN)
         self.obj_fs = obj_fs  # fs filesystem (or sub-filesystem) for object
-        self.obj_fs_dir = None  # FIXME - TEMPORARY HACK TO STORE DIRECTORY NAME FOR TRANSITION TO fs
 
     def open_fs(self, objdir, create=False):
         """Open an fs filesystem for this object."""
         try:
             self.obj_fs = fs.open_fs(fs_url=objdir, create=create)
-            self.obj_fs_dir = objdir  # FIXME - TEMPORARY HACK TO STORE DIRECTORY NAME FOR TRANSITION TO fs
-        except fs.opener.errors.OpenerError as e:
+        except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
             raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, str(e)))
 
     def copy_into_object(self, src_fs, srcfile, filepath, create_dirs=False):
