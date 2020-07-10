@@ -111,7 +111,7 @@ class Namaste(object):
         if pyfs is not None:
             try:
                 content = pyfs.readtext(filepath)
-            except:
+            except fs.errors.ResourceNotFound:
                 raise NamasteException("Namaste file %s cannot be read!" % (filepath))
         else:
             if not os.path.isfile(filepath):

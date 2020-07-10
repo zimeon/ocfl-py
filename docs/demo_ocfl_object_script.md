@@ -35,7 +35,7 @@ WARNING:ocfl.object:### Inventory for v1
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2020-07-10T20:37:37.686831Z",
+      "created": "2020-07-10T23:19:28.293238Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -66,7 +66,7 @@ WARNING:ocfl.object:### Inventory for v1
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2020-07-10T20:37:38.043430Z",
+      "created": "2020-07-10T23:19:28.665076Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -91,7 +91,7 @@ WARNING:ocfl.object:### Inventory for v2
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2020-07-10T20:37:38.043430Z",
+      "created": "2020-07-10T23:19:28.665076Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -99,7 +99,7 @@ WARNING:ocfl.object:### Inventory for v2
       }
     },
     "v2": {
-      "created": "2020-07-10T20:37:38.044509Z",
+      "created": "2020-07-10T23:19:28.666085Z",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
           "a_file.txt"
@@ -124,7 +124,7 @@ WARNING:ocfl.object:### Inventory for v3
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2020-07-10T20:37:38.043430Z",
+      "created": "2020-07-10T23:19:28.665076Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -132,7 +132,7 @@ WARNING:ocfl.object:### Inventory for v3
       }
     },
     "v2": {
-      "created": "2020-07-10T20:37:38.044509Z",
+      "created": "2020-07-10T23:19:28.666085Z",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
           "a_file.txt"
@@ -140,7 +140,7 @@ WARNING:ocfl.object:### Inventory for v3
       }
     },
     "v3": {
-      "created": "2020-07-10T20:37:38.045214Z",
+      "created": "2020-07-10T23:19:28.666839Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
