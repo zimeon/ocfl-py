@@ -6,7 +6,7 @@ _Output from `tests/test_demo_using_bagit_bags.py`._
 
 ### 1.1 Building from a set of bags
 
-Imagine that we have a Bagit bag [`tests/testdata/bags/uaa_v1`](https://github.com/zimeon/ocfl-py/tree/master/tests/testdata/bags/uaa_v1) that represents the initial state of an object. We can use `--create` to make a new OCFL object `/tmp/obj` with that content as the `v1` state:
+Imagine that we have a Bagit bag [`tests/testdata/bags/uaa_v1`](https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v1) that represents the initial state of an object. We can use `--create` to make a new OCFL object `/tmp/obj` with that content as the `v1` state:
 
 ```
 > python ocfl-object.py --create --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v1 -v
@@ -51,7 +51,7 @@ WARNING:ocfl.object:Object tree
 
 ### 1.4 Update with v2
 
-If we have a bag [`tests/testdata/bags/uaa_v2`](https://github.com/zimeon/ocfl-py/tree/master/tests/testdata/bags/uaa_v2) with updated content we can `--update` the object to create `v2`.
+If we have a bag [`tests/testdata/bags/uaa_v2`](https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v2) with updated content we can `--update` the object to create `v2`.
 
 ```
 > python ocfl-object.py --update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v2 -v
@@ -92,7 +92,7 @@ WARNING:ocfl.object:Object tree
 
 ### 1.6 Update with v3
 
-Similarly we can `--update` with [`tests/testdata/bags/uaa_v3`](https://github.com/zimeon/ocfl-py/tree/master/tests/testdata/bags/uaa_v3) to create `v3`.
+Similarly we can `--update` with [`tests/testdata/bags/uaa_v3`](https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v3) to create `v3`.
 
 ```
 > python ocfl-object.py --update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v3 -v
@@ -136,7 +136,7 @@ WARNING:ocfl.object:Object tree
 
 ### 1.8 Update with v4
 
-Finally, we can `--update` again with [`tests/testdata/bags/uaa_v4`](https://github.com/zimeon/ocfl-py/tree/master/tests/testdata/bags/uaa_v4) to create `v4`.
+Finally, we can `--update` again with [`tests/testdata/bags/uaa_v4`](https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v4) to create `v4`.
 
 ```
 > python ocfl-object.py --update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v4 -v
@@ -161,8 +161,8 @@ Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` cont
 INFO:root:Extracted v4 into tmp/extracted_v4
 INFO:bagit:Creating bag for directory tmp/extracted_v4
 INFO:bagit:Creating data directory
-INFO:bagit:Moving my_content to /privatetmp/extracted_v4/tmpuch0bw1y/my_content
-INFO:bagit:Moving /privatetmp/extracted_v4/tmpuch0bw1y to data
+INFO:bagit:Moving my_content to /privatetmp/extracted_v4/tmp3ky3u9tv/my_content
+INFO:bagit:Moving /privatetmp/extracted_v4/tmp3ky3u9tv to data
 INFO:bagit:Using 1 processes to generate manifests: sha512
 INFO:bagit:Generating manifest lines for file data/my_content/dracula.txt
 INFO:bagit:Generating manifest lines for file data/my_content/dunwich.txt
@@ -184,12 +184,12 @@ We note that the OCFL object had only one `content` file in `v4` but the extract
 diff -r tmp/extracted_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
 1,2c1
 < Bag-Software-Agent: bagit.py v1.7.1.dev15+g6e14a50 <https://github.com/LibraryOfCongress/bagit-python>
-< Bagging-Date: 2020-05-18
+< Bagging-Date: 2020-07-10
 ---
 > Bagging-Date: 2020-01-04
 diff -r tmp/extracted_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagmanifest-sha512.txt
 2c2
-< 9340e217642318199d42e86a0996508bcf105a9b50d79961047665d92c59f88d53ad06ae12cbf180ec0953be4ed75c6aa029c8268a6ba7ca3836a02116bbe463 bag-info.txt
+< 14fd538ee8c8c0d3b636b1d664b699f649610c21b03f120de00cf15e70e514275c38d2dc7b5c89f07521ad7d8d9f4015e91cec567a1d344e124cb21ee7a4d85c bag-info.txt
 ---
 > 10624e6d45462def7af66d1a0d977606c7b073b01809c1d42258cfab5c34a275480943cbe78044416aee1f23822cc3762f92247b8f39b5c6ddc5ae32a8f94ce5 bag-info.txt
 ```

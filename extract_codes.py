@@ -12,7 +12,7 @@ from ocfl.validation_logger import ValidationLogger
 
 SPEC_URL = 'https://ocfl.io/1.0/spec'
 GITHUB_REPO = 'https://github.com/zimeon/ocfl-py'
-VALIDATION_CODES_URL = 'https://raw.githubusercontent.com/OCFL/spec/master/validation/validation-codes.md'
+VALIDATION_CODES_URL = 'https://raw.githubusercontent.com/OCFL/spec/main/validation/validation-codes.md'
 VALIDATION_STATUS_MD = 'docs/validation_status.md'
 
 
@@ -127,7 +127,7 @@ for file in code_fs.walk.files(filter=['*.py']):
             m = re.search(r'''(["'])([EW]\d\d\d)(\w)?\1''', line)
             if m:
                 file_line = 'ocfl%s#L%d' % (file, n)
-                link = '[' + file_line + '](' + GITHUB_REPO + '/blob/master/' + file_line + ')'
+                link = '[' + file_line + '](' + GITHUB_REPO + '/blob/main/' + file_line + ')'
                 codes.add_impl(m.group(2), m.group(3), link=link)
 
 # 4. Write table of what is implemented and raise warnings

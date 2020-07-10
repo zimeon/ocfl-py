@@ -6,7 +6,7 @@ _Output from `tests/test_demo_build_spec_examples.py`._
 
 ### 1.1 Minimal example
 
-The digest type sha512-spec-ex is sha512 with most of the content stripped out and replaced with an ellipsis. This is inventory should match the example in <https://ocfl.io/draft/spec/#example-minimal-object>.
+The digest type sha512-spec-ex is sha512 with most of the content stripped out and replaced with an ellipsis. This is inventory should match the example in <https://ocfl.io/1.0/spec/#example-minimal-object>.
 
 ```
 > python ocfl-object.py --build --src fixtures/1.0/content/spec-ex-minimal --id http://example.org/minimal --digest sha512-spec-ex --created 2018-10-02T12:00:00Z --message One file --name Alice --address alice@example.org -v
@@ -44,7 +44,7 @@ WARNING:ocfl.object:### Inventory for v1
 
 ### 2.1 Versioned example
 
-This is inventory should match the example with 3 versions in <https://ocfl.io/draft/spec/#example-versioned-object>.
+This is inventory should match the example with 3 versions in <https://ocfl.io/1.0/spec/#example-versioned-object>.
 
 ```
 > python ocfl-object.py --build --src fixtures/1.0/content/spec-ex-full --id ark:/12345/bcd987 --fixity md5 --fixity sha1 --digest sha512-spec-ex -v
@@ -318,7 +318,7 @@ WARNING:ocfl.object:### Inventory for v3
 
 ### 3.1 Versioned example
 
-This is inventory should match the example showing how content paths may differ from logical paths in <https://ocfl.io/draft/spec/#example-object-diff-paths>.
+This is inventory should match the example showing how content paths may differ from logical paths in <https://ocfl.io/1.0/spec/#example-object-diff-paths>.
 
 ```
 > python ocfl-object.py --build --src fixtures/1.0/content/spec-ex-diff-paths --id http://example.org/diff-paths --digest sha512-spec-ex --normalization md5 --created 2019-03-14T20:31:00Z -v

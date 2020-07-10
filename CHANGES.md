@@ -1,8 +1,12 @@
 # ocfl-py changelog
 
+## 2020-07-10 v1.0.2
+
+  * Use `main` as default branch in git repository, fix links and documentation
+
 ## 2020-07-07 v1.0.1
 
-  * Add table of implementation status (https://github.com/zimeon/ocfl-py/blob/master/docs/validation_status.md)
+  * Add table of implementation status (https://github.com/zimeon/ocfl-py/blob/main/docs/validation_status.md)
 
 ## 2020-07-07 v1.0.0
 
@@ -43,7 +47,7 @@
 ## 2020-05-05 v0.0.5
 
   * Renumber errors to align somewhat with the canonical code set extracted 
-    at https://github.com/OCFL/spec/blob/master/validation/validation-codes.md
+    at https://github.com/OCFL/spec/blob/main/validation/validation-codes.md
   * Add --version parameter to scripts to show version number
 
 ## 2020-05-02 v0.0.4
