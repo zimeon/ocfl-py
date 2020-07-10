@@ -164,7 +164,7 @@ class Object(object):
         digests_in_version = {}
         manifest_to_srcfile = {}
         # Go through all files to find new files in manifest and state for this version
-        for filepath in src_fs.walk.files(src_dir):
+        for filepath in sorted(src_fs.walk.files(src_dir)):
             sfilepath = os.path.relpath(filepath, src_dir)
             vfilepath = self.map_filepath(sfilepath, vdir, used=manifest_to_srcfile)
             digest = self.digest(src_fs, filepath)
@@ -184,6 +184,7 @@ class Object(object):
                 elif not self.dedupe:
                     digests_in_version[digest].append(vfilepath)
                 manifest_to_srcfile[vfilepath] = filepath
+
         # Add any new digests in this version to the manifest
         for digest, paths in digests_in_version.items():
             if digest not in manifest:
