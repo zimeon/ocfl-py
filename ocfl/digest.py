@@ -1,7 +1,6 @@
 """Digest handling for OCFL."""
 import fs
 import hashlib
-import os.path
 
 BUFSIZE = 64 * 1024  # 64kB for want of better info...
 
