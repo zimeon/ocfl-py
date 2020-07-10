@@ -48,7 +48,6 @@ This is inventory should match the example with 3 versions in <https://ocfl.io/1
 
 ```
 > python ocfl-object.py --build --src fixtures/1.0/content/spec-ex-full --id ark:/12345/bcd987 --fixity md5 --fixity sha1 --digest sha512-spec-ex -v
-INFO:root:Reading metadata for v1 from fixtures/1.0/content/spec-ex-full/v1_inventory.json
 WARNING:ocfl.object:### Inventory for v1
 {
   "digestAlgorithm": "sha512-spec-ex",
@@ -92,8 +91,7 @@ WARNING:ocfl.object:### Inventory for v1
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2018-01-01T01:01:01Z",
-      "message": "Initial import",
+      "created": "2020-07-10T20:37:36.456102Z",
       "state": {
         "7dcc352f96c56dc...c31": [
           "foo/bar.xml"
@@ -104,15 +102,10 @@ WARNING:ocfl.object:### Inventory for v1
         "ffccf6baa218097...62e": [
           "image.tiff"
         ]
-      },
-      "user": {
-        "address": "alice@example.com",
-        "name": "Alice"
       }
     }
   }
 }
-INFO:root:Reading metadata for v2 from fixtures/1.0/content/spec-ex-full/v2_inventory.json
 WARNING:ocfl.object:### Inventory for v2
 {
   "digestAlgorithm": "sha512-spec-ex",
@@ -165,8 +158,7 @@ WARNING:ocfl.object:### Inventory for v2
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2018-01-01T01:01:01Z",
-      "message": "Initial import",
+      "created": "2020-07-10T20:37:36.456102Z",
       "state": {
         "7dcc352f96c56dc...c31": [
           "foo/bar.xml"
@@ -177,15 +169,10 @@ WARNING:ocfl.object:### Inventory for v2
         "ffccf6baa218097...62e": [
           "image.tiff"
         ]
-      },
-      "user": {
-        "address": "alice@example.com",
-        "name": "Alice"
       }
     },
     "v2": {
-      "created": "2018-02-02T02:02:02Z",
-      "message": "Fix bar.xml, remove image.tiff, add empty2.txt",
+      "created": "2020-07-10T20:37:36.458091Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"
@@ -194,15 +181,10 @@ WARNING:ocfl.object:### Inventory for v2
           "empty.txt",
           "empty2.txt"
         ]
-      },
-      "user": {
-        "address": "bob@example.com",
-        "name": "Bob"
       }
     }
   }
 }
-INFO:root:Reading metadata for v3 from fixtures/1.0/content/spec-ex-full/v3_inventory.json
 WARNING:ocfl.object:### Inventory for v3
 {
   "digestAlgorithm": "sha512-spec-ex",
@@ -255,8 +237,7 @@ WARNING:ocfl.object:### Inventory for v3
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2018-01-01T01:01:01Z",
-      "message": "Initial import",
+      "created": "2020-07-10T20:37:36.456102Z",
       "state": {
         "7dcc352f96c56dc...c31": [
           "foo/bar.xml"
@@ -267,15 +248,10 @@ WARNING:ocfl.object:### Inventory for v3
         "ffccf6baa218097...62e": [
           "image.tiff"
         ]
-      },
-      "user": {
-        "address": "alice@example.com",
-        "name": "Alice"
       }
     },
     "v2": {
-      "created": "2018-02-02T02:02:02Z",
-      "message": "Fix bar.xml, remove image.tiff, add empty2.txt",
+      "created": "2020-07-10T20:37:36.458091Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"
@@ -284,15 +260,10 @@ WARNING:ocfl.object:### Inventory for v3
           "empty.txt",
           "empty2.txt"
         ]
-      },
-      "user": {
-        "address": "bob@example.com",
-        "name": "Bob"
       }
     },
     "v3": {
-      "created": "2018-03-03T03:03:03Z",
-      "message": "Reinstate image.tiff, delete empty.txt",
+      "created": "2020-07-10T20:37:36.459506Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"
@@ -303,10 +274,6 @@ WARNING:ocfl.object:### Inventory for v3
         "ffccf6baa218097...62e": [
           "image.tiff"
         ]
-      },
-      "user": {
-        "address": "cecilia@example.com",
-        "name": "Cecilia"
       }
     }
   }

@@ -45,14 +45,13 @@ class TestAll(unittest.TestCase):
         """Test (kinda) adding object args."""
         parser = argparse.ArgumentParser()
         add_object_args(parser)
-        args = parser.parse_args(['--skip', 'aa', '--ocfl-version', '1.0'])
+        args = parser.parse_args(['--skip', 'aa'])
         self.assertIn('aa', args.skip)
-        self.assertEqual(args.ocfl_version, '1.0')
 
     def test_find_path_type(self):
         """Test find_path_type function."""
         self.assertIn("does not exist", find_path_type("this_path_does_not_exist"))
-        self.assertIn("not a directory", find_path_type("ocfl-object.py"))
+        self.assertIn("cannot be opened", find_path_type("ocfl-object.py"))
         self.assertEqual(find_path_type("ocfl"), "no 0= declaration file")
         self.assertIn("more than one 0= declaration file", find_path_type("extra_fixtures/misc/multiple_declarations"))
         self.assertIn("unrecognized", find_path_type("extra_fixtures/misc/unknown_declaration"))

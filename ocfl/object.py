@@ -35,31 +35,40 @@ class Object(object):
 
     def __init__(self, id=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
-                 skips=None, forward_delta=True, dedupe=True, lax_digests=False,
-                 ocfl_version='draft', fixity=None, verbose=True,
-                 obj_fs=None):
-        """Initialize OCFL builder.
+                 forward_delta=True, dedupe=True,
+                 lax_digests=False, fixity=None, verbose=True,
+                 obj_fs=None, path=None, create=False):
+        """Initialize OCFL object.
 
-        Parameters:
+        Parameters relevant to building an object:
+          id - id for this object
+          content_directory - allow override of the default 'content'
+          digest_algorithm - allow override of the default 'sha512'
+          filepath_normalization = allow override of default 'uri'
           forward_delta - set False to turn off foward delta
           dedupe - set False to turn off dedupe within versions
+          lax_digests -
           fixity - list of fixity types to add as fixity section
           verbose - set logging level to INFO rather than WARN
+
+          obj_fs - a pyfs filesystem reference for the root of this object
+          path - if set then open a pyfs filesystem at path (alternative to obj_fs)
+          create - set True to allow opening filesystem at path to create a directory
         """
         self.id = id
         self.content_directory = content_directory
         self.digest_algorithm = digest_algorithm
         self.filepath_normalization = filepath_normalization
-        self.skips = set() if skips is None else set(skips)
         self.forward_delta = forward_delta
         self.dedupe = dedupe
-        self.ocfl_version = ocfl_version
         self.fixity = fixity
         self.lax_digests = lax_digests
         self.src_files = {}
         self.log = logging.getLogger(name="ocfl.object")
         self.log.setLevel(level=logging.INFO if verbose else logging.WARN)
         self.obj_fs = obj_fs  # fs filesystem (or sub-filesystem) for object
+        if path is not None:
+            self.open_fs(path, create=create)
 
     def open_fs(self, objdir, create=False):
         """Open an fs filesystem for this object."""
@@ -117,7 +126,6 @@ class Object(object):
         elif self.filepath_normalization is not None:
             raise Exception("Unknown filepath normalization '%s' requested" % (self.filepath_normalization))
         vfilepath = fs.path.join(vdir, self.content_directory, filepath)  # path relative to root, inc v#/content
-        print(vdir + '#' + self.content_directory + '#' + filepath + ' --> ' + vfilepath)
         # Check we don't already have this vfilepath from many to one normalization,
         # add suffix to distinguish if necessary
         if vfilepath in used:
@@ -224,7 +232,7 @@ class Object(object):
         # Find the versions
         versions = {}
         for vdir in src_fs.listdir('/'):
-            if vdir in self.skips or not src_fs.isdir(vdir):
+            if not src_fs.isdir(vdir):
                 continue
             vn = self.parse_version_directory(vdir)
             versions[vn] = vdir
@@ -263,12 +271,11 @@ class Object(object):
             fh.write(digest + ' ' + INVENTORY_FILENAME + '\n')
         return sidecar
 
-    def write_inventory_sidecar(self, invdir):
-        """Write just sidecare for the already existing inventory file in invdir.
+    def write_inventory_sidecar(self):
+        """Write just sidecare for this object's already existing root inventory file.
 
         Returns the inventory sidecar filename.
         """
-        self.open_fs(invdir)
         return self.write_inventory_and_sidecar(None, write_inventory=False)
 
     def build(self, srcdir, metadata=None, objdir=None):
@@ -354,7 +361,7 @@ class Object(object):
         validator = Validator(check_digests=False, lax_digests=self.lax_digests)
         if not validator.validate(objdir):
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
-        inventory = self.parse_inventory(objdir)
+        inventory = self.parse_inventory()
         self.id = inventory['id']
         old_head = inventory['head']
         versions = inventory['versions']
@@ -526,8 +533,9 @@ class Object(object):
 
         Returns the version block from the inventory.
         """
+        self.open_fs(objdir)
         # Read inventory, set up version
-        inv = self.parse_inventory(objdir)
+        inv = self.parse_inventory()
         if version == 'head':
             version = inv['head']
             logging.info("Object at %s has head %s" % (objdir, version))
@@ -556,14 +564,13 @@ class Object(object):
         logging.info("Extracted %s into %s" % (version, dstdir))
         return VersionMetadata(inventory=inv, vdir=version)
 
-    def parse_inventory(self, path):
-        """Read JSON root inventory file for object at path.
+    def parse_inventory(self):
+        """Read JSON root inventory file for this object.
 
         Will validate the inventory and normalize the digests so that the rest
         of the Object methods can assume correctness and matching string digests
         between state and manifest blocks.
         """
-        self.open_fs(path)
         with self.obj_fs.open(INVENTORY_FILENAME) as fh:
             inventory = json.load(fh)
         # Validate
@@ -592,14 +599,14 @@ class Object(object):
                 state[norm_digest] = state.pop(digest)
         return inventory
 
-    def id_from_inventory(self, path, failure_value='UNKNOWN-ID'):
-        """Read JSON root inventory file for object at path and extract id.
+    def id_from_inventory(self, failure_value='UNKNOWN-ID'):
+        """Read JSON root inventory file for this object and extract id.
 
         Returns the id from the inventory or failure_value is none can
         be extracted.
         """
         try:
-            inventory = self.parse_inventory(path)
+            inventory = self.parse_inventory()
             return inventory['id']
         except ObjectException:
             return failure_value

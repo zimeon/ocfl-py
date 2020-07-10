@@ -83,5 +83,7 @@ class TestAll(unittest.TestCase):
 
     def test_validate(self):
         """Test validate method."""
-        s = Store(root='extra_fixtures/good-storage-roots/fedora-root')
-        self.assertTrue(s.validate())
+        for root in ['extra_fixtures/good-storage-roots/fedora-root',
+                     'extra_fixtures/good-storage-roots/simple-root']:
+            s = Store(root=root)
+            self.assertTrue(s.validate())

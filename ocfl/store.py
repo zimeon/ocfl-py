@@ -40,11 +40,13 @@ class StoreWalker(fs.walk.Walker):
         Returns:
             bool: `True` if the directory should be opened.
         """
+        descend = True
         if path != '/':
             for file in pyfs.scandir(path):
                 if file.is_file:
-                    return False
-        return True
+                    descend = False
+                    break
+        return descend
 
 
 class StoreException(Exception):
@@ -194,11 +196,12 @@ class Store(object):
         self.check_root_structure()
         num_objects = 0
         for dirpath in self.object_paths():
-            # Parse inventory to extract id
-            id = Object().id_from_inventory(fs.path.join(self.root, dirpath))  # FIXME - use root_fs.opendir
-            print("%s -- id=%s" % (dirpath, id))
-            num_objects += 1
-        # FIXME - do some stuff in here
+            with self.root_fs.opendir(dirpath) as obj_fs:
+                # Parse inventory to extract id
+                id = Object(obj_fs=obj_fs).id_from_inventory()
+                print("%s -- id=%s" % (dirpath, id))
+                num_objects += 1
+                # FIXME - maybe do some more stuff in here
         logging.info("Found %d OCFL Objects under root %s" % (num_objects, self.root))
 
     def validate(self, validate_objects=True, show_warnings=False, show_errors=True, check_digests=True):
@@ -251,7 +254,8 @@ class Store(object):
         self.check_root_structure()
         # Sanity check
         o = Object()
-        inventory = o.parse_inventory(object_path)
+        o.open_fs(object_path)
+        inventory = o.parse_inventory()
         identifier = inventory['id']
         # Now copy
         path = self.object_path(identifier)

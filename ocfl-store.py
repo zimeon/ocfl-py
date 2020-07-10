@@ -77,8 +77,6 @@ try:
                           digest_algorithm=args.digest,
                           forward_delta=not args.no_forward_delta,
                           dedupe=not args.no_dedupe,
-                          skips=args.skip,
-                          ocfl_version=args.ocfl_version,
                           fixity=args.fixity)
         if args.show_object:
             obj.show(objdir)

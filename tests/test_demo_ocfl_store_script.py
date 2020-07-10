@@ -47,7 +47,18 @@ class TestAll(DemoTestCase):
         self.assertIn("Copying from fixtures/1.0/good-objects/minimal_one_version_one_file to", out)
         self.assertIn("root/ark%3A123%2Fabc", out)
 
-    def test02_errors(self):
+    def test02_explore_simple_root(self):
+        """Test exploration of a simple OCFL object root."""
+        out = self.run_script("List objects",
+                              ["python", "ocfl-store.py",
+                               "--root=extra_fixtures/good-storage-roots/simple-root",
+                               "--list"])
+        self.assertIn("ark%3A%2F12345%2Fbcd987 -- id=ark:/12345/bcd987", out)
+        self.assertIn("ark%3A123%2Fabc -- id=ark:123/abc", out)
+        self.assertIn("http%3A%2F%2Fexample.org%2Fminimal_mixed_digests -- id=http://example.org/minimal_mixed_digests", out)
+        self.assertIn("INFO:root:Found 3 OCFL Objects under root extra_fixtures/good-storage-roots/simple-root", out)
+
+    def test03_errors(self):
         """Test error cases."""
         out = self.run_script("Create new store",
                               ["python", "ocfl-store.py",

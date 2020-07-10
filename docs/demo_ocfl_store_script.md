@@ -10,7 +10,7 @@ The `--version` argument will show version number and exit (but we still tave to
 
 ```
 > python ocfl-store.py --version --root=tmp/root --list
-ocfl-store.py is part of ocfl-py version 1.0.1
+ocfl-store.py is part of ocfl-py version 1.0.2
 ```
 
 
@@ -41,9 +41,22 @@ INFO:root:Copied
 ```
 
 
-## 3. Test error cases.
+## 3. Test exploration of a simple OCFL object root.
 
-### 3.1 Create new store
+### 3.1 List objects
+
+```
+> python ocfl-store.py --root=extra_fixtures/good-storage-roots/simple-root --list
+INFO:root:Found 3 OCFL Objects under root extra_fixtures/good-storage-roots/simple-root
+ark%3A%2F12345%2Fbcd987 -- id=ark:/12345/bcd987
+ark%3A123%2Fabc -- id=ark:123/abc
+http%3A%2F%2Fexample.org%2Fminimal_mixed_digests -- id=http://example.org/minimal_mixed_digests
+```
+
+
+## 4. Test error cases.
+
+### 4.1 Create new store
 
 ```
 > python ocfl-store.py --root=tmp/root --init -v
@@ -51,7 +64,7 @@ INFO:root:Created OCFL storage root tmp/root
 ```
 
 
-### 3.2 Add object
+### 4.2 Add object
 
 ```
 > python ocfl-store.py --root=tmp/root --add -v

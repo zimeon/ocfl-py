@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Utility functions to support the OCFL Object library."""
+import fs
 import os
 import os.path
 import re
@@ -35,8 +36,6 @@ def add_object_args(parser):
     # Object files
     parser.add_argument('--objdir', '--obj',
                         help='read from or write to OCFL object directory objdir')
-    parser.add_argument('--ocfl-version', default='draft',
-                        help='OCFL specification version')
 
 
 def add_shared_args(parser):
@@ -110,9 +109,11 @@ def find_path_type(path):
     Looks only at "0=*" Namaste files to determing the path type. Will return
     an error description if not an `object` or storage `root`.
     """
-    if not os.path.isdir(path):
-        return("does not exist or is not a directory")
-    namastes = find_namastes(0, path)
+    try:
+        pyfs = fs.open_fs(path, create=False)
+    except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
+        return("does not exist or cannot be opened (" + str(e) + ")")
+    namastes = find_namastes(0, pyfs=pyfs)
     if len(namastes) == 0:
         return("no 0= declaration file")
     elif len(namastes) > 1:

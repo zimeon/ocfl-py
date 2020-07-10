@@ -26,15 +26,11 @@ class TestAll(unittest.TestCase):
         oo = Object()
         self.assertEqual(oo.id, None)
         self.assertEqual(oo.digest_algorithm, 'sha512')
-        self.assertEqual(oo.skips, set())
-        self.assertEqual(oo.ocfl_version, 'draft')
         self.assertEqual(oo.fixity, None)
-        oo = Object(id='a:b', digest_algorithm='sha1', skips=['1', '2'],
-                    ocfl_version='0.9.9', fixity=['md5', 'crc16'])
+        oo = Object(id='a:b', digest_algorithm='sha1',
+                    fixity=['md5', 'crc16'])
         self.assertEqual(oo.id, 'a:b')
         self.assertEqual(oo.digest_algorithm, 'sha1')
-        self.assertEqual(oo.skips, set(('1', '2')))
-        self.assertEqual(oo.ocfl_version, '0.9.9')
         self.assertEqual(oo.fixity, ['md5', 'crc16'])
 
     def test02_parse_version_directory(self):
@@ -153,23 +149,6 @@ class TestAll(unittest.TestCase):
                           'c289c8ccd4bab6e385f5afdd89b5bda2': ['v1/content/image.tiff'],
                           'd41d8cd98f00b204e9800998ecf8427e': ['v1/content/empty.txt']})
         self.assertEqual(len(inventory['versions']), 3)
-        # test skips by skipping 'v3'
-        oo = Object(digest_algorithm="md5", skips=['v3'])
-        src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
-        for (vdir, inventory, manifest_to_srcfile) in oo.build_inventory(src_fs,
-                                                                         metadata=VersionMetadata()):
-            if vdir == 'v1':
-                self.assertEqual(manifest_to_srcfile, {
-                    'v1/content/image.tiff': 'v1/image.tiff',
-                    'v1/content/empty.txt': 'v1/empty.txt',
-                    'v1/content/foo/bar.xml': 'v1/foo/bar.xml'
-                })
-            else:
-                self.assertEqual(manifest_to_srcfile, {
-                    'v2/content/foo/bar.xml': 'v2/foo/bar.xml'
-                })
-        self.assertEqual(inventory['head'], 'v2')
-        self.assertEqual(len(inventory['versions']), 2)
 
     def test07_write_object_declaration(self):
         """Test write_object_declaration."""
@@ -278,7 +257,8 @@ class TestAll(unittest.TestCase):
     def test14_parse_inventory(self):
         """Test parse_inventory method."""
         oo = Object()
-        inv = oo.parse_inventory(path='fixtures/1.0/good-objects/minimal_one_version_one_file')
+        oo.open_fs('fixtures/1.0/good-objects/minimal_one_version_one_file')
+        inv = oo.parse_inventory()
         self.assertEqual(inv['id'], "ark:123/abc")
         digest = "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f"
         self.assertEqual(inv['manifest'][digest],
@@ -286,14 +266,16 @@ class TestAll(unittest.TestCase):
         self.assertEqual(inv['versions']['v1']['state'][digest],
                          ["a_file.txt"])
         # Digest normalization on read -- file has mixed case but result should be same
-        inv = oo.parse_inventory(path='fixtures/1.0/good-objects/minimal_mixed_digests')
+        oo.open_fs('fixtures/1.0/good-objects/minimal_mixed_digests')
+        inv = oo.parse_inventory()
         self.assertEqual(inv['id'], "http://example.org/minimal_mixed_digests")
         self.assertEqual(inv['manifest'][digest],
                          ["v1/content/a_file.txt"])
         self.assertEqual(inv['versions']['v1']['state'][digest],
                          ["a_file.txt"])
         # Error cases
-        self.assertRaises(ObjectException, oo.parse_inventory, path='fixtures/1.0/bad-objects/E036_no_id')
+        oo.open_fs('fixtures/1.0/bad-objects/E036_no_id')
+        self.assertRaises(ObjectException, oo.parse_inventory)
 
     def test15_map_filepath(self):
         """Test map_filepath method."""

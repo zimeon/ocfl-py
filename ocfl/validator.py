@@ -70,12 +70,12 @@ class Validator(object):
             self.log.error('E003c', path=path)
             return False
         # Object declaration
-        namastes = find_namastes(0, '', pyfs=self.obj_fs)
+        namastes = find_namastes(0, pyfs=self.obj_fs)
         if len(namastes) == 0:
             self.log.error('E003a')
         elif len(namastes) > 1:
             self.log.error('E003b', files=len(namastes))
-        elif not namastes[0].content_ok(path):
+        elif not namastes[0].content_ok(pyfs=self.obj_fs):
             self.log.error('E007')
         # Object root inventory file
         inv_file = 'inventory.json'

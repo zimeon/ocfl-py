@@ -80,11 +80,9 @@ def do_object_operation(args):
     obj = ocfl.Object(id=args.id,
                       digest_algorithm=args.digest,
                       filepath_normalization=args.normalization,
-                      skips=args.skip,
                       forward_delta=not args.no_forward_delta,
                       dedupe=not args.no_dedupe,
                       lax_digests=args.lax_digests,
-                      ocfl_version=args.ocfl_version,
                       fixity=args.fixity)
     if args.create:
         srcdir = args.srcdir
