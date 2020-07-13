@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Store tests."""
+import fs
 import io
 import json
 import os
@@ -22,10 +23,34 @@ class TestAll(unittest.TestCase):
         self.assertEqual(s.root, 'a')
         self.assertEqual(s.disposition, 'b')
 
+    def test_open_root_fs(self):
+        """Test open_root_fs method."""
+        s = Store()
+        self.assertIs(s.root_fs, None)
+        tempdir = tempfile.mkdtemp(prefix='test_open_root_fs')
+        print(tempdir)
+        s.root = tempdir
+        s.open_root_fs()
+        self.assertIsNot(s.root_fs, None)
+        # Error - open without create, then succeed with create
+        rootdir = os.path.join(tempdir, 'xyz')
+        s = Store()
+        s.root = rootdir
+        self.assertRaises(StoreException, s.open_root_fs)
+        s.open_root_fs(create=True)
+        self.assertIsNot(s.root_fs, None)
+
     def test_dispositor(self):
         """Test dispositor property."""
         s = Store(root='x', disposition='identity')
         self.assertTrue(isinstance(s.dispositor, Identity))
+
+    def test_traversal_error(self):
+        """Test traversal_error method."""
+        s = Store()
+        self.assertEqual(s.num_traversal_errors, 0)
+        s.traversal_error("oops")
+        self.assertEqual(s.num_traversal_errors, 1)
 
     def test_object_path(self):
         """Test object_path method."""
@@ -67,11 +92,29 @@ class TestAll(unittest.TestCase):
         # Right file, wrong content
         self.assertRaises(StoreException, s.check_root_structure)
         os.remove(decl2)
-        # Finally, all good
+        # All good
         with open(decl2, 'w') as fh:
             fh.write("ocfl_1.0\n")
             fh.close()
         self.assertTrue(s.check_root_structure())
+        # Spec "file" a directory
+        spec = os.mkdir(os.path.join(tempdir, "ocfl_1.0.txt"))
+        self.assertRaises(StoreException, s.check_root_structure)
+
+    def test_parse_layout_file(self):
+        """Test parse_layout_file method."""
+        s = Store(root="mem://")
+        s.open_root_fs(create=True)
+        self.assertEqual(s.parse_layout_file(), (None, None))
+        s.root_fs.writetext('ocfl_layout.json', '{"extension": "aa", "description": "bb"}')
+        self.assertEqual(s.parse_layout_file(), ("aa", "bb"))
+        s.root_fs.writetext('ocfl_layout.json', '["aa", "bb"]')
+        self.assertRaises(StoreException, s.parse_layout_file)
+        s.root_fs.writetext('ocfl_layout.json', '{"extension": "yy", "description": ["zz"]}')
+        self.assertRaises(StoreException, s.parse_layout_file)
+        s.root_fs.remove('ocfl_layout.json')
+        s.root_fs.makedir('ocfl_layout.json')
+        self.assertRaises(StoreException, s.parse_layout_file)
 
     def test_object_paths(self):
         """Test object_paths generator."""

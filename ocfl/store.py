@@ -71,6 +71,8 @@ class Store(object):
         #
         self.root_fs = None
         self.num_traversal_errors = 0
+        self.extension = None
+        self.description = None
 
     def open_root_fs(self, create=False):
         """Open pyfs filesystem for this OCFL storage root."""
@@ -135,26 +137,32 @@ class Store(object):
         # Specification file and layout file
         if self.root_fs.exists(self.spec_file) and not self.root_fs.isfile(self.spec_file):
             raise StoreException("Storage root %s includes a specification entry that isn't a file" % (self.root))
-        if self.root_fs.exists(self.layout_file):
-            self.parse_layout_file()
+        self.extension, self.description = self.parse_layout_file()
         # Other files are allowed...
         return True
 
     def parse_layout_file(self):
         """Read and parse layout file in OCFL storage root.
 
-        Returns key and description on success, otherwise raises a StoreException.
+        Returns:
+          - (extension, description) strings on success,
+          - (None, None) if there is now layout file (it is optional)
+          - otherwise raises a StoreException.
         """
-        try:
-            with self.root_fs.open(self.layout_file) as fh:
-                layout = json.load(fh)
-            if type(layout) != dict:
-                raise StoreException("Storage root %s has layout file that isn't a JSON object" % (self.root))
-            elif 'key' not in layout or 'description' not in layout:
-                raise StoreException("Storage root %s has layout file doesn't have required key and description entries" % (self.root))
-            return layout['key'], layout['description']
-        except Exception as e:  # FIXME - more specific?
-            raise StoreException("OCFL storage root %s has layout file that can't be read (%s)" % (self.root, str(e)))
+        if self.root_fs.exists(self.layout_file):
+            try:
+                with self.root_fs.open(self.layout_file) as fh:
+                    layout = json.load(fh)
+                if type(layout) != dict:
+                    raise StoreException("Storage root %s has layout file that isn't a JSON object" % (self.root))
+                elif ('extension' not in layout or type(layout['extension']) != str or
+                        'description' not in layout or type(layout['description']) != str):
+                    raise StoreException("Storage root %s has layout file doesn't have required extension and description string entries" % (self.root))
+                return layout['extension'], layout['description']
+            except Exception as e:  # FIXME - more specific?
+                raise StoreException("OCFL storage root %s has layout file that can't be read (%s)" % (self.root, str(e)))
+        else:
+            return None, None
 
     def object_paths(self):
         """Generator for object paths for every obect in the OCFL storage root.
