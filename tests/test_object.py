@@ -10,7 +10,7 @@ import sys
 import tempfile
 import unittest
 from ocfl.object import Object, ObjectException
-from ocfl.version import VersionMetadata
+from ocfl.version_metadata import VersionMetadata
 
 
 class TestAll(unittest.TestCase):
@@ -84,8 +84,9 @@ class TestAll(unittest.TestCase):
         self.maxDiff = None
         oo = Object(digest_algorithm="md5")
         inventory = {'manifest': {}, 'versions': {}}
-        metadata = VersionMetadata()
-        metadata.from_inventory_file('fixtures/1.0/content/spec-ex-full/v1_inventory.json', 'v1')
+        with open('fixtures/1.0/content/spec-ex-full/v1_inventory.json') as fh:
+            v_inventory = json.load(fh)
+        metadata = VersionMetadata(inventory=v_inventory, version='v1')
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
         oo.add_version(inventory, src_fs, src_dir='v1', vdir='v1', metadata=metadata)
         self.assertEqual(inventory['head'], 'v1')
@@ -104,8 +105,9 @@ class TestAll(unittest.TestCase):
                            'user': {'address': 'alice@example.com', 'name': 'Alice'}}})
         self.assertNotIn('fixity', inventory)
         # Now add second version to check forward delta
-        metadata = VersionMetadata()
-        metadata.from_inventory_file('fixtures/1.0/content/spec-ex-full/v2_inventory.json', 'v2')
+        with open('fixtures/1.0/content/spec-ex-full/v2_inventory.json') as fh:
+            v_inventory = json.load(fh)
+        metadata = VersionMetadata(inventory=v_inventory, version='v2')
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full/v2')
         oo.add_version(inventory, src_fs, src_dir='', vdir='v2', metadata=metadata)
         self.assertEqual(inventory['head'], 'v2')
@@ -125,7 +127,9 @@ class TestAll(unittest.TestCase):
         oo = Object(digest_algorithm="md5", fixity=['sha1'])
         inventory = {'manifest': {}, 'versions': {}, 'fixity': {'sha1': {}}}
         md1 = VersionMetadata()
-        md1.from_inventory_file('fixtures/1.0/content/spec-ex-full/v1_inventory.json', 'v1')
+        with open('fixtures/1.0/content/spec-ex-full/v1_inventory.json') as fh:
+            v_inventory = json.load(fh)
+        md1 = VersionMetadata(inventory=v_inventory, version='v1')
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full/v1')
         manifest_to_srcfile = oo.add_version(inventory, src_fs, src_dir='', vdir='v1', metadata=md1)
         self.assertEqual(manifest_to_srcfile, {
@@ -148,7 +152,7 @@ class TestAll(unittest.TestCase):
                         "name": "Alice"
                     }
                 }
-            }}, vdir='v1')
+            }}, version='v1')
         src_fs = fs.open_fs('extra_fixtures/content/dedupe_content')
         manifest_to_srcfile = oo.add_version(inventory, src_fs, src_dir='v1', vdir='v1', metadata=md1)
         # Because of dedupe=False we will have multiple copies of empty files
@@ -170,7 +174,7 @@ class TestAll(unittest.TestCase):
                         "name": "Bob"
                     }
                 }
-            }}, vdir='v2')
+            }}, version='v2')
         manifest_to_srcfile = oo.add_version(inventory, src_fs, src_dir='v2', vdir='v2', metadata=md2)
         # Because of forward_delta=False we will have an additional copy of the empty file
         self.assertEqual(manifest_to_srcfile, {

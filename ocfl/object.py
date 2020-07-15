@@ -19,7 +19,7 @@ from .inventory_validator import InventoryValidator
 from .object_utils import remove_first_directory, make_unused_filepath, next_version
 from .namaste import Namaste
 from .validator import Validator
-from .version import VersionMetadata
+from .version_metadata import VersionMetadata
 
 INVENTORY_FILENAME = 'inventory.json'
 
@@ -575,7 +575,7 @@ class Object(object):
                 dst_fs.makedirs(fs.path.dirname(logical_file), recreate=True)
                 fs.copy.copy_file(self.obj_fs, existing_file, dst_fs, logical_file)
         logging.info("Extracted %s into %s" % (version, dstdir))
-        return VersionMetadata(inventory=inv, vdir=version)
+        return VersionMetadata(inventory=inv, version=version)
 
     def parse_inventory(self):
         """Read JSON root inventory file for this object.

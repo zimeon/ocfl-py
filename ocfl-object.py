@@ -86,7 +86,7 @@ def do_object_operation(args):
                       fixity=args.fixity)
     if args.create:
         srcdir = args.srcdir
-        metadata = ocfl.VersionMetadata(args)
+        metadata = ocfl.VersionMetadata(args=args)
         if args.srcbag is not None:
             srcdir = ocfl.bag_as_source(args.srcbag, metadata)
             if metadata.id is not None:
@@ -103,13 +103,13 @@ def do_object_operation(args):
     elif args.build:
         if args.srcdir is None:
             raise FatalError("Must specify --srcdir containing version directories when building an OCFL object!")
-        metadata = ocfl.VersionMetadata(args)
+        metadata = ocfl.VersionMetadata(args=args)
         obj.build(srcdir=args.srcdir,
                   metadata=metadata,
                   objdir=args.objdir)
     elif args.update:
         srcdir = args.srcdir
-        metadata = ocfl.VersionMetadata(args)
+        metadata = ocfl.VersionMetadata(args=args)
         if args.srcbag is not None:
             srcdir = ocfl.bag_as_source(args.srcbag, metadata)
         elif args.srcdir is None:
