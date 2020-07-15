@@ -46,7 +46,6 @@ for path in args.path:
                         check_digests=not args.no_check_digests):
             num_good += 1
     elif path_type == 'root':
-
         log.info("Validating OCFL Storage Root at " + path)
         store = ocfl.Store(root=path,
                            lax_digests=args.lax_digests)

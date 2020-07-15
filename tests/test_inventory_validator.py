@@ -15,7 +15,7 @@ class TLogger(object):
         """Add error code, discard args."""
         self.errors.append(code)
 
-    def warn(self, code, **args):
+    def warning(self, code, **args):
         """Add warn code, discard args."""
         self.warns.append(code)
 

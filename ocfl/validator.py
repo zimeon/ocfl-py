@@ -183,7 +183,7 @@ class Validator(object):
         for entry in self.obj_fs.scandir('extensions'):
             if entry.is_dir:
                 if entry.name not in self.registered_extensions:
-                    self.log.warn('W013', entry=entry.name)
+                    self.log.warning('W013', entry=entry.name)
             else:
                 self.log.error('E067', entry=entry.name)
 
@@ -196,7 +196,7 @@ class Validator(object):
         for version_dir in version_dirs:
             inv_file = fs.path.join(version_dir, 'inventory.json')
             if not self.obj_fs.exists(inv_file):
-                self.log.warn('W010', where=version_dir)
+                self.log.warning('W010', where=version_dir)
             elif version_dir == last_version:
                 # Don't validate in this case. Per the spec the inventory in the last version
                 # MUST be identical to the copy in the object root
@@ -249,9 +249,9 @@ class Validator(object):
                                 files_seen.add(fs.path.join(dirpath, file.name).lstrip('/'))
                                 num_content_files_in_version += 1
                         if num_content_files_in_version == 0:
-                            self.log.warn("W003", where=version_dir)
+                            self.log.warning("W003", where=version_dir)
                     elif self.obj_fs.isdir(fs.path.join(version_dir, entry)):
-                        self.log.warn("W002", where=version_dir, entry=entry)
+                        self.log.warning("W002", where=version_dir, entry=entry)
                     else:
                         self.log.error("E015", where=version_dir, entry=entry)
         # Check all files in root manifest

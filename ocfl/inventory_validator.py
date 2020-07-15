@@ -45,9 +45,9 @@ class InventoryValidator(object):
         """Error with added context."""
         self.log.error(code, where=self.where, **args)
 
-    def warn(self, code, **args):
+    def warning(self, code, **args):
         """Warning with added context."""
-        self.log.warn(code, where=self.where, **args)
+        self.log.warning(code, where=self.where, **args)
 
     def validate(self, inventory):
         """Validate a given inventory."""
@@ -58,7 +58,7 @@ class InventoryValidator(object):
             if type(iid) != str or iid == '':
                 self.error("E037")
             elif not re.match(r'''(\w+):.+''', iid):
-                self.warn("W005", id=iid)
+                self.warning("W005", id=iid)
         else:
             self.error("E036a")
         if 'type' not in inventory:
@@ -72,7 +72,7 @@ class InventoryValidator(object):
         elif self.lax_digests:
             self.digest_algorithm = inventory['digestAlgorithm']
         elif inventory['digestAlgorithm'] == 'sha256':
-            self.warn("W004")
+            self.warning("W004")
             self.digest_algorithm = inventory['digestAlgorithm']
         else:
             self.error("E039", digest_algorithm=inventory['digestAlgorithm'])
@@ -228,7 +228,7 @@ class InventoryValidator(object):
                 self.error("E009")
                 return all_versions
         if zero_padded:
-            self.warn("W001")
+            self.warning("W001")
         # Have v1 and know format, work through to check sequence
         for n in range(2, max_version_num + 1):
             v = (fmt % n)
@@ -281,11 +281,11 @@ class InventoryValidator(object):
             else:
                 self.error('E048c', version=v)
             if 'message' not in version:
-                self.warn('W007a', version=v)
+                self.warning('W007a', version=v)
             elif type(version['message']) != str:
                 self.error('E094', version=v)
             if 'user' not in version:
-                self.warn('W007b', version=v)
+                self.warning('W007b', version=v)
             else:
                 user = version['user']
                 if type(user) != dict:
@@ -294,11 +294,11 @@ class InventoryValidator(object):
                     if 'name' not in user or type(user['name']) != str:
                         self.error('E054b', version=v)
                     if 'address' not in user:
-                        self.warn('W008', version=v)
+                        self.warning('W008', version=v)
                     elif type(user['address']) != str:
                         self.error('E054c', version=v)
                     elif not re.match(r'''\w{3,6}:''', user['address']):
-                        self.warn('W009', version=v)
+                        self.warning('W009', version=v)
         return digests_used
 
     def validate_state_block(self, state, version, unnormalized_digests):
@@ -421,4 +421,4 @@ class InventoryValidator(object):
             self_version = self.inventory['versions'][version_dir]
             for key in ('created', 'message', 'user'):
                 if prior_version.get(key) != self_version.get(key):
-                    self.warn('W011', version_dir=version_dir, prior_head=prior.head, key=key)
+                    self.warning('W011', version_dir=version_dir, prior_head=prior.head, key=key)
