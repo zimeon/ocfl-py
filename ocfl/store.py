@@ -155,8 +155,8 @@ class Store(object):
                     layout = json.load(fh)
                 if type(layout) != dict:
                     raise StoreException("Storage root %s has layout file that isn't a JSON object" % (self.root))
-                elif ('extension' not in layout or type(layout['extension']) != str or
-                        'description' not in layout or type(layout['description']) != str):
+                elif ('extension' not in layout or type(layout['extension']) != str
+                        or 'description' not in layout or type(layout['description']) != str):
                     raise StoreException("Storage root %s has layout file doesn't have required extension and description string entries" % (self.root))
                 return layout['extension'], layout['description']
             except Exception as e:  # FIXME - more specific?
@@ -178,7 +178,7 @@ class Store(object):
             if dirpath == '/':
                 pass  # Ignore files in root
             elif (len(dirs) + len(files)) == 0:
-                self.traversal_error("Empty directory %d" % (dirpath))
+                self.traversal_error("Empty directory %s" % (dirpath))
             elif len(files) == 0:
                 pass  # Just an intermediate directory
             else:

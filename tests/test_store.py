@@ -3,6 +3,7 @@
 import fs
 import io
 import json
+import logging
 import os
 import sys
 import tempfile
@@ -123,6 +124,21 @@ class TestAll(unittest.TestCase):
         paths = list(s.object_paths())
         self.assertEqual(len(paths), 176)
         self.assertIn('61/38/37/3fede0e4-d168-475a-9b51-edbed6f0d972', paths)
+        # Error cases
+        log_io = io.StringIO()
+        logger = logging.getLogger()
+        logger.addHandler(logging.StreamHandler(log_io))
+        s = Store(root='zip://extra_fixtures/bad-storage-roots/simple-bad-root.zip')  # Using ZipFS
+        s.open_root_fs()
+        paths = list(s.object_paths())
+        self.assertEqual(len(paths), 2)
+        self.assertEqual(s.num_traversal_errors, 5)
+        log_out = log_io.getvalue()
+        self.assertIn('Empty directory /empty_dir', log_out)
+        self.assertIn('Multiple 0= declaration files in /object_multiple_declarations', log_out)
+        self.assertIn('Object with unknown version 0.9 in /object_unknown_version', log_out)
+        self.assertIn('Object with unrecognized declaration 0=special_object_yeah in /object_unrecognized_declaration', log_out)
+        self.assertIn('Directory /dir_with_file_but_no_declaration has file but not object declaration', log_out)
 
     def test_validate(self):
         """Test validate method."""
