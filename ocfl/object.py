@@ -45,9 +45,17 @@ class Object(object):
           content_directory - allow override of the default 'content'
           digest_algorithm - allow override of the default 'sha512'
           filepath_normalization = allow override of default 'uri'
-          forward_delta - set False to turn off foward delta
-          dedupe - set False to turn off dedupe within versions
-          lax_digests -
+          forward_delta - set False to turn off foward delta. With forward delta
+            turned off, the same content will be repeated in a new version
+            rather than simply being included by reference through the
+            digest linking to the copy in the previous version
+          dedupe - set False to turn off dedupe within versions. With dedupe
+            turned off, the same content will be repeated within a given version
+            rather than one copy being included and then a reference being used
+            from the multiple logical files
+          lax_digests - set True to allow digests beyond those included in the
+            specification for fixity and to allow non-preferred digest algorithms
+            for content references in the object
           fixity - list of fixity types to add as fixity section
           verbose - set logging level to INFO rather than WARN
 
@@ -157,10 +165,15 @@ class Object(object):
         """Add to inventory data for new version based on files in srcdir.
 
         Parameters:
-          inventory - the inventory up to (vdir-1)
+          inventory - the inventory up to (vdir-1) which must include blocks
+            for ['manifest'] and ['versions']. It must also include
+            a ['fixity'][algorithm] block for every algorithm in self.fixity
           src_fs - pyfs filesystem where this new version exist
-          vdir - the version directory that these files are being added in
-          metadata - a VersionMetadata object
+          src_dir - the version directory in src_fs that files are being added
+            from
+          vdir - the version name of the version being created
+          metadata - a VersionMetadata object with any metadata for this
+            version
 
         Returns:
           manifest_to_srcfile - dict mapping from paths in manifest to the path

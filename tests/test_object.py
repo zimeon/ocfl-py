@@ -133,6 +133,51 @@ class TestAll(unittest.TestCase):
             'v1/content/empty.txt': 'empty.txt',
             'v1/content/foo/bar.xml': 'foo/bar.xml'
         })
+        self.assertEqual(len(inventory['fixity']['sha1']), 3)
+        # Test dedupe=False and forward_delta=False settings
+        oo = Object(dedupe=False, forward_delta=False, fixity=['md5'])
+        inventory = {'manifest': {}, 'versions': {}, 'fixity': {'md5': {}}}
+        md1 = VersionMetadata(inventory={
+            "id": "http://example.org/dedupe_content",
+            "versions": {
+                "v1": {
+                    "created": "2020-07-15T17:40:00",
+                    "message": "Initial import",
+                    "user": {
+                        "address": "mailto:alice@example.com",
+                        "name": "Alice"
+                    }
+                }
+            }}, vdir='v1')
+        src_fs = fs.open_fs('extra_fixtures/content/dedupe_content')
+        manifest_to_srcfile = oo.add_version(inventory, src_fs, src_dir='v1', vdir='v1', metadata=md1)
+        # Because of dedupe=False we will have multiple copies of empty files
+        self.assertEqual(manifest_to_srcfile, {
+            'v1/content/empty1.txt': 'v1/empty1.txt',
+            'v1/content/empty2.txt': 'v1/empty2.txt',
+            'v1/content/empty3.txt': 'v1/empty3.txt'})
+        self.assertEqual(inventory['fixity']['md5'], {"d41d8cd98f00b204e9800998ecf8427e": [
+            "v1/content/empty1.txt", "v1/content/empty2.txt", "v1/content/empty3.txt"]})
+        # Add a second version which will test for forward_delta=False
+        md2 = VersionMetadata(inventory={
+            "id": "http://example.org/dedupe_content",
+            "versions": {
+                "v2": {
+                    "created": "2020-07-15T17:54:00",
+                    "message": "Update",
+                    "user": {
+                        "address": "mailto:bob@example.com",
+                        "name": "Bob"
+                    }
+                }
+            }}, vdir='v2')
+        manifest_to_srcfile = oo.add_version(inventory, src_fs, src_dir='v2', vdir='v2', metadata=md2)
+        # Because of forward_delta=False we will have an additional copy of the empty file
+        self.assertEqual(manifest_to_srcfile, {
+            'v2/content/empty4.txt': 'v2/empty4.txt'})
+        self.assertEqual(inventory['fixity']['md5'], {"d41d8cd98f00b204e9800998ecf8427e": [
+            "v1/content/empty1.txt", "v1/content/empty2.txt",
+            "v1/content/empty3.txt", "v2/content/empty4.txt"]})
 
     def test06_build_inventory(self):
         """Test build_inventory."""
