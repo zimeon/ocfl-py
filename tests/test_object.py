@@ -351,3 +351,17 @@ class TestAll(unittest.TestCase):
         oo.extract('fixtures/1.0/good-objects/minimal_one_version_one_file', 'v1', dstdir)
         self.assertEqual(os.listdir(tempdir), ['vvv1'])
         self.assertEqual(os.listdir(dstdir), ['a_file.txt'])
+        # Specify "head" and expect v3
+        oo = Object()
+        dstdir = os.path.join(tempdir, 'vvv2')
+        oo.extract('fixtures/1.0/good-objects/spec-ex-full', 'head', dstdir)
+        self.assertEqual(set(os.listdir(dstdir)), set(["foo", "empty2.txt", "image.tiff"]))
+        # Error, no v4
+        self.assertRaises(ObjectException, oo.extract, 'fixtures/1.0/good-objects/spec-ex-full', 'v4', dstdir)
+
+    def test_id_from_inventory(self):
+        """Test id_from_inventory method."""
+        oo = Object(path='fixtures/1.0/good-objects/minimal_one_version_one_file')
+        self.assertEqual(oo.id_from_inventory(), 'ark:123/abc')
+        oo = Object(path='fixtures/1.0/bad-objects/E036_no_id')
+        self.assertEqual(oo.id_from_inventory(), 'UNKNOWN-ID')
