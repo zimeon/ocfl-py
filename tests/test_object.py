@@ -242,7 +242,17 @@ class TestAll(unittest.TestCase):
                          set(['0=ocfl_object_1.0',
                               'inventory.json', 'inventory.json.sha512',
                               'v1', 'v2', 'v3']))
-        # FIXME - extra tests for outputs created and special cases
+        # If objdir is None the output is just a log saying what would have been written
+        log_io = io.StringIO()
+        oo.log.addHandler(logging.StreamHandler(log_io))
+        oo.build(srcdir='fixtures/1.0/content/spec-ex-full',
+                 metadata=VersionMetadata(),
+                 objdir=None)
+        log_out = log_io.getvalue()
+        self.assertIn('### Inventory for v1', log_out)
+        self.assertIn('"id": "uri:firkin",', log_out)
+        self.assertIn('### Inventory for v2', log_out)
+        self.assertIn('### Inventory for v3', log_out)
 
     def test10_create(self):
         """Test create method."""
@@ -358,6 +368,11 @@ class TestAll(unittest.TestCase):
         self.assertEqual(set(os.listdir(dstdir)), set(["foo", "empty2.txt", "image.tiff"]))
         # Error, no v4
         self.assertRaises(ObjectException, oo.extract, 'fixtures/1.0/good-objects/spec-ex-full', 'v4', dstdir)
+        # Error, dstdir already exists
+        self.assertRaises(ObjectException, oo.extract, 'fixtures/1.0/good-objects/spec-ex-full', 'head', tempdir)
+        # Error, parent dir does not exist
+        dstdir = os.path.join(tempdir, 'intermediate/vvv3')
+        self.assertRaises(ObjectException, oo.extract, 'fixtures/1.0/good-objects/spec-ex-full', 'head', dstdir)
 
     def test_id_from_inventory(self):
         """Test id_from_inventory method."""

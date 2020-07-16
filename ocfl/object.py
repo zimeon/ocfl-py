@@ -322,7 +322,7 @@ class Object(object):
         # Write object declaration, inventory and sidecar
         self.write_object_declaration()
         self.write_inventory_and_sidecar(inventory)
-        logging.info("Built object %s with %s versions" % (self.id, num_versions))
+        self.log.info("Built object %s with %s versions" % (self.id, num_versions))
 
     def create(self, srcdir, metadata=None, objdir=None):
         """Create a new OCFL object with v1 content from srcdir.
@@ -356,7 +356,7 @@ class Object(object):
             for path in paths:
                 srcfile = manifest_to_srcfile[path]
                 self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
-        logging.info("Created OCFL object %s in %s" % (self.id, objdir))
+        self.log.info("Created OCFL object %s in %s" % (self.id, objdir))
 
     def update(self, objdir, srcdir=None, metadata=None):
         """Update object creating a new version with content matching srcdir.
@@ -379,7 +379,7 @@ class Object(object):
         old_head = inventory['head']
         versions = inventory['versions']
         head = next_version(old_head)
-        logging.info("Will update %s %s -> %s" % (self.id, old_head, head))
+        self.log.info("Will update %s %s -> %s" % (self.id, old_head, head))
         self.obj_fs.makedir(head)
         # Is this a request to change the digest algorithm?
         old_digest_algorithm = inventory['digestAlgorithm']
@@ -387,8 +387,8 @@ class Object(object):
         if digest_algorithm is None:
             digest_algorithm = old_digest_algorithm
         elif digest_algorithm != old_digest_algorithm:
-            logging.info("New version with use %s instead of %s digestAlgorithm" %
-                         (digest_algorithm, old_digest_algorithm))
+            self.log.info("New version with use %s instead of %s digestAlgorithm" %
+                          (digest_algorithm, old_digest_algorithm))
             inventory['digestAlgorithm'] = digest_algorithm
         # Is this a request to change the set of fixity information?
         fixity = self.fixity
@@ -410,10 +410,10 @@ class Object(object):
                 for digest in old_fixity.difference(fixity):
                     inventory['fixity'].pop(digest)
                 for digest in fixity.difference(old_fixity):
-                    logging.info("FIXME - need to add fixity with digest %s" % digest)
+                    self.log.info("FIXME - need to add fixity with digest %s" % digest)
         if fixity != old_fixity:
-            logging.info("New version will have %s instead of %s fixity" %
-                         (','.join(sorted(fixity)), ','.join(sorted(old_fixity))))
+            self.log.info("New version will have %s instead of %s fixity" %
+                          (','.join(sorted(fixity)), ','.join(sorted(old_fixity))))
         # Now look at contents, manifest and state
         manifest = copy.deepcopy(inventory['manifest'])
         if digest_algorithm != old_digest_algorithm:
@@ -456,7 +456,7 @@ class Object(object):
         # Delete old root inventory sidecar if we changed digest algorithm
         if digest_algorithm != old_digest_algorithm:
             self.obj_fs.remove(INVENTORY_FILENAME + '.' + old_digest_algorithm)
-        logging.info("Updated OCFL object %s in %s by adding %s" % (self.id, objdir, head))
+        self.log.info("Updated OCFL object %s in %s by adding %s" % (self.id, objdir, head))
 
     def _show_indent(self, level, last=False, last_v=False):
         """Indent string for tree view at level for intermediate or last."""
@@ -551,7 +551,7 @@ class Object(object):
         inv = self.parse_inventory()
         if version == 'head':
             version = inv['head']
-            logging.info("Object at %s has head %s" % (objdir, version))
+            self.log.info("Object at %s has head %s" % (objdir, version))
         elif version not in inv['versions']:
             raise ObjectException("Object at %s does not include a version '%s'" % (objdir, version))
         # Sanity check on destination
@@ -561,7 +561,7 @@ class Object(object):
         (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
         try:
             parent_fs = fs.open_fs(parentdir)
-        except fs.opener.errors.OpenerError:
+        except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
             raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, str(e)))
         parent_fs.makedir(dir)
         dst_fs = parent_fs.opendir(dir)  # Open a sub-filesystem as our destination
@@ -571,10 +571,10 @@ class Object(object):
         for (digest, logical_files) in state.items():
             existing_file = manifest[digest][0]  # FIXME - pick "best" (closest version?) not first?
             for logical_file in logical_files:
-                logging.debug("Copying %s -> %s" % (digest, logical_file))
+                self.log.debug("Copying %s -> %s" % (digest, logical_file))
                 dst_fs.makedirs(fs.path.dirname(logical_file), recreate=True)
                 fs.copy.copy_file(self.obj_fs, existing_file, dst_fs, logical_file)
-        logging.info("Extracted %s into %s" % (version, dstdir))
+        self.log.info("Extracted %s into %s" % (version, dstdir))
         return VersionMetadata(inventory=inv, version=version)
 
     def parse_inventory(self):
