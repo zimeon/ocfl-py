@@ -7,7 +7,7 @@ BUFSIZE = 64 * 1024  # 64kB for want of better info...
 
 def _fs_digest(pyfs, filename, digester):
     """Update digester reading from fh."""
-    with pyfs.open(filename, 'rb', buffering=0) as fh:
+    with pyfs.openbin(filename, 'r') as fh:
         for b in iter(lambda: fh.read(BUFSIZE), b''):
             digester.update(b)
 

@@ -110,7 +110,7 @@ class Validator(object):
         object itself.
         """
         try:
-            with self.obj_fs.open(inv_file) as fh:
+            with self.obj_fs.openbin(inv_file, 'r') as fh:
                 inventory = json.load(fh)
         except json.decoder.JSONDecodeError as e:
             self.log.error('E033', where=where, explanation=str(e))
