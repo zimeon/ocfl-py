@@ -16,7 +16,7 @@ import re
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
 from .namaste import find_namastes, NamasteException
-from .pyfs import open_fs, walk
+from .pyfs import open_fs, ocfl_walk
 from .validation_logger import ValidationLogger
 from .w3c_datetime import str_to_datetime
 
@@ -241,7 +241,7 @@ class Validator(object):
                         # Check content_directory
                         content_path = fs.path.join(version_dir, self.content_directory)
                         num_content_files_in_version = 0
-                        for dirpath, dirs, files in walk(self.obj_fs, content_path):
+                        for dirpath, dirs, files in ocfl_walk(self.obj_fs, content_path):
                             if dirpath != '/' + content_path and (len(dirs) + len(files)) == 0:
                                 self.log.error("E024", where=version_dir, path=dirpath)
                             for file in files:

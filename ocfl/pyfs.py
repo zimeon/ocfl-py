@@ -58,19 +58,24 @@ def open_fs(fs_url, **kwargs):
             acl=parse_result.params.get("acl", None),
             cache_control=parse_result.params.get("cache_control", None),
             strict=strict)
-        s3fs.getinfo = s3fs._getinfo  # Patch in version that doesn't check parent directory
+        s3fs.getinfo = s3fs._getinfo  # Patch in version of method that doesn't check parent directory
         return s3fs
     else:
         # Non-S3 URL
         return fs.open_fs(fs_url, **kwargs)
 
 
-def walk(f, dir):
+def ocfl_walk(f, dir='/', is_storage_root=False):
     """Walk that works on pyfs filesystems including S3 without the need for directory objects.
 
     Assumes that f.getinfo() will work for a file/resource that exists and
     that fs.errors.ResourceNotFound might be raised if called on a filesystem
     without directories (and no directory objects).
+
+    For walking storage roots (is_storage_root=True) then the condition to
+    descend is:
+        1) this is the root (dirpaht == '/'), or
+        2) there are no files in this directory (see https://ocfl.io/1.0/spec/#root-structure)
 
     FIXME - QUICK AND DIRTY HACK, CAN DO BETTER!
     """
@@ -83,6 +88,7 @@ def walk(f, dir):
         entries = f.listdir(dirpath)
         files = []
         dirs = []
+        dirpaths = []
         for entry in entries:
             entry_path = fs.path.join(dirpath, entry)
             is_dir = True
@@ -91,10 +97,14 @@ def walk(f, dir):
                 # print(entry_path + " info: " + str(info))
                 is_dir = info.is_dir
             except fs.errors.ResourceNotFound:
-                pass  # Must be a directory
+                pass  # Assume to be a directory
             if is_dir:
                 dirs.append(entry)
-                stack.append(entry_path)
+                dirpaths.append(entry_path)
             else:
                 files.append(entry)
+        if not is_storage_root or dirpath == '/' or len(files) == 0:
+            # If this is not the storage root itself and there are files
+            # present then we should not descend further
+            stack.extend(dirpaths)
         yield(dirpath, dirs, files)

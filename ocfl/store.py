@@ -4,7 +4,6 @@ This code uses PyFilesystem (import fs) exclusively for access to files. This
 should enable application beyond the operating system filesystem.
 """
 import fs
-import fs.walk
 import hashlib
 import json
 import re
@@ -18,35 +17,8 @@ from .digest import file_digest
 from .disposition import get_dispositor
 from .namaste import find_namastes, Namaste
 from .object import Object
-from .pyfs import open_fs
+from .pyfs import open_fs, ocfl_walk
 from .validator import Validator
-
-
-class StoreWalker(fs.walk.Walker):
-    """Walker tailered to an OCFL Storage Root."""
-
-    def check_open_dir(self, pyfs, path, info):
-        """Check to see whether directory under the storage root should be descended into.
-
-        The condition to descend is:
-        1) Continue from the roor (path==/), or
-        2) Continue if there are no files (see https://ocfl.io/1.0/spec/#root-structure)
-
-        Arguments:
-            fs (FS): A filesystem instance.
-            path (str): Path to directory.
-            info (Info): A resource info object for the directory.
-
-        Returns:
-            bool: `True` if the directory should be opened.
-        """
-        descend = True
-        if path != '/':
-            for file in pyfs.scandir(path):
-                if file.is_file:
-                    descend = False
-                    break
-        return descend
 
 
 class StoreException(Exception):
@@ -173,17 +145,16 @@ class Store(object):
         Will log any errors seen while traversing the directory tree under the
         storage root.
         """
-        walker = StoreWalker()
-        for (dirpath, dirs, files) in walker.walk(self.root_fs):
+        for (dirpath, dirs, files) in ocfl_walk(self.root_fs, is_storage_root=True):
             if dirpath == '/':
-                pass  # Ignore files in root
+                pass  # Ignore files in storage root
             elif (len(dirs) + len(files)) == 0:
                 self.traversal_error("Empty directory %s" % (dirpath))
             elif len(files) == 0:
                 pass  # Just an intermediate directory
             else:
                 # Is this directory an OCFL object? Look for any 0= file.
-                zero_eqs = [file.name for file in files if file.is_file and file.name.startswith('0=')]
+                zero_eqs = [file for file in files if file.startswith('0=')]
                 if len(zero_eqs) > 1:
                     self.traversal_error("Multiple 0= declaration files in %s, ignoring" % (dirpath))
                 elif len(zero_eqs) == 1:
