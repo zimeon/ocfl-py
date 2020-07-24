@@ -4,7 +4,6 @@ This code uses PyFilesystem (import fs) exclusively for access to files. This
 should enable application beyond the operating system filesystem.
 """
 import fs
-import fs.copy
 import fs.walk
 import hashlib
 import json
@@ -19,6 +18,7 @@ from .digest import file_digest
 from .disposition import get_dispositor
 from .namaste import find_namastes, Namaste
 from .object import Object
+from .pyfs import open_fs
 from .validator import Validator
 
 
@@ -77,7 +77,7 @@ class Store(object):
     def open_root_fs(self, create=False):
         """Open pyfs filesystem for this OCFL storage root."""
         try:
-            self.root_fs = fs.open_fs(self.root, create=create)
+            self.root_fs = open_fs(self.root, create=create)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
             raise StoreException("Failed to OCFL storage root filesystem '%s' (%s)" % (self.root, str(e)))
 
@@ -103,7 +103,7 @@ class Store(object):
     def initialize(self):
         """Create and initialize a new OCFL storage root."""
         (parent, root_dir) = fs.path.split(self.root)
-        parent_fs = fs.open_fs(parent)
+        parent_fs = open_fs(parent)
         if parent_fs.exists(root_dir):
             raise StoreException("OCFL storage root %s already exists, aborting!" % (self.root))
         self.root_fs = parent_fs.makedir(root_dir)
@@ -269,7 +269,7 @@ class Store(object):
         path = self.object_path(identifier)
         logging.info("Copying from %s to %s" % (object_path, fs.path.join(self.root, path)))
         try:
-            fs.copy.copy_dir(o.obj_fs, '/', self.root_fs, path)
+            copy_dir(o.obj_fs, '/', self.root_fs, path)
             logging.info("Copied")
         except Exception as e:
             logging.error("Copy failed: " + str(e))

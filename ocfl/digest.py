@@ -1,6 +1,7 @@
 """Digest handling for OCFL."""
 import fs
 import hashlib
+from .pyfs import open_fs
 
 BUFSIZE = 64 * 1024  # 64kB for want of better info...
 
@@ -20,7 +21,7 @@ def _file_digest(pyfs, filename, digester):
     """
     if pyfs is None:
         (dir, name) = fs.path.split(filename)
-        with fs.open_fs(dir) as dir_fs:
+        with open_fs(dir) as dir_fs:
             _fs_digest(dir_fs, name, digester)
     else:
         _fs_digest(pyfs, filename, digester)

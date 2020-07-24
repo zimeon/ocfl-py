@@ -12,6 +12,7 @@ except ImportError:                             # pragma: no cover -- py2
 
 from ._version import __version__
 from .namaste import find_namastes
+from .pyfs import open_fs
 
 
 NORMALIZATIONS = ['uri', 'md5']  # Must match possibilities in map_filepaths()
@@ -110,7 +111,7 @@ def find_path_type(path):
     an error description if not an `object` or storage `root`.
     """
     try:
-        pyfs = fs.open_fs(path, create=False)
+        pyfs = open_fs(path, create=False)
     except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
         return("does not exist or cannot be opened (" + str(e) + ")")
     namastes = find_namastes(0, pyfs=pyfs)

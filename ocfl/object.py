@@ -17,6 +17,7 @@ except ImportError:                             # pragma: no cover -- py2
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
 from .object_utils import remove_first_directory, make_unused_filepath, next_version
+from .pyfs import open_fs
 from .namaste import Namaste
 from .validator import Validator
 from .version_metadata import VersionMetadata
@@ -81,7 +82,7 @@ class Object(object):
     def open_fs(self, objdir, create=False):
         """Open an fs filesystem for this object."""
         try:
-            self.obj_fs = fs.open_fs(fs_url=objdir, create=create)
+            self.obj_fs = open_fs(fs_url=objdir, create=create)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
             raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, str(e)))
 
@@ -306,7 +307,7 @@ class Object(object):
         if objdir is not None:
             self.open_fs(objdir, create=True)
         num_versions = 0
-        src_fs = fs.open_fs(srcdir)
+        src_fs = open_fs(srcdir)
         for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(src_fs, metadata):
             num_versions += 1
             if objdir is None:
@@ -336,7 +337,7 @@ class Object(object):
         """
         if self.id is None:
             raise ObjectException("Identifier is not set!")
-        src_fs = fs.open_fs(srcdir)
+        src_fs = open_fs(srcdir)
         if objdir is not None:
             self.open_fs(objdir, create=True)
         inventory = self.start_inventory()
@@ -445,7 +446,7 @@ class Object(object):
             state = copy.deepcopy(inventory['versions'][old_head]['state'])
             inventory['versions'][head] = metadata.as_dict(state=state)
         else:
-            src_fs = fs.open_fs(srcdir)
+            src_fs = open_fs(srcdir)
             manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs, src_dir='', vdir=head, metadata=metadata)
             # Copy files into this version
             for (path, srcfile) in manifest_to_srcfile.items():
@@ -560,7 +561,7 @@ class Object(object):
 
         (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
         try:
-            parent_fs = fs.open_fs(parentdir)
+            parent_fs = open_fs(parentdir)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
             raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, str(e)))
         parent_fs.makedir(dir)

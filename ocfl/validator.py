@@ -16,6 +16,7 @@ import re
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
 from .namaste import find_namastes, NamasteException
+from .pyfs import open_fs, walk
 from .validation_logger import ValidationLogger
 from .w3c_datetime import str_to_datetime
 
@@ -62,7 +63,7 @@ class Validator(object):
         self.initialize()
         try:
             if type(path) == str:
-                self.obj_fs = fs.open_fs(path)
+                self.obj_fs = open_fs(path)
             else:
                 self.obj_fs = path
                 path = self.obj_fs.desc('')
@@ -230,9 +231,7 @@ class Validator(object):
         files_seen = set()
         # Check files in each version directory
         for version_dir in version_dirs:
-            if not self.obj_fs.isdir(version_dir):
-                self.log.error('E046', version_dir=version_dir)
-            else:
+            try:
                 # Check contents of version directory except content_directory
                 for entry in self.obj_fs.listdir(version_dir):
                     if ((entry == 'inventory.json')
@@ -242,11 +241,11 @@ class Validator(object):
                         # Check content_directory
                         content_path = fs.path.join(version_dir, self.content_directory)
                         num_content_files_in_version = 0
-                        for dirpath, dirs, files in self.obj_fs.walk(content_path):
+                        for dirpath, dirs, files in walk(self.obj_fs, content_path):
                             if dirpath != '/' + content_path and (len(dirs) + len(files)) == 0:
                                 self.log.error("E024", where=version_dir, path=dirpath)
                             for file in files:
-                                files_seen.add(fs.path.join(dirpath, file.name).lstrip('/'))
+                                files_seen.add(fs.path.join(dirpath, file).lstrip('/'))
                                 num_content_files_in_version += 1
                         if num_content_files_in_version == 0:
                             self.log.warning("W003", where=version_dir)
@@ -254,6 +253,9 @@ class Validator(object):
                         self.log.warning("W002", where=version_dir, entry=entry)
                     else:
                         self.log.error("E015", where=version_dir, entry=entry)
+            except (fs.errors.ResourceNotFound, fs.errors.DirectoryExpected) as e:
+                print(str(e))
+                self.log.error('E046', version_dir=version_dir)
         # Check all files in root manifest
         if 'manifest' in inventory:
             for digest in inventory['manifest']:
