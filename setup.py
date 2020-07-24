@@ -65,7 +65,8 @@ setup(
         'bagit>=1.7.0',
         'dateutils>=0.6.6',
         'fs>2.4.0',
-        'pairtree>=0.8.1'
+        'pairtree>=0.8.1',
+        'fs_s3fs>=1.1.1'
     ],
     test_suite="tests",
     cmdclass={
