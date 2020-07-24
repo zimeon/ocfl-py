@@ -17,7 +17,7 @@ from .digest import file_digest
 from .disposition import get_dispositor
 from .namaste import find_namastes, Namaste
 from .object import Object
-from .pyfs import open_fs, ocfl_walk
+from .pyfs import open_fs, ocfl_walk, ocfl_opendir
 from .validator import Validator
 
 
@@ -104,7 +104,7 @@ class Store(object):
             raise StoreException("Storage root %s has more than one 0= style declaration file" % (self.root))
         elif namastes[0].tvalue != self.declaration_tvalue:
             raise StoreException("Storage root %s declaration file not as expected, got %s" % (self.root, namastes[0].filename))
-        elif not namastes[0].content_ok(self.root):
+        elif not namastes[0].content_ok(pyfs=self.root_fs):
             raise StoreException("Storage root %s required declaration file %s has invalid content" % (self.root, namastes[0].filename))
         # Specification file and layout file
         if self.root_fs.exists(self.spec_file) and not self.root_fs.isfile(self.spec_file):
@@ -175,7 +175,7 @@ class Store(object):
         self.check_root_structure()
         num_objects = 0
         for dirpath in self.object_paths():
-            with self.root_fs.opendir(dirpath) as obj_fs:
+            with ocfl_opendir(self.root_fs, dirpath) as obj_fs:
                 # Parse inventory to extract id
                 id = Object(obj_fs=obj_fs).id_from_inventory()
                 print("%s -- id=%s" % (dirpath, id))
@@ -200,8 +200,7 @@ class Store(object):
                 validator = Validator(check_digests=check_digests,
                                       lax_digests=self.lax_digests,
                                       show_warnings=show_warnings)
-
-                if validator.validate(self.root_fs.opendir(dirpath)):
+                if validator.validate(ocfl_opendir(self.root_fs, dirpath)):
                     good_objects += 1
                 else:
                     logging.info("Object at %s in INVALID" % (dirpath))

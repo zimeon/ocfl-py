@@ -108,3 +108,27 @@ def ocfl_walk(f, dir='/', is_storage_root=False):
             # present then we should not descend further
             stack.extend(dirpaths)
         yield(dirpath, dirs, files)
+
+def ocfl_opendir(pyfs, dir, **kwargs):
+    """A version of opendir that handles the case of S3 without directory objects.
+
+    FIXME - DIRTY HACK
+    """
+    if isinstance(pyfs, S3FS):
+        # Hack for S3 because the standard opendir(..) fails when there
+        # isn't a directory object (even with strict=False)
+        new_dir_path = fs.path.join(pyfs.dir_path, dir)
+        s3fs = S3FS(
+            pyfs._bucket_name,
+            dir_path=new_dir_path,
+            aws_access_key_id=pyfs.aws_access_key_id,
+            aws_secret_access_key=pyfs.aws_secret_access_key,
+            endpoint_url=pyfs.endpoint_url,
+            # acl=pyfs.acl,
+            # cache_control=pyfs.cache_control),
+            strict=pyfs.strict)
+        s3fs.getinfo = s3fs._getinfo
+        return s3fs
+    else:
+        # Just use regular opendir(..)
+        return pyfs.opendir(dir, **kwargs)
