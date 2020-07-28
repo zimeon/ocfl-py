@@ -6,21 +6,13 @@ from zipfile import ZipFile
 import unittest
 from ocfl.validator import Validator
 
-# Setup to unpack a test case with an empty content directory
-# that we can't store in git
-for unpacked_directory in ['extra_fixtures/warn-objects/W003_empty_content_dir',
-                           'extra_fixtures/bad-objects/E024_empty_dir_in_content']:
-    zip_file = unpacked_directory + '.zip'
-    if not os.path.isfile(zip_file):
-        sys.exit(1)
-    if os.path.isdir(unpacked_directory):
-        shutil.rmtree(unpacked_directory)
-    if os.path.isfile(zip_file):
-        zf = ZipFile(zip_file, 'r')
-        zf.extractall(os.path.dirname(unpacked_directory))
-        zf.close()
-    if not os.path.isdir(unpacked_directory):
-        raise Exception("Oops, something went wrong with unzipping extra_fixtures/warn-objects/W003_empty_content_dir.zip")
+
+def extra_fixture_maybe_zip(filepath):
+    """Filepath or URL for extra_fixture that may be a zip file."""
+    zippath = filepath + '.zip'
+    if os.path.isfile(zippath):
+        return('zip://' + zippath)
+    return(filepath)
 
 
 class TestAll(unittest.TestCase):
@@ -64,7 +56,7 @@ class TestAll(unittest.TestCase):
             v = Validator()
             filepath = 'fixtures/1.0/bad-objects/' + bad
             if not os.path.isdir(filepath):
-                filepath = 'extra_fixtures/bad-objects/' + bad
+                filepath = extra_fixture_maybe_zip('extra_fixtures/bad-objects/' + bad)
             self.assertFalse(v.validate(filepath), msg=" for object at " + filepath)
             for code in codes:
                 self.assertIn(code, v.log.codes, msg="for object at " + filepath)
@@ -86,7 +78,7 @@ class TestAll(unittest.TestCase):
             v = Validator()
             filepath = 'fixtures/1.0/warn-objects/' + warn
             if not os.path.isdir(filepath):
-                filepath = 'extra_fixtures/warn-objects/' + warn
+                filepath = extra_fixture_maybe_zip('extra_fixtures/warn-objects/' + warn)
             self.assertTrue(v.validate(filepath), msg="for object at " + filepath)
             self.assertEqual(set(codes), set(v.log.codes), msg="for object at " + filepath)
 
