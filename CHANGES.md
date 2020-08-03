@@ -2,7 +2,7 @@
 
 ## ??? v1.1.1
 
-  * ???
+  * Add deeply nested text object (`extra_fixtures/good-objects/ten_level_deep_directories.zip`)
 
 ## 2020-08-03 v1.1.0
 
