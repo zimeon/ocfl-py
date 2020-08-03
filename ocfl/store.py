@@ -4,6 +4,7 @@ This code uses PyFilesystem (import fs) exclusively for access to files. This
 should enable application beyond the operating system filesystem.
 """
 import fs
+from fs.copy import copy_dir
 import hashlib
 import json
 import re

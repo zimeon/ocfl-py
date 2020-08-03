@@ -20,12 +20,12 @@ The following tables show the implementation status of all errors and warnings i
 | E009 | **Not in specification** | OCFL Object %s inventory versions block does not contain v1 or a zero padded equivalent \[[ocfl/inventory_validator.py#L228](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L228)\] |
 | E010 | **Not in specification** | OCFL Object %s inventory versions block includes an out-of-sequence version \[[ocfl/inventory_validator.py#L239](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L239)\] |
 | E011 | **Not in specification** | **Missing description** \[[ocfl/inventory_validator.py#L246](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L246)\] |
-| E015 | **Not in specification** | OCFL Object version directory %s includes an illegal file (%s) \[[ocfl/validator.py#L257](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L257)\] |
+| E015 | **Not in specification** | OCFL Object version directory %s includes an illegal file (%s) \[[ocfl/validator.py#L255](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L255)\] |
 | E018 | **Not in specification** | Content directory must not contain a forward slash (/) or be . or .. \[[ocfl/inventory_validator.py#L83](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L83)\] |
 | E023 | **Not in specification** | _See multiple cases identified with suffixes below_ |
-| | E023a | OCFL Object %s inventory manifest refers to a file path that is not present in the object (%s) \[[ocfl/validator.py#L263](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L263)\] |
-| | E023b | OCFL Object includes one or more files that are not mentioned in the %s inventory manifest (%s) \[[ocfl/validator.py#L281](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L281)\] |
-| E024 | **Not in specification** | OCFL Object version %s content directory includes empty path %s \[[ocfl/validator.py#L248](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L248)\] |
+| | E023a | OCFL Object %s inventory manifest refers to a file path that is not present in the object (%s) \[[ocfl/validator.py#L264](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L264)\] |
+| | E023b | OCFL Object includes one or more files that are not mentioned in the %s inventory manifest (%s) \[[ocfl/validator.py#L282](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L282)\] |
+| E024 | **Not in specification** | OCFL Object version %s content directory includes empty path %s \[[ocfl/validator.py#L246](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L246)\] |
 | E025 | **Not in specification** | _See multiple cases identified with suffixes below_ |
 | | E025a | OCFL Object %s inventory manifest block includes a digest (%s) that doesn't have the correct form for the %s algorithm \[[ocfl/inventory_validator.py#L130](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L130)\] |
 | E026 | **Not in specification** | _See multiple cases identified with suffixes below_ |
@@ -47,7 +47,7 @@ The following tables show the implementation status of all errors and warnings i
 | | E041c | OCFL Object %s inventory manifest block is not a JSON object \[[ocfl/inventory_validator.py#L123](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L123)\] |
 | E042 | **Not in specification** | OCFL Object %s inventory manifest includes invalid content path %s \[[ocfl/inventory_validator.py#L396](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L396)\] |
 | E044 | **Not in specification** | OCFL Object %s inventory versions block is not a JSON object \[[ocfl/inventory_validator.py#L205](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L205)\] |
-| E046 | **Not in specification** | OCFL Object root inventory describes versions %s but no corresponding version directory is present \[[ocfl/validator.py#L235](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L235)\] |
+| E046 | **Not in specification** | OCFL Object root inventory describes versions %s but no corresponding version directory is present \[[ocfl/validator.py#L258](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L258)\] |
 | E048 | **Not in specification** | OCFL Object %s inventory %s version block does not include a created date or it is malformed \[[ocfl/inventory_validator.py#L266](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L266)\] |
 | | E048c | OCFL Object %s inventory %s version block does not include a state block \[[ocfl/inventory_validator.py#L282](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L282)\] |
 | E049 | **Not in specification** | _See multiple cases identified with suffixes below_ |
@@ -90,8 +90,8 @@ The following tables show the implementation status of all errors and warnings i
 | E067 | **Not in specification** | OCFL Object extensions direct contains an unexpected non-directory entry: %s \[[ocfl/validator.py#L189](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L189)\] |
 | E090 | **Not in specification** | NOTE - E090 is essentially a processing instruction and can't be tested for. \[_Not implemented_\] |
 | E091 | **Not in specification** | OCFL Object %s inventory manifest file list for digest %s is not a JSON array \[_Not implemented_\] |
-| E092 | **Not in specification** | OCFL Object %s inventory manifest has digest %s for file %s which doesn't match calculated digest %s for that file \[[ocfl/inventory_validator.py#L132](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L132) [ocfl/validator.py#L268](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L268)\] |
-| E093 | **Not in specification** | OCFL Object %s inventory fixity block for digest algorithm %s has digest %s for file %s which doesn't match calculated digest %s for that file \[[ocfl/validator.py#L278](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L278)\] |
+| E092 | **Not in specification** | OCFL Object %s inventory manifest has digest %s for file %s which doesn't match calculated digest %s for that file \[[ocfl/inventory_validator.py#L132](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L132) [ocfl/validator.py#L269](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L269)\] |
+| E093 | **Not in specification** | OCFL Object %s inventory fixity block for digest algorithm %s has digest %s for file %s which doesn't match calculated digest %s for that file \[[ocfl/validator.py#L279](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L279)\] |
 | E094 | **Not in specification** | OCFL Object %s inventory %s version block has message key with value that isn't a string \[[ocfl/inventory_validator.py#L286](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L286)\] |
 | E095 | **Not in specification** | OCFL Object %s inventory version %s state has logical path %s used as both a directory and a file path. \[[ocfl/inventory_validator.py#L334](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L334)\] |
 | E096 | **Not in specification** | OCFL Object %s inventory manifest block includes digest %s more than once with different normalizations \[[ocfl/inventory_validator.py#L138](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L138)\] |
@@ -105,8 +105,8 @@ The following tables show the implementation status of all errors and warnings i
 | Code | Specification text (or suffixed code) | Implementation status and message/links |
 | --- | --- | --- |
 | W001 | **Not in specification** | OCFL Object %s inventory version numbers SHOULD NOT be zero-padded \[[ocfl/inventory_validator.py#L231](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L231)\] |
-| W002 | **Not in specification** | OCFL Object version directory %s SHOULD NOT contain any directory except the designated content directory (found %s) \[[ocfl/validator.py#L255](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L255)\] |
-| W003 | **Not in specification** | OCFL Object version directory %s SHOULD NOT contain an empty content directory \[[ocfl/validator.py#L253](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L253)\] |
+| W002 | **Not in specification** | OCFL Object version directory %s SHOULD NOT contain any directory except the designated content directory (found %s) \[[ocfl/validator.py#L253](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L253)\] |
+| W003 | **Not in specification** | OCFL Object version directory %s SHOULD NOT contain an empty content directory \[[ocfl/validator.py#L251](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L251)\] |
 | W004 | **Not in specification** | OCFL Object %s inventory SHOULD use sha512 but uses sha256 as the DigestAlgorithm \[[ocfl/inventory_validator.py#L75](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L75)\] |
 | W005 | **Not in specification** | OCFL Object %s inventory id SHOULD be a URI (got %s) \[[ocfl/inventory_validator.py#L61](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L61)\] |
 | W007 | **Not in specification** | _See multiple cases identified with suffixes below_ |
@@ -118,4 +118,4 @@ The following tables show the implementation status of all errors and warnings i
 | W011 | **Not in specification** | OCFL Object version metadata '%s' for %s in %s inventory does not match that in %s inventory \[[ocfl/inventory_validator.py#L424](https://github.com/zimeon/ocfl-py/blob/main/ocfl/inventory_validator.py#L424)\] |
 | W013 | **Not in specification** | OCFL Object includes unregistered extension directory '%s' \[[ocfl/validator.py#L187](https://github.com/zimeon/ocfl-py/blob/main/ocfl/validator.py#L187)\] |
 
-_Generated by `extract_codes.py` at 2020-07-23 13:32:25.482189_
+_Generated by `extract_codes.py` at 2020-08-03 10:12:18.864719_

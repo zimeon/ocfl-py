@@ -1,8 +1,9 @@
 # ocfl-py changelog
 
-## ??? v1.0.3
+## 2020-08-03 v1.1.0
 
-  * ???
+  * Change to use [PyFilesystem2](https://docs.pyfilesystem.org/en/latest/) for filesystem access which allows use of local filesystem, zip files, and S3. The S3 support is preliminary because it has a number of work-arounds to avoid PyFilesystem2's expectation that there are empty directrory objects
+  * Renames ocfl.version to ocfl.version_metadata for clarity
 
 ## 2020-07-10 v1.0.2
 

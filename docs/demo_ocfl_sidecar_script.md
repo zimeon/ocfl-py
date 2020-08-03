@@ -10,7 +10,7 @@ The `--version` argument will show version number and exit
 
 ```
 > python ocfl-sidecar.py --version
-ocfl-sidecar.py is part of ocfl-py version 1.0.2
+ocfl-sidecar.py is part of ocfl-py version 1.1.0
 ```
 
 

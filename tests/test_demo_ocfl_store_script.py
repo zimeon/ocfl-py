@@ -46,6 +46,7 @@ class TestAll(DemoTestCase):
                                "-v"])
         self.assertIn("Copying from fixtures/1.0/good-objects/minimal_one_version_one_file to", out)
         self.assertIn("root/ark%3A123%2Fabc", out)
+        self.assertIn("Copied", out)
 
     def test02_explore_simple_root(self):
         """Test exploration of a simple OCFL object root."""
