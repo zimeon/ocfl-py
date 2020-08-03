@@ -4,7 +4,7 @@ import bagit
 import os.path
 import tempfile
 from ocfl.bagger import BaggerError, bag_as_source, bag_extracted_version
-from ocfl.version import VersionMetadata
+from ocfl.version_metadata import VersionMetadata
 
 
 class TestAll(unittest.TestCase):

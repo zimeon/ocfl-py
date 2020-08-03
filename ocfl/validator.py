@@ -5,15 +5,18 @@ of Store, Object and Version used to build and manipulate OCFL data, but
 to leverage lower level functions such as digest creation etc.. Code style
 is plain/verbose with detailed and specific validation errors that might
 help someone debug an implementation.
+
+This code uses PyFilesystem (import fs) exclusively for access to files. This
+should enable application beyond the operating system filesystem.
 """
+import fs
 import json
-import os
-import os.path
 import re
 
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
 from .namaste import find_namastes, NamasteException
+from .pyfs import open_fs, ocfl_walk
 from .validation_logger import ValidationLogger
 from .w3c_datetime import str_to_datetime
 
@@ -46,31 +49,38 @@ class Validator(object):
         self.content_directory = 'content'
         self.inventory_digest_files = {}  # index by version_dir, algorithms may differ
         self.root_inv_validator = None
+        self.obj_fs = None
 
     def __str__(self, prefix=''):
         """String representation of validation log."""
         return self.log.__str__(prefix=prefix)
 
     def validate(self, path):
-        """Validate OCFL object at path.
+        """Validate OCFL object at path or pyfs root.
 
         Returns True if valid (warnings permitted), False otherwise.
         """
         self.initialize()
-        if not os.path.isdir(path):
+        try:
+            if type(path) == str:
+                self.obj_fs = open_fs(path)
+            else:
+                self.obj_fs = path
+                path = self.obj_fs.desc('')
+        except fs.errors.CreateFailed:
             self.log.error('E003c', path=path)
             return False
         # Object declaration
-        namastes = find_namastes(0, path)
+        namastes = find_namastes(0, pyfs=self.obj_fs)
         if len(namastes) == 0:
             self.log.error('E003a')
         elif len(namastes) > 1:
             self.log.error('E003b', files=len(namastes))
-        elif not namastes[0].content_ok(path):
+        elif not namastes[0].content_ok(pyfs=self.obj_fs):
             self.log.error('E007')
         # Object root inventory file
-        inv_file = os.path.join(path, 'inventory.json')
-        if not os.path.exists(inv_file):
+        inv_file = 'inventory.json'
+        if not self.obj_fs.exists(inv_file):
             self.log.error('E034')
             return False
         try:
@@ -84,11 +94,11 @@ class Validator(object):
                 # Don't look at storage if inventory fails validation
                 return False
             # Object root
-            self.validate_object_root(path, all_versions)
+            self.validate_object_root(all_versions)
             # Version inventory files
-            self.validate_version_inventories(path, inventory, all_versions)
+            self.validate_version_inventories(inventory, all_versions)
             # Object content
-            self.validate_content(path, inventory, all_versions)
+            self.validate_content(inventory, all_versions)
         except ValidatorAbortException:
             pass
         return self.log.num_errors == 0
@@ -101,7 +111,7 @@ class Validator(object):
         object itself.
         """
         try:
-            with open(inv_file) as fh:
+            with self.obj_fs.openbin(inv_file, 'r') as fh:
                 inventory = json.load(fh)
         except json.decoder.JSONDecodeError as e:
             self.log.error('E033', where=where, explanation=str(e))
@@ -114,7 +124,7 @@ class Validator(object):
     def validate_inventory_digest(self, inv_file, digest_algorithm, where="root"):
         """Validate the appropriate inventory digest file in path."""
         inv_digest_file = inv_file + '.' + digest_algorithm
-        if not os.path.exists(inv_digest_file):
+        if not self.obj_fs.exists(inv_digest_file):
             self.log.error('E058a', where=where, path=inv_digest_file)
         else:
             self.validate_inventory_digest_match(inv_file, inv_digest_file)
@@ -132,7 +142,7 @@ class Validator(object):
             digest_algorithm = m.group(1)
             try:
                 digest_recorded = self.read_inventory_digest(inv_digest_file)
-                digest_actual = file_digest(inv_file, digest_algorithm)
+                digest_actual = file_digest(inv_file, digest_algorithm, pyfs=self.obj_fs)
                 if digest_actual != digest_recorded:
                     self.log.error("E060", inv_file=inv_file, actual=digest_actual, recorded=digest_recorded, inv_digest_file=inv_digest_file)
             except Exception as e:
@@ -140,31 +150,30 @@ class Validator(object):
         else:
             self.log.error("E058b", inv_digest_file=inv_digest_file)
 
-    def validate_object_root(self, path, version_dirs):
-        """Validate object root at path.
+    def validate_object_root(self, version_dirs):
+        """Validate object root.
 
         All expected_files must be present and no other files.
         All expected_dirs must be present and no other dirs.
         """
         expected_files = ['0=ocfl_object_1.0', 'inventory.json',
                           'inventory.json.' + self.digest_algorithm]
-        for entry in os.listdir(path):
-            filepath = os.path.join(path, entry)
-            if os.path.isfile(filepath):
-                if entry not in expected_files:
-                    self.log.error('E001a', file=entry)
-            elif os.path.isdir(filepath):
-                if entry in version_dirs:
+        for entry in self.obj_fs.scandir(''):
+            if entry.is_file:
+                if entry.name not in expected_files:
+                    self.log.error('E001a', file=entry.name)
+            elif entry.is_dir:
+                if entry.name in version_dirs:
                     pass
-                elif entry == 'extensions':
-                    self.validate_extensions_dir(path)
+                elif entry.name == 'extensions':
+                    self.validate_extensions_dir()
                 else:
-                    self.log.error('E001b', dir=entry)
+                    self.log.error('E001b', dir=entry.name)
             else:
-                self.log.error('E001c', entry=entry)
+                self.log.error('E001c', entry=entry.name)
 
-    def validate_extensions_dir(self, path):
-        """Validate content of extensions directory inside object root at path.
+    def validate_extensions_dir(self):
+        """Validate content of extensions directory inside object root.
 
         Validate the extensions directory by checking that there aren't any
         entries in the extensions directory that aren't directories themselves.
@@ -172,34 +181,31 @@ class Validator(object):
         this code relies up the registered_extensions property to list known
         extensions.
         """
-        extpath = os.path.join(path, 'extensions')
-        for entry in os.listdir(extpath):
-            filepath = os.path.join(extpath, entry)
-            if os.path.isdir(filepath):
-                if entry not in self.registered_extensions:
-                    self.log.warn('W013', entry=entry)
+        for entry in self.obj_fs.scandir('extensions'):
+            if entry.is_dir:
+                if entry.name not in self.registered_extensions:
+                    self.log.warning('W013', entry=entry.name)
             else:
-                self.log.error('E067', entry=entry)
+                self.log.error('E067', entry=entry.name)
 
-    def validate_version_inventories(self, path, inventory, version_dirs):
+    def validate_version_inventories(self, inventory, version_dirs):
         """Each version SHOULD have an inventory up to that point."""
         if len(version_dirs) == 0:
             return
         inv_digest_files = {}  # index by version_dir
         last_version = version_dirs[-1]
         for version_dir in version_dirs:
-            version_path = os.path.join(path, version_dir)
-            inv_file = os.path.join(version_path, 'inventory.json')
-            if not os.path.exists(inv_file):
-                self.log.warn('W010', where=version_dir)
+            inv_file = fs.path.join(version_dir, 'inventory.json')
+            if not self.obj_fs.exists(inv_file):
+                self.log.warning('W010', where=version_dir)
             elif version_dir == last_version:
                 # Don't validate in this case. Per the spec the inventory in the last version
                 # MUST be identical to the copy in the object root
-                root_inv_file = os.path.join(path, 'inventory.json')
+                root_inv_file = 'inventory.json'
                 # FIXME -- how to diff efficiently?
-                with open(inv_file, 'r') as ifh:
+                with self.obj_fs.open(inv_file, 'r') as ifh:
                     inv = ifh.read()
-                with open(root_inv_file, 'r') as rifh:
+                with self.obj_fs.open(root_inv_file, 'r') as rifh:
                     root_inv = rifh.read()
                 if inv != root_inv:
                     self.log.error('E064', root_inv_file=root_inv_file, inv_file=inv_file)
@@ -216,41 +222,40 @@ class Validator(object):
                 if self.root_inv_validator is not None:
                     self.root_inv_validator.validate_as_prior_version(inv_validator)
 
-    def validate_content(self, path, inventory, version_dirs):
-        """Validate file presence and content at path against inventory.
+    def validate_content(self, inventory, version_dirs):
+        """Validate file presence and content against inventory.
 
         The inventory is assumed to be valid and safe to use for construction
         of file paths etc..
         """
         files_seen = set()
-        # Check on disk in each version directory
+        # Check files in each version directory
         for version_dir in version_dirs:
-            version_path = os.path.join(path, version_dir)
-            if not os.path.isdir(version_path):
-                self.log.error('E301', version_path=version_path)
-            else:
+            try:
                 # Check contents of version directory except content_directory
-                for entry in os.listdir(version_path):
+                for entry in self.obj_fs.listdir(version_dir):
                     if ((entry == 'inventory.json')
                             or (version_dir in self.inventory_digest_files and entry == self.inventory_digest_files[version_dir])):
                         pass
                     elif entry == self.content_directory:
                         # Check content_directory
-                        content_path = os.path.join(version_path, self.content_directory)
+                        content_path = fs.path.join(version_dir, self.content_directory)
                         num_content_files_in_version = 0
-                        for dirpath, dirs, files in os.walk(content_path, topdown=True):
-                            if dirpath != content_path and (len(dirs) + len(files)) == 0:
+                        for dirpath, dirs, files in ocfl_walk(self.obj_fs, content_path):
+                            if dirpath != '/' + content_path and (len(dirs) + len(files)) == 0:
                                 self.log.error("E024", where=version_dir, path=dirpath)
                             for file in files:
-                                obj_path = os.path.relpath(os.path.join(dirpath, file), start=path)
-                                files_seen.add(obj_path)
+                                files_seen.add(fs.path.join(dirpath, file).lstrip('/'))
                                 num_content_files_in_version += 1
                         if num_content_files_in_version == 0:
-                            self.log.warn("W003", where=version_dir)
-                    elif os.path.isdir(os.path.join(version_path, entry)):
-                        self.log.warn("W002", where=version_dir, entry=entry)
+                            self.log.warning("W003", where=version_dir)
+                    elif self.obj_fs.isdir(fs.path.join(version_dir, entry)):
+                        self.log.warning("W002", where=version_dir, entry=entry)
                     else:
                         self.log.error("E015", where=version_dir, entry=entry)
+            except (fs.errors.ResourceNotFound, fs.errors.DirectoryExpected) as e:
+                print(str(e))
+                self.log.error('E046', version_dir=version_dir)
         # Check all files in root manifest
         if 'manifest' in inventory:
             for digest in inventory['manifest']:
@@ -259,7 +264,7 @@ class Validator(object):
                         self.log.error('E023a', where='root', content_path=filepath)
                     else:
                         if self.check_digests:
-                            content_digest = file_digest(os.path.join(path, filepath), digest_type=self.digest_algorithm)
+                            content_digest = file_digest(filepath, digest_type=self.digest_algorithm, pyfs=self.obj_fs)
                             if content_digest != normalized_digest(digest, digest_type=self.digest_algorithm):
                                 self.log.error('E092', where='root', digest=digest, content_path=filepath, content_digest=content_digest)
                         files_seen.discard(filepath)
@@ -269,7 +274,7 @@ class Validator(object):
                 for digest in inventory['fixity'][digest_algorithm]:
                     if digest != self.digest_algorithm:  # don't recheck things we check from manifest
                         for filepath in inventory['fixity'][digest_algorithm][digest]:
-                            content_digest = file_digest(os.path.join(path, filepath), digest_type=digest_algorithm)
+                            content_digest = file_digest(filepath, digest_type=digest_algorithm, pyfs=self.obj_fs)
                             if content_digest != normalized_digest(digest, digest_type=digest_algorithm):
                                 self.log.error('E093', where='root', digest_algorith=digest_algorithm, digest=digest, content_path=filepath, content_digest=content_digest)
         # Anything left in files_seen is not mentioned in the inventory
@@ -281,7 +286,7 @@ class Validator(object):
 
         Raise exception if there is an error, else return digest.
         """
-        with open(inv_digest_file, 'r') as fh:
+        with self.obj_fs.open(inv_digest_file, 'r') as fh:
             line = fh.readline()
             # we ignore any following lines, could raise exception
         m = re.match(r'''(\w+)\s+(\S+)\s*$''', line)

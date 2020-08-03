@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Object tests."""
+import fs
+import fs.tempfs
 import io
 import json
 import logging
@@ -8,7 +10,7 @@ import sys
 import tempfile
 import unittest
 from ocfl.object import Object, ObjectException
-from ocfl.version import VersionMetadata
+from ocfl.version_metadata import VersionMetadata
 
 
 class TestAll(unittest.TestCase):
@@ -24,15 +26,11 @@ class TestAll(unittest.TestCase):
         oo = Object()
         self.assertEqual(oo.id, None)
         self.assertEqual(oo.digest_algorithm, 'sha512')
-        self.assertEqual(oo.skips, set())
-        self.assertEqual(oo.ocfl_version, 'draft')
         self.assertEqual(oo.fixity, None)
-        oo = Object(id='a:b', digest_algorithm='sha1', skips=['1', '2'],
-                    ocfl_version='0.9.9', fixity=['md5', 'crc16'])
+        oo = Object(id='a:b', digest_algorithm='sha1',
+                    fixity=['md5', 'crc16'])
         self.assertEqual(oo.id, 'a:b')
         self.assertEqual(oo.digest_algorithm, 'sha1')
-        self.assertEqual(oo.skips, set(('1', '2')))
-        self.assertEqual(oo.ocfl_version, '0.9.9')
         self.assertEqual(oo.fixity, ['md5', 'crc16'])
 
     def test02_parse_version_directory(self):
@@ -54,7 +52,10 @@ class TestAll(unittest.TestCase):
     def test03_digest(self):
         """Test digest wrapper mathod."""
         oo = Object(digest_algorithm='md5')
-        self.assertEqual(oo.digest('tests/testdata/files/empty'),
+        src_fs = fs.open_fs('tests/testdata')
+        self.assertEqual(oo.digest(src_fs, 'files/empty'),
+                         'd41d8cd98f00b204e9800998ecf8427e')
+        self.assertEqual(oo.digest(src_fs, '/files/empty'),
                          'd41d8cd98f00b204e9800998ecf8427e')
 
     def test04_start_inventory(self):
@@ -83,8 +84,11 @@ class TestAll(unittest.TestCase):
         self.maxDiff = None
         oo = Object(digest_algorithm="md5")
         inventory = {'manifest': {}, 'versions': {}}
-        oo.add_version(inventory, 'fixtures/1.0/content/spec-ex-full/v1', vdir='v1',
-                       metadata=VersionMetadata())
+        with open('fixtures/1.0/content/spec-ex-full/v1_inventory.json') as fh:
+            v_inventory = json.load(fh)
+        metadata = VersionMetadata(inventory=v_inventory, version='v1')
+        src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
+        oo.add_version(inventory, src_fs, src_dir='v1', vdir='v1', metadata=metadata)
         self.assertEqual(inventory['head'], 'v1')
         self.assertEqual(inventory['manifest'],
                          {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],
@@ -101,8 +105,11 @@ class TestAll(unittest.TestCase):
                            'user': {'address': 'alice@example.com', 'name': 'Alice'}}})
         self.assertNotIn('fixity', inventory)
         # Now add second version to check forward delta
-        oo.add_version(inventory, 'fixtures/1.0/content/spec-ex-full/v2', vdir='v2',
-                       metadata=VersionMetadata())
+        with open('fixtures/1.0/content/spec-ex-full/v2_inventory.json') as fh:
+            v_inventory = json.load(fh)
+        metadata = VersionMetadata(inventory=v_inventory, version='v2')
+        src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full/v2')
+        oo.add_version(inventory, src_fs, src_dir='', vdir='v2', metadata=metadata)
         self.assertEqual(inventory['head'], 'v2')
         self.assertEqual(inventory['manifest'],
                          {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],
@@ -119,18 +126,68 @@ class TestAll(unittest.TestCase):
         # Now with fixity
         oo = Object(digest_algorithm="md5", fixity=['sha1'])
         inventory = {'manifest': {}, 'versions': {}, 'fixity': {'sha1': {}}}
-        manifest_to_srcfile = oo.add_version(inventory, 'fixtures/1.0/content/spec-ex-full/v1', vdir='v1',
-                                             metadata=VersionMetadata())
+        md1 = VersionMetadata()
+        with open('fixtures/1.0/content/spec-ex-full/v1_inventory.json') as fh:
+            v_inventory = json.load(fh)
+        md1 = VersionMetadata(inventory=v_inventory, version='v1')
+        src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full/v1')
+        manifest_to_srcfile = oo.add_version(inventory, src_fs, src_dir='', vdir='v1', metadata=md1)
         self.assertEqual(manifest_to_srcfile, {
-            'v1/content/image.tiff': 'fixtures/1.0/content/spec-ex-full/v1/image.tiff',
-            'v1/content/empty.txt': 'fixtures/1.0/content/spec-ex-full/v1/empty.txt',
-            'v1/content/foo/bar.xml': 'fixtures/1.0/content/spec-ex-full/v1/foo/bar.xml'
+            'v1/content/image.tiff': 'image.tiff',
+            'v1/content/empty.txt': 'empty.txt',
+            'v1/content/foo/bar.xml': 'foo/bar.xml'
         })
+        self.assertEqual(len(inventory['fixity']['sha1']), 3)
+        # Test dedupe=False and forward_delta=False settings
+        oo = Object(dedupe=False, forward_delta=False, fixity=['md5'])
+        inventory = {'manifest': {}, 'versions': {}, 'fixity': {'md5': {}}}
+        md1 = VersionMetadata(inventory={
+            "id": "http://example.org/dedupe_content",
+            "versions": {
+                "v1": {
+                    "created": "2020-07-15T17:40:00",
+                    "message": "Initial import",
+                    "user": {
+                        "address": "mailto:alice@example.com",
+                        "name": "Alice"
+                    }
+                }
+            }}, version='v1')
+        src_fs = fs.open_fs('extra_fixtures/content/dedupe_content')
+        manifest_to_srcfile = oo.add_version(inventory, src_fs, src_dir='v1', vdir='v1', metadata=md1)
+        # Because of dedupe=False we will have multiple copies of empty files
+        self.assertEqual(manifest_to_srcfile, {
+            'v1/content/empty1.txt': 'v1/empty1.txt',
+            'v1/content/empty2.txt': 'v1/empty2.txt',
+            'v1/content/empty3.txt': 'v1/empty3.txt'})
+        self.assertEqual(inventory['fixity']['md5'], {"d41d8cd98f00b204e9800998ecf8427e": [
+            "v1/content/empty1.txt", "v1/content/empty2.txt", "v1/content/empty3.txt"]})
+        # Add a second version which will test for forward_delta=False
+        md2 = VersionMetadata(inventory={
+            "id": "http://example.org/dedupe_content",
+            "versions": {
+                "v2": {
+                    "created": "2020-07-15T17:54:00",
+                    "message": "Update",
+                    "user": {
+                        "address": "mailto:bob@example.com",
+                        "name": "Bob"
+                    }
+                }
+            }}, version='v2')
+        manifest_to_srcfile = oo.add_version(inventory, src_fs, src_dir='v2', vdir='v2', metadata=md2)
+        # Because of forward_delta=False we will have an additional copy of the empty file
+        self.assertEqual(manifest_to_srcfile, {
+            'v2/content/empty4.txt': 'v2/empty4.txt'})
+        self.assertEqual(inventory['fixity']['md5'], {"d41d8cd98f00b204e9800998ecf8427e": [
+            "v1/content/empty1.txt", "v1/content/empty2.txt",
+            "v1/content/empty3.txt", "v2/content/empty4.txt"]})
 
     def test06_build_inventory(self):
         """Test build_inventory."""
         oo = Object(digest_algorithm="md5")
-        for (vdir, inventory, manifest_to_srcfile) in oo.build_inventory('fixtures/1.0/content/spec-ex-full',
+        src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
+        for (vdir, inventory, manifest_to_srcfile) in oo.build_inventory(src_fs,
                                                                          metadata=VersionMetadata()):
             pass
         self.assertEqual(inventory['type'], 'https://ocfl.io/1.0/spec/#inventory')
@@ -141,50 +198,33 @@ class TestAll(unittest.TestCase):
                           'c289c8ccd4bab6e385f5afdd89b5bda2': ['v1/content/image.tiff'],
                           'd41d8cd98f00b204e9800998ecf8427e': ['v1/content/empty.txt']})
         self.assertEqual(len(inventory['versions']), 3)
-        # test skips by skipping 'v3'
-        oo = Object(digest_algorithm="md5", skips=['v3'])
-        for (vdir, inventory, manifest_to_srcfile) in oo.build_inventory('fixtures/1.0/content/spec-ex-full',
-                                                                         metadata=VersionMetadata()):
-            if vdir == 'v1':
-                self.assertEqual(manifest_to_srcfile, {
-                    'v1/content/image.tiff': 'fixtures/1.0/content/spec-ex-full/v1/image.tiff',
-                    'v1/content/empty.txt': 'fixtures/1.0/content/spec-ex-full/v1/empty.txt',
-                    'v1/content/foo/bar.xml': 'fixtures/1.0/content/spec-ex-full/v1/foo/bar.xml'
-                })
-            else:
-                self.assertEqual(manifest_to_srcfile, {
-                    'v2/content/foo/bar.xml': 'fixtures/1.0/content/spec-ex-full/v2/foo/bar.xml'
-                })
-        self.assertEqual(inventory['head'], 'v2')
-        self.assertEqual(len(inventory['versions']), 2)
 
     def test07_write_object_declaration(self):
         """Test write_object_declaration."""
-        tempdir = tempfile.mkdtemp(prefix='test_write_object_declaration')
-        oo = Object()
-        oo.write_object_declaration(tempdir)
-        self.assertEqual(os.listdir(tempdir), ['0=ocfl_object_1.0'])
+        tmpfs = fs.tempfs.TempFS(identifier='test_write_object_declaration')
+        oo = Object(obj_fs=tmpfs)
+        oo.write_object_declaration()
+        self.assertEqual(tmpfs.listdir('/'), ['0=ocfl_object_1.0'])
 
     def test08_write_inventory_and_sidecar(self):
         """Test write_object_and_sidecar."""
-        tempdir = tempfile.mkdtemp(prefix='test_write_inventory_and_sidecar')
-        oo = Object()
-        oo.write_inventory_and_sidecar(tempdir, {'abc': 'def'})
-        self.assertEqual(set(os.listdir(tempdir)),
+        tmpfs = fs.tempfs.TempFS(identifier='test_write_inventory_and_sidecar')
+        oo = Object(obj_fs=tmpfs)
+        oo.write_inventory_and_sidecar({'abc': 'def'})
+        self.assertEqual(set(tmpfs.listdir('')),
                          set(['inventory.json', 'inventory.json.sha512']))
-        with open(os.path.join(tempdir, 'inventory.json')) as fh:
+        with tmpfs.open('inventory.json') as fh:
             j = json.load(fh)
         self.assertEqual(j, {'abc': 'def'})
-        with open(os.path.join(tempdir, 'inventory.json.sha512')) as fh:
-            digest = fh.read()
+        digest = tmpfs.readtext('inventory.json.sha512')
         self.assertRegex(digest, r'''[0-9a-f]{128} inventory.json\n''')
-        # and now makind directory
-        oo = Object()
-        invdir = os.path.join(tempdir, 'xxx')
-        oo.write_inventory_and_sidecar(invdir, {'gh': 'ik'})
-        self.assertEqual(set(os.listdir(invdir)),
+        # and now making directory
+        oo = Object(obj_fs=tmpfs)
+        invdir = 'xxx'
+        oo.write_inventory_and_sidecar({'gh': 'ik'}, invdir)
+        self.assertEqual(set(tmpfs.listdir(invdir)),
                          set(['inventory.json', 'inventory.json.sha512']))
-        with open(os.path.join(invdir, 'inventory.json')) as fh:
+        with tmpfs.open(fs.path.join(invdir, 'inventory.json')) as fh:
             j = json.load(fh)
         self.assertEqual(j, {'gh': 'ik'})
 
@@ -202,7 +242,17 @@ class TestAll(unittest.TestCase):
                          set(['0=ocfl_object_1.0',
                               'inventory.json', 'inventory.json.sha512',
                               'v1', 'v2', 'v3']))
-        # FIXME - extra tests for outputs created and special cases
+        # If objdir is None the output is just a log saying what would have been written
+        log_io = io.StringIO()
+        oo.log.addHandler(logging.StreamHandler(log_io))
+        oo.build(srcdir='fixtures/1.0/content/spec-ex-full',
+                 metadata=VersionMetadata(),
+                 objdir=None)
+        log_out = log_io.getvalue()
+        self.assertIn('### Inventory for v1', log_out)
+        self.assertIn('"id": "uri:firkin",', log_out)
+        self.assertIn('### Inventory for v2', log_out)
+        self.assertIn('### Inventory for v3', log_out)
 
     def test10_create(self):
         """Test create method."""
@@ -266,9 +316,25 @@ class TestAll(unittest.TestCase):
     def test14_parse_inventory(self):
         """Test parse_inventory method."""
         oo = Object()
-        self.assertTrue(oo.parse_inventory(path='fixtures/1.0/good-objects/minimal_one_version_one_file'))
+        oo.open_fs('fixtures/1.0/good-objects/minimal_one_version_one_file')
+        inv = oo.parse_inventory()
+        self.assertEqual(inv['id'], "ark:123/abc")
+        digest = "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f"
+        self.assertEqual(inv['manifest'][digest],
+                         ["v1/content/a_file.txt"])
+        self.assertEqual(inv['versions']['v1']['state'][digest],
+                         ["a_file.txt"])
+        # Digest normalization on read -- file has mixed case but result should be same
+        oo.open_fs('fixtures/1.0/good-objects/minimal_mixed_digests')
+        inv = oo.parse_inventory()
+        self.assertEqual(inv['id'], "http://example.org/minimal_mixed_digests")
+        self.assertEqual(inv['manifest'][digest],
+                         ["v1/content/a_file.txt"])
+        self.assertEqual(inv['versions']['v1']['state'][digest],
+                         ["a_file.txt"])
         # Error cases
-        self.assertRaises(ObjectException, oo.parse_inventory, path='fixtures/1.0/bad-objects/E036_no_id')
+        oo.open_fs('fixtures/1.0/bad-objects/E036_no_id')
+        self.assertRaises(ObjectException, oo.parse_inventory)
 
     def test15_map_filepath(self):
         """Test map_filepath method."""
@@ -295,3 +361,22 @@ class TestAll(unittest.TestCase):
         oo.extract('fixtures/1.0/good-objects/minimal_one_version_one_file', 'v1', dstdir)
         self.assertEqual(os.listdir(tempdir), ['vvv1'])
         self.assertEqual(os.listdir(dstdir), ['a_file.txt'])
+        # Specify "head" and expect v3
+        oo = Object()
+        dstdir = os.path.join(tempdir, 'vvv2')
+        oo.extract('fixtures/1.0/good-objects/spec-ex-full', 'head', dstdir)
+        self.assertEqual(set(os.listdir(dstdir)), set(["foo", "empty2.txt", "image.tiff"]))
+        # Error, no v4
+        self.assertRaises(ObjectException, oo.extract, 'fixtures/1.0/good-objects/spec-ex-full', 'v4', dstdir)
+        # Error, dstdir already exists
+        self.assertRaises(ObjectException, oo.extract, 'fixtures/1.0/good-objects/spec-ex-full', 'head', tempdir)
+        # Error, parent dir does not exist
+        dstdir = os.path.join(tempdir, 'intermediate/vvv3')
+        self.assertRaises(ObjectException, oo.extract, 'fixtures/1.0/good-objects/spec-ex-full', 'head', dstdir)
+
+    def test_id_from_inventory(self):
+        """Test id_from_inventory method."""
+        oo = Object(path='fixtures/1.0/good-objects/minimal_one_version_one_file')
+        self.assertEqual(oo.id_from_inventory(), 'ark:123/abc')
+        oo = Object(path='fixtures/1.0/bad-objects/E036_no_id')
+        self.assertEqual(oo.id_from_inventory(), 'UNKNOWN-ID')

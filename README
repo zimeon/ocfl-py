@@ -10,7 +10,9 @@ ocfl-py - An OCFL implementation in Python
 **WORK IN PROGRESS - NO GUARANTEE, NO MONEY BACK :-)**
 
 Attempts to follow `OCFL specification v1.0
-<https://ocfl.io/1.0/spec/>`_
+<https://ocfl.io/1.0/spec/>`_, see `implementation status for errors and warnings
+<https://github.com/zimeon/ocfl-py/blob/main/docs/validation_status.md>`_ for
+details of validator support.
 
 Installing
 ----------
@@ -21,8 +23,9 @@ This code attempts to support the OCFL specification v1.0 and to additional
 developments. To get the most up to date version check out the ``main``
 branch from github (or if you are reckless you can try the ``develop`` branch).
 
-I hope to keep a version not too far out of date on PyPI too, which can
-be installed or upgraded to the current version with:
+I hope to keep a version not too far out of date on `PyPI
+<https://pypi.org/project/ocfl-py/>`_ too, which can be installed or upgraded
+to the current version with:
 
     pip install --upgrade ocfl-py
 
@@ -60,4 +63,3 @@ Copyright 2018--2020 Simeon Warner and `contributors
 <https://github.com/zimeon/ocfl-py/graphs/contributors>`_.
 Provided under the MIT license, see `LICENSE.txt
 <https://github.com/zimeon/ocfl-py/blob/main/LICENSE.txt>`_.
-

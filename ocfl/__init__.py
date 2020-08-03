@@ -2,7 +2,7 @@
 import sys
 from ._version import __version__
 from .object import *
-from .version import *
+from .version_metadata import *
 from .store import *
 from .digest import *
 from .disposition import get_dispositor

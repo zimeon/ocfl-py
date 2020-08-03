@@ -4,6 +4,7 @@ NAMASTE spec: http://www.cdlib.org/inside/diglib/namaste/namastespec.html
 
 See also command line tool: http://github.com/mjgiarlo/namaste
 """
+import fs
 import os
 import os.path
 import re
@@ -20,7 +21,7 @@ def content_to_tvalue(content):
     return re.sub(r'''[^\w\.\-:]''', '_', content[:40])
 
 
-def find_namastes(d, dir, max=10):
+def find_namastes(d, dir='', pyfs=None, max=10):
     """Find NAMASTE files with tag d in dir, return list of Namaste objects.
 
     max sets a limit on the number of Namaste objects returned, a NamasteException
@@ -28,12 +29,13 @@ def find_namastes(d, dir, max=10):
     """
     prefix = str(d) + '='
     namastes = []
-    for filename in os.listdir(dir):
-        if filename.startswith(prefix):
-            if len(namastes) >= max:
-                raise NamasteException("Found too many Namaste files with tag %s in %s" % (str(d), dir))
-            namastes.append(Namaste(d, tvalue=filename[len(prefix):]))
-    return namastes
+    if pyfs is not None:
+        filenames = [f for f in pyfs.listdir(dir) if f.startswith(prefix)]
+    else:
+        filenames = [f for f in os.listdir(dir) if f.startswith(prefix)]
+    if len(filenames) > max:
+        raise NamasteException("Found too many Namaste files with tag %s in %s" % (str(d), dir))
+    return [Namaste(d, tvalue=filename[len(prefix):]) for filename in filenames]
 
 
 def get_namaste(d, dir):
@@ -84,31 +86,45 @@ class Namaste(object):
         else:
             return self._tr_func(self.content)
 
-    def write(self, dir):
-        """Write NAMASTE file to dir.
+    def write(self, dir='', pyfs=None):
+        """Write NAMASTE file to dir, optionally in fs.
+
+        Handle both a dirctory with in a pyfs filesystem (if pyfs is set) or
+        else just a directory with plain os file support.
 
         e.g.
+            Namaste(0, 'ocfl_1.0').write(pyfs=obj_fs)
+        or
             Namaste(0, 'ocfl_1.0').write(dir)
         """
-        with open(os.path.join(dir, self.filename), 'w') as fh:
-            fh.write(self.content + "\n")
+        if pyfs is not None:
+            pyfs.writetext(fs.path.join(dir, self.filename), self.content + "\n")
+        else:
+            with open(os.path.join(dir, self.filename), 'w') as fh:
+                fh.write(self.content + "\n")
 
-    def check_content(self, dir):
+    def check_content(self, dir='', pyfs=None):
         """Check that the file content is compatible with the tvalue based on tr_func, else raise NamasteException."""
-        filepath = os.path.join(dir, self.filename)
+        filepath = fs.path.join(dir, self.filename)
         if self.tvalue == '':
             raise NamasteException("Cannot check Namaste file %s without tvalue being set!" % (filepath))
-        if not os.path.isfile(filepath):
-            raise NamasteException("Namaste file %s does not exist!" % (filepath))
-        with open(filepath, 'r') as fh:
-            content = fh.read()
+        if pyfs is not None:
+            try:
+                content = pyfs.readtext(filepath)
+            except fs.errors.ResourceNotFound:
+                raise NamasteException("Namaste file %s cannot be read!" % (filepath))
+        else:
+            if not os.path.isfile(filepath):
+                raise NamasteException("Namaste file %s does not exist!" % (filepath))
+            with open(filepath, 'r') as fh:
+                content = fh.read()
         if self.tvalue != self._tr_func(content):
             raise NamasteException("Content of Namaste file %s doesn't match tvalue %s" % (filepath, self.tvalue))
 
-    def content_ok(self, dir):
+    def content_ok(self, dir='', pyfs=None):
         """True is check_content() does not raise an exception."""
         try:
-            self.check_content(dir)
+            self.check_content(dir, pyfs)
         except Exception:
             return False
         return True

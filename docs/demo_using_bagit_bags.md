@@ -15,7 +15,7 @@ INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/
 INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/bags/uaa_v1/bagit.txt
 INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/bags/uaa_v1/bag-info.txt
 INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/bags/uaa_v1/manifest-sha512.txt
-INFO:root:Created OCFL object info:bb123cd4567 in tmp/obj
+INFO:ocfl.object:Created OCFL object info:bb123cd4567 in tmp/obj
 ```
 
 
@@ -62,8 +62,8 @@ INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/
 INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/bags/uaa_v2/bagit.txt
 INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/bags/uaa_v2/bag-info.txt
 INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/bags/uaa_v2/manifest-sha512.txt
-INFO:root:Will update info:bb123cd4567 v1 -> v2
-INFO:root:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v2
+INFO:ocfl.object:Will update info:bb123cd4567 v1 -> v2
+INFO:ocfl.object:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v2
 ```
 
 
@@ -102,8 +102,8 @@ INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/
 INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/bags/uaa_v3/bagit.txt
 INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/bags/uaa_v3/bag-info.txt
 INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/bags/uaa_v3/manifest-sha512.txt
-INFO:root:Will update info:bb123cd4567 v2 -> v3
-INFO:root:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v3
+INFO:ocfl.object:Will update info:bb123cd4567 v2 -> v3
+INFO:ocfl.object:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v3
 ```
 
 
@@ -147,8 +147,8 @@ INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/
 INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/bags/uaa_v4/bagit.txt
 INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/bags/uaa_v4/bag-info.txt
 INFO:bagit:Verifying checksum for file /Users/simeon/src/ocfl-py/tests/testdata/bags/uaa_v4/manifest-sha512.txt
-INFO:root:Will update info:bb123cd4567 v3 -> v4
-INFO:root:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v4
+INFO:ocfl.object:Will update info:bb123cd4567 v3 -> v4
+INFO:ocfl.object:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v4
 ```
 
 
@@ -158,11 +158,11 @@ Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` cont
 
 ```
 > python ocfl-object.py --extract v4 --objdir tmp/obj --dstbag tmp/extracted_v4 -v
-INFO:root:Extracted v4 into tmp/extracted_v4
+INFO:ocfl.object:Extracted v4 into tmp/extracted_v4
 INFO:bagit:Creating bag for directory tmp/extracted_v4
 INFO:bagit:Creating data directory
-INFO:bagit:Moving my_content to /privatetmp/extracted_v4/tmp3ky3u9tv/my_content
-INFO:bagit:Moving /privatetmp/extracted_v4/tmp3ky3u9tv to data
+INFO:bagit:Moving my_content to /privatetmp/extracted_v4/tmp884jy6bw/my_content
+INFO:bagit:Moving /privatetmp/extracted_v4/tmp884jy6bw to data
 INFO:bagit:Using 1 processes to generate manifests: sha512
 INFO:bagit:Generating manifest lines for file data/my_content/dracula.txt
 INFO:bagit:Generating manifest lines for file data/my_content/dunwich.txt
@@ -184,12 +184,12 @@ We note that the OCFL object had only one `content` file in `v4` but the extract
 diff -r tmp/extracted_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
 1,2c1
 < Bag-Software-Agent: bagit.py v1.7.1.dev15+g6e14a50 <https://github.com/LibraryOfCongress/bagit-python>
-< Bagging-Date: 2020-07-10
+< Bagging-Date: 2020-08-03
 ---
 > Bagging-Date: 2020-01-04
 diff -r tmp/extracted_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagmanifest-sha512.txt
 2c2
-< 14fd538ee8c8c0d3b636b1d664b699f649610c21b03f120de00cf15e70e514275c38d2dc7b5c89f07521ad7d8d9f4015e91cec567a1d344e124cb21ee7a4d85c bag-info.txt
+< ad006054af3b49947954d7d9a70279a6aa65e6ee3a5a909a1f08ef5fbbedda434f35f915c18e1bdecbfc0558e0c08a7725882162193804d0fb99dc908cd6decc bag-info.txt
 ---
 > 10624e6d45462def7af66d1a0d977606c7b073b01809c1d42258cfab5c34a275480943cbe78044416aee1f23822cc3762f92247b8f39b5c6ddc5ae32a8f94ce5 bag-info.txt
 ```

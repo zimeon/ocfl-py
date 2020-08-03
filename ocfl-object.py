@@ -3,7 +3,6 @@
 import argparse
 import logging
 import ocfl
-import os.path
 import sys
 
 
@@ -81,15 +80,13 @@ def do_object_operation(args):
     obj = ocfl.Object(id=args.id,
                       digest_algorithm=args.digest,
                       filepath_normalization=args.normalization,
-                      skips=args.skip,
                       forward_delta=not args.no_forward_delta,
                       dedupe=not args.no_dedupe,
                       lax_digests=args.lax_digests,
-                      ocfl_version=args.ocfl_version,
                       fixity=args.fixity)
     if args.create:
         srcdir = args.srcdir
-        metadata = ocfl.VersionMetadata(args)
+        metadata = ocfl.VersionMetadata(args=args)
         if args.srcbag is not None:
             srcdir = ocfl.bag_as_source(args.srcbag, metadata)
             if metadata.id is not None:
@@ -106,13 +103,13 @@ def do_object_operation(args):
     elif args.build:
         if args.srcdir is None:
             raise FatalError("Must specify --srcdir containing version directories when building an OCFL object!")
-        metadata = ocfl.VersionMetadata(args)
+        metadata = ocfl.VersionMetadata(args=args)
         obj.build(srcdir=args.srcdir,
                   metadata=metadata,
                   objdir=args.objdir)
     elif args.update:
         srcdir = args.srcdir
-        metadata = ocfl.VersionMetadata(args)
+        metadata = ocfl.VersionMetadata(args=args)
         if args.srcbag is not None:
             srcdir = ocfl.bag_as_source(args.srcbag, metadata)
         elif args.srcdir is None:
@@ -128,7 +125,7 @@ def do_object_operation(args):
         if args.dstdir and args.dstbag:
             args.dstdir = None  # Override dstdir if dstbag specified
         version = args.extract
-        dst = os.path.join(args.dstdir or args.dstbag)
+        dst = args.dstdir or args.dstbag
         metadata = obj.extract(objdir=args.objdir,
                                version=version,
                                dstdir=dst)

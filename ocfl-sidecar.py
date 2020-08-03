@@ -26,17 +26,17 @@ def create_sidecar(dir):
     """Create sidecar for inventory in dir."""
     inventory_path = os.path.join(dir, INVENTORY_NAME)
     if not os.path.isfile(inventory_path):
-        logging.error("Ignoring path %s because there is not file %s." % (dir, inventory_path))
+        logging.error("Ignoring path %s because there is no inventory file %s." % (dir, inventory_path))
     else:
-        object = ocfl.Object()
+        object = ocfl.Object(path=dir)
         if args.digest is not None:
             object.digest_algorithm = args.digest
         else:  # Read inventory in the hope of setting digest_algoritm
             try:
-                object.parse_inventory(dir)
+                object.parse_inventory()
             except ocfl.ObjectException as e:
                 logging.warning("Failed to read inventory in directory %s (%s)" % (dir, str(e)))
-        sidecar = object.write_inventory_sidecar(dir)
+        sidecar = object.write_inventory_sidecar()
         logging.info("Written sidecar file %s" % (sidecar))
 
 

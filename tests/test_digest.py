@@ -1,4 +1,5 @@
 """Digest tests."""
+import fs
 import unittest
 import sys
 from ocfl.digest import file_digest, digest_regex, normalized_digest
@@ -35,6 +36,12 @@ class TestAll(unittest.TestCase):
     def test_file_digest__long(self):
         """Test file_digest method with content."""
         self.assertEqual(file_digest('tests/testdata/files/hello_out_there.txt', 'md5'),
+                         '9c7ec1389a61f1e15185bd976672bc63')
+
+    def test_file_digest__pyfs(self):
+        """Test file_digest method with content."""
+        td_fs = fs.open_fs('tests/testdata')
+        self.assertEqual(file_digest('files/hello_out_there.txt', 'md5', pyfs=td_fs),
                          '9c7ec1389a61f1e15185bd976672bc63')
 
     def test_digest_regex(self):

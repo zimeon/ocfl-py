@@ -14,7 +14,8 @@ class ValidationLogger(object):
 
     validation_codes = None
 
-    def __init__(self, show_warnings=False, show_errors=True, lang='en'):
+    def __init__(self, show_warnings=False, show_errors=True,
+                 lang='en', validation_codes=None):
         """Initialize OCFL validation logger."""
         self.show_warnings = show_warnings
         self.show_errors = show_errors
@@ -25,7 +26,9 @@ class ValidationLogger(object):
         self.num_warnings = 0
         self.info = 0
         self.spec = 'https://ocfl.io/1.0/spec/'
-        if self.validation_codes is None:
+        if validation_codes is not None:
+            self.validation_codes = validation_codes
+        elif self.validation_codes is None:
             with open(os.path.join(os.path.dirname(__file__), 'data/validation-errors.json'), 'r') as fh:
                 self.validation_codes = json.load(fh)
 
@@ -42,7 +45,7 @@ class ValidationLogger(object):
                 # first key alphabetically
                 lang_desc = desc[sorted(list(desc.keys()))[0]]
             else:
-                lang_desc = "Unknown " + severity + ": %s - no description, params (%s)"
+                lang_desc = "Unknown " + severity + " without a description"
             # Add in any parameters
             if 'params' in self.validation_codes[code]:
                 params = []
@@ -51,7 +54,7 @@ class ValidationLogger(object):
                 try:
                     lang_desc = lang_desc % tuple(params)
                 except TypeError:
-                    lang_desc += str(args)
+                    lang_desc += ' ' + str(args)
             message = '[' + code + '] ' + lang_desc
         else:
             message = "Unknown " + severity + ": %s - params (%s)" % (code, str(args))
@@ -69,7 +72,7 @@ class ValidationLogger(object):
         self.error_or_warning(code, severity='error', **args)
         self.num_errors += 1
 
-    def warn(self, code, **args):
+    def warning(self, code, **args):
         """Add warning code to self.codes."""
         self.error_or_warning(code, severity='warning', **args)
         self.num_warnings += 1
