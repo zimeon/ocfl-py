@@ -1,0 +1,1 @@
+A bad file, should cause E072 error

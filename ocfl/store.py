@@ -20,6 +20,7 @@ from .namaste import find_namastes, Namaste
 from .object import Object
 from .pyfs import open_fs, ocfl_walk, ocfl_opendir
 from .validator import Validator
+from .validation_logger import ValidationLogger
 
 
 class StoreException(Exception):
@@ -46,13 +47,14 @@ class Store(object):
         self.num_traversal_errors = 0
         self.extension = None
         self.description = None
+        self.log = None
 
     def open_root_fs(self, create=False):
         """Open pyfs filesystem for this OCFL storage root."""
         try:
             self.root_fs = open_fs(self.root, create=create)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
-            raise StoreException("Failed to OCFL storage root filesystem '%s' (%s)" % (self.root, str(e)))
+            raise StoreException("Failed to open OCFL storage root filesystem '%s' (%s)" % (self.root, str(e)))
 
     @property
     def dispositor(self):
@@ -64,10 +66,14 @@ class Store(object):
             self._dispositor = get_dispositor(disposition=self.disposition)
         return self._dispositor
 
-    def traversal_error(self, message):
+    def traversal_error(self, code, **kwargs):
         """Record error traversing OCFL storage root."""
         self.num_traversal_errors += 1
-        logging.error(message)
+        if self.log is None:  # FIXME - What to do in non-validator context?
+            args = ', '.join('{0}={1!r}'.format(k, v) for k, v in kwargs.items())
+            logging.error("Traversal error %s - %s" % (code, args))
+        else:
+            self.log.error(code, **kwargs)
 
     def object_path(self, identifier):
         """Path to OCFL object with given identifier relative to the OCFL storage root."""
@@ -150,25 +156,25 @@ class Store(object):
             if dirpath == '/':
                 pass  # Ignore files in storage root
             elif (len(dirs) + len(files)) == 0:
-                self.traversal_error("Empty directory %s" % (dirpath))
+                self.traversal_error("E073", path=dirpath)
             elif len(files) == 0:
                 pass  # Just an intermediate directory
             else:
                 # Is this directory an OCFL object? Look for any 0= file.
                 zero_eqs = [file for file in files if file.startswith('0=')]
                 if len(zero_eqs) > 1:
-                    self.traversal_error("Multiple 0= declaration files in %s, ignoring" % (dirpath))
+                    self.traversal_error("E003d", path=dirpath)
                 elif len(zero_eqs) == 1:
                     declaration = zero_eqs[0]
                     match = re.match(r'''0=ocfl_object_(\d+\.\d+)''', declaration)
                     if match and match.group(1) == '1.0':
                         yield (dirpath.lstrip('/'))
                     elif match:
-                        self.traversal_error("Object with unknown version %s in %s, ignoring" % (match.group(1), dirpath))
+                        self.traversal_error("E004a", path=dirpath, version=match.group(1))
                     else:
-                        self.traversal_error("Object with unrecognized declaration %s in %s, ignoring" % (declaration, dirpath))
+                        self.traversal_error("E004b", path=dirpath, declaration=declaration)
                 else:
-                    self.traversal_error("Directory %s has file but not object declaration, ignoring" % (dirpath))
+                    self.traversal_error("E072", path=dirpath)
 
     def list(self):
         """List contents of this OCFL storage root."""
@@ -184,16 +190,13 @@ class Store(object):
                 # FIXME - maybe do some more stuff in here
         logging.info("Found %d OCFL Objects under root %s" % (num_objects, self.root))
 
-    def validate(self, validate_objects=True, show_warnings=False, show_errors=True, check_digests=True):
-        """Validate OCFL storage root and optionally all objects."""
-        valid = True
-        self.open_root_fs()
-        try:
-            self.check_root_structure()
-            logging.info("Storage root structure is VALID")
-        except StoreException as e:
-            valid = False
-            logging.info("Storage root structure is INVALID (%s)" % (str(e)))
+    def validate_hierarchy(self, validate_objects=True, check_digests=True, show_warnings=False):
+        """Validate storage root hierarchy.
+
+        Returns:
+            num_objects - number of objects checked
+            good_objects - number of objects checked that were found to be valid
+        """
         num_objects = 0
         good_objects = 0
         for dirpath in self.object_paths():
@@ -209,6 +212,20 @@ class Store(object):
                 if messages != '':
                     print(messages)
                 num_objects += 1
+        return num_objects, good_objects
+
+    def validate(self, validate_objects=True, check_digests=True, show_warnings=False, show_errors=True, lang='en'):
+        """Validate OCFL storage root and optionally all objects."""
+        valid = True
+        self.log = ValidationLogger(show_warnings=show_warnings, show_errors=show_errors, lang=lang)
+        self.open_root_fs()
+        try:
+            self.check_root_structure()
+            logging.info("Storage root structure is VALID")
+        except StoreException as e:
+            valid = False
+            logging.info("Storage root structure is INVALID (%s)" % (str(e)))
+        num_objects, good_objects = self.validate_hierarchy(validate_objects=validate_objects, check_digests=check_digests, show_warnings=show_warnings)
         if validate_objects:
             if good_objects == num_objects:
                 logging.info("Objects checked: %d / %d are VALID" % (good_objects, num_objects))
@@ -219,6 +236,7 @@ class Store(object):
             logging.info("Not checking OCFL objects")
         if self.num_traversal_errors > 0:
             valid = False
+            print(str(self.log))
             logging.info("Encountered %d errors traversing storage root" % (self.num_traversal_errors))
         # FIXME - do some stuff in here
         if valid:
