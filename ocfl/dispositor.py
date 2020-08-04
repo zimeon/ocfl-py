@@ -1,13 +1,10 @@
 """Base class for Dispositor objects."""
 import os
 import os.path
-try:
-    from urllib.parse import quote_plus, unquote_plus  # py3
-except ImportError:                                    # pragma: no cover -- py2
-    from urllib import quote_plus, unquote_plus        # pragma: no cover -- py2
+from urllib.parse import quote_plus, unquote_plus
 
 
-class Dispositor(object):
+class Dispositor:
     """Base class for disposition handlers -- let's call them Dispositors."""
 
     def __init__(self):
@@ -36,11 +33,11 @@ class Dispositor(object):
 
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to some root."""
-        raise Exeption("No yet implemented")
+        raise Exception("No yet implemented")
 
     def relative_path_to_identifier(self, path):
         """Convert relative path to identifier."""
-        raise Exeption("No yet implemented")
+        raise Exception("No yet implemented")
 
     def path_to_identifier(self, path, root=None):
         """Convert path relative to root to identifier."""
