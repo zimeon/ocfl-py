@@ -1,8 +1,9 @@
 # ocfl-py changelog
 
-## ??? v1.1.1
+## 2020--09-22 v1.1.1
 
   * Add deeply nested text object (`extra_fixtures/good-objects/ten_level_deep_directories.zip`)
+  * Fix broken extraction of status of support for validation conditions
 
 ## 2020-08-03 v1.1.0
 
