@@ -39,6 +39,24 @@
        "en": "No OCFL Object to validate at path %s. The root of an OCFL Object must be a directory containing an object declaration"
     }
   },
+  "E003d": {
+    "params": ["path"],
+    "description": {
+       "en": "OCFL Storage Root hierarchy includes directory %s with more that one file that looks like an object declaration, ignoring"
+    }
+  },
+  "E004a": {
+    "params": ["path", "version"],
+    "description": {
+       "en": "OCFL Storage Root hierarchy includes directory %s with an object declaration giving unknown version %s, ignoring"
+    }
+  },
+  "E004b": {
+    "params": ["path", "declaration"],
+    "description": {
+       "en": "OCFL Storage Root hierarchy includes directory %s with an unrecognized object declaration %s, ignoring"
+    }
+  },
   "E007": {
     "description": {
        "en": "OCFL Object declaration file contents do not match file name without leading 0= (the 'dvalue')"
@@ -395,9 +413,31 @@
        "en": "OCFL Object extensions direct contains an unexpected non-directory entry: %s"
     }
   },
+  "E072": {
+    "params": ["path"],
+    "description": {
+       "en": "OCFL storage root hierarchy include directory %s with at least one file but no object declaration. Such additional files are not allowed"
+    }
+  },
+  "E073": {
+    "params": ["path"],
+    "description": {
+       "en": "OCFL storage root hierarchy contains an empty directory: %s"
+    }
+  },
+  "E087": {
+    "description": {
+       "en": "NOTE - E087 is a processing instruction and can't be tested for."
+    }
+  },
+  "E088": {
+    "description": {
+       "en": "NOTE - E088 is redundant to more specific errors E072 and E073"
+    }
+  },
   "E090": {
     "description": {
-       "en": "NOTE - E090 is essentially a processing instruction and can't be tested for."
+       "en": "NOTE - E090 is a processing instruction and can't be tested for."
     }
   },
   "E091": {

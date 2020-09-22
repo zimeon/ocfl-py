@@ -1,5 +1,10 @@
 # ocfl-py changelog
 
+## 2020-09-22 v1.1.1
+
+  * Add deeply nested text object (`extra_fixtures/good-objects/ten_level_deep_directories.zip`)
+  * Fix broken extraction of status of support for validation conditions
+
 ## 2020-08-03 v1.1.0
 
   * Change to use [PyFilesystem2](https://docs.pyfilesystem.org/en/latest/) for filesystem access which allows use of local filesystem, zip files, and S3. The S3 support is preliminary because it has a number of work-arounds to avoid PyFilesystem2's expectation that there are empty directrory objects

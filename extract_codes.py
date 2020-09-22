@@ -12,7 +12,7 @@ from ocfl.validation_logger import ValidationLogger
 
 SPEC_URL = 'https://ocfl.io/1.0/spec'
 GITHUB_REPO = 'https://github.com/zimeon/ocfl-py'
-VALIDATION_CODES_URL = 'https://raw.githubusercontent.com/OCFL/spec/main/validation/validation-codes.md'
+VALIDATION_CODES_URL = 'https://raw.githubusercontent.com/OCFL/spec/master/validation/validation-codes.md'
 VALIDATION_STATUS_MD = 'docs/validation_status.md'
 
 

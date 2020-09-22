@@ -9,7 +9,10 @@ from ocfl.validator import Validator
 
 def extra_fixture_maybe_zip(filepath):
     """Filepath or URL for extra_fixture that may be a zip file."""
-    zippath = filepath + '.zip'
+    if filepath.endswith('.zip'):
+        zippath = filepath
+    else:
+        zippath = filepath + '.zip'
     if os.path.isfile(zippath):
         return('zip://' + zippath)
     return(filepath)
@@ -84,9 +87,9 @@ class TestAll(unittest.TestCase):
 
     def test03_good(self):
         """Check good objects pass."""
-        dirs = next(os.walk('fixtures/1.0/good-objects'))[1]
-        for dirname in dirs:
-            dirpath = os.path.join('fixtures/1.0/good-objects', dirname)
-            v = Validator()
-            self.assertEqual((True, dirpath),  # add dirpath for better reporting
-                             (v.validate(dirpath), dirpath))
+        for base_dir in ['fixtures/1.0/good-objects',
+                         'extra_fixtures/good-objects']:
+            for name in os.listdir(base_dir):
+                filepath = extra_fixture_maybe_zip(os.path.join(base_dir, name))
+                v = Validator()
+                self.assertTrue(v.validate(filepath), msg="for object at " + filepath)

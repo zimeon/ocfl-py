@@ -10,6 +10,7 @@ import tempfile
 import unittest
 from ocfl.store import Store, StoreException
 from ocfl.identity import Identity
+from ocfl.validation_logger import ValidationLogger
 
 
 class TestAll(unittest.TestCase):
@@ -134,11 +135,25 @@ class TestAll(unittest.TestCase):
         self.assertEqual(len(paths), 2)
         self.assertEqual(s.num_traversal_errors, 5)
         log_out = log_io.getvalue()
-        self.assertIn('Empty directory /empty_dir', log_out)
-        self.assertIn('Multiple 0= declaration files in /object_multiple_declarations', log_out)
-        self.assertIn('Object with unknown version 0.9 in /object_unknown_version', log_out)
-        self.assertIn('Object with unrecognized declaration 0=special_object_yeah in /object_unrecognized_declaration', log_out)
-        self.assertIn('Directory /dir_with_file_but_no_declaration has file but not object declaration', log_out)
+        self.assertIn("E073 - path='/empty_dir'", log_out)
+        self.assertIn("E003d - path='/object_multiple_declarations'", log_out)
+        self.assertIn("E004a - path='/object_unknown_version', version='0.9'", log_out)
+        self.assertIn("E004b - path='/object_unrecognized_declaration', declaration='0=special_object_yeah'", log_out)
+        self.assertIn("E072 - path='/dir_with_file_but_no_declaration'", log_out)
+        # Specific error cases
+        s = Store(root='extra_fixtures/bad-storage-roots/E072_root_with_file_not_in_object')
+        s.open_root_fs()
+        s.log = ValidationLogger()
+        self.assertEqual(list(s.object_paths()), ['dir2/minimal_no_content'])
+        self.assertEqual(s.num_traversal_errors, 1)
+        self.assertIn('E072', s.log.codes)
+        #
+        s = Store(root='zip://extra_fixtures/bad-storage-roots/E073_root_with_empty_dir.zip')
+        s.open_root_fs()
+        s.log = ValidationLogger()
+        self.assertEqual(list(s.object_paths()), [])
+        self.assertEqual(s.num_traversal_errors, 1)
+        self.assertIn('E073', s.log.codes)
 
     def test_validate(self):
         """Test validate method."""
