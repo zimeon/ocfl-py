@@ -2,6 +2,7 @@
 """Core of OCFL Object library."""
 import copy
 import fs
+import fs.path
 import fs.copy
 import hashlib
 import json
@@ -19,7 +20,7 @@ from .inventory_validator import InventoryValidator
 from .object_utils import remove_first_directory, make_unused_filepath, next_version
 from .pyfs import open_fs
 from .namaste import Namaste
-from .validator import Validator
+from .validator import Validator, ValidatorAbortException
 from .version_metadata import VersionMetadata
 
 INVENTORY_FILENAME = 'inventory.json'
@@ -538,6 +539,26 @@ class Object(object):
             self.log.info("OCFL object at %s is VALID" % (objdir))
         else:
             self.log.info("OCFL object at %s is INVALID" % (objdir))
+        return passed
+
+    def validate_inventory(self, path, show_warnings=True, show_errors=True):
+        """Validate just an OCFL Object inventory at path."""
+        validator = Validator(show_warnings=show_warnings,
+                              show_errors=show_errors)
+        try:
+            (inv_dir, inv_file) = fs.path.split(path)
+            validator.obj_fs = open_fs(inv_dir)
+            validator.validate_inventory(inv_file, where='standalone')
+        except ValidatorAbortException:
+            pass
+        passed = (validator.log.num_errors == 0)
+        messages = str(validator)
+        if messages != '':
+            print(messages)
+        if passed:
+            self.log.info("Standalone OCFL inventory at %s is VALID" % (path))
+        else:
+            self.log.info("Standalone OCFL inventory at %s is INVALID" % (path))
         return passed
 
     def extract(self, objdir, version, dstdir):

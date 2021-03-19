@@ -50,10 +50,10 @@ class TestAll(unittest.TestCase):
 
     def test_find_path_type(self):
         """Test find_path_type function."""
+        self.assertEqual(find_path_type("extra_fixtures/good-storage-roots/fedora-root"), "root")
+        self.assertEqual(find_path_type("fixtures/1.0/good-objects/minimal_one_version_one_file"), "object")
+        self.assertEqual(find_path_type("README"), "file")
         self.assertIn("does not exist", find_path_type("this_path_does_not_exist"))
-        self.assertIn("cannot be opened", find_path_type("ocfl-object.py"))
         self.assertEqual(find_path_type("ocfl"), "no 0= declaration file")
         self.assertIn("more than one 0= declaration file", find_path_type("extra_fixtures/misc/multiple_declarations"))
         self.assertIn("unrecognized", find_path_type("extra_fixtures/misc/unknown_declaration"))
-        self.assertEqual(find_path_type("extra_fixtures/good-storage-roots/fedora-root"), "root")
-        self.assertEqual(find_path_type("fixtures/1.0/good-objects/minimal_one_version_one_file"), "object")

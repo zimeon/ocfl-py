@@ -1,8 +1,8 @@
 # ocfl-py changelog
 
-## 2020-??-?? v1.1.2
+## 2021-??-?? v1.1.2
 
-  * ???
+  * Add ability for `ocfl-validate.py` to validate a standalone inventory
 
 ## 2020-09-22 v1.1.1
 
