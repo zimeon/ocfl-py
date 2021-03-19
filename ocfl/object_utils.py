@@ -131,7 +131,7 @@ def find_path_type(path):
         except fs.errors.ResourceNotFound:
             return("path does not exist")
         if info.is_dir:
-            return("directory that could not be opened as a filesystem, this should not happen")
+            return("directory that could not be opened as a filesystem, this should not happen")  # pragma: no cover
         return('file')
     namastes = find_namastes(0, pyfs=pyfs)
     if len(namastes) == 0:

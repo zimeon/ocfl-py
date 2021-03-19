@@ -547,8 +547,10 @@ class Object(object):
                               show_errors=show_errors)
         try:
             (inv_dir, inv_file) = fs.path.split(path)
-            validator.obj_fs = open_fs(inv_dir)
+            validator.obj_fs = open_fs(inv_dir, create=False)
             validator.validate_inventory(inv_file, where='standalone')
+        except fs.errors.ResourceNotFound:
+            validator.log.error('E033', where='standalone', explanation='failed to open directory')
         except ValidatorAbortException:
             pass
         passed = (validator.log.num_errors == 0)
