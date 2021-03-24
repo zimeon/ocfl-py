@@ -21,7 +21,7 @@ class TestAll(unittest.TestCase):
             """Hack for Python 2.7."""
             return self.assertRegexpMatches(*args, **kwargs)
 
-    def test01_init(self):
+    def test00_init(self):
         """Test Object init."""
         oo = Object()
         self.assertEqual(oo.id, None)
@@ -32,6 +32,14 @@ class TestAll(unittest.TestCase):
         self.assertEqual(oo.id, 'a:b')
         self.assertEqual(oo.digest_algorithm, 'sha1')
         self.assertEqual(oo.fixity, ['md5', 'crc16'])
+
+    def test01_open_fs(self):
+        """Test open_fs."""
+        oo = Object()
+        self.assertEqual(oo.obj_fs, None)
+        oo.open_fs('tests')
+        self.assertNotEqual(oo.obj_fs, None)
+        self.assertRaises(ObjectException, oo.open_fs, 'tests/testdata/i_do_not_exist')
 
     def test02_parse_version_directory(self):
         """Test parse_version_directory."""
@@ -304,7 +312,7 @@ class TestAll(unittest.TestCase):
         self.assertTrue('├── 0=ocfl_object_1.0' in out)
         # FIXME - need real tests in here when there is real output
 
-    def test13_validate(self):
+    def test_validate(self):
         """Test validate method."""
         oo = Object()
         self.assertTrue(oo.validate(objdir='fixtures/1.0/good-objects/minimal_one_version_one_file'))
@@ -313,7 +321,16 @@ class TestAll(unittest.TestCase):
         self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/E001_no_decl'))
         self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/E036_no_id'))
 
-    def test14_parse_inventory(self):
+    def test_validate_inventory(self):
+        """Test validate_inventory method."""
+        oo = Object()
+        self.assertTrue(oo.validate_inventory(path='fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json'))
+        # Error cases
+        self.assertFalse(oo.validate_inventory(path='tests/testdata/i_do_not_exist'))
+        self.assertFalse(oo.validate_inventory(path='fixtures/1.0/bad-objects/E036_no_id/inventory.json'))
+        self.assertFalse(oo.validate_inventory(path='tests/testdata//namaste/0=frog'))  # not JSON
+
+    def test_parse_inventory(self):
         """Test parse_inventory method."""
         oo = Object()
         oo.open_fs('fixtures/1.0/good-objects/minimal_one_version_one_file')
@@ -336,7 +353,7 @@ class TestAll(unittest.TestCase):
         oo.open_fs('fixtures/1.0/bad-objects/E036_no_id')
         self.assertRaises(ObjectException, oo.parse_inventory)
 
-    def test15_map_filepath(self):
+    def test_map_filepath(self):
         """Test map_filepath method."""
         oo = Object()
         # default is uri
@@ -353,7 +370,7 @@ class TestAll(unittest.TestCase):
         oo.filepath_normalization = '???'
         self.assertRaises(Exception, oo.map_filepath, 'a', 'v1', {})
 
-    def test16_extract(self):
+    def test_extract(self):
         """Test extract method."""
         tempdir = tempfile.mkdtemp(prefix='test_extract')
         oo = Object()

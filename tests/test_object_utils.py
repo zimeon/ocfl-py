@@ -2,7 +2,7 @@
 """Object tests."""
 import argparse
 import unittest
-from ocfl.object_utils import remove_first_directory, make_unused_filepath, next_version, add_object_args, find_path_type
+from ocfl.object_utils import remove_first_directory, make_unused_filepath, next_version, add_object_args, add_shared_args, check_shared_args, find_path_type
 
 
 class TestAll(unittest.TestCase):
@@ -48,12 +48,29 @@ class TestAll(unittest.TestCase):
         args = parser.parse_args(['--skip', 'aa'])
         self.assertIn('aa', args.skip)
 
+    def test_add_shared_args(self):
+        """Test (kinda) adding shared args."""
+        parser = argparse.ArgumentParser()
+        add_shared_args(parser)
+        args = parser.parse_args(['--version', '-v'])
+        self.assertTrue(args.version)
+        self.assertTrue(args.verbose)
+
+    def test_check_shared_args(self):
+        """Test check of shared args."""
+        parser = argparse.ArgumentParser()
+        add_shared_args(parser)
+        args = parser.parse_args(['--version', '-v'])
+        check_shared_args(parser.parse_args(['-v']))
+        self.assertRaises(SystemExit, check_shared_args, parser.parse_args(['--version']))
+
     def test_find_path_type(self):
         """Test find_path_type function."""
+        self.assertEqual(find_path_type("extra_fixtures/good-storage-roots/fedora-root"), "root")
+        self.assertEqual(find_path_type("fixtures/1.0/good-objects/minimal_one_version_one_file"), "object")
+        self.assertEqual(find_path_type("README"), "file")
         self.assertIn("does not exist", find_path_type("this_path_does_not_exist"))
-        self.assertIn("cannot be opened", find_path_type("ocfl-object.py"))
+        self.assertIn("nor can parent", find_path_type("still_nope/nope_doesnt_exist"))
         self.assertEqual(find_path_type("ocfl"), "no 0= declaration file")
         self.assertIn("more than one 0= declaration file", find_path_type("extra_fixtures/misc/multiple_declarations"))
         self.assertIn("unrecognized", find_path_type("extra_fixtures/misc/unknown_declaration"))
-        self.assertEqual(find_path_type("extra_fixtures/good-storage-roots/fedora-root"), "root")
-        self.assertEqual(find_path_type("fixtures/1.0/good-objects/minimal_one_version_one_file"), "object")
