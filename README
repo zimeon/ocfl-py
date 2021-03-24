@@ -2,8 +2,8 @@
 ocfl-py - An OCFL implementation in Python
 ==========================================
 
-.. image:: https://travis-ci.org/zimeon/ocfl-py.svg?branch=main
-  :target: https://travis-ci.org/zimeon/ocfl-py
+.. image:: https://travis-ci.com/zimeon/ocfl-py.svg?branch=main
+  :target: https://travis-ci.com/zimeon/ocfl-py
 .. image:: https://coveralls.io/repos/github/zimeon/ocfl-py/badge.svg?branch=main
   :target: https://coveralls.io/github/zimeon/ocfl-py?branch=main
 
