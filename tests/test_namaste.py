@@ -91,6 +91,14 @@ class TestAll(unittest.TestCase):
         self.assertRaises(NamasteException, Namaste().check_content, 'tests/testdata/namaste')
         self.assertRaises(NamasteException, Namaste(0, 'a').check_content, 'tests/testdata/namaste/does_not_exist')
         self.assertRaises(NamasteException, Namaste(0, 'bison').check_content, 'tests/testdata/namaste')
+        # Using pyfs...
+        tmpfs = fs.tempfs.TempFS()
+        tmpfs.writetext('9=niner', 'niner\n')
+        tmpfs.writetext('8=smiley', 'FROWNY\n')
+        Namaste(9, 'niner').check_content(pyfs=tmpfs)
+        Namaste(9, 'niner').check_content(dir='', pyfs=tmpfs)
+        self.assertRaises(NamasteException, Namaste(8, 'smiley').check_content, pyfs=tmpfs)
+        self.assertRaises(NamasteException, Namaste(7, 'not-there').check_content, pyfs=tmpfs)
 
     def test16_content_ok(self):
         """Test content_ok method."""
