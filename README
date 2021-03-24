@@ -2,8 +2,8 @@
 ocfl-py - An OCFL implementation in Python
 ==========================================
 
-.. image:: https://travis-ci.org/zimeon/ocfl-py.svg?branch=main
-  :target: https://travis-ci.org/zimeon/ocfl-py
+.. image:: https://travis-ci.com/zimeon/ocfl-py.svg?branch=main
+  :target: https://travis-ci.com/zimeon/ocfl-py
 .. image:: https://coveralls.io/repos/github/zimeon/ocfl-py/badge.svg?branch=main
   :target: https://coveralls.io/github/zimeon/ocfl-py?branch=main
 
@@ -19,7 +19,7 @@ Installing
 
 This code requires Python 3.
 
-This code attempts to support the OCFL specification v1.0 and to additional
+This code attempts to support the OCFL specification v1.0 and additional
 developments. To get the most up to date version check out the ``main``
 branch from github (or if you are reckless you can try the ``develop`` branch).
 
@@ -34,7 +34,7 @@ Use
 
 There should then be three scripts available:
 
-- ``ocfl-validate.py`` - validate OCFL objects or OCFL storage roots
+- ``ocfl-validate.py`` - validate OCFL objects, OCFL storage roots or standalone OCFL inventory files
 - ``ocfl-object.py`` - build, manipulate, extract from or validate an OCFL object
 - ``ocfl-store.py`` - add or access OCFL objects under an OCFL storage root
 
@@ -59,7 +59,7 @@ for guidelines for contributing.
 Copyright and License
 ---------------------
 
-Copyright 2018--2020 Simeon Warner and `contributors
+Copyright 2018--2021 Simeon Warner and `contributors
 <https://github.com/zimeon/ocfl-py/graphs/contributors>`_.
 Provided under the MIT license, see `LICENSE.txt
 <https://github.com/zimeon/ocfl-py/blob/main/LICENSE.txt>`_.

@@ -1,5 +1,9 @@
 # ocfl-py changelog
 
+## 2021-03-24 v1.2.0
+
+  * Add ability for `ocfl-validate.py` to validate a standalone inventory
+
 ## 2020-09-22 v1.1.1
 
   * Add deeply nested text object (`extra_fixtures/good-objects/ten_level_deep_directories.zip`)

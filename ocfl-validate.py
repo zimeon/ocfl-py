@@ -6,11 +6,12 @@ import ocfl
 import sys
 
 parser = argparse.ArgumentParser(
-    description='Validate one or more OCFL objects or storage roots. By default '
-    'shows any errors or warnings, and final validation status. Use -q to show '
-    'only errors, -Q to show only validation status.')
+    description='Validate one or more OCFL objects, storage roots or standalone '
+    'inventory files. By default shows any errors or warnings, and final '
+    'validation status. Use -q to show only errors, -Q to show only validation '
+    'status.')
 parser.add_argument('path', type=str, nargs='*',
-                    help='OCFL object or storage root path(s) to validate')
+                    help='OCFL object, storage root or inventory path(s) to validate')
 parser.add_argument('--quiet', '-q', action='store_true',
                     help="Be quiet, do not show warnings")
 parser.add_argument('--very-quiet', '-Q', action='store_true',
@@ -34,6 +35,7 @@ if len(args.path) == 0:
 num = 0
 num_good = 0
 num_paths = len(args.path)
+show_warnings = not args.quiet and not args.very_quiet
 for path in args.path:
     num += 1
     path_type = ocfl.find_path_type(path)
@@ -41,7 +43,7 @@ for path in args.path:
         log.info("Validating OCFL Object at " + path)
         obj = ocfl.Object(lax_digests=args.lax_digests)
         if obj.validate(path,
-                        show_warnings=not args.quiet and not args.very_quiet,
+                        show_warnings=show_warnings,
                         show_errors=not args.very_quiet,
                         check_digests=not args.no_check_digests):
             num_good += 1
@@ -49,9 +51,16 @@ for path in args.path:
         log.info("Validating OCFL Storage Root at " + path)
         store = ocfl.Store(root=path,
                            lax_digests=args.lax_digests)
-        if store.validate(show_warnings=not args.quiet and not args.very_quiet,
+        if store.validate(show_warnings=show_warnings,
                           show_errors=not args.very_quiet,
                           check_digests=not args.no_check_digests):
+            num_good += 1
+    elif path_type == 'file':
+        log.info("Validating separate OCFL Inventory at " + path)
+        obj = ocfl.Object(lax_digests=args.lax_digests)
+        if obj.validate_inventory(path,
+                                  show_warnings=show_warnings,
+                                  show_errors=not args.very_quiet):
             num_good += 1
     else:
         log.error("Bad path %s (%s)" % (path, path_type))
