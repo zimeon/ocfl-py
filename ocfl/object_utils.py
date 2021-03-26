@@ -5,10 +5,7 @@ import fs.path
 import os
 import re
 import sys
-try:
-    from urllib.parse import quote as urlquote  # py3
-except ImportError:                             # pragma: no cover -- py2
-    from urllib import quote as urlquote        # pragma: no cover -- py2
+from urllib.parse import quote as urlquote
 
 from ._version import __version__
 from .namaste import find_namastes

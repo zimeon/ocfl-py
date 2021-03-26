@@ -4,11 +4,10 @@ NAMASTE spec: http://www.cdlib.org/inside/diglib/namaste/namastespec.html
 
 See also command line tool: http://github.com/mjgiarlo/namaste
 """
-import fs
 import os
 import os.path
 import re
-
+import fs
 
 def content_to_tvalue(content):
     """Safe and limited length tvalue from content.
@@ -28,7 +27,6 @@ def find_namastes(d, dir='', pyfs=None, max=10):
     will be raised if more than max files with tag d are found.
     """
     prefix = str(d) + '='
-    namastes = []
     if pyfs is not None:
         filenames = [f for f in pyfs.listdir(dir) if f.startswith(prefix)]
     else:
@@ -52,10 +50,8 @@ def get_namaste(d, dir):
 class NamasteException(Exception):
     """Class for exceptions from Namaste."""
 
-    pass
 
-
-class Namaste(object):
+class Namaste():
     """Class implementing NAMASTE specification."""
 
     def __init__(self, d=0, content='', tvalue=None, tr_func=content_to_tvalue):
@@ -83,8 +79,7 @@ class Namaste(object):
         """tvalue of Namaste file."""
         if self._tvalue is not None:
             return self._tvalue
-        else:
-            return self._tr_func(self.content)
+        return self._tr_func(self.content)
 
     def write(self, dir='', pyfs=None):
         """Write NAMASTE file to dir, optionally in fs.
@@ -122,9 +117,9 @@ class Namaste(object):
             raise NamasteException("Content of Namaste file %s doesn't match tvalue %s" % (filepath, self.tvalue))
 
     def content_ok(self, dir='', pyfs=None):
-        """True is check_content() does not raise an exception."""
+        """True if check_content() does not raise a NamasteException exception."""
         try:
             self.check_content(dir, pyfs)
-        except Exception:
+        except NamasteException:
             return False
         return True

@@ -10,10 +10,7 @@ import os.path
 import re
 import logging
 import sys
-try:
-    from urllib.parse import quote as urlquote  # py3
-except ImportError:                             # pragma: no cover -- py2
-    from urllib import quote as urlquote        # pragma: no cover -- py2
+from urllib.parse import quote as urlquote
 
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator

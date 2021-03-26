@@ -7,10 +7,6 @@ from .dispositor import Dispositor
 class Identity(Dispositor):
     """Class to support trivial identity disposition."""
 
-    def __init__(self):
-        """Initialize Dispositor."""
-        super(Identity, self).__init__()
-
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to root."""
         return self.encode(identifier)

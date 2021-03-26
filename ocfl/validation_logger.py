@@ -6,10 +6,9 @@ import json
 import os
 import os.path
 import re
-import logging
 
 
-class ValidationLogger(object):
+class ValidationLogger():
     """Class for OCFL ValidationLogger."""
 
     validation_codes = None
