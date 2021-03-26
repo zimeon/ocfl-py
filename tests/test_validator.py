@@ -40,6 +40,7 @@ class TestAll(unittest.TestCase):
                            'E040_wrong_head_doesnt_exist': ['E040'],
                            'E040_wrong_head_format': ['E040'],
                            'E041_no_manifest': ['E041a'],
+                           "E041_manifest_not_object": ['E041c'],
                            'E042_bad_manifest_content_path': ['E042'],
                            'E046_missing_version_dir': ['E046'],
                            'E049_E050_E054_bad_version_block_values': ['E049d', 'E050b', 'E050c', 'E054a', 'E094'],
