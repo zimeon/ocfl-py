@@ -26,8 +26,6 @@ INVENTORY_FILENAME = 'inventory.json'
 class ObjectException(Exception):
     """Exception class for OCFL Object."""
 
-    pass
-
 
 class Object(object):
     """Class for handling OCFL Object data and operations."""

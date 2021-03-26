@@ -22,7 +22,7 @@ def get_file_map(inventory, version_dir):
     return file_map
 
 
-class InventoryValidator(object):
+class InventoryValidator():
     """Class for OCFL Inventory Validator."""
 
     def __init__(self, log=None, where='???',
@@ -55,7 +55,7 @@ class InventoryValidator(object):
         self.inventory = inventory
         if 'id' in inventory:
             iid = inventory['id']
-            if type(iid) != str or iid == '':
+            if not isinstance(iid, str) or iid == '':
                 self.error("E037")
             elif not re.match(r'''(\w+):.+''', iid):
                 self.warning("W005", id=iid)
@@ -79,7 +79,7 @@ class InventoryValidator(object):
         if 'contentDirectory' in inventory:
             # Careful only to set self.content_directory if value is safe
             cd = inventory['contentDirectory']
-            if type(cd) != str or '/' in cd or cd in ['.', '..']:
+            if not isinstance(cd, str) or '/' in cd or cd in ['.', '..']:
                 self.error("E018")
             else:
                 self.content_directory = cd
@@ -119,7 +119,7 @@ class InventoryValidator(object):
         manifest_files = {}
         unnormalized_digests = set()
         manifest_digests = set()
-        if type(manifest) != dict:
+        if not isinstance(manifest, dict):
             self.error('E041c')
         else:
             content_paths = set()
@@ -128,7 +128,7 @@ class InventoryValidator(object):
                 m = re.match(self.digest_regex(), digest)
                 if not m:
                     self.error('E025a', digest=digest, algorithm=self.digest_algorithm)  # wrong form of digest
-                elif type(manifest[digest]) != list:
+                elif not isinstance(manifest[digest], list):
                     self.error('E092', digest=digest)  # must have path list value
                 else:
                     unnormalized_digests.add(digest)
@@ -154,7 +154,7 @@ class InventoryValidator(object):
         Check the structure of the fixity block and makes sure that only files
         listed in the manifest are referenced.
         """
-        if type(fixity) != dict:
+        if not isinstance(fixity, dict):
             self.error('E056a')
         else:
             for digest_algorithm in fixity:
@@ -169,7 +169,7 @@ class InventoryValidator(object):
                     regex = r'''^.*$'''
                     known_digest = False
                 fixity_algoritm_block = fixity[digest_algorithm]
-                if type(fixity_algoritm_block) != dict:
+                if not isinstance(fixity_algoritm_block, dict):
                     self.error('E057a', algorithm=self.digest_algorithm)
                 else:
                     digests_seen = set()
@@ -177,7 +177,7 @@ class InventoryValidator(object):
                         m = re.match(regex, digest)
                         if not m:
                             self.error('E057b', digest=digest, algorithm=digest_algorithm)  # wrong form of digest
-                        elif type(fixity_algoritm_block[digest]) != list:
+                        elif not isinstance(fixity_algoritm_block[digest], list):
                             self.error('E057c', digest=digest, algorithm=digest_algorithm)  # must have path list value
                         else:
                             if known_digest:
@@ -201,10 +201,10 @@ class InventoryValidator(object):
         not part of the valid sequence if an error is thrown.
         """
         all_versions = []
-        if type(versions) != dict:
+        if not isinstance(versions, dict):
             self.error("E044")
             return all_versions
-        elif len(versions) == 0:
+        if len(versions) == 0:
             self.error("E008")
             return all_versions
         # Validate version sequence
@@ -264,12 +264,12 @@ class InventoryValidator(object):
             version = versions[v]
             if 'created' not in version:
                 self.error('E048', version=v)  # No created
-            elif type(versions[v]['created']) != str:
+            elif not isinstance(versions[v]['created'], str):
                 self.error('E049d', version=v)  # Bad created
             else:
                 created = versions[v]['created']
                 try:
-                    dt = str_to_datetime(created)
+                    str_to_datetime(created)  # catch ValueError if fails
                     if not re.search(r'''(Z|[+-]\d\d:\d\d)$''', created):  # FIXME - kludge
                         self.error('E049a', version=v)
                     if not re.search(r'''T\d\d:\d\d:\d\d''', created):  # FIXME - kludge
@@ -282,20 +282,20 @@ class InventoryValidator(object):
                 self.error('E048c', version=v)
             if 'message' not in version:
                 self.warning('W007a', version=v)
-            elif type(version['message']) != str:
+            elif not isinstance(version['message'], str):
                 self.error('E094', version=v)
             if 'user' not in version:
                 self.warning('W007b', version=v)
             else:
                 user = version['user']
-                if type(user) != dict:
+                if not isinstance(user, dict):
                     self.error('E054a', version=v)
                 else:
-                    if 'name' not in user or type(user['name']) != str:
+                    if 'name' not in user or not isinstance(user['name'], str):
                         self.error('E054b', version=v)
                     if 'address' not in user:
                         self.warning('W008', version=v)
-                    elif type(user['address']) != str:
+                    elif not isinstance(user['address'], str):
                         self.error('E054c', version=v)
                     elif not re.match(r'''\w{3,6}:''', user['address']):
                         self.warning('W009', version=v)
@@ -311,14 +311,14 @@ class InventoryValidator(object):
         digests = []
         logical_paths = set()
         logical_directories = set()
-        if type(state) != dict:
+        if not isinstance(state, dict):
             self.error('E050c', version=version)
         else:
-            digest_regex = self.digest_regex()
+            digest_re = re.compile(self.digest_regex())
             for digest in state:
-                if not re.match(self.digest_regex(), digest):
+                if not digest_re.match(digest):
                     self.error('E050d', version=version, digest=digest)
-                elif type(state[digest]) != list:
+                elif not isinstance(state[digest], list):
                     self.error('E050e', version=version, digest=digest)
                 else:
                     for path in state[digest]:
@@ -406,6 +406,7 @@ class InventoryValidator(object):
         else:
             # Check references to files but realize that there might be different
             # digest algorithms between versions
+            version_dir = 'no-version'
             for version_dir in prior.all_versions:
                 prior_map = get_file_map(prior.inventory, version_dir)
                 self_map = get_file_map(self.inventory, version_dir)
