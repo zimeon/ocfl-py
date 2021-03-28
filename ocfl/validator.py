@@ -9,25 +9,22 @@ help someone debug an implementation.
 This code uses PyFilesystem (import fs) exclusively for access to files. This
 should enable application beyond the operating system filesystem.
 """
-import fs
 import json
 import re
+import fs
 
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
-from .namaste import find_namastes, NamasteException
+from .namaste import find_namastes
 from .pyfs import open_fs, ocfl_walk
 from .validation_logger import ValidationLogger
-from .w3c_datetime import str_to_datetime
 
 
 class ValidatorAbortException(Exception):
     """Exception class to bail out of validation."""
 
-    pass
 
-
-class Validator(object):
+class Validator():
     """Class for OCFL Validator."""
 
     def __init__(self, log=None, show_warnings=False, show_errors=True, check_digests=True, lax_digests=False, lang='en'):
@@ -37,7 +34,17 @@ class Validator(object):
         self.lax_digests = lax_digests
         if self.log is None:
             self.log = ValidationLogger(show_warnings=show_warnings, show_errors=show_errors, lang=lang)
-        self.registered_extensions = ['FIXME']  # FIXME - add names when something registered
+        self.registered_extensions = [
+            '0001-digest-algorithms', '0002-flat-direct-storage-layout',
+            '0003-hash-and-id-n-tuple-storage-layout', '0004-hashed-n-tuple-storage-layout',
+            '0005-mutable-head'
+        ]
+        # The following actually initialized in initialize() method
+        self.digest_algorithm = None
+        self.content_directory = None
+        self.inventory_digest_files = None
+        self.root_inv_validator = None
+        self.obj_fs = None
         self.initialize()
 
     def initialize(self):
@@ -62,7 +69,7 @@ class Validator(object):
         """
         self.initialize()
         try:
-            if type(path) == str:
+            if isinstance(path, str):
                 self.obj_fs = open_fs(path)
             else:
                 self.obj_fs = path
@@ -96,7 +103,7 @@ class Validator(object):
             # Object root
             self.validate_object_root(all_versions)
             # Version inventory files
-            self.validate_version_inventories(inventory, all_versions)
+            self.validate_version_inventories(all_versions)
             # Object content
             self.validate_content(inventory, all_versions)
         except ValidatorAbortException:
@@ -145,7 +152,7 @@ class Validator(object):
                 digest_actual = file_digest(inv_file, digest_algorithm, pyfs=self.obj_fs)
                 if digest_actual != digest_recorded:
                     self.log.error("E060", inv_file=inv_file, actual=digest_actual, recorded=digest_recorded, inv_digest_file=inv_digest_file)
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-except
                 self.log.error("E061", description=str(e))
         else:
             self.log.error("E058b", inv_digest_file=inv_digest_file)
@@ -188,11 +195,10 @@ class Validator(object):
             else:
                 self.log.error('E067', entry=entry.name)
 
-    def validate_version_inventories(self, inventory, version_dirs):
+    def validate_version_inventories(self, version_dirs):
         """Each version SHOULD have an inventory up to that point."""
         if len(version_dirs) == 0:
             return
-        inv_digest_files = {}  # index by version_dir
         last_version = version_dirs[-1]
         for version_dir in version_dirs:
             inv_file = fs.path.join(version_dir, 'inventory.json')
@@ -215,7 +221,7 @@ class Validator(object):
                 self.inventory_digest_files[version_dir] = 'inventory.json.' + self.digest_algorithm
             else:
                 # Note that inventories in prior versions may use different digest algorithms
-                version_inventory, inv_validator = self.validate_inventory(inv_file, where=version_dir)
+                dummy_version_inventory, inv_validator = self.validate_inventory(inv_file, where=version_dir)
                 self.validate_inventory_digest(inv_file, inv_validator.digest_algorithm, where=version_dir)
                 self.inventory_digest_files[version_dir] = 'inventory.json.' + inv_validator.digest_algorithm
                 # Is this inventory an appropriate prior version of the object root inventory?
@@ -292,6 +298,6 @@ class Validator(object):
         m = re.match(r'''(\w+)\s+(\S+)\s*$''', line)
         if not m:
             raise Exception("Bad inventory digest file %s, wrong format" % (inv_digest_file))
-        elif m.group(2) != 'inventory.json':
+        if m.group(2) != 'inventory.json':
             raise Exception("Bad inventory name in inventory digest file %s" % (inv_digest_file))
         return m.group(1)
