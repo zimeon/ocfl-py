@@ -41,7 +41,7 @@ def open_fs(fs_url, **kwargs):
         # but adjust the handling of strict to default to strict=False
         bucket_name, _, dir_path = parse_result.resource.partition("/")
         if not bucket_name:
-            raise OpenerError("invalid bucket name in '{}'".format(fs_url))
+            raise fs.opener.errors.OpenerError("invalid bucket name in '{}'".format(fs_url))
         # Instead of allowing this to be turned on by a strict=1 in the
         # URL query params, allow it to be turned off by strict!=1
         strict = (
@@ -58,11 +58,11 @@ def open_fs(fs_url, **kwargs):
             acl=parse_result.params.get("acl", None),
             cache_control=parse_result.params.get("cache_control", None),
             strict=strict)
-        s3fs.getinfo = s3fs._getinfo  # Patch in version of method that doesn't check parent directory
+        # Patch in version of getinfo method that doesn't check parent directory
+        s3fs.getinfo = s3fs._getinfo  # pylint: disable=protected-access
         return s3fs
-    else:
-        # Non-S3 URL
-        return fs.open_fs(fs_url, **kwargs)
+    # Non-S3 URL
+    return fs.open_fs(fs_url, **kwargs)
 
 
 def ocfl_walk(f, dir='/', is_storage_root=False):
@@ -120,7 +120,7 @@ def ocfl_opendir(pyfs, dir, **kwargs):
         # isn't a directory object (even with strict=False)
         new_dir_path = fs.path.join(pyfs.dir_path, dir)
         s3fs = S3FS(
-            pyfs._bucket_name,
+            pyfs._bucket_name,  # pylint: disable=protected-access
             dir_path=new_dir_path,
             aws_access_key_id=pyfs.aws_access_key_id,
             aws_secret_access_key=pyfs.aws_secret_access_key,
@@ -128,8 +128,8 @@ def ocfl_opendir(pyfs, dir, **kwargs):
             # acl=pyfs.acl,
             # cache_control=pyfs.cache_control),
             strict=pyfs.strict)
-        s3fs.getinfo = s3fs._getinfo
+        # Patch in version of getinfo method that doesn't check parent directory
+        s3fs.getinfo = s3fs._getinfo  # pylint: disable=protected-access
         return s3fs
-    else:
-        # Just use regular opendir(..)
-        return pyfs.opendir(dir, **kwargs)
+    # Not S3, just use regular opendir(..)
+    return pyfs.opendir(dir, **kwargs)

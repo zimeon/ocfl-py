@@ -7,11 +7,11 @@ provides ISO8601 format string access to the timestamp.
 The timestamp is assumed to be stored in UTC.
 """
 
+import re
 import time
 from calendar import timegm
 from datetime import datetime
 from dateutil import parser as dateutil_parser
-import re
 
 
 def datetime_to_str(dt='now', no_fractions=False):
@@ -29,7 +29,7 @@ def datetime_to_str(dt='now', no_fractions=False):
     """
     if dt is None:
         return None
-    elif dt == 'now':
+    if dt == 'now':
         dt = time.time()
     if no_fractions:
         dt = int(dt)
@@ -76,7 +76,7 @@ def str_to_datetime(s, context='datetime'):
     """
     t = None
     if s is None:
-        return(t)
+        return t
     if s == '':
         raise ValueError('Attempt to set empty %s' % (context))
     # Make a date into a full datetime
@@ -120,4 +120,4 @@ def str_to_datetime(s, context='datetime'):
             offset_seconds = -offset_seconds
     # timetuple() ignores timezone information so we have to add in
     # the offset here, and any fractional component of the seconds
-    return(timegm(dt.timetuple()) + offset_seconds + fractional_seconds)
+    return timegm(dt.timetuple()) + offset_seconds + fractional_seconds

@@ -18,6 +18,7 @@ or disseminate a particular version.
 import os.path
 import bagit
 
+
 class BaggerError(Exception):
     """Exception class for conditions that should abort with message."""
 

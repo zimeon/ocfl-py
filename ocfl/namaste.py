@@ -9,6 +9,7 @@ import os.path
 import re
 import fs
 
+
 def content_to_tvalue(content):
     """Safe and limited length tvalue from content.
 

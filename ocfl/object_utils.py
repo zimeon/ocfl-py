@@ -85,7 +85,7 @@ def remove_first_directory(path):
     rpath = ''
     while True:
         (head, tail) = fs.path.split(path)
-        if path in (head, tail):
+        if head == path or tail == path:
             break
         path = head
         rpath = tail if rpath == '' else fs.path.join(tail, rpath)

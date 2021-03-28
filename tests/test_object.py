@@ -9,17 +9,27 @@ import os
 import sys
 import tempfile
 import unittest
-from ocfl.object import Object, ObjectException
+from ocfl.object import Object, ObjectException, parse_version_directory
 from ocfl.version_metadata import VersionMetadata
 
 
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
-    if sys.version_info < (3, 2):
-        def assertRegex(self, *args, **kwargs):
-            """Hack for Python 2.7."""
-            return self.assertRegexpMatches(*args, **kwargs)
+    def test02_parse_version_directory(self):
+        """Test parse_version_directory function."""
+        self.assertEqual(parse_version_directory('v1'), 1)
+        self.assertEqual(parse_version_directory('v00001'), 1)
+        self.assertEqual(parse_version_directory('v99999'), 99999)
+        # Bad
+        self.assertRaises(Exception, parse_version_directory, None)
+        self.assertRaises(Exception, parse_version_directory, '')
+        self.assertRaises(Exception, parse_version_directory, '1')
+        self.assertRaises(Exception, parse_version_directory, 'v0')
+        self.assertRaises(Exception, parse_version_directory, 'v-1')
+        self.assertRaises(Exception, parse_version_directory, 'v0000')
+        self.assertRaises(Exception, parse_version_directory, 'vv')
+        self.assertRaises(Exception, parse_version_directory, 'v000001')
 
     def test00_init(self):
         """Test Object init."""
@@ -40,22 +50,6 @@ class TestAll(unittest.TestCase):
         oo.open_fs('tests')
         self.assertNotEqual(oo.obj_fs, None)
         self.assertRaises(ObjectException, oo.open_fs, 'tests/testdata/i_do_not_exist')
-
-    def test02_parse_version_directory(self):
-        """Test parse_version_directory."""
-        oo = Object()
-        self.assertEqual(oo.parse_version_directory('v1'), 1)
-        self.assertEqual(oo.parse_version_directory('v00001'), 1)
-        self.assertEqual(oo.parse_version_directory('v99999'), 99999)
-        # Bad
-        self.assertRaises(Exception, oo.parse_version_directory, None)
-        self.assertRaises(Exception, oo.parse_version_directory, '')
-        self.assertRaises(Exception, oo.parse_version_directory, '1')
-        self.assertRaises(Exception, oo.parse_version_directory, 'v0')
-        self.assertRaises(Exception, oo.parse_version_directory, 'v-1')
-        self.assertRaises(Exception, oo.parse_version_directory, 'v0000')
-        self.assertRaises(Exception, oo.parse_version_directory, 'vv')
-        self.assertRaises(Exception, oo.parse_version_directory, 'v000001')
 
     def test03_digest(self):
         """Test digest wrapper mathod."""
