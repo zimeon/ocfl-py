@@ -13,7 +13,7 @@ before_install:
   - git submodule update --init --recursive
 install:
   - pip install bagit  #pylint is unhappy with bagit install via setup.py, not sure why
-  - pip install coveralls pycodestyle pylint
+  - pip install coveralls pycodestyle pydocstyle pylint
   - python setup.py install
 script:
   - pycodestyle --ignore=E501,W503 *.py ocfl tests
