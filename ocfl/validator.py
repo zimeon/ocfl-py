@@ -59,7 +59,7 @@ class Validator():
         self.obj_fs = None
 
     def __str__(self, prefix=''):
-        """String representation of validation log."""
+        """Make string representation of validation log."""
         return self.log.__str__(prefix=prefix)
 
     def validate(self, path):

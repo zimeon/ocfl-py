@@ -10,11 +10,11 @@ class TLogger():
         """Initialize."""
         self.clear()
 
-    def error(self, code, **args):  #pylint: disable=unused-argument
+    def error(self, code, **args):  # pylint: disable=unused-argument
         """Add error code, discard args."""
         self.errors.append(code)
 
-    def warning(self, code, **args):  #pylint: disable=unused-argument
+    def warning(self, code, **args):  # pylint: disable=unused-argument
         """Add warn code, discard args."""
         self.warns.append(code)
 

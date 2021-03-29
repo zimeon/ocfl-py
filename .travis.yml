@@ -13,10 +13,12 @@ before_install:
   - git submodule update --init --recursive
 install:
   - pip install bagit  #pylint is unhappy with bagit install via setup.py, not sure why
-  - pip install coveralls pylint
+  - pip install coveralls pycodestyle pylint
   - python setup.py install
 script:
-  - pylint -d W0511,W0622,W0707,C0301,C0103,R0913,R0902,R0911,R0912,R0915,R1714,R0914,R1702 *.py ocfl tests
+  - pycodestyle --ignore=E501,W503 *.py ocfl tests
+  - pydocstyle *.py ocfl tests
+  - pylint --disable=unneeded-not,line-too-long,unnecessary-semicolon,trailg-whitespace,missing-final-newline,bad-indentation,multiple-statements,bare-except,missing-module-docstring,missing-class-docstring,missing-function-docstring,W0511,W0622,W0707,C0103,R0902,R0911,R0912,R0913,R0914,R0915,R1702,R1714 *.py ocfl tests
   - python setup.py test
 after_success:
   - python setup.py coverage

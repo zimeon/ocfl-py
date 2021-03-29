@@ -77,7 +77,7 @@ class Namaste():
 
     @property
     def tvalue(self):
-        """tvalue of Namaste file."""
+        """Tvalue of Namaste file."""
         if self._tvalue is not None:
             return self._tvalue
         return self._tr_func(self.content)
@@ -118,7 +118,7 @@ class Namaste():
             raise NamasteException("Content of Namaste file %s doesn't match tvalue %s" % (filepath, self.tvalue))
 
     def content_ok(self, dir='', pyfs=None):
-        """True if check_content() does not raise a NamasteException exception."""
+        """Return True if check_content() does not raise a NamasteException exception."""
         try:
             self.check_content(dir, pyfs)
         except NamasteException:

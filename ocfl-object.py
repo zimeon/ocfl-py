@@ -6,6 +6,7 @@ import sys
 
 import ocfl
 
+
 class FatalError(Exception):
     """Exception class for conditions that should abort with message."""
 

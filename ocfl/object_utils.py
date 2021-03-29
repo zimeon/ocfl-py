@@ -115,7 +115,7 @@ def find_path_type(path):
     """
     try:
         pyfs = open_fs(path, create=False)
-    except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
+    except (fs.opener.errors.OpenerError, fs.errors.CreateFailed):
         # Failed to open path as a filesystem, try enclosing directory
         # in case path is a file
         (parent, filename) = fs.path.split(path)

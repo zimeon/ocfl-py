@@ -15,7 +15,7 @@ from dateutil import parser as dateutil_parser
 
 
 def datetime_to_str(dt='now', no_fractions=False):
-    """The Last-Modified data in ISO8601 syntax, Z notation.
+    """Return Last-Modified data in ISO8601 syntax, Z notation.
 
     The lastmod is stored as unix timestamp which is already
     in UTC. At preesent this code will return 6 decimal digits

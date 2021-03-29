@@ -18,7 +18,7 @@ class DemoTestCase(unittest.TestCase):
     keep_tmpdirs = False
 
     def setUp(self):
-        """Setup for each test."""
+        """Do setup for each test."""
         type(self).n += 1  # access class variable not copy
         self.m = 0
         self.tmpdir = tempfile.mkdtemp(prefix='test' + str(self.n) + '_')

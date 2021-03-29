@@ -40,6 +40,7 @@ def create_sidecar(args, directory):
         sidecar = obj.write_inventory_sidecar()
         logging.info("Written sidecar file %s", sidecar)
 
+
 def main():
     """Run from command line."""
     args = parse_arguments()
@@ -55,6 +56,7 @@ def main():
                 create_sidecar(args, directory)
             else:
                 logging.error("Ignoring path %s with filename that is not inventory.json")
+
 
 if __name__ == "__main__":
     main()

@@ -71,7 +71,7 @@ class VersionMetadata():
                 self.address = inv_version['user']['address']
 
     def as_dict(self, **kwargs):
-        """Dictionary object with version metedata."""
+        """Return dictionary object with version metedata."""
         m = {}
         self.add_to_dict(m, **kwargs)
         return m

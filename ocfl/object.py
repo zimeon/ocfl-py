@@ -224,7 +224,7 @@ class Object():
         return manifest_to_srcfile
 
     def build_inventory(self, src_fs, metadata=None):
-        """Generator for building an OCFL inventory from a set of source files.
+        """Generate an OCFL inventory from a set of source files.
 
         Parameters:
             src_fc - pyfs filesystem of source files

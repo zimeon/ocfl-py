@@ -136,7 +136,7 @@ class Store():
             return None, None
 
     def object_paths(self):
-        """Generator for object paths for every obect in the OCFL storage root.
+        """Generate object paths for every obect in the OCFL storage root.
 
         Yields (dirpath) that is the path to the directory for each object
         located, relative to the OCFL storage root and without a preceding /.

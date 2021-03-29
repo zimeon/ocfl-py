@@ -15,7 +15,7 @@ class Dispositor:
         raise Exception("Path %s is not in root %s" % (path, root))
 
     def is_valid(self, identifier):  # pylint: disable=unused-argument,no-self-use
-        """True if identifier is valid, always True in this base implementation."""
+        """Return True if identifier is valid, always True in this base implementation."""
         return True
 
     def encode(self, identifier):  # pylint: disable=no-self-use

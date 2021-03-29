@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Object tests."""
 import io
 import json

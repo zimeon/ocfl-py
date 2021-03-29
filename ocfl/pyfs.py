@@ -111,7 +111,7 @@ def ocfl_walk(f, dir='/', is_storage_root=False):
 
 
 def ocfl_opendir(pyfs, dir, **kwargs):
-    """A version of opendir that handles the case of S3 without directory objects.
+    """Open directory while handling the case of S3 without directory objects.
 
     FIXME - DIRTY HACK
     """

@@ -93,7 +93,7 @@ def digest_regex(digest_type='sha512'):
 
 
 def normalized_digest(digest, digest_type='sha512'):
-    """Normalized version of the digest that enables string comparison.
+    """Normalize the digest to return version that enables string comparison.
 
     All forms (except the spec example forms) are case insensitive. We
     use lowercase as the normalized form.

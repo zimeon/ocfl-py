@@ -346,7 +346,7 @@ class InventoryValidator():
             self.error("E050b", digests=", ".join(sorted(not_in_state)))
 
     def digest_regex(self):
-        """A regex for validating un-normalized digest format."""
+        """Return regex for validating un-normalized digest format."""
         try:
             return digest_regex(self.digest_algorithm)
         except ValueError:
