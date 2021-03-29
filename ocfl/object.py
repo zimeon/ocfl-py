@@ -1,23 +1,20 @@
 # -*- coding: utf-8 -*-
 """Core of OCFL Object library."""
 import copy
-import fs
-import fs.path
-import fs.copy
 import hashlib
 import json
 import os.path
 import re
 import logging
-import sys
-try:
-    from urllib.parse import quote as urlquote  # py3
-except ImportError:                             # pragma: no cover -- py2
-    from urllib import quote as urlquote        # pragma: no cover -- py2
+from urllib.parse import quote as urlquote
+
+import fs
+import fs.path
+import fs.copy
 
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
-from .object_utils import remove_first_directory, make_unused_filepath, next_version
+from .object_utils import make_unused_filepath, next_version, ObjectException
 from .pyfs import open_fs
 from .namaste import Namaste
 from .validator import Validator, ValidatorAbortException
@@ -26,16 +23,21 @@ from .version_metadata import VersionMetadata
 INVENTORY_FILENAME = 'inventory.json'
 
 
-class ObjectException(Exception):
-    """Exception class for OCFL Object."""
+def parse_version_directory(dirname):
+    """Get version number from version directory name."""
+    m = re.match(r'''v(\d{1,5})$''', dirname)
+    if not m:
+        raise Exception("Bad version directory name: %s" % (dirname))
+    v = int(m.group(1))
+    if v == 0:
+        raise Exception("Bad version directory name: %s, v0 no allowed" % (dirname))
+    return v
 
-    pass
 
-
-class Object(object):
+class Object():
     """Class for handling OCFL Object data and operations."""
 
-    def __init__(self, id=None, content_directory='content',
+    def __init__(self, identifier=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
                  forward_delta=True, dedupe=True,
                  lax_digests=False, fixity=None, verbose=True,
@@ -43,7 +45,7 @@ class Object(object):
         """Initialize OCFL object.
 
         Parameters relevant to building an object:
-          id - id for this object
+          identifier - id for this object
           content_directory - allow override of the default 'content'
           digest_algorithm - allow override of the default 'sha512'
           filepath_normalization = allow override of default 'uri'
@@ -65,7 +67,7 @@ class Object(object):
           path - if set then open a pyfs filesystem at path (alternative to obj_fs)
           create - set True to allow opening filesystem at path to create a directory
         """
-        self.id = id
+        self.id = identifier
         self.content_directory = content_directory
         self.digest_algorithm = digest_algorithm
         self.filepath_normalization = filepath_normalization
@@ -85,7 +87,7 @@ class Object(object):
         try:
             self.obj_fs = open_fs(fs_url=objdir, create=create)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
-            raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, str(e)))
+            raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, e))
 
     def copy_into_object(self, src_fs, srcfile, filepath, create_dirs=False):
         """Copy from srcfile to filepath in object."""
@@ -93,16 +95,6 @@ class Object(object):
         if create_dirs and not self.obj_fs.exists(dstpath):
             self.obj_fs.makedirs(dstpath)
         fs.copy.copy_file(src_fs, srcfile, self.obj_fs, filepath)
-
-    def parse_version_directory(self, dirname):
-        """Get version number from version directory name."""
-        m = re.match(r'''v(\d{1,5})$''', dirname)
-        if not m:
-            raise Exception("Bad version directory name: %s" % (dirname))
-        v = int(m.group(1))
-        if v == 0:
-            raise Exception("Bad version directory name: %s, v0 no allowed" % (dirname))
-        return v
 
     def digest(self, pyfs, filename):
         """Digest for file filename in the object filesystem."""
@@ -232,7 +224,7 @@ class Object(object):
         return manifest_to_srcfile
 
     def build_inventory(self, src_fs, metadata=None):
-        """Generator for building an OCFL inventory from a set of source files.
+        """Generate an OCFL inventory from a set of source files.
 
         Parameters:
             src_fc - pyfs filesystem of source files
@@ -249,7 +241,7 @@ class Object(object):
         for vdir in src_fs.listdir('/'):
             if not src_fs.isdir(vdir):
                 continue
-            vn = self.parse_version_directory(vdir)
+            vn = parse_version_directory(vdir)
             versions[vn] = vdir
         # Go through versions in order building versions array, deduping if selected
         for vn in sorted(versions.keys()):
@@ -309,11 +301,12 @@ class Object(object):
             self.open_fs(objdir, create=True)
         num_versions = 0
         src_fs = open_fs(srcdir)
+        inventory = None
         for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(src_fs, metadata):
             num_versions += 1
             if objdir is None:
-                self.log.warning("### Inventory for %s\n" % (vdir)
-                                 + json.dumps(inventory, sort_keys=True, indent=2))
+                self.log.warning("### Inventory for %s\n",
+                                 vdir + json.dumps(inventory, sort_keys=True, indent=2))
             else:
                 self.write_inventory_and_sidecar(inventory, vdir)
                 # Copy files into this version
@@ -324,7 +317,7 @@ class Object(object):
         # Write object declaration, inventory and sidecar
         self.write_object_declaration()
         self.write_inventory_and_sidecar(inventory)
-        self.log.info("Built object %s with %s versions" % (self.id, num_versions))
+        self.log.info("Built object %s with %s versions", self.id, num_versions)
 
     def create(self, srcdir, metadata=None, objdir=None):
         """Create a new OCFL object with v1 content from srcdir.
@@ -345,8 +338,8 @@ class Object(object):
         vdir = 'v1'
         manifest_to_srcfile = self.add_version(inventory, src_fs, '', vdir, metadata=metadata)
         if objdir is None:
-            self.log.warning("### Inventory for %s\n" % (vdir)
-                             + json.dumps(inventory, sort_keys=True, indent=2))
+            self.log.warning("### Inventory for %s\n",
+                             vdir + json.dumps(inventory, sort_keys=True, indent=2))
             return
         # Else write out object
         self.write_inventory_and_sidecar(inventory, vdir)
@@ -354,11 +347,11 @@ class Object(object):
         self.write_object_declaration()
         self.write_inventory_and_sidecar(inventory)
         # Write version files
-        for digest, paths in inventory['manifest'].items():
+        for paths in inventory['manifest'].values():
             for path in paths:
                 srcfile = manifest_to_srcfile[path]
                 self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
-        self.log.info("Created OCFL object %s in %s" % (self.id, objdir))
+        self.log.info("Created OCFL object %s in %s", self.id, objdir)
 
     def update(self, objdir, srcdir=None, metadata=None):
         """Update object creating a new version with content matching srcdir.
@@ -379,9 +372,8 @@ class Object(object):
         inventory = self.parse_inventory()
         self.id = inventory['id']
         old_head = inventory['head']
-        versions = inventory['versions']
         head = next_version(old_head)
-        self.log.info("Will update %s %s -> %s" % (self.id, old_head, head))
+        self.log.info("Will update %s %s -> %s", self.id, old_head, head)
         self.obj_fs.makedir(head)
         # Is this a request to change the digest algorithm?
         old_digest_algorithm = inventory['digestAlgorithm']
@@ -389,8 +381,8 @@ class Object(object):
         if digest_algorithm is None:
             digest_algorithm = old_digest_algorithm
         elif digest_algorithm != old_digest_algorithm:
-            self.log.info("New version with use %s instead of %s digestAlgorithm" %
-                          (digest_algorithm, old_digest_algorithm))
+            self.log.info("New version with use %s instead of %s digestAlgorithm",
+                          digest_algorithm, old_digest_algorithm)
             inventory['digestAlgorithm'] = digest_algorithm
         # Is this a request to change the set of fixity information?
         fixity = self.fixity
@@ -412,10 +404,10 @@ class Object(object):
                 for digest in old_fixity.difference(fixity):
                     inventory['fixity'].pop(digest)
                 for digest in fixity.difference(old_fixity):
-                    self.log.info("FIXME - need to add fixity with digest %s" % digest)
+                    self.log.info("FIXME - need to add fixity with digest %s", digest)
         if fixity != old_fixity:
-            self.log.info("New version will have %s instead of %s fixity" %
-                          (','.join(sorted(fixity)), ','.join(sorted(old_fixity))))
+            self.log.info("New version will have %s instead of %s fixity",
+                          ','.join(sorted(fixity)), ','.join(sorted(old_fixity)))
         # Now look at contents, manifest and state
         manifest = copy.deepcopy(inventory['manifest'])
         if digest_algorithm != old_digest_algorithm:
@@ -458,30 +450,29 @@ class Object(object):
         # Delete old root inventory sidecar if we changed digest algorithm
         if digest_algorithm != old_digest_algorithm:
             self.obj_fs.remove(INVENTORY_FILENAME + '.' + old_digest_algorithm)
-        self.log.info("Updated OCFL object %s in %s by adding %s" % (self.id, objdir, head))
-
-    def _show_indent(self, level, last=False, last_v=False):
-        """Indent string for tree view at level for intermediate or last."""
-        tree_next = '├── '
-        tree_last = '└── '
-        tree_pass = '│   '
-        tree_indent = '    '
-        if level == 0:
-            return (tree_last if last else tree_next)
-        else:
-            return (tree_indent if last else tree_pass) + (tree_last if last_v else tree_next)
+        self.log.info("Updated OCFL object %s in %s by adding %s", self.id, objdir, head)
 
     def show(self, objdir):
         """Show OCFL object at objdir."""
+        def _show_indent(level, last=False, last_v=False):
+            """Indent string for tree view at level for intermediate or last."""
+            tree_next = '├── '
+            tree_last = '└── '
+            tree_pass = '│   '
+            tree_indent = '    '
+            if level == 0:
+                return tree_last if last else tree_next
+            return (tree_indent if last else tree_pass) + (tree_last if last_v else tree_next)
+
         validator = Validator(show_warnings=False,
                               show_errors=True,
                               check_digests=False,
                               lax_digests=self.lax_digests)
         passed = validator.validate(objdir)
         if passed:
-            self.log.warning("OCFL object at %s has VALID STRUCTURE (DIGESTS NOT CHECKED) " % (objdir))
+            self.log.warning("OCFL object at %s has VALID STRUCTURE (DIGESTS NOT CHECKED) ", objdir)
         else:
-            self.log.warning("OCFL object at %s is INVALID" % (objdir))
+            self.log.warning("OCFL object at %s is INVALID", objdir)
         tree = '[' + objdir + ']\n'
         self.open_fs(objdir)
         entries = sorted(self.obj_fs.listdir(''))
@@ -503,7 +494,7 @@ class Object(object):
                             seen_v_sidecar = True
                     elif v_entry == 'content':
                         num_files = 0
-                        for (v_dirpath, v_dirs, v_files) in self.obj_fs.walk(fs.path.join(entry, v_entry)):
+                        for (v_dirpath, v_dirs, v_files) in self.obj_fs.walk(fs.path.join(entry, v_entry)):  # pylint: disable=unused-variable
                             num_files += len(v_files)
                         v_note += '(%d files)' % num_files
                     else:
@@ -518,12 +509,12 @@ class Object(object):
             else:
                 note += '<--- ???'
             last = (n == len(entries))
-            tree += self._show_indent(0, last) + note + "\n"
+            tree += _show_indent(0, last) + note + "\n"
             nn = 0
             for v_note in v_notes:
                 nn += 1
-                tree += self._show_indent(1, last, (nn == len(v_notes))) + v_note + "\n"
-        self.log.warning("Object tree\n" + tree)
+                tree += _show_indent(1, last, (nn == len(v_notes))) + v_note + "\n"
+        self.log.warning("Object tree\n%s", tree)
 
     def validate(self, objdir, show_warnings=True, show_errors=True, check_digests=True):
         """Validate OCFL object at objdir."""
@@ -536,9 +527,9 @@ class Object(object):
         if messages != '':
             print(messages)
         if passed:
-            self.log.info("OCFL object at %s is VALID" % (objdir))
+            self.log.info("OCFL object at %s is VALID", objdir)
         else:
-            self.log.info("OCFL object at %s is INVALID" % (objdir))
+            self.log.info("OCFL object at %s is INVALID", objdir)
         return passed
 
     def validate_inventory(self, path, show_warnings=True, show_errors=True):
@@ -558,9 +549,9 @@ class Object(object):
         if messages != '':
             print(messages)
         if passed:
-            self.log.info("Standalone OCFL inventory at %s is VALID" % (path))
+            self.log.info("Standalone OCFL inventory at %s is VALID", path)
         else:
-            self.log.info("Standalone OCFL inventory at %s is INVALID" % (path))
+            self.log.info("Standalone OCFL inventory at %s is INVALID", path)
         return passed
 
     def extract(self, objdir, version, dstdir):
@@ -575,7 +566,7 @@ class Object(object):
         inv = self.parse_inventory()
         if version == 'head':
             version = inv['head']
-            self.log.info("Object at %s has head %s" % (objdir, version))
+            self.log.info("Object at %s has head %s", objdir, version)
         elif version not in inv['versions']:
             raise ObjectException("Object at %s does not include a version '%s'" % (objdir, version))
         # Sanity check on destination
@@ -586,7 +577,7 @@ class Object(object):
         try:
             parent_fs = open_fs(parentdir)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
-            raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, str(e)))
+            raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
         parent_fs.makedir(dir)
         dst_fs = parent_fs.opendir(dir)  # Open a sub-filesystem as our destination
         # Now extract...
@@ -595,10 +586,10 @@ class Object(object):
         for (digest, logical_files) in state.items():
             existing_file = manifest[digest][0]  # FIXME - pick "best" (closest version?) not first?
             for logical_file in logical_files:
-                self.log.debug("Copying %s -> %s" % (digest, logical_file))
+                self.log.debug("Copying %s -> %s", digest, logical_file)
                 dst_fs.makedirs(fs.path.dirname(logical_file), recreate=True)
                 fs.copy.copy_file(self.obj_fs, existing_file, dst_fs, logical_file)
-        self.log.info("Extracted %s into %s" % (version, dstdir))
+        self.log.info("Extracted %s into %s", version, dstdir)
         return VersionMetadata(inventory=inv, version=version)
 
     def parse_inventory(self):

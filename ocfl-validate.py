@@ -2,8 +2,9 @@
 """Validate an OCFL Object."""
 import argparse
 import logging
-import ocfl
 import sys
+
+import ocfl
 
 parser = argparse.ArgumentParser(
     description='Validate one or more OCFL objects, storage roots or standalone '
@@ -40,7 +41,7 @@ for path in args.path:
     num += 1
     path_type = ocfl.find_path_type(path)
     if path_type == 'object':
-        log.info("Validating OCFL Object at " + path)
+        log.info("Validating OCFL Object at %s", path)
         obj = ocfl.Object(lax_digests=args.lax_digests)
         if obj.validate(path,
                         show_warnings=show_warnings,
@@ -48,7 +49,7 @@ for path in args.path:
                         check_digests=not args.no_check_digests):
             num_good += 1
     elif path_type == 'root':
-        log.info("Validating OCFL Storage Root at " + path)
+        log.info("Validating OCFL Storage Root at %s", path)
         store = ocfl.Store(root=path,
                            lax_digests=args.lax_digests)
         if store.validate(show_warnings=show_warnings,
@@ -56,15 +57,15 @@ for path in args.path:
                           check_digests=not args.no_check_digests):
             num_good += 1
     elif path_type == 'file':
-        log.info("Validating separate OCFL Inventory at " + path)
+        log.info("Validating separate OCFL Inventory at %s", path)
         obj = ocfl.Object(lax_digests=args.lax_digests)
         if obj.validate_inventory(path,
                                   show_warnings=show_warnings,
                                   show_errors=not args.very_quiet):
             num_good += 1
     else:
-        log.error("Bad path %s (%s)" % (path, path_type))
+        log.error("Bad path %s (%s)", path, path_type)
     if num_paths > 1:
-        log.info(" [%d / %d paths validated, %d / %d VALID]\n" % (num, num_paths, num_good, num))
+        log.info(" [%d / %d paths validated, %d / %d VALID]\n", num, num_paths, num_good, num)
 if num_good != num:
     sys.exit(1)

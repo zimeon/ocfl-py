@@ -1,7 +1,7 @@
 """Setup for ocfl-py."""
-from setuptools import setup, Command
 import os
 import re
+from setuptools import setup, Command
 
 # Extract version number
 verfile = open("ocfl/_version.py", "rt").read()
@@ -20,11 +20,9 @@ class ShellCommand(Command):
 
     def initialize_options(self):
         """Empty initialize_options."""
-        pass
 
     def finalize_options(self):
         """Empty finalize_options."""
-        pass
 
 
 class Coverage(ShellCommand):
@@ -32,7 +30,7 @@ class Coverage(ShellCommand):
 
     description = "run coverage"
 
-    def run(self):
+    def run(self):  # pylint: disable=no-self-use
         """Run coverage program."""
         os.system("coverage run --source=ocfl setup.py test")
         os.system("coverage report")
@@ -62,11 +60,11 @@ setup(
     description='ocfl-py - A Python implementation of OCFL',
     long_description=open('README').read(),
     install_requires=[
-        'bagit>=1.7.0',
+        'bagit>=1.8.1',
         'dateutils>=0.6.6',
         'fs>2.4.0',
-        'pairtree>=0.8.1',
-        'fs_s3fs>=1.1.1'
+        'fs_s3fs>=1.1.1',
+        'pairtree>=0.8.1'
     ],
     test_suite="tests",
     cmdclass={

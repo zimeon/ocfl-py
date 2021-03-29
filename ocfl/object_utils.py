@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
 """Utility functions to support the OCFL Object library."""
-import fs
-import fs.path
-import os
 import re
 import sys
-try:
-    from urllib.parse import quote as urlquote  # py3
-except ImportError:                             # pragma: no cover -- py2
-    from urllib import quote as urlquote        # pragma: no cover -- py2
+
+import fs
+import fs.path
 
 from ._version import __version__
 from .namaste import find_namastes
@@ -16,6 +12,10 @@ from .pyfs import open_fs
 
 
 NORMALIZATIONS = ['uri', 'md5']  # Must match possibilities in map_filepaths()
+
+
+class ObjectException(Exception):
+    """Exception class for OCFL Object."""
 
 
 def add_object_args(parser):
@@ -65,13 +65,12 @@ def next_version(version):
     next = int(m.group(1)) + 1
     if m.group(2) == '0':
         # Zero-padded version
-        next_version = ('v0%0' + str(len(version) - 2) + 'd') % next
-        if len(next_version) != len(version):
-            raise ObjectException("Version number overflow for zero-padded version %d to %d" % (version, next_version))
-        return next_version
-    else:
-        # Not zero-padded
-        return 'v' + str(next)
+        next_v = ('v0%0' + str(len(version) - 2) + 'd') % next
+        if len(next_v) != len(version):
+            raise ObjectException("Version number overflow for zero-padded version %d to %d" % (version, next_v))
+        return next_v
+    # Not zero-padded
+    return 'v' + str(next)
 
 
 def remove_first_directory(path):
@@ -88,9 +87,8 @@ def remove_first_directory(path):
         (head, tail) = fs.path.split(path)
         if head == path or tail == path:
             break
-        else:
-            path = head
-            rpath = tail if rpath == '' else fs.path.join(tail, rpath)
+        path = head
+        rpath = tail if rpath == '' else fs.path.join(tail, rpath)
     return rpath
 
 
@@ -117,28 +115,28 @@ def find_path_type(path):
     """
     try:
         pyfs = open_fs(path, create=False)
-    except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
+    except (fs.opener.errors.OpenerError, fs.errors.CreateFailed):
         # Failed to open path as a filesystem, try enclosing directory
         # in case path is a file
         (parent, filename) = fs.path.split(path)
         try:
             pyfs = open_fs(parent, create=False)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
-            return("path cannot be opened, and nor can parent (" + str(e) + ")")
+            return "path cannot be opened, and nor can parent (" + str(e) + ")"
         # Can open parent, is filename a file there?
         try:
             info = pyfs.getinfo(filename)
         except fs.errors.ResourceNotFound:
-            return("path does not exist")
+            return "path does not exist"
         if info.is_dir:
-            return("directory that could not be opened as a filesystem, this should not happen")  # pragma: no cover
-        return('file')
+            return "directory that could not be opened as a filesystem, this should not happen"  # pragma: no cover
+        return 'file'
     namastes = find_namastes(0, pyfs=pyfs)
     if len(namastes) == 0:
-        return("no 0= declaration file")
-    elif len(namastes) > 1:
-        return("more than one 0= declaration file")
+        return "no 0= declaration file"
+    if len(namastes) > 1:
+        return "more than one 0= declaration file"
     m = re.match(r'''ocfl(_object)?_(\d+\.\d+)$''', namastes[0].tvalue)
     if m:
-        return('root' if m.group(1) is None else 'object')
-    return("unrecognized 0= declaration file 0=%s" % (namastes[0].tvalue))
+        return 'root' if m.group(1) is None else 'object'
+    return "unrecognized 0= declaration file 0=%s" % (namastes[0].tvalue)

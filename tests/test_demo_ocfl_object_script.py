@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
 """Tests/demo of ocfl-object.py client."""
-import json
-import os
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
+import os.path
 
 from testlib import DemoTestCase
 
@@ -78,6 +72,7 @@ class TestAll(DemoTestCase):
         # ├── [        102]  foo
         # │   └── [        272]  bar.xml
         # └── [       2021]  image.tiff
+        self.assertIn('Extracted content for v1 in', out)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v1/empty.txt")), 0)
         self.assertFalse(os.path.exists(os.path.join(self.tmpdir, "v1/empty2.txt")))
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v1/foo/bar.xml")), 272)
@@ -94,6 +89,7 @@ class TestAll(DemoTestCase):
         # ├── [          0]  empty2.txt
         # └── [        102]  foo
         #    └── [        272]  bar.xml
+        self.assertIn('Extracted content for v2 in', out)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v2/empty.txt")), 0)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v2/empty2.txt")), 0)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v2/foo/bar.xml")), 272)

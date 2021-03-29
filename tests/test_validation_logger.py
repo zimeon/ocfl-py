@@ -1,5 +1,4 @@
 """Version tests."""
-import argparse
 import unittest
 from ocfl.validation_logger import ValidationLogger
 

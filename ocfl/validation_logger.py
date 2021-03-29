@@ -6,10 +6,9 @@ import json
 import os
 import os.path
 import re
-import logging
 
 
-class ValidationLogger(object):
+class ValidationLogger():
     """Class for OCFL ValidationLogger."""
 
     validation_codes = None
@@ -78,7 +77,7 @@ class ValidationLogger(object):
         self.num_warnings += 1
 
     def __str__(self, prefix=''):
-        """String of validator status."""
+        """Return string of validator status."""
         s = ''
         for message in sorted(self.messages):
             s += prefix + message + '\n'

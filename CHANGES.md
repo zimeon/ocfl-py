@@ -2,7 +2,7 @@
 
 ## 2021-??-?? v1.2.1
 
-  * ???
+  * Add use of `pylint` in addition to `pycodestyle` and `pydocstyle` (was `pep257`). Numerous minor fixes as a result of errors/warnings reported.
 
 ## 2021-03-24 v1.2.0
 

@@ -1,13 +1,5 @@
 # -*- coding: utf-8 -*-
 """Tests/demo of ocfl-sidecar.py client."""
-import json
-import os
-import re
-import shutil
-import subprocess
-import sys
-import tempfile
-
 from testlib import DemoTestCase
 
 

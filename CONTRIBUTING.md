@@ -12,10 +12,18 @@ If you propose a major change or new feature, please submit an issue to discuss 
 
 If submitting a pull request:
 
-   * Understand that this code and any merged contributions are covered by the [MIT license](LICENSE.txt).
-   * Please discuss in a issue before submitting a pull request for significant changes.
-   * Please submit pull requests against the `main` branch (at this early stage of development changes are merged to `main`, this may change at some stage).
-   * Please follow [PEP8](https://www.python.org/dev/peps/pep-0008/) and [PEP257](https://www.python.org/dev/peps/pep-0257/) style rules. PEP8 line length (E501) is not enforced, just be reasonable.
-   * The warning W504 is enabled, but W503 is disables -- line breaks should occur before binary operators
-   * Please don't repeat code.
-   * Please cover the code with tests.
+   * Understand that this code and any merged contributions are covered by the [MIT license](LICENSE.txt)
+   * Please discuss in a issue before submitting a pull request for significant changes
+   * Please submit pull requests against the `develop` branch
+   * Please write code that passes the linting tests in `.travis.yml`, these include:
+     * `pycodestyle` implements [PEP8](https://www.python.org/dev/peps/pep-0008/) with the following warnings disabled:
+       * Line length is not enforced (E501), just be reasonable
+       * Where necessary, line breaks should occur before binary operators (warning W504 is enabled, but W503 is disabled)
+     * `pydocstyle` implements [PEP257](https://www.python.org/dev/peps/pep-0257/) style rules:
+       * Nothing is disabled
+     * `pylint` implements more complex static analysis and looks for code smells, some rules are disabled including:
+       * [Checks already implemented in `pycodestyle` and `pydocstyle`](http://pylint.pycqa.org/en/latest/faq.html#i-am-using-another-popular-linter-alongside-pylint-which-messages-should-i-disable-to-avoid-duplicates)
+       * A FIXME doesn't generate and error, but please avoid anyway (W0511)
+       * See `.travis.yml` for current exclusions
+   * Please don't repeat code
+   * Please cover the code with tests

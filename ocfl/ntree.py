@@ -24,7 +24,7 @@ class Ntree(Dispositor):
 
     def __init__(self, n=2, encapsulate=True):
         """Initialize Dispositor."""
-        super(Ntree, self).__init__()
+        super().__init__()
         self.n = n
         self.encapsulate = encapsulate
 
@@ -39,16 +39,15 @@ class Ntree(Dispositor):
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to root."""
         identifier = self.encode(identifier)
-        path = ''
         id_remains = identifier
         segments = []
         while len(id_remains) > self.n:
             segments.append(id_remains[0:self.n])
             id_remains = id_remains[self.n:]
-        segments.append(id_remains)
+        segments.append(id_remains)  # the statement means that segmets will always have at least one element
         if self.encapsulate:
             segments.append(identifier)
-        return os.path.join(*segments)
+        return os.path.join(*segments)  # pylint: disable=no-value-for-parameter
 
     def relative_path_to_identifier(self, path):
         """Convert relative path to identifier."""

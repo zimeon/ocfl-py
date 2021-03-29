@@ -15,14 +15,12 @@ support versioning but is widely used as a transfer format and is thus well
 suited to transferring content that might be used to update an OCLF object
 or disseminate a particular version.
 """
-import bagit
 import os.path
+import bagit
 
 
 class BaggerError(Exception):
     """Exception class for conditions that should abort with message."""
-
-    pass
 
 
 def bag_as_source(srcbag, metadata):
@@ -76,4 +74,4 @@ def bag_extracted_version(dst, metadata):
         tags['Contact-Name'] = metadata.name
     if metadata.address and metadata.address.startswith('mailto:'):
         tags['Contact-Email'] = metadata.address[7:]
-    bag = bagit.make_bag(dst, bag_info=tags, checksums=['sha512'])
+    bagit.make_bag(dst, bag_info=tags, checksums=['sha512'])
