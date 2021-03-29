@@ -99,5 +99,5 @@ def normalized_digest(digest, digest_type='sha512'):
     use lowercase as the normalized form.
     """
     if digest_type in ('sha512-spec-ex','sha256-spec-ex'):
-        return digest.lower()
-    return digest
+        return digest
+    return digest.lower()
