@@ -12,6 +12,7 @@ before_install:
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
   - git submodule update --init --recursive
 install:
+  - pip install bagit  #pylint is unhappy with bagit install via setup.py, not sure why
   - pip install coveralls pylint
   - python setup.py install
 script:
