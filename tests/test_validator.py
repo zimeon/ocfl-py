@@ -1,8 +1,6 @@
-"""Test validation."""
+"""Test validator module."""
 import os
 import os.path
-import shutil
-from zipfile import ZipFile
 import unittest
 from ocfl.validator import Validator
 
@@ -14,8 +12,8 @@ def extra_fixture_maybe_zip(filepath):
     else:
         zippath = filepath + '.zip'
     if os.path.isfile(zippath):
-        return('zip://' + zippath)
-    return(filepath)
+        return 'zip://' + zippath
+    return filepath
 
 
 class TestAll(unittest.TestCase):

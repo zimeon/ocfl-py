@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 """Store tests."""
-import fs
 import io
-import json
 import logging
 import os
-import sys
 import tempfile
 import unittest
+
 from ocfl.store import Store, StoreException
 from ocfl.identity import Identity
 from ocfl.validation_logger import ValidationLogger
@@ -100,7 +98,7 @@ class TestAll(unittest.TestCase):
             fh.close()
         self.assertTrue(s.check_root_structure())
         # Spec "file" a directory
-        spec = os.mkdir(os.path.join(tempdir, "ocfl_1.0.txt"))
+        os.mkdir(os.path.join(tempdir, "ocfl_1.0.txt"))
         self.assertRaises(StoreException, s.check_root_structure)
 
     def test_parse_layout_file(self):

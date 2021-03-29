@@ -37,7 +37,7 @@ def parse_version_directory(dirname):
 class Object():
     """Class for handling OCFL Object data and operations."""
 
-    def __init__(self, id=None, content_directory='content',
+    def __init__(self, identifier=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
                  forward_delta=True, dedupe=True,
                  lax_digests=False, fixity=None, verbose=True,
@@ -45,7 +45,7 @@ class Object():
         """Initialize OCFL object.
 
         Parameters relevant to building an object:
-          id - id for this object
+          identifier - id for this object
           content_directory - allow override of the default 'content'
           digest_algorithm - allow override of the default 'sha512'
           filepath_normalization = allow override of default 'uri'
@@ -67,7 +67,7 @@ class Object():
           path - if set then open a pyfs filesystem at path (alternative to obj_fs)
           create - set True to allow opening filesystem at path to create a directory
         """
-        self.id = id
+        self.id = identifier
         self.content_directory = content_directory
         self.digest_algorithm = digest_algorithm
         self.filepath_normalization = filepath_normalization
@@ -87,7 +87,7 @@ class Object():
         try:
             self.obj_fs = open_fs(fs_url=objdir, create=create)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
-            raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, str(e)))
+            raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, e))
 
     def copy_into_object(self, src_fs, srcfile, filepath, create_dirs=False):
         """Copy from srcfile to filepath in object."""
@@ -577,7 +577,7 @@ class Object():
         try:
             parent_fs = open_fs(parentdir)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
-            raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, str(e)))
+            raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
         parent_fs.makedir(dir)
         dst_fs = parent_fs.opendir(dir)  # Open a sub-filesystem as our destination
         # Now extract...

@@ -21,19 +21,19 @@ def content_to_tvalue(content):
     return re.sub(r'''[^\w\.\-:]''', '_', content[:40])
 
 
-def find_namastes(d, dir='', pyfs=None, max=10):
+def find_namastes(d, dir='', pyfs=None, limit=10):
     """Find NAMASTE files with tag d in dir, return list of Namaste objects.
 
-    max sets a limit on the number of Namaste objects returned, a NamasteException
-    will be raised if more than max files with tag d are found.
+    limit sets a limit on the number of Namaste objects returned, a NamasteException
+    will be raised if more than limit files with tag d are found.
     """
     prefix = str(d) + '='
     if pyfs is not None:
         filenames = [f for f in pyfs.listdir(dir) if f.startswith(prefix)]
     else:
         filenames = [f for f in os.listdir(dir) if f.startswith(prefix)]
-    if len(filenames) > max:
-        raise NamasteException("Found too many Namaste files with tag %s in %s" % (str(d), dir))
+    if len(filenames) > limit:
+        raise NamasteException("Found too many Namaste files with tag %s in %s" % (d, dir))
     return [Namaste(d, tvalue=filename[len(prefix):]) for filename in filenames]
 
 
@@ -42,7 +42,7 @@ def get_namaste(d, dir):
 
     Raises NamasteException if not exaclty one.
     """
-    namastes = find_namastes(d, dir, max=1)
+    namastes = find_namastes(d, dir, limit=1)
     if len(namastes) != 1:
         raise NamasteException("Failed to find one Namaste file with tag %s in %s" % (str(d), dir))
     return namastes[0]

@@ -1,8 +1,10 @@
 """Bagger tests."""
 import unittest
-import bagit
 import os.path
 import tempfile
+
+import bagit
+
 from ocfl.bagger import BaggerError, bag_as_source, bag_extracted_version
 from ocfl.version_metadata import VersionMetadata
 

@@ -60,7 +60,7 @@ class TestAll(unittest.TestCase):
         """Test check of shared args."""
         parser = argparse.ArgumentParser()
         add_shared_args(parser)
-        args = parser.parse_args(['--version', '-v'])
+        parser.parse_args(['--version', '-v'])
         check_shared_args(parser.parse_args(['-v']))
         self.assertRaises(SystemExit, check_shared_args, parser.parse_args(['--version']))
 

@@ -2,8 +2,9 @@
 """OCFL inventory sidecar generator and updater."""
 import argparse
 import logging
-import ocfl
 import os.path
+
+import ocfl
 
 INVENTORY_NAME = "inventory.json"
 
@@ -22,36 +23,39 @@ def parse_arguments():
     return args
 
 
-def create_sidecar(dir):
+def create_sidecar(args, directory):
     """Create sidecar for inventory in dir."""
-    inventory_path = os.path.join(dir, INVENTORY_NAME)
+    inventory_path = os.path.join(directory, INVENTORY_NAME)
     if not os.path.isfile(inventory_path):
-        logging.error("Ignoring path %s because there is no inventory file %s." % (dir, inventory_path))
+        logging.error("Ignoring path %s because there is no inventory file %s.", directory, inventory_path)
     else:
-        object = ocfl.Object(path=dir)
+        obj = ocfl.Object(path=directory)
         if args.digest is not None:
-            object.digest_algorithm = args.digest
+            obj.digest_algorithm = args.digest
         else:  # Read inventory in the hope of setting digest_algoritm
             try:
-                object.parse_inventory()
+                obj.parse_inventory()
             except ocfl.ObjectException as e:
-                logging.warning("Failed to read inventory in directory %s (%s)" % (dir, str(e)))
-        sidecar = object.write_inventory_sidecar()
-        logging.info("Written sidecar file %s" % (sidecar))
+                logging.warning("Failed to read inventory in directory %s (%s)", directory, e)
+        sidecar = obj.write_inventory_sidecar()
+        logging.info("Written sidecar file %s", sidecar)
 
-
-if __name__ == "__main__":
+def main():
+    """Run from command line."""
     args = parse_arguments()
     logging.basicConfig(level=logging.INFO if args.verbose else logging.WARN)
     paths = ["."] if len(args.path) == 0 else args.path
     for path in paths:
-        logging.info("Looking at path %s" % (path))
+        logging.info("Looking at path %s", path)
         if os.path.isdir(path):
-            create_sidecar(path)
+            create_sidecar(args, path)
         else:
-            (dir, filename) = os.path.split(path)
+            (directory, filename) = os.path.split(path)
             if filename == INVENTORY_NAME:
-                create_sidecar(dir)
+                create_sidecar(args, directory)
             else:
                 logging.error("Ignoring path %s with filename that is not inventory.json")
+
+if __name__ == "__main__":
+    main()
     print("Done.")

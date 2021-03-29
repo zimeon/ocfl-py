@@ -1,21 +1,20 @@
 """Identity dispositor tests."""
-import os.path
 import unittest
 from ocfl.inventory_validator import InventoryValidator
 
 
-class TLogger(object):
+class TLogger():
     """Simplified logger to replace ValidationLogger."""
 
     def __init__(self):
         """Initialize."""
         self.clear()
 
-    def error(self, code, **args):
+    def error(self, code, **args):  #pylint: disable=unused-argument
         """Add error code, discard args."""
         self.errors.append(code)
 
-    def warning(self, code, **args):
+    def warning(self, code, **args):  #pylint: disable=unused-argument
         """Add warn code, discard args."""
         self.warns.append(code)
 

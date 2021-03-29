@@ -107,8 +107,7 @@ def str_to_datetime(s, context='datetime'):
                  r"(\d\d):(\d\d))?$", s)
     if m is None:
         raise ValueError("Bad datetime format (%s)" % s)
-    str = m.group(1) + 'Z'
-    dt = dateutil_parser.parse(str)
+    dt = dateutil_parser.parse(m.group(1) + 'Z')
     offset_seconds = 0
     if m.group(3) and m.group(3) != 'Z':
         hh = int(m.group(5))

@@ -2,14 +2,12 @@
 """OCFL Object and Inventory Builder."""
 import argparse
 import logging
-import ocfl
 import sys
 
+import ocfl
 
 class FatalError(Exception):
     """Exception class for conditions that should abort with message."""
-
-    pass
 
 
 def parse_arguments():
@@ -77,7 +75,7 @@ def parse_arguments():
 
 def do_object_operation(args):
     """Implement object operations in a way that can be reused by ocfl-store.py."""
-    obj = ocfl.Object(id=args.id,
+    obj = ocfl.Object(identifier=args.id,
                       digest_algorithm=args.digest,
                       filepath_normalization=args.normalization,
                       forward_delta=not args.no_forward_delta,
@@ -140,9 +138,9 @@ def do_object_operation(args):
 
 if __name__ == "__main__":
     try:
-        args = parse_arguments()
-        logging.basicConfig(level=logging.INFO if args.verbose else logging.WARN)
-        do_object_operation(args)
+        aargs = parse_arguments()
+        logging.basicConfig(level=logging.INFO if aargs.verbose else logging.WARN)
+        do_object_operation(aargs)
     except (FatalError, ocfl.ObjectException) as e:
         # Show message but otherwise exit quietly
         print('Error - ' + str(e))

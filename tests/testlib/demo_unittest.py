@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 """Modified version of unittest.TestCase that includes demo support."""
-import json
-import os
 import re
 import shutil
 import subprocess
-import sys
 import tempfile
 import unittest
 import __main__ as main
@@ -33,7 +30,7 @@ class DemoTestCase(unittest.TestCase):
         if self.tmpdir is not None and not self.keep_tmpdirs:
             shutil.rmtree(self.tmpdir)
 
-    def run_script(self, desc, options, text=None, treedir=None):
+    def run_script(self, desc, options, text=None):
         """Run the ocfl-store.py script."""
         self.m += 1
         if self.demo:
@@ -62,7 +59,7 @@ class DemoTestCase(unittest.TestCase):
         if self.demo:
             if text is not None:
                 print(text + "\n")
-            ree = subprocess.check_output('cd %s; tree -a %s' % (self.tmpdir, treedir),
+            tree = subprocess.check_output('cd %s; tree -a %s' % (self.tmpdir, treedir),
                                            stderr=subprocess.STDOUT,
                                            shell=True).decode('utf-8')
             print("```\n" + tree + "```\n")

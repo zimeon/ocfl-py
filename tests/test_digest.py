@@ -1,7 +1,9 @@
 """Digest tests."""
-import fs
 import unittest
 import sys
+
+import fs
+
 from ocfl.digest import file_digest, digest_regex, normalized_digest
 
 
