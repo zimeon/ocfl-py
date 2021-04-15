@@ -98,6 +98,6 @@ def normalized_digest(digest, digest_type='sha512'):
     All forms (except the spec example forms) are case insensitive. We
     use lowercase as the normalized form.
     """
-    if digest_type in ('sha512-spec-ex','sha256-spec-ex'):
+    if digest_type in ('sha512-spec-ex', 'sha256-spec-ex'):
         return digest
     return digest.lower()

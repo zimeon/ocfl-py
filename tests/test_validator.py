@@ -56,8 +56,8 @@ class TestAll(unittest.TestCase):
                            'E096_manifest_repeated_digest': ['E096'],
                            'E097_fixity_repeated_digest': ['E097'],
                            'E099_bad_content_path_elements': ['E099'],
-                           'E100_E099_fixity_invalid_content_paths': ['E057d'],
-                           'E100_E099_manifest_invalid_content_paths': ['E099','E100']}.items():
+                           'E100_E099_fixity_invalid_content_paths': ['E057d'],  # E057 OK, different test approach
+                           'E100_E099_manifest_invalid_content_paths': ['E099', 'E100']}.items():
             v = Validator()
             filepath = 'fixtures/1.0/bad-objects/' + bad
             if not os.path.isdir(filepath):
