@@ -24,7 +24,8 @@ class TestAll(unittest.TestCase):
         for bad, codes in {'does_not_even_exist': ['E003c'],
                            'E001_extra_dir_in_root': ['E001b'],
                            'E001_extra_file_in_root': ['E001a'],
-                           'E003_E034_empty': ['E003a', 'E034'],
+                           'E001_v2_file_in_root': [],
+                           'E003_E063_empty': ['E003a', 'E034'],
                            'E003_no_decl': ['E003a'],
                            'E008_E036_no_versions_no_head': ['E008', 'E036d'],
                            'E009_version_two_only': ['E009'],
@@ -33,7 +34,6 @@ class TestAll(unittest.TestCase):
                            'E023_missing_file': ['E023a'],
                            'E024_empty_dir_in_content': ['E024'],
                            'E033_inventory_bad_json': ['E033'],
-                           'E034_no_inv': ['E034'],
                            'E036_no_id': ['E036a'],
                            'E040_wrong_head_doesnt_exist': ['E040'],
                            'E040_wrong_head_format': ['E040'],
@@ -47,6 +47,7 @@ class TestAll(unittest.TestCase):
                            'E050_file_in_manifest_not_used': ['E050b'],
                            'E050_state_repeated_digest': ['E050f'],
                            'E058_no_sidecar': ['E058a'],
+                           'E063_no_inv': ['E034'],  # FIXME https://github.com/zimeon/ocfl-py/issues/36
                            'E064_different_root_and_latest_inventories': ['E064'],
                            'E067_file_in_extensions_dir': ['E067'],
                            'E092_bad_manifest_digest': ['E092'],
@@ -54,7 +55,9 @@ class TestAll(unittest.TestCase):
                            'E095_conflicting_logical_paths': ['E095'],
                            'E096_manifest_repeated_digest': ['E096'],
                            'E097_fixity_repeated_digest': ['E097'],
-                           'E099_bad_content_path_elements': ['E099']}.items():
+                           'E099_bad_content_path_elements': ['E099'],
+                           'E100_E099_fixity_invalid_content_paths': ['E057d'],
+                           'E100_E099_manifest_invalid_content_paths': ['E099','E100']}.items():
             v = Validator()
             filepath = 'fixtures/1.0/bad-objects/' + bad
             if not os.path.isdir(filepath):
@@ -76,7 +79,8 @@ class TestAll(unittest.TestCase):
                             'W008_user_no_address': ['W008'],
                             'W009_user_address_not_uri': ['W009'],
                             'W010_no_version_inventory': ['W010'],
-                            'W011_version_inv_diff_metadata': ['W011']}.items():
+                            'W011_version_inv_diff_metadata': ['W011'],
+                            'W013_unregistered_extension': ['W013']}.items():
             v = Validator()
             filepath = 'fixtures/1.0/warn-objects/' + warn
             if not os.path.isdir(filepath):
