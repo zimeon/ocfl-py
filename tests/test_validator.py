@@ -41,6 +41,7 @@ class TestAll(unittest.TestCase):
                            "E041_manifest_not_object": ['E041c'],
                            'E042_bad_manifest_content_path': ['E042'],
                            'E046_missing_version_dir': ['E046'],
+                           'E046_versions_keys_not_zero_padded': ['E046'],
                            'E049_E050_E054_bad_version_block_values': ['E049d', 'E050b', 'E050c', 'E054a', 'E094'],
                            'E049_created_no_timezone': ['E049a'],
                            'E049_created_not_to_seconds': ['E049b'],
