@@ -133,3 +133,18 @@ def ocfl_opendir(pyfs, dir, **kwargs):
         return s3fs
     # Not S3, just use regular opendir(..)
     return pyfs.opendir(dir, **kwargs)
+
+
+def ocfl_files_identical(pyfs, file1, file2):
+    """Compare file1 and file2 on the filesystem pyfs.
+
+    Returns True if the files are identical, False otherwise.
+
+    FIXME - Make this more efficient by comparing stat info first, then only
+    comparing content in chunks if necessary.
+    """
+    with pyfs.open(file1, 'r') as fh1:
+        c1 = fh1.read()
+    with pyfs.open(file2, 'r') as fh2:
+        c2 = fh2.read()
+    return c1 == c2

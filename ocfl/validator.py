@@ -16,7 +16,7 @@ import fs
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
 from .namaste import find_namastes
-from .pyfs import open_fs, ocfl_walk
+from .pyfs import open_fs, ocfl_walk, ocfl_files_identical
 from .validation_logger import ValidationLogger
 
 
@@ -103,9 +103,9 @@ class Validator():
             # Object root
             self.validate_object_root(all_versions)
             # Version inventory files
-            self.validate_version_inventories(all_versions)
+            prior_manifest_digests = self.validate_version_inventories(all_versions)
             # Object content
-            self.validate_content(inventory, all_versions)
+            self.validate_content(inventory, all_versions, prior_manifest_digests)
         except ValidatorAbortException:
             pass
         return self.log.num_errors == 0
@@ -196,9 +196,14 @@ class Validator():
                 self.log.error('E067', entry=entry.name)
 
     def validate_version_inventories(self, version_dirs):
-        """Each version SHOULD have an inventory up to that point."""
+        """Each version SHOULD have an inventory up to that point.
+
+        Also keep a record of any content digests different from those in the root inventory
+        so that we can also check them when validating the content.
+        """
+        prior_manifest_digests = {}  # file -> algorithm -> digest -> [versions]
         if len(version_dirs) == 0:
-            return
+            return prior_manifest_digests
         last_version = version_dirs[-1]
         for version_dir in version_dirs:
             inv_file = fs.path.join(version_dir, 'inventory.json')
@@ -208,31 +213,40 @@ class Validator():
                 # Don't validate in this case. Per the spec the inventory in the last version
                 # MUST be identical to the copy in the object root
                 root_inv_file = 'inventory.json'
-                # FIXME -- how to diff efficiently?
-                with self.obj_fs.open(inv_file, 'r') as ifh:
-                    inv = ifh.read()
-                with self.obj_fs.open(root_inv_file, 'r') as rifh:
-                    root_inv = rifh.read()
-                if inv != root_inv:
+                if not ocfl_files_identical(self.obj_fs, inv_file, root_inv_file):
                     self.log.error('E064', root_inv_file=root_inv_file, inv_file=inv_file)
                 else:
-                    # FIXME - could just compare digest files...
+                    # We could also just compare digest files but this gives a more helpful error for
+                    # which file has the incorrect digest if they don't match
                     self.validate_inventory_digest(inv_file, self.digest_algorithm, where=version_dir)
                 self.inventory_digest_files[version_dir] = 'inventory.json.' + self.digest_algorithm
             else:
                 # Note that inventories in prior versions may use different digest algorithms
-                dummy_version_inventory, inv_validator = self.validate_inventory(inv_file, where=version_dir)
-                self.validate_inventory_digest(inv_file, inv_validator.digest_algorithm, where=version_dir)
-                self.inventory_digest_files[version_dir] = 'inventory.json.' + inv_validator.digest_algorithm
+                version_inventory, inv_validator = self.validate_inventory(inv_file, where=version_dir)
+                digest_algorithm = inv_validator.digest_algorithm
+                self.validate_inventory_digest(inv_file, digest_algorithm, where=version_dir)
+                self.inventory_digest_files[version_dir] = 'inventory.json.' + digest_algorithm
+                # Record all prior digests
+                if 'manifest' in version_inventory:
+                    for digest in version_inventory['manifest']:
+                        for filepath in version_inventory['manifest'][digest]:
+                            if filepath not in prior_manifest_digests:
+                                prior_manifest_digests[filepath] = {}
+                            if digest_algorithm not in prior_manifest_digests[filepath]:
+                                prior_manifest_digests[filepath][digest_algorithm] = {}
+                            if digest not in prior_manifest_digests[filepath][digest_algorithm]:
+                                prior_manifest_digests[filepath][digest_algorithm][digest] = []
+                            prior_manifest_digests[filepath][digest_algorithm][digest].append(version_dir)
                 # Is this inventory an appropriate prior version of the object root inventory?
                 if self.root_inv_validator is not None:
                     self.root_inv_validator.validate_as_prior_version(inv_validator)
+        return prior_manifest_digests
 
-    def validate_content(self, inventory, version_dirs):
+    def validate_content(self, inventory, version_dirs, prior_manifest_digests):
         """Validate file presence and content against inventory.
 
-        The inventory is assumed to be valid and safe to use for construction
-        of file paths etc..
+        The root inventory in `inventory` is assumed to be valid and safe to use
+        for construction of file paths etc..
         """
         files_seen = set()
         # Check files in each version directory
@@ -259,8 +273,7 @@ class Validator():
                         self.log.warning("W002", where=version_dir, entry=entry)
                     else:
                         self.log.error("E015", where=version_dir, entry=entry)
-            except (fs.errors.ResourceNotFound, fs.errors.DirectoryExpected) as e:
-                print(str(e))
+            except (fs.errors.ResourceNotFound, fs.errors.DirectoryExpected):
                 self.log.error('E046', version_dir=version_dir)
         # Check all files in root manifest
         if 'manifest' in inventory:
@@ -273,6 +286,16 @@ class Validator():
                             content_digest = file_digest(filepath, digest_type=self.digest_algorithm, pyfs=self.obj_fs)
                             if content_digest != normalized_digest(digest, digest_type=self.digest_algorithm):
                                 self.log.error('E092', where='root', digest=digest, content_path=filepath, content_digest=content_digest)
+                            # Are there other digests for this same file from other inventories?
+                            # If so then check those also
+                            if filepath in prior_manifest_digests:
+                                for digest_algorithm in prior_manifest_digests[filepath]:
+                                    for other_digest in prior_manifest_digests[filepath][digest_algorithm]:
+                                        content_digest = file_digest(filepath, digest_type=digest_algorithm, pyfs=self.obj_fs)
+                                        if content_digest != normalized_digest(other_digest, digest_type=digest_algorithm):
+                                            where = ','.join(prior_manifest_digests[filepath][digest_algorithm][other_digest])
+                                            self.log.error('E092', where=where, digest=other_digest, content_path=filepath, content_digest=content_digest)
+                            # FIXME - Also other fixity blocks
                         files_seen.discard(filepath)
         # Check any additional digests in root fixity block
         if 'fixity' in inventory and self.check_digests:
