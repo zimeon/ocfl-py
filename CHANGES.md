@@ -4,6 +4,9 @@
 
   * Add use of `pylint` in addition to `pycodestyle` and `pydocstyle` (was `pep257`). Numerous minor fixes as a result of errors/warnings reported.
   * Use additional fixtures in https://github.com/OCFL/fixtures for tests
+  * Validation:
+    * Correct missing root inventory from E034 to E063
+    * Add tests for digests in prior version manifests
 
 ## 2021-03-24 v1.2.0
 

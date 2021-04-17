@@ -127,11 +127,6 @@
       "en": "OCFL Object %s inventory is not valid JSON (%s)"
     }
   },
-  "E034": {
-    "description": {
-       "en": "OCFL Object root inventory is missing"
-    }
-  },
   "E036a": {
     "params": ["where"],
     "description": {
@@ -381,6 +376,11 @@
     "params": ["description"],
     "description": {
        "en": "Cannot extract digest from inventory digest file (%s)"
+    }
+  },
+  "E063": {
+    "description": {
+       "en": "OCFL Object root inventory is missing"
     }
   },
   "E064": {
