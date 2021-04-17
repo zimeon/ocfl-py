@@ -88,7 +88,7 @@ class Validator():
         # Object root inventory file
         inv_file = 'inventory.json'
         if not self.obj_fs.exists(inv_file):
-            self.log.error('E034')
+            self.log.error('E063')
             return False
         try:
             inventory, inv_validator = self.validate_inventory(inv_file)
