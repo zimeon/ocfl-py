@@ -477,7 +477,7 @@
     }
   },
   "E097": {
-    "params": ["where", "algoritm", "digest"],
+    "params": ["where", "algorithm", "digest"],
     "description": {
        "en": "OCFL Object %s inventory fixity block for digest algorithm %s, includes digest %s more than once with different normalizations"
     }
