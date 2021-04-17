@@ -276,7 +276,7 @@ class Validator(object):
                         for filepath in inventory['fixity'][digest_algorithm][digest]:
                             content_digest = file_digest(filepath, digest_type=digest_algorithm, pyfs=self.obj_fs)
                             if content_digest != normalized_digest(digest, digest_type=digest_algorithm):
-                                self.log.error('E093', where='root', digest_algorith=digest_algorithm, digest=digest, content_path=filepath, content_digest=content_digest)
+                                self.log.error('E093', where='root', digest_algorithm=digest_algorithm, digest=digest, content_path=filepath, content_digest=content_digest)
         # Anything left in files_seen is not mentioned in the inventory
         if len(files_seen) > 0:
             self.log.error('E023b', where='root', extra_files=', '.join(sorted(files_seen)))
