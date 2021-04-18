@@ -52,11 +52,16 @@ class TestAll(unittest.TestCase):
                            'E064_different_root_and_latest_inventories': ['E064'],
                            'E067_file_in_extensions_dir': ['E067'],
                            'E092_bad_manifest_digest': ['E092'],
-                           # 'E093_algorithm_change_incorrect_digest': ['E093'],
+                           'E092_content_file_digest_mismatch': ['E092'],
+                           # 'E092_algorithm_change_incorrect_digest': ['E092'],  FIXME https://github.com/OCFL/fixtures/pull/67
+                           'E093_fixity_digest_mismatch': ['E093'],
                            'E094_message_not_a_string': ['E094'],
                            'E095_conflicting_logical_paths': ['E095'],
+                           # 'E095_non_unique_logical_paths': ['E095'],  FIXME https://github.com/zimeon/ocfl-py/issues/39
                            'E096_manifest_repeated_digest': ['E096'],
+                           'E096_manifest_duplicate_digests': ['E096'],
                            'E097_fixity_repeated_digest': ['E097'],
+                           'E097_fixity_duplicate_digests': ['E097'],
                            'E099_bad_content_path_elements': ['E099'],
                            'E100_E099_fixity_invalid_content_paths': ['E057d'],  # E057 OK, different test approach
                            'E100_E099_manifest_invalid_content_paths': ['E099', 'E100']}.items():
