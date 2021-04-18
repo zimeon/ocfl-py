@@ -1,25 +1,35 @@
-# -*- coding: utf-8 -*-
 """Object tests."""
-import fs
-import fs.tempfs
 import io
 import json
 import logging
 import os
-import sys
 import tempfile
 import unittest
-from ocfl.object import Object, ObjectException
+
+import fs
+import fs.tempfs
+
+from ocfl.object import Object, ObjectException, parse_version_directory
 from ocfl.version_metadata import VersionMetadata
 
 
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
-    if sys.version_info < (3, 2):
-        def assertRegex(self, *args, **kwargs):
-            """Hack for Python 2.7."""
-            return self.assertRegexpMatches(*args, **kwargs)
+    def test02_parse_version_directory(self):
+        """Test parse_version_directory function."""
+        self.assertEqual(parse_version_directory('v1'), 1)
+        self.assertEqual(parse_version_directory('v00001'), 1)
+        self.assertEqual(parse_version_directory('v99999'), 99999)
+        # Bad
+        self.assertRaises(Exception, parse_version_directory, None)
+        self.assertRaises(Exception, parse_version_directory, '')
+        self.assertRaises(Exception, parse_version_directory, '1')
+        self.assertRaises(Exception, parse_version_directory, 'v0')
+        self.assertRaises(Exception, parse_version_directory, 'v-1')
+        self.assertRaises(Exception, parse_version_directory, 'v0000')
+        self.assertRaises(Exception, parse_version_directory, 'vv')
+        self.assertRaises(Exception, parse_version_directory, 'v000001')
 
     def test00_init(self):
         """Test Object init."""
@@ -27,7 +37,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(oo.id, None)
         self.assertEqual(oo.digest_algorithm, 'sha512')
         self.assertEqual(oo.fixity, None)
-        oo = Object(id='a:b', digest_algorithm='sha1',
+        oo = Object(identifier='a:b', digest_algorithm='sha1',
                     fixity=['md5', 'crc16'])
         self.assertEqual(oo.id, 'a:b')
         self.assertEqual(oo.digest_algorithm, 'sha1')
@@ -41,22 +51,6 @@ class TestAll(unittest.TestCase):
         self.assertNotEqual(oo.obj_fs, None)
         self.assertRaises(ObjectException, oo.open_fs, 'tests/testdata/i_do_not_exist')
 
-    def test02_parse_version_directory(self):
-        """Test parse_version_directory."""
-        oo = Object()
-        self.assertEqual(oo.parse_version_directory('v1'), 1)
-        self.assertEqual(oo.parse_version_directory('v00001'), 1)
-        self.assertEqual(oo.parse_version_directory('v99999'), 99999)
-        # Bad
-        self.assertRaises(Exception, oo.parse_version_directory, None)
-        self.assertRaises(Exception, oo.parse_version_directory, '')
-        self.assertRaises(Exception, oo.parse_version_directory, '1')
-        self.assertRaises(Exception, oo.parse_version_directory, 'v0')
-        self.assertRaises(Exception, oo.parse_version_directory, 'v-1')
-        self.assertRaises(Exception, oo.parse_version_directory, 'v0000')
-        self.assertRaises(Exception, oo.parse_version_directory, 'vv')
-        self.assertRaises(Exception, oo.parse_version_directory, 'v000001')
-
     def test03_digest(self):
         """Test digest wrapper mathod."""
         oo = Object(digest_algorithm='md5')
@@ -68,7 +62,7 @@ class TestAll(unittest.TestCase):
 
     def test04_start_inventory(self):
         """Test start_inventory mehthod stub."""
-        oo = Object(id="info:a", digest_algorithm="sha256")
+        oo = Object(identifier="info:a", digest_algorithm="sha256")
         inventory = oo.start_inventory()
         self.assertEqual(inventory['id'], "info:a")
         self.assertEqual(inventory['digestAlgorithm'], "sha256")
@@ -76,12 +70,12 @@ class TestAll(unittest.TestCase):
         self.assertEqual(inventory['manifest'], {})
         self.assertNotIn('contentDirectory', inventory)
         self.assertNotIn('fixity', inventory)
-        oo = Object(id="info:b", digest_algorithm="sha256",
+        oo = Object(identifier="info:b", digest_algorithm="sha256",
                     fixity=['md5', 'sha1'])
         inventory = oo.start_inventory()
         self.assertEqual(inventory['fixity'], {'md5': {}, 'sha1': {}})
         #
-        oo = Object(id="info:b", content_directory="stuff")
+        oo = Object(identifier="info:b", content_directory="stuff")
         inventory = oo.start_inventory()
         self.assertEqual(inventory['id'], "info:b")
         self.assertEqual(inventory['contentDirectory'], "stuff")
@@ -195,8 +189,9 @@ class TestAll(unittest.TestCase):
         """Test build_inventory."""
         oo = Object(digest_algorithm="md5")
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
-        for (vdir, inventory, manifest_to_srcfile) in oo.build_inventory(src_fs,
-                                                                         metadata=VersionMetadata()):
+        inventory = None
+        for (dummy_vdir, inventory, dummy_manifest_to_srcfile) in oo.build_inventory(src_fs,
+                                                                                     metadata=VersionMetadata()):
             pass
         self.assertEqual(inventory['type'], 'https://ocfl.io/1.0/spec/#inventory')
         self.assertEqual(inventory['head'], 'v3')

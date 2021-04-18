@@ -8,13 +8,12 @@ def get_dispositor(disposition=None):
     """Find Dispositor object for the given disposition."""
     if disposition == 'pairtree':
         return Ntree(n=2)
-    elif disposition == 'tripletree':
+    if disposition == 'tripletree':
         return Ntree(n=3)
-    elif disposition == 'quadtree':
+    if disposition == 'quadtree':
         return Ntree(n=4)
-    elif disposition == 'uuid_quadtree':
+    if disposition == 'uuid_quadtree':
         return UUIDQuadtree()
-    elif disposition == 'identity':
+    if disposition == 'identity':
         return Identity()
-    else:
-        raise Exception("Unsupported disposition %s, aborting!" % (disposition))
+    raise Exception("Unsupported disposition %s, aborting!" % (disposition))

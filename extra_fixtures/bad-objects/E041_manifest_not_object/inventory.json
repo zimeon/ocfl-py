@@ -1,0 +1,19 @@
+{
+  "digestAlgorithm": "sha512",
+  "head": "v1",
+  "id": "http://example.org/E041_no_manifest",
+  "manifest": "this should be a JSON object not a string!",
+  "type": "https://ocfl.io/1.0/spec/#inventory",
+  "versions": {
+    "v1": {
+      "created": "2019-01-01T02:03:04Z",
+      "message": "a message",
+      "state": {
+      },
+      "user": {
+        "address": "https://example.org/a_person",
+        "name": "A Person"
+      }	    
+    }
+  }
+}

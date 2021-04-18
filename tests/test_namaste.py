@@ -1,9 +1,11 @@
 """Namaste tests."""
-import fs
-import fs.tempfs
 import os.path
 import tempfile
 import unittest
+
+import fs
+import fs.tempfs
+
 from ocfl.namaste import content_to_tvalue, find_namastes, get_namaste, Namaste, NamasteException
 
 
@@ -24,13 +26,13 @@ class TestAll(unittest.TestCase):
         """Test find_namastes."""
         # With plain filesystem
         namastes1 = find_namastes(0, 'tests/testdata/namaste')
-        self.assertEqual(set([x.tvalue for x in namastes1]), set(['frog', 'bison', 'snake']))
-        self.assertRaises(NamasteException, find_namastes, 0, 'tests/testdata/namaste', max=2)
+        self.assertEqual({x.tvalue for x in namastes1}, {'frog', 'bison', 'snake'})
+        self.assertRaises(NamasteException, find_namastes, 0, 'tests/testdata/namaste', limit=2)
         # With pysf filesystem
         tdfs = fs.open_fs('tests/testdata')
         namastes2 = find_namastes(0, 'namaste', pyfs=tdfs)
-        self.assertEqual(set([x.tvalue for x in namastes2]), set(['frog', 'bison', 'snake']))
-        self.assertRaises(NamasteException, find_namastes, 0, 'namaste', pyfs=tdfs, max=1)
+        self.assertEqual({x.tvalue for x in namastes2}, {'frog', 'bison', 'snake'})
+        self.assertRaises(NamasteException, find_namastes, 0, 'namaste', pyfs=tdfs, limit=1)
 
     def test03_get_namaste(self):
         """Test get_namaste."""
@@ -45,7 +47,7 @@ class TestAll(unittest.TestCase):
         """Test initialization."""
         n = Namaste()
         self.assertEqual(n.d, 0)
-        self.assertEqual(n._tr_func, content_to_tvalue)
+        self.assertEqual(n._tr_func, content_to_tvalue)  # pylint: disable=protected-access
         n = Namaste(0, 'myspec')
         self.assertEqual(n.d, 0)
         self.assertEqual(n.content, 'myspec')

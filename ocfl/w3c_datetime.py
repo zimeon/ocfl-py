@@ -7,15 +7,15 @@ provides ISO8601 format string access to the timestamp.
 The timestamp is assumed to be stored in UTC.
 """
 
+import re
 import time
 from calendar import timegm
 from datetime import datetime
 from dateutil import parser as dateutil_parser
-import re
 
 
 def datetime_to_str(dt='now', no_fractions=False):
-    """The Last-Modified data in ISO8601 syntax, Z notation.
+    """Return Last-Modified data in ISO8601 syntax, Z notation.
 
     The lastmod is stored as unix timestamp which is already
     in UTC. At preesent this code will return 6 decimal digits
@@ -29,7 +29,7 @@ def datetime_to_str(dt='now', no_fractions=False):
     """
     if dt is None:
         return None
-    elif dt == 'now':
+    if dt == 'now':
         dt = time.time()
     if no_fractions:
         dt = int(dt)
@@ -76,7 +76,7 @@ def str_to_datetime(s, context='datetime'):
     """
     t = None
     if s is None:
-        return(t)
+        return t
     if s == '':
         raise ValueError('Attempt to set empty %s' % (context))
     # Make a date into a full datetime
@@ -107,8 +107,7 @@ def str_to_datetime(s, context='datetime'):
                  r"(\d\d):(\d\d))?$", s)
     if m is None:
         raise ValueError("Bad datetime format (%s)" % s)
-    str = m.group(1) + 'Z'
-    dt = dateutil_parser.parse(str)
+    dt = dateutil_parser.parse(m.group(1) + 'Z')
     offset_seconds = 0
     if m.group(3) and m.group(3) != 'Z':
         hh = int(m.group(5))
@@ -120,4 +119,4 @@ def str_to_datetime(s, context='datetime'):
             offset_seconds = -offset_seconds
     # timetuple() ignores timezone information so we have to add in
     # the offset here, and any fractional component of the seconds
-    return(timegm(dt.timetuple()) + offset_seconds + fractional_seconds)
+    return timegm(dt.timetuple()) + offset_seconds + fractional_seconds

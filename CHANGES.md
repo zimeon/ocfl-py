@@ -1,5 +1,13 @@
 # ocfl-py changelog
 
+## 2021-04-18 v1.2.1
+
+  * Add use of `pylint` in addition to `pycodestyle` and `pydocstyle` (was `pep257`). Numerous minor fixes as a result of errors/warnings reported.
+  * Use additional fixtures in https://github.com/OCFL/fixtures for tests
+  * Validation:
+    * Correct missing root inventory from E034 to E063
+    * Add tests for digests in prior version manifests
+
 ## 2021-03-24 v1.2.0
 
   * Add ability for `ocfl-validate.py` to validate a standalone inventory
@@ -44,7 +52,7 @@
 ## 2020-05-18 v0.0.7
 
   * Validator now checks fixity block structure, additional fixity values in fixity block
-  * Validator now checks for repeated digests in manifest, fixity and state blocks (https://ocfl.io/1.0/spec/#E096, https://ocfl.io/1.0/spec/#E097, https://ocfl.io/1.0/spec/#E098) 
+  * Validator now checks for repeated digests in manifest, fixity and state blocks (https://ocfl.io/1.0/spec/#E096, https://ocfl.io/1.0/spec/#E097, https://ocfl.io/1.0/spec/#E098)
   * Move all the many README_*.md demos into docs folder
   * Add build_demo_docs.sh to build demo descriptions in docs folder
 
@@ -60,7 +68,7 @@
 
 ## 2020-05-05 v0.0.5
 
-  * Renumber errors to align somewhat with the canonical code set extracted 
+  * Renumber errors to align somewhat with the canonical code set extracted
     at https://github.com/OCFL/spec/blob/main/validation/validation-codes.md
   * Add --version parameter to scripts to show version number
 

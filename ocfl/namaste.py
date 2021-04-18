@@ -4,10 +4,10 @@ NAMASTE spec: http://www.cdlib.org/inside/diglib/namaste/namastespec.html
 
 See also command line tool: http://github.com/mjgiarlo/namaste
 """
-import fs
 import os
 import os.path
 import re
+import fs
 
 
 def content_to_tvalue(content):
@@ -21,20 +21,19 @@ def content_to_tvalue(content):
     return re.sub(r'''[^\w\.\-:]''', '_', content[:40])
 
 
-def find_namastes(d, dir='', pyfs=None, max=10):
+def find_namastes(d, dir='', pyfs=None, limit=10):
     """Find NAMASTE files with tag d in dir, return list of Namaste objects.
 
-    max sets a limit on the number of Namaste objects returned, a NamasteException
-    will be raised if more than max files with tag d are found.
+    limit sets a limit on the number of Namaste objects returned, a NamasteException
+    will be raised if more than limit files with tag d are found.
     """
     prefix = str(d) + '='
-    namastes = []
     if pyfs is not None:
         filenames = [f for f in pyfs.listdir(dir) if f.startswith(prefix)]
     else:
         filenames = [f for f in os.listdir(dir) if f.startswith(prefix)]
-    if len(filenames) > max:
-        raise NamasteException("Found too many Namaste files with tag %s in %s" % (str(d), dir))
+    if len(filenames) > limit:
+        raise NamasteException("Found too many Namaste files with tag %s in %s" % (d, dir))
     return [Namaste(d, tvalue=filename[len(prefix):]) for filename in filenames]
 
 
@@ -43,7 +42,7 @@ def get_namaste(d, dir):
 
     Raises NamasteException if not exaclty one.
     """
-    namastes = find_namastes(d, dir, max=1)
+    namastes = find_namastes(d, dir, limit=1)
     if len(namastes) != 1:
         raise NamasteException("Failed to find one Namaste file with tag %s in %s" % (str(d), dir))
     return namastes[0]
@@ -52,10 +51,8 @@ def get_namaste(d, dir):
 class NamasteException(Exception):
     """Class for exceptions from Namaste."""
 
-    pass
 
-
-class Namaste(object):
+class Namaste():
     """Class implementing NAMASTE specification."""
 
     def __init__(self, d=0, content='', tvalue=None, tr_func=content_to_tvalue):
@@ -80,11 +77,10 @@ class Namaste(object):
 
     @property
     def tvalue(self):
-        """tvalue of Namaste file."""
+        """Tvalue of Namaste file."""
         if self._tvalue is not None:
             return self._tvalue
-        else:
-            return self._tr_func(self.content)
+        return self._tr_func(self.content)
 
     def write(self, dir='', pyfs=None):
         """Write NAMASTE file to dir, optionally in fs.
@@ -122,9 +118,9 @@ class Namaste(object):
             raise NamasteException("Content of Namaste file %s doesn't match tvalue %s" % (filepath, self.tvalue))
 
     def content_ok(self, dir='', pyfs=None):
-        """True is check_content() does not raise an exception."""
+        """Return True if check_content() does not raise a NamasteException exception."""
         try:
             self.check_content(dir, pyfs)
-        except Exception:
+        except NamasteException:
             return False
         return True

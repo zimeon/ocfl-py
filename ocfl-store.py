@@ -2,8 +2,9 @@
 """OCFL Storage Root Tool."""
 import argparse
 import logging
-import ocfl
 import sys
+
+import ocfl
 
 parser = argparse.ArgumentParser(description='Manpulate or validate an OCFL Storage Root.',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -83,7 +84,7 @@ try:
         else:
             logging.error("create/build/validate not implemented")
     else:
-        logging.warn("Nuttin' happenin' 'round 'ere.")
+        logging.warning("No command, nothing to do.")
 except (ocfl.StoreException, ocfl.ObjectException) as e:
     logging.error(str(e))
     sys.exit(1)

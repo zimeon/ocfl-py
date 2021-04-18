@@ -6,7 +6,7 @@ from ocfl.w3c_datetime import str_to_datetime, datetime_to_str
 
 def rt(dts):
     """Do simple round-trip."""
-    return(datetime_to_str(str_to_datetime(dts)))
+    return datetime_to_str(str_to_datetime(dts))
 
 
 class TestW3cDatetime(unittest.TestCase):

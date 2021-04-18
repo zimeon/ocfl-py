@@ -1,5 +1,4 @@
 """Metadata for a specific version of OCFL Object's content."""
-import logging
 from .w3c_datetime import datetime_to_str
 
 
@@ -19,16 +18,14 @@ def add_version_metadata_args(parser):
 class VersionMetadataException(Exception):
     """Exception class for OCFL Object."""
 
-    pass
 
-
-class VersionMetadata(object):
+class VersionMetadata():
     """Class for metadata for a specific version of an OCFL Object."""
 
     def __init__(self, args=None, inventory=None, version=None,
-                 id=None, created=None, message=None, name=None, address=None):
+                 identifier=None, created=None, message=None, name=None, address=None):
         """Initialize by various means, including command line arguments from argparse."""
-        self.id = id
+        self.id = identifier
         self.created = created
         self.message = message
         self.name = name
@@ -74,7 +71,7 @@ class VersionMetadata(object):
                 self.address = inv_version['user']['address']
 
     def as_dict(self, **kwargs):
-        """Dictionary object with version metedata."""
+        """Return dictionary object with version metedata."""
         m = {}
         self.add_to_dict(m, **kwargs)
         return m

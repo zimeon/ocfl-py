@@ -1,6 +1,6 @@
 """Digest handling for OCFL."""
-import fs
 import hashlib
+import fs
 from .pyfs import open_fs
 
 BUFSIZE = 64 * 1024  # 64kB for want of better info...
@@ -43,32 +43,31 @@ def file_digest(filename, digest_type='sha512', pyfs=None):
     # From spec
     if digest_type == 'sha512':
         return _file_digest(pyfs, filename, hashlib.sha512())
-    elif digest_type == 'sha256':
+    if digest_type == 'sha256':
         return _file_digest(pyfs, filename, hashlib.sha256())
-    elif digest_type == 'sha1':
+    if digest_type == 'sha1':
         return _file_digest(pyfs, filename, hashlib.sha1())
-    elif digest_type == 'md5':
+    if digest_type == 'md5':
         return _file_digest(pyfs, filename, hashlib.md5())
-    elif digest_type == 'blake2b-512':
+    if digest_type == 'blake2b-512':
         return _file_digest(pyfs, filename, hashlib.blake2b())
     # From extensions
-    elif digest_type == 'blake2b-160':
+    if digest_type == 'blake2b-160':
         return _file_digest(pyfs, filename, hashlib.blake2b(digest_size=20))
-    elif digest_type == 'blake2b-256':
+    if digest_type == 'blake2b-256':
         return _file_digest(pyfs, filename, hashlib.blake2b(digest_size=32))
-    elif digest_type == 'blake2b-384':
+    if digest_type == 'blake2b-384':
         return _file_digest(pyfs, filename, hashlib.blake2b(digest_size=48))
     # Specification examples: 15/6 chars ... 3 chars. The truncated
     # sha512 is twice as many chars as the truncated sha256 to give
     # a appropriate impression in examples
-    elif digest_type == 'sha512-spec-ex':
+    if digest_type == 'sha512-spec-ex':
         d = _file_digest(pyfs, filename, hashlib.sha512())
         return d[:15] + '...' + d[-3:]
-    elif digest_type == 'sha256-spec-ex':
+    if digest_type == 'sha256-spec-ex':
         d = _file_digest(pyfs, filename, hashlib.sha256())
         return d[:6] + '...' + d[-3:]
-    else:
-        raise ValueError("Unsupport digest type %s" % (digest_type))
+    raise ValueError("Unsupport digest type %s" % (digest_type))
 
 
 DIGEST_REGEXES = {
@@ -94,11 +93,11 @@ def digest_regex(digest_type='sha512'):
 
 
 def normalized_digest(digest, digest_type='sha512'):
-    """Normalized version of the digest that enables string comparison.
+    """Normalize the digest to return version that enables string comparison.
 
     All forms (except the spec example forms) are case insensitive. We
     use lowercase as the normalized form.
     """
-    if digest_type != 'sha512-spec-ex' and digest_type != 'sha256-spec-ex':
-        return digest.lower()
-    return digest
+    if digest_type in ('sha512-spec-ex', 'sha256-spec-ex'):
+        return digest
+    return digest.lower()

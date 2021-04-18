@@ -14,7 +14,7 @@ class UUIDQuadtree(Dispositor):
 
     def __init__(self, prefix='urn:uuid:'):
         """Initialize Dispositor."""
-        super(UUIDQuadtree, self).__init__()
+        super().__init__()
         self.prefix = prefix
 
     def encode(self, identifier):
@@ -30,14 +30,13 @@ class UUIDQuadtree(Dispositor):
 
         Must match prefix:6ba7b810-9dad-11d1-80b4-00c04fd430c8
         """
-        path = ''
         if identifier.startswith(self.prefix):
             identifier = identifier[len(self.prefix):]
         else:
             raise Exception("UUIDQuadtree identifier %s does not start with prefix %s" % (identifier, self.prefix))
         match = re.match(r'''([\da-f]{4})([\da-f]{4})\-([\da-f]{4})\-([\da-f]{4})\-([\da-f]{4})\-([\da-f]{4})([\da-f]{4})([\da-f]{4})$''', identifier)
         if not match:
-            raise Exception("UUIDQuadtree identifier %s not valid" % (identifer))
+            raise Exception("UUIDQuadtree identifier %s not valid" % (identifier))
         return os.path.join(match.group(1), match.group(2), match.group(3), match.group(4),
                             match.group(5), match.group(6), match.group(7), match.group(8))
 
