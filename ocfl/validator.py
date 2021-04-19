@@ -294,7 +294,7 @@ class Validator():
                                         content_digest = file_digest(filepath, digest_type=digest_algorithm, pyfs=self.obj_fs)
                                         if content_digest != normalized_digest(other_digest, digest_type=digest_algorithm):
                                             where = ','.join(prior_manifest_digests[filepath][digest_algorithm][other_digest])
-                                            self.log.error('E092', where=where, digest=other_digest, content_path=filepath, content_digest=content_digest)
+                                            self.log.error('E092a', where=where, digest=other_digest, content_path=filepath, content_digest=content_digest)
                             # FIXME - Also other fixity blocks
                         files_seen.discard(filepath)
         # Check any additional digests in root fixity block
