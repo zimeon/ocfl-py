@@ -91,13 +91,7 @@
        "en": "Content directory must not contain a forward slash (/) or be . or .."
     }
   },
-  "E023a": {
-    "params": ["where", "content_path"],
-    "description": {
-       "en": "OCFL Object %s inventory manifest refers to a file path that is not present in the object (%s)"
-    }
-  },
-  "E023b": {
+  "E023": {
     "params": ["where", "extra_files"],
     "description": {
        "en": "OCFL Object includes one or more files that are not mentioned in the %s inventory manifest (%s)"
@@ -446,16 +440,28 @@
        "en": "OCFL Object %s inventory manifest file list for digest %s is not a JSON array"
     }
   },
-  "E092": {
+  "E092a": {
     "params": ["where", "digest", "content_path", "content_digest"],
     "description": {
        "en": "OCFL Object %s inventory manifest has digest %s for file %s which doesn't match calculated digest %s for that file"
     }
   },
-  "E093": {
+  "E092b": {
+    "params": ["where", "content_path"],
+    "description": {
+       "en": "OCFL Object %s inventory manifest refers to a file path that is not present in the object (%s)"
+    }
+  },
+  "E093a": {
     "params": ["where", "digest_algorithm", "digest", "content_path", "content_digest"],
     "description": {
        "en": "OCFL Object %s inventory fixity block for digest algorithm %s has digest %s for file %s which doesn't match calculated digest %s for that file"
+    }
+  },
+  "E093b": {
+    "params": ["where", "digest_algorithm", "digest", "content_path"],
+    "description": {
+       "en": "OCFL Object %s inventory fixity block for digest algorithm %s has digest %s for a file %s which does not exist in the object"
     }
   },
   "E094": {
