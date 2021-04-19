@@ -2,7 +2,8 @@
 
 ## 2021-??-?? v1.2.2
 
-  * ???
+  * Validation:
+    * Correct handling of missing files mentioned in manifest or fixity
 
 ## 2021-04-18 v1.2.1
 

@@ -280,12 +280,12 @@ class Validator():
             for digest in inventory['manifest']:
                 for filepath in inventory['manifest'][digest]:
                     if filepath not in files_seen:
-                        self.log.error('E023a', where='root', content_path=filepath)
+                        self.log.error('E092b', where='root', content_path=filepath)
                     else:
                         if self.check_digests:
                             content_digest = file_digest(filepath, digest_type=self.digest_algorithm, pyfs=self.obj_fs)
                             if content_digest != normalized_digest(digest, digest_type=self.digest_algorithm):
-                                self.log.error('E092', where='root', digest=digest, content_path=filepath, content_digest=content_digest)
+                                self.log.error('E092a', where='root', digest=digest, content_path=filepath, content_digest=content_digest)
                             # Are there other digests for this same file from other inventories?
                             # If so then check those also
                             if filepath in prior_manifest_digests:
@@ -303,12 +303,15 @@ class Validator():
                 for digest in inventory['fixity'][digest_algorithm]:
                     if digest != self.digest_algorithm:  # don't recheck things we check from manifest
                         for filepath in inventory['fixity'][digest_algorithm][digest]:
-                            content_digest = file_digest(filepath, digest_type=digest_algorithm, pyfs=self.obj_fs)
-                            if content_digest != normalized_digest(digest, digest_type=digest_algorithm):
-                                self.log.error('E093', where='root', digest_algorithm=digest_algorithm, digest=digest, content_path=filepath, content_digest=content_digest)
+                            try:
+                                content_digest = file_digest(filepath, digest_type=digest_algorithm, pyfs=self.obj_fs)
+                                if content_digest != normalized_digest(digest, digest_type=digest_algorithm):
+                                    self.log.error('E093a', where='root', digest_algorithm=digest_algorithm, digest=digest, content_path=filepath, content_digest=content_digest)
+                            except fs.errors.ResourceNotFound:
+                                self.log.error('E093b', where='root', digest_algorithm=digest_algorithm, digest=digest, content_path=filepath)
         # Anything left in files_seen is not mentioned in the inventory
         if len(files_seen) > 0:
-            self.log.error('E023b', where='root', extra_files=', '.join(sorted(files_seen)))
+            self.log.error('E023', where='root', extra_files=', '.join(sorted(files_seen)))
 
     def read_inventory_digest(self, inv_digest_file):
         """Read inventory digest from sidecar file.
