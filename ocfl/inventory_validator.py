@@ -11,14 +11,14 @@ from .w3c_datetime import str_to_datetime
 
 
 def get_file_map(inventory, version_dir):
-    """Get a map of file in state to files on disk for version_dir in inventory."""
+    """Get a map of files in state to files on disk for version_dir in inventory."""
     state = inventory['versions'][version_dir]['state']
     manifest = inventory['manifest']
     file_map = {}
     for digest in state:
         if digest in manifest:
             for file in state[digest]:
-                file_map[file] = manifest[digest]
+                file_map[file] = set(manifest[digest])
     return file_map
 
 
@@ -417,8 +417,10 @@ class InventoryValidator():
                 else:
                     # Check them all...
                     for file in prior_map:
-                        if prior_map[file] != self_map[file]:
-                            self.error('E066c', version_dir=version_dir, prior_head=prior.head, file=file)
+                        if not prior_map[file].issubset(self_map[file]):
+                            self.error('E066c', version_dir=version_dir, prior_head=prior.head,
+                                       file=file, prior_content=','.join(prior_map[file]),
+                                       current_content=','.join(self_map[file]))
             # Check metadata
             prior_version = prior.inventory['versions'][version_dir]
             self_version = self.inventory['versions'][version_dir]

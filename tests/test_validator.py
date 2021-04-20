@@ -31,6 +31,7 @@ class TestAll(unittest.TestCase):
                            'E009_version_two_only': ['E009'],
                            'E015_content_not_in_content_dir': ['E042'],  # FIXME - What should test case and error be?
                            'E023_extra_file': ['E023'],
+                           'E023_missing_file': ['E092b'],
                            'E024_empty_dir_in_content': ['E024'],
                            'E033_inventory_bad_json': ['E033'],
                            'E036_no_id': ['E036a'],
@@ -53,7 +54,6 @@ class TestAll(unittest.TestCase):
                            'E092_bad_manifest_digest': ['E092a'],
                            'E092_content_file_digest_mismatch': ['E092a'],
                            # 'E092_algorithm_change_incorrect_digest': ['E092'],  FIXME https://github.com/OCFL/fixtures/pull/67
-                           'E023_missing_file': ['E092b'],
                            'E093_fixity_digest_mismatch': ['E093a'],
                            'E094_message_not_a_string': ['E094'],
                            'E095_conflicting_logical_paths': ['E095'],

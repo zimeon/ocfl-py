@@ -403,9 +403,9 @@
     }
   },
   "E066c": {
-    "params": ["where", "version"],
+    "params": ["prior_head", "version_dir", "file", "prior_content", "where", "current_content"],
     "description": {
-       "en": "OCFL Object %s inventory %s version block has no state description"
+       "en": "OCFL Object %s inventory %s version state has file %s that maps to different content files (%s) than in the %s inventory (%s)"
     }
   },
   "E067": {
