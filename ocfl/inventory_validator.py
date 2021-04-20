@@ -79,7 +79,9 @@ class InventoryValidator():
         if 'contentDirectory' in inventory:
             # Careful only to set self.content_directory if value is safe
             cd = inventory['contentDirectory']
-            if not isinstance(cd, str) or '/' in cd or cd in ['.', '..']:
+            if not isinstance(cd, str) or '/' in cd:
+                self.error("E017")
+            elif cd in ('.', '..'):
                 self.error("E018")
             else:
                 self.content_directory = cd
