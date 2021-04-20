@@ -86,9 +86,16 @@
        "en": "OCFL Object version directory %s includes an illegal file (%s)"
     }
   },
-  "E018": {
+  "E017": {
+    "params": ["where"],
     "description": {
-       "en": "Content directory must not contain a forward slash (/) or be . or .."
+       "en": "OCFL Object %s inventory contentDirectory must be a string and must not contain a forward slash (/)"
+    }
+  },
+  "E018": {
+    "params": ["where"],
+    "description": {
+       "en": "OCFL Object %s inventory contentDirectory must not be either . or .."
     }
   },
   "E023": {
