@@ -370,7 +370,7 @@
   "E060": {
     "params": ["inv_file", "actual", "recorded", "inv_digest_file"],
     "description": {
-       "en": "Mismatch between actual and recorded inventory digests for %s (calcuated %s but read %s from %s)"
+       "en": "Mismatch between actual and recorded inventory digests for %s (calculated %s but read %s from %s)"
     }
   },
   "E061": {
