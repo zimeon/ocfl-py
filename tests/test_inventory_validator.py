@@ -100,7 +100,7 @@ class TestAll(unittest.TestCase):
         log.clear()
         # Conflicting content paths
         iv.validate_manifest({"067eca3f5b024afa00aeac03a3c42dc0042bf43cba56104037abea8b365c0cf672f0e0c14c91b82bbce6b1464e231ac285d630a82cd4d4a7b194bea04d4b2eb7": ['v1/content/a', 'v1/content/a/b']})
-        self.assertEqual(log.errors, ['E101'])
+        self.assertEqual(log.errors, ['E101b'])
 
     def test_validate_fixity(self):
         """Test validate_fixity method."""
@@ -372,6 +372,9 @@ class TestAll(unittest.TestCase):
         log.clear()
         iv.check_content_path('v1/xyz/.', cp, cd)
         self.assertEqual(log.errors, ['E099'])
+        log.clear()
+        iv.check_content_path('v1/xyz/anything', cp, cd)
+        self.assertEqual(log.errors, ['E101a'])
         # Good cases
         log.clear()
         iv.check_content_path('v1/xyz/.secret/d', cp, cd)

@@ -146,7 +146,7 @@ class InventoryValidator():
             # Check for conflicting content paths
             for path in content_directories:
                 if path in content_paths:
-                    self.error("E101", path=path)
+                    self.error("E101b", path=path)
 
         return (manifest_files, unnormalized_digests)
 
@@ -392,8 +392,11 @@ class InventoryValidator():
                         self.error("E099", path=path)
                         return
                 # Accumulate paths and directories
-                content_paths.add(path)
-                content_directories.add('/'.join([m.group(1)] + elements[0:-1]))
+                if path in content_paths:
+                    self.error("E101a", path=path)
+                else:
+                    content_paths.add(path)
+                    content_directories.add('/'.join([m.group(1)] + elements[0:-1]))
             else:
                 self.error("E042", path=path)
 
