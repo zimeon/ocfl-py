@@ -29,7 +29,7 @@ class TestAll(unittest.TestCase):
                            'E003_no_decl': ['E003a'],
                            'E008_E036_no_versions_no_head': ['E008', 'E036d'],
                            'E009_version_two_only': ['E009'],
-                           'E015_content_not_in_content_dir': ['E042'],  # FIXME - What should test case and error be?
+                           'E015_content_not_in_content_dir': ['E042a'],  # FIXME - What should test case and error be?
                            'E023_extra_file': ['E023'],
                            'E023_missing_file': ['E092b'],
                            'E024_empty_dir_in_content': ['E024'],
@@ -38,10 +38,9 @@ class TestAll(unittest.TestCase):
                            'E040_wrong_head_doesnt_exist': ['E040'],
                            'E040_wrong_head_format': ['E040'],
                            'E041_no_manifest': ['E041a'],
-                           "E041_manifest_not_object": ['E041c'],
-                           'E042_bad_manifest_content_path': ['E042'],
+                           'E041_manifest_not_object': ['E041c'],
+                           'E042_bad_manifest_content_path': ['E042a'],
                            'E046_missing_version_dir': ['E046'],
-                           'E046_versions_keys_not_zero_padded': ['E046'],
                            'E049_E050_E054_bad_version_block_values': ['E049d', 'E050b', 'E050c', 'E054a', 'E094'],
                            'E049_created_no_timezone': ['E049a'],
                            'E049_created_not_to_seconds': ['E049b'],

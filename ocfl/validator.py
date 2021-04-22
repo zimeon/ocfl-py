@@ -92,20 +92,19 @@ class Validator():
             return False
         try:
             inventory, inv_validator = self.validate_inventory(inv_file)
+            inventory_is_valid = self.log.num_errors == 0
             self.root_inv_validator = inv_validator
             all_versions = inv_validator.all_versions
             self.content_directory = inv_validator.content_directory
             self.digest_algorithm = inv_validator.digest_algorithm
             self.validate_inventory_digest(inv_file, self.digest_algorithm)
-            if self.log.num_errors > 0:
-                # Don't look at storage if inventory fails validation
-                return False
             # Object root
             self.validate_object_root(all_versions)
             # Version inventory files
             prior_manifest_digests = self.validate_version_inventories(all_versions)
-            # Object content
-            self.validate_content(inventory, all_versions, prior_manifest_digests)
+            if inventory_is_valid:
+                # Object content
+                self.validate_content(inventory, all_versions, prior_manifest_digests)
         except ValidatorAbortException:
             pass
         return self.log.num_errors == 0
