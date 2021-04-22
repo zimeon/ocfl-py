@@ -55,8 +55,8 @@ class TestAll(unittest.TestCase):
                            # 'E092_algorithm_change_incorrect_digest': ['E092'],  FIXME https://github.com/OCFL/fixtures/pull/67
                            'E093_fixity_digest_mismatch': ['E093a'],
                            'E094_message_not_a_string': ['E094'],
-                           'E095_conflicting_logical_paths': ['E095'],
-                           # 'E095_non_unique_logical_paths': ['E095'],  FIXME https://github.com/zimeon/ocfl-py/issues/39
+                           'E095_conflicting_logical_paths': ['E095b'],
+                           'E095_non_unique_logical_paths': ['E095a'],
                            'E096_manifest_repeated_digest': ['E096'],
                            'E096_manifest_duplicate_digests': ['E096'],
                            'E097_fixity_repeated_digest': ['E097'],
