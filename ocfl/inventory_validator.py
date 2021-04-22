@@ -157,7 +157,7 @@ class InventoryValidator():
             # Check for conflicting content paths
             for path in content_directories:
                 if path in content_paths:
-                    self.error("E101", path=path)
+                    self.error("E101b", path=path)
         return manifest_files, manifest_files_correct_format, unnormalized_digests
 
     def validate_fixity(self, fixity, manifest_files):
@@ -417,7 +417,10 @@ class InventoryValidator():
             if element in ('', '.', '..'):
                 self.error("E099", path=path)
                 return False
-        # Accumulate paths and directories
+        # Accumulate paths and directories if not seen before
+        if path in content_paths:
+            self.error("E101a", path=path)
+            return False
         content_paths.add(path)
         content_directories.add('/'.join([m.group(1)] + elements[0:-1]))
         return True
