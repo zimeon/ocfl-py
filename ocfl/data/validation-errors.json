@@ -483,7 +483,13 @@
        "en": "OCFL Object %s inventory %s version block has message key with value that isn't a string"
     }
   },
-  "E095": {
+  "E095a": {
+    "params": ["where", "version", "path"],
+    "description": {
+       "en": "OCFL Object %s inventory version %s state has logical path %s used more than once."
+    }
+  },
+  "E095b": {
     "params": ["where", "version", "path"],
     "description": {
        "en": "OCFL Object %s inventory version %s state has logical path %s used as both a directory and a file path."

@@ -334,7 +334,10 @@ class InventoryValidator():
                     self.error('E050e', version=version, digest=digest)
                 else:
                     for path in state[digest]:
-                        self.check_logical_path(path, version, logical_paths, logical_directories)
+                        if path in logical_paths:
+                            self.error("E095a", version=version, path=path)
+                        else:
+                            self.check_logical_path(path, version, logical_paths, logical_directories)
                     if digest not in unnormalized_digests:
                         # Exact string value must match, not just normalized
                         self.error("E050f", version=version, digest=digest)
@@ -343,7 +346,7 @@ class InventoryValidator():
             # Check for conflicting logical paths
             for path in logical_directories:
                 if path in logical_paths:
-                    self.error("E095", version=version, path=path)
+                    self.error("E095b", version=version, path=path)
         return digests
 
     def check_content_paths_map_to_versions(self, manifest_files, all_versions):
@@ -380,7 +383,7 @@ class InventoryValidator():
         return r'''^.*$'''
 
     def check_logical_path(self, path, version, logical_paths, logical_directories):
-        """Check logical path and accumulate paths/directories for E095 check.
+        """Check logical path and accumulate paths/directories for E095b check.
 
         logical_paths and logical_directories are expected to be sets.
 
