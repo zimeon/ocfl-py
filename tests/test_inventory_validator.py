@@ -1,4 +1,5 @@
 """Identity dispositor tests."""
+import json
 import unittest
 from ocfl.inventory_validator import InventoryValidator
 
@@ -78,13 +79,13 @@ class TestAll(unittest.TestCase):
         """Test validate_manifest method."""
         log = TLogger()
         iv = InventoryValidator(log=log)
-        self.assertEqual(iv.validate_manifest("not a manifest"), ({}, set()))
+        self.assertEqual(iv.validate_manifest("not a manifest"), ({}, [], set()))
         self.assertIn('E041c', log.errors)
         log.clear()
-        self.assertEqual(iv.validate_manifest({"xxx": []}), ({}, set()))
+        self.assertEqual(iv.validate_manifest({"xxx": []}), ({}, [], set()))
         self.assertIn('E025a', log.errors)
         log.clear()
-        self.assertEqual(iv.validate_manifest({"067eca3f5b024afa00aeac03a3c42dc0042bf43cba56104037abea8b365c0cf672f0e0c14c91b82bbce6b1464e231ac285d630a82cd4d4a7b194bea04d4b2eb7": "not an array"}), ({}, set()))
+        self.assertEqual(iv.validate_manifest({"067eca3f5b024afa00aeac03a3c42dc0042bf43cba56104037abea8b365c0cf672f0e0c14c91b82bbce6b1464e231ac285d630a82cd4d4a7b194bea04d4b2eb7": "not an array"}), ({}, [], set()))
         self.assertIn('E092', log.errors)
         log.clear()
         iv.lax_digests = True
@@ -92,7 +93,7 @@ class TestAll(unittest.TestCase):
             {
                 "067eca3f5b024afa00aeac03a3c42dc0042bf43cba56104037abea8b365c0cf672f0e0c14c91b82bbce6b1464e231ac285d630a82cd4d4a7b194bea04d4b2eb7": [],
                 "067ECA3f5b024afa00aeac03a3c42dc0042bf43cba56104037abea8b365c0cf672f0e0c14c91b82bbce6b1464e231ac285d630a82cd4d4a7b194bea04d4b2eb7": []
-            }), ({}, set([
+            }), ({}, [], set([
                 "067ECA3f5b024afa00aeac03a3c42dc0042bf43cba56104037abea8b365c0cf672f0e0c14c91b82bbce6b1464e231ac285d630a82cd4d4a7b194bea04d4b2eb7",
                 "067eca3f5b024afa00aeac03a3c42dc0042bf43cba56104037abea8b365c0cf672f0e0c14c91b82bbce6b1464e231ac285d630a82cd4d4a7b194bea04d4b2eb7"
             ])))
@@ -327,57 +328,57 @@ class TestAll(unittest.TestCase):
         iv = InventoryValidator(log=log)
         cp = set()
         cd = set()
-        iv.check_content_path('v1/content/anything', cp, cd)
+        self.assertTrue(iv.check_content_path('v1/content/anything', cp, cd))
         self.assertEqual(log.errors, [])
         self.assertEqual(cp, set(['v1/content/anything']))
         self.assertEqual(cd, set(['v1/content']))
         log.clear()
         iv.content_directory = 'xyz'
-        iv.check_content_path('v1/content/anything', cp, cd)
-        self.assertEqual(log.errors, ['E042'])
+        self.assertFalse(iv.check_content_path('v1/content/anything', cp, cd))
+        self.assertEqual(log.errors, ['E042a'])
         log.clear()
-        iv.check_content_path('v1/xyz/anything', cp, cd)
+        self.assertTrue(iv.check_content_path('v1/xyz/anything', cp, cd))
         self.assertEqual(log.errors, [])
         # Error cases
         log.clear()
-        iv.check_content_path('1/xyz/1', cp, cd)
-        self.assertEqual(log.errors, ['E042'])
+        self.assertFalse(iv.check_content_path('1/xyz/1', cp, cd))
+        self.assertEqual(log.errors, ['E042a'])
         log.clear()
-        iv.check_content_path('vv1/xyz/1', cp, cd)
-        self.assertEqual(log.errors, ['E042'])
+        self.assertFalse(iv.check_content_path('vv1/xyz/1', cp, cd))
+        self.assertEqual(log.errors, ['E042a'])
         log.clear()
-        iv.check_content_path('v1/x/1', cp, cd)
-        self.assertEqual(log.errors, ['E042'])
+        self.assertFalse(iv.check_content_path('v1/x/1', cp, cd))
+        self.assertEqual(log.errors, ['E042a'])
         log.clear()
-        iv.check_content_path('v1/xyz/1/', cp, cd)
+        self.assertFalse(iv.check_content_path('v1/xyz/1/', cp, cd))
         self.assertEqual(log.errors, ['E100'])
         log.clear()
-        iv.check_content_path('/v1/xyz/1', cp, cd)
+        self.assertFalse(iv.check_content_path('/v1/xyz/1', cp, cd))
         self.assertEqual(log.errors, ['E100'])
         log.clear()
-        iv.check_content_path('v1/xyz/', cp, cd)
+        self.assertFalse(iv.check_content_path('v1/xyz/', cp, cd))
         self.assertEqual(log.errors, ['E100'])
         log.clear()
-        iv.check_content_path('v1/xyz//1', cp, cd)
+        self.assertFalse(iv.check_content_path('v1/xyz//1', cp, cd))
         self.assertEqual(log.errors, ['E099'])
         log.clear()
-        iv.check_content_path('v1/xyz/abc//d', cp, cd)
+        self.assertFalse(iv.check_content_path('v1/xyz/abc//d', cp, cd))
         self.assertEqual(log.errors, ['E099'])
         log.clear()
-        iv.check_content_path('v1/xyz/abc/./d', cp, cd)
+        self.assertFalse(iv.check_content_path('v1/xyz/abc/./d', cp, cd))
         self.assertEqual(log.errors, ['E099'])
         log.clear()
-        iv.check_content_path('v1/xyz/abc/../d', cp, cd)
+        self.assertFalse(iv.check_content_path('v1/xyz/abc/../d', cp, cd))
         self.assertEqual(log.errors, ['E099'])
         log.clear()
-        iv.check_content_path('v1/xyz/.', cp, cd)
+        self.assertFalse(iv.check_content_path('v1/xyz/.', cp, cd))
         self.assertEqual(log.errors, ['E099'])
         # Good cases
         log.clear()
-        iv.check_content_path('v1/xyz/.secret/d', cp, cd)
+        self.assertTrue(iv.check_content_path('v1/xyz/.secret/d', cp, cd))
         self.assertEqual(log.errors, [])
         log.clear()
-        iv.check_content_path('v1/xyz/.a', cp, cd)
+        self.assertTrue(iv.check_content_path('v1/xyz/.a', cp, cd))
         self.assertEqual(log.errors, [])
         # Check good paths accumulated
         self.assertEqual(cp, set(('v1/xyz/anything', 'v1/xyz/.a', 'v1/content/anything', 'v1/xyz/.secret/d')))
@@ -404,3 +405,16 @@ class TestAll(unittest.TestCase):
         # And check only good paths recorded
         self.assertEqual(lp, set(('almost anything goes', 'including/this/long/path')))
         self.assertEqual(ld, set(('', 'including/this/long')))
+
+    def test_bad_inventory_files(self):
+        """Test bad inventory files."""
+        for bad, codes in {'inventory_E042a_bad_content_paths': ['E042a'],
+                           'inventory_E042b_unknown_version': ['E042b'],
+                           'inventory_E042b_zero_padding_mismatch': ['E042b']}.items():
+            filepath = 'extra_fixtures/bad-inventories/' + bad + '.json'
+            with open(filepath, 'r') as fh:
+                inventory = json.load(fh)
+            log = TLogger()
+            iv = InventoryValidator(log=log)
+            iv.validate(inventory)
+            self.assertEqual(set(codes), set(log.errors), msg="for object at " + filepath)

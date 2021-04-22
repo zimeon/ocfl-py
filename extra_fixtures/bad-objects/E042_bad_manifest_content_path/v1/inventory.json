@@ -4,7 +4,7 @@
   "id": "ark:123/abc",
   "manifest": {
     "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
-      "v1/content/a_file.txt", "v1/content/./bad_content_path"
+      "v1/content/a_file.txt", "v1/bad_content_path"
     ]
   },
   "type": "https://ocfl.io/1.0/spec/#inventory",
