@@ -417,7 +417,10 @@ class InventoryValidator():
             if element in ('', '.', '..'):
                 self.error("E099", path=path)
                 return False
-        # Accumulate paths and directories
+        # Accumulate paths and directories if not seen before
+        if path in content_paths:
+            self.error("E101a", path=path)
+            return False
         content_paths.add(path)
         content_directories.add('/'.join([m.group(1)] + elements[0:-1]))
         return True

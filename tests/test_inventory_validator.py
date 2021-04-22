@@ -374,7 +374,7 @@ class TestAll(unittest.TestCase):
         self.assertFalse(iv.check_content_path('v1/xyz/.', cp, cd))
         self.assertEqual(log.errors, ['E099'])
         log.clear()
-        iv.check_content_path('v1/xyz/anything', cp, cd)
+        self.assertFalse(iv.check_content_path('v1/xyz/anything', cp, cd))
         self.assertEqual(log.errors, ['E101a'])
         # Good cases
         log.clear()
