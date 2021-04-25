@@ -33,9 +33,9 @@ class TestAll(unittest.TestCase):
                            'E015_content_not_in_content_dir': ['E042a'],  # FIXME - What should test case and error be?
                            'E017_invalid_content_dir': ['E017'],
                            'E019_inconsistent_content_dir': ['E042a'],  # FIXME - What should error be?
-                           'E023_extra_file': ['E023'],
+                           'E023_extra_file': ['E023a'],
                            'E023_missing_file': ['E092b'],
-                           # 'E023_old_manifest_missing_entries': ['E023'],  # FIXME https://github.com/zimeon/ocfl-py/issues/55
+                           'E023_old_manifest_missing_entries': ['E023b'],
                            'E024_empty_dir_in_content': ['E024'],
                            'E033_inventory_bad_json': ['E033'],
                            'E036_no_id': ['E036a'],
