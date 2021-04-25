@@ -225,8 +225,17 @@ class Validator():
                 digest_algorithm = inv_validator.digest_algorithm
                 self.validate_inventory_digest(inv_file, digest_algorithm, where=version_dir)
                 self.inventory_digest_files[version_dir] = 'inventory.json.' + digest_algorithm
-                # Record all prior digests
                 if 'manifest' in version_inventory:
+                    # Check that all files listed in prior inventories are in manifest
+                    not_seen = set(prior_manifest_digests.keys())
+                    for digest in version_inventory['manifest']:
+                        for filepath in version_inventory['manifest'][digest]:
+                            # We rely on the validation to check that anything present is OK
+                            if filepath in not_seen:
+                                not_seen.remove(filepath)
+                    if len(not_seen) > 0:
+                        self.log.error('E023b', where=version_dir, missing_filepaths=', '.join(sorted(not_seen)))
+                    # Record all prior digests
                     for digest in version_inventory['manifest']:
                         for filepath in version_inventory['manifest'][digest]:
                             if filepath not in prior_manifest_digests:
@@ -310,7 +319,7 @@ class Validator():
                                 self.log.error('E093b', where='root', digest_algorithm=digest_algorithm, digest=digest, content_path=filepath)
         # Anything left in files_seen is not mentioned in the inventory
         if len(files_seen) > 0:
-            self.log.error('E023', where='root', extra_files=', '.join(sorted(files_seen)))
+            self.log.error('E023a', where='root', extra_files=', '.join(sorted(files_seen)))
 
     def read_inventory_digest(self, inv_digest_file):
         """Read inventory digest from sidecar file.

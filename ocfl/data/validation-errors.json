@@ -98,10 +98,16 @@
        "en": "OCFL Object %s inventory contentDirectory must not be either . or .."
     }
   },
-  "E023": {
+  "E023a": {
     "params": ["where", "extra_files"],
     "description": {
-       "en": "OCFL Object includes one or more files that are not mentioned in the %s inventory manifest (%s)"
+       "en": "OCFL Object includes one or more files that are not mentioned in the  %s inventory manifest (%s)"
+    }
+  },
+  "E023b": {
+    "params": ["where", "missing_filepaths"],
+    "description": {
+       "en": "OCFL Object %s manifest does not include files listed in previous version manifests (%s)"
     }
   },
   "E025a": {
