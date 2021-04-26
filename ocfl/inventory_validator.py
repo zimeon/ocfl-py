@@ -11,14 +11,14 @@ from .w3c_datetime import str_to_datetime
 
 
 def get_file_map(inventory, version_dir):
-    """Get a map of file in state to files on disk for version_dir in inventory."""
+    """Get a map of files in state to files on disk for version_dir in inventory."""
     state = inventory['versions'][version_dir]['state']
     manifest = inventory['manifest']
     file_map = {}
     for digest in state:
         if digest in manifest:
             for file in state[digest]:
-                file_map[file] = manifest[digest]
+                file_map[file] = set(manifest[digest])
     return file_map
 
 
@@ -32,6 +32,7 @@ class InventoryValidator():
         self.where = where
         # Object state
         self.inventory = None
+        self.id = None
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
         self.all_versions = []
@@ -56,9 +57,11 @@ class InventoryValidator():
         if 'id' in inventory:
             iid = inventory['id']
             if not isinstance(iid, str) or iid == '':
-                self.error("E037")
-            elif not re.match(r'''(\w+):.+''', iid):
-                self.warning("W005", id=iid)
+                self.error("E037a")
+            else:
+                if not re.match(r'''(\w+):.+''', iid):
+                    self.warning("W005", id=iid)
+                self.id = iid
         else:
             self.error("E036a")
         if 'type' not in inventory:
@@ -79,14 +82,18 @@ class InventoryValidator():
         if 'contentDirectory' in inventory:
             # Careful only to set self.content_directory if value is safe
             cd = inventory['contentDirectory']
-            if not isinstance(cd, str) or '/' in cd or cd in ['.', '..']:
+            if not isinstance(cd, str) or '/' in cd:
+                self.error("E017")
+            elif cd in ('.', '..'):
                 self.error("E018")
             else:
                 self.content_directory = cd
+        manifest_files_correct_format = None
         if 'manifest' not in inventory:
             self.error("E041a")
         else:
-            (self.manifest_files, self.unnormalized_digests) = self.validate_manifest(inventory['manifest'])
+            (self.manifest_files, manifest_files_correct_format, self.unnormalized_digests) = self.validate_manifest(inventory['manifest'])
+        digests_used = []
         if 'versions' not in inventory:
             self.error("E041b")
         else:
@@ -102,8 +109,11 @@ class InventoryValidator():
             # Abort tests is we don't have a valid version sequence, otherwise
             # there will likely be spurious subsequent error reports
             return
-        if 'manifest' in inventory and 'versions' in inventory:
-            self.check_digests_present_and_used(self.manifest_files, digests_used)
+        if len(self.all_versions) > 0:
+            if manifest_files_correct_format is not None:
+                self.check_content_paths_map_to_versions(manifest_files_correct_format, self.all_versions)
+            if self.manifest_files is not None:
+                self.check_digests_present_and_used(self.manifest_files, digests_used)
         if 'fixity' in inventory:
             self.validate_fixity(inventory['fixity'], self.manifest_files)
 
@@ -111,12 +121,17 @@ class InventoryValidator():
         """Validate manifest block in inventory.
 
         Returns:
-          * manifest_files, a mapping from file to digest for each file in
+          * manifest_files - a mapping from file to digest for each file in
               the manifest
+          * manifest_files_correct_format - a simple list of the manifest file
+              path that passed initial checks. They need to be checked for valid
+              version directories later, when we know what version directories
+              are valid
           * unnormalized_digests - a set of the original digests in unnormalized
               form that MUST match exactly the values used in state blocks
         """
         manifest_files = {}
+        manifest_files_correct_format = []
         unnormalized_digests = set()
         manifest_digests = set()
         if not isinstance(manifest, dict):
@@ -140,13 +155,13 @@ class InventoryValidator():
                         manifest_digests.add(norm_digest)
                     for file in manifest[digest]:
                         manifest_files[file] = norm_digest
-                        self.check_content_path(file, content_paths, content_directories)
+                        if self.check_content_path(file, content_paths, content_directories):
+                            manifest_files_correct_format.append(file)
             # Check for conflicting content paths
             for path in content_directories:
                 if path in content_paths:
-                    self.error("E101", path=path)
-
-        return (manifest_files, unnormalized_digests)
+                    self.error("E101b", path=path)
+        return manifest_files, manifest_files_correct_format, unnormalized_digests
 
     def validate_fixity(self, fixity, manifest_files):
         """Validate fixity block in inventory.
@@ -322,7 +337,10 @@ class InventoryValidator():
                     self.error('E050e', version=version, digest=digest)
                 else:
                     for path in state[digest]:
-                        self.check_logical_path(path, version, logical_paths, logical_directories)
+                        if path in logical_paths:
+                            self.error("E095a", version=version, path=path)
+                        else:
+                            self.check_logical_path(path, version, logical_paths, logical_directories)
                     if digest not in unnormalized_digests:
                         # Exact string value must match, not just normalized
                         self.error("E050f", version=version, digest=digest)
@@ -331,8 +349,20 @@ class InventoryValidator():
             # Check for conflicting logical paths
             for path in logical_directories:
                 if path in logical_paths:
-                    self.error("E095", version=version, path=path)
+                    self.error("E095b", version=version, path=path)
         return digests
+
+    def check_content_paths_map_to_versions(self, manifest_files, all_versions):
+        """Check that every content path starts with a valid version.
+
+        The content directory component has already been checked in
+        check_content_path(). We have already tested all paths enough
+        to know that they can be split into at least 2 components.
+        """
+        for path in manifest_files:
+            version_dir, dummy_rest = path.split('/', 1)
+            if version_dir not in all_versions:
+                self.error('E042b', path=path)
 
     def check_digests_present_and_used(self, manifest_files, digests_used):
         """Check all digests in manifest that are needed are present and used."""
@@ -356,7 +386,7 @@ class InventoryValidator():
         return r'''^.*$'''
 
     def check_logical_path(self, path, version, logical_paths, logical_directories):
-        """Check logical path and accumulate paths/directories for E095 check.
+        """Check logical path and accumulate paths/directories for E095b check.
 
         logical_paths and logical_directories are expected to be sets.
 
@@ -377,23 +407,29 @@ class InventoryValidator():
     def check_content_path(self, path, content_paths, content_directories):
         """Check logical path and accumulate paths/directories for E101 check.
 
-        Only adds good paths to the accumulated paths/directories.
+        Returns True if valid, else False. Only adds good paths to the
+        accumulated paths/directories. We don't yet know the set of valid
+        version directories so the check here is just for 'v' + digits.
         """
         if path.startswith('/') or path.endswith('/'):
             self.error("E100", path=path)
-        else:
-            m = re.match(r'''^(v\d+/''' + self.content_directory + r''')/(.*)''', path)
-            if m:
-                elements = m.group(2).split('/')
-                for element in elements:
-                    if element in ('', '.', '..'):
-                        self.error("E099", path=path)
-                        return
-                # Accumulate paths and directories
-                content_paths.add(path)
-                content_directories.add('/'.join([m.group(1)] + elements[0:-1]))
-            else:
-                self.error("E042", path=path)
+            return False
+        m = re.match(r'''^(v\d+/''' + self.content_directory + r''')/(.+)''', path)
+        if not m:
+            self.error("E042a", path=path)
+            return False
+        elements = m.group(2).split('/')
+        for element in elements:
+            if element in ('', '.', '..'):
+                self.error("E099", path=path)
+                return False
+        # Accumulate paths and directories if not seen before
+        if path in content_paths:
+            self.error("E101a", path=path)
+            return False
+        content_paths.add(path)
+        content_directories.add('/'.join([m.group(1)] + elements[0:-1]))
+        return True
 
     def validate_as_prior_version(self, prior):
         """Check that prior is a valid InventoryValidator for a prior version of the current inventory object.
@@ -415,8 +451,10 @@ class InventoryValidator():
                 else:
                     # Check them all...
                     for file in prior_map:
-                        if prior_map[file] != self_map[file]:
-                            self.error('E066c', version_dir=version_dir, prior_head=prior.head, file=file)
+                        if not prior_map[file].issubset(self_map[file]):
+                            self.error('E066c', version_dir=version_dir, prior_head=prior.head,
+                                       file=file, prior_content=','.join(prior_map[file]),
+                                       current_content=','.join(self_map[file]))
             # Check metadata
             prior_version = prior.inventory['versions'][version_dir]
             self_version = self.inventory['versions'][version_dir]
