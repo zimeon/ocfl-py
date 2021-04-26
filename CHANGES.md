@@ -1,9 +1,11 @@
 # ocfl-py changelog
 
-## 2021-??-?? v1.2.2
+## 2021-04-26 v1.2.2
 
-  * Validation:
+  * Validation improvements:
     * Correct handling of missing files mentioned in manifest or fixity
+    * Catch inconsistent id between versions
+    * Catch forward slash in contentDirectory
     * Add test bad inventory examples in `extra_fixtures/bad-objects`
 
 ## 2021-04-18 v1.2.1
