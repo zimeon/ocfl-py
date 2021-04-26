@@ -466,9 +466,9 @@
     }
   },
   "E092a": {
-    "params": ["where", "digest", "content_path", "content_digest"],
+    "params": ["where", "digest_algorithm", "digest", "content_path", "content_digest"],
     "description": {
-       "en": "OCFL Object %s inventory manifest has digest %s for file %s which doesn't match calculated digest %s for that file"
+       "en": "OCFL Object %s inventory manifest using digest algorithm %s has digest %s for file %s which doesn't match calculated digest %s for that file"
     }
   },
   "E092b": {
