@@ -50,7 +50,7 @@ class TestAll(unittest.TestCase):
         self.assertIn('E041b', log.errors)
         log.clear()
         iv.validate({"id": []})
-        self.assertIn('E037', log.errors)
+        self.assertIn('E037a', log.errors)
         log.clear()
         iv.validate({"id": "not_a_uri", "digestAlgorithm": "sha256"})
         self.assertIn('W005', log.warns)

@@ -158,10 +158,16 @@
        "en": "OCFL Object %s inventory missing `head` attribute"
     }
   },
-  "E037": {
+  "E037a": {
     "params": ["where"],
     "description": {
        "en": "OCFL Object %s inventory `id` attribute is empty or badly formed"
+    }
+  },
+  "E037b": {
+    "params": ["where", "version_id", "root_id"],
+    "description": {
+       "en": "OCFL Object %s inventory id `%s` does not match the value in the root inventory `%s`"
     }
   },
   "E038": {
