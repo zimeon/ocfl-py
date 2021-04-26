@@ -32,6 +32,7 @@ class InventoryValidator():
         self.where = where
         # Object state
         self.inventory = None
+        self.id = None
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
         self.all_versions = []
@@ -56,9 +57,11 @@ class InventoryValidator():
         if 'id' in inventory:
             iid = inventory['id']
             if not isinstance(iid, str) or iid == '':
-                self.error("E037")
-            elif not re.match(r'''(\w+):.+''', iid):
-                self.warning("W005", id=iid)
+                self.error("E037a")
+            else:
+                if not re.match(r'''(\w+):.+''', iid):
+                    self.warning("W005", id=iid)
+                self.id = iid
         else:
             self.error("E036a")
         if 'type' not in inventory:

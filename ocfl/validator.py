@@ -40,6 +40,7 @@ class Validator():
             '0005-mutable-head'
         ]
         # The following actually initialized in initialize() method
+        self.id = None
         self.digest_algorithm = None
         self.content_directory = None
         self.inventory_digest_files = None
@@ -52,6 +53,7 @@ class Validator():
 
         Must be called between attempts to validate objects.
         """
+        self.id = None
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
         self.inventory_digest_files = {}  # index by version_dir, algorithms may differ
@@ -95,6 +97,7 @@ class Validator():
             inventory_is_valid = self.log.num_errors == 0
             self.root_inv_validator = inv_validator
             all_versions = inv_validator.all_versions
+            self.id = inv_validator.id
             self.content_directory = inv_validator.content_directory
             self.digest_algorithm = inv_validator.digest_algorithm
             self.validate_inventory_digest(inv_file, self.digest_algorithm)
@@ -225,6 +228,9 @@ class Validator():
                 digest_algorithm = inv_validator.digest_algorithm
                 self.validate_inventory_digest(inv_file, digest_algorithm, where=version_dir)
                 self.inventory_digest_files[version_dir] = 'inventory.json.' + digest_algorithm
+                if self.id and 'id' in version_inventory:
+                    if version_inventory['id'] != self.id:
+                        self.log.error('E037b', where=version_dir, root_id=self.id, version_id=version_inventory['id'])
                 if 'manifest' in version_inventory:
                     # Check that all files listed in prior inventories are in manifest
                     not_seen = set(prior_manifest_digests.keys())
