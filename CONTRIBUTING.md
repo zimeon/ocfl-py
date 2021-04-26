@@ -14,7 +14,7 @@ If submitting a pull request:
 
    * Understand that this code and any merged contributions are covered by the [MIT license](LICENSE.txt)
    * Please discuss in a issue before submitting a pull request for significant changes
-   * Please submit pull requests against the `develop` branch
+   * Please submit pull requests against the `main` branch
    * Please write code that passes the linting tests in `.travis.yml`, these include:
      * `pycodestyle` implements [PEP8](https://www.python.org/dev/peps/pep-0008/) with the following warnings disabled:
        * Line length is not enforced (E501), just be reasonable
