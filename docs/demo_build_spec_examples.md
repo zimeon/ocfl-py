@@ -90,7 +90,7 @@ WARNING:ocfl.object:### Inventory for v1{
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2021-04-18T15:14:51.784558Z",
+      "created": "2021-04-26T13:25:35.957146Z",
       "state": {
         "7dcc352f96c56dc...c31": [
           "foo/bar.xml"
@@ -157,7 +157,7 @@ WARNING:ocfl.object:### Inventory for v2{
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2021-04-18T15:14:51.784558Z",
+      "created": "2021-04-26T13:25:35.957146Z",
       "state": {
         "7dcc352f96c56dc...c31": [
           "foo/bar.xml"
@@ -171,7 +171,7 @@ WARNING:ocfl.object:### Inventory for v2{
       }
     },
     "v2": {
-      "created": "2021-04-18T15:14:51.786202Z",
+      "created": "2021-04-26T13:25:35.958734Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"
@@ -236,7 +236,7 @@ WARNING:ocfl.object:### Inventory for v3{
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2021-04-18T15:14:51.784558Z",
+      "created": "2021-04-26T13:25:35.957146Z",
       "state": {
         "7dcc352f96c56dc...c31": [
           "foo/bar.xml"
@@ -250,7 +250,7 @@ WARNING:ocfl.object:### Inventory for v3{
       }
     },
     "v2": {
-      "created": "2021-04-18T15:14:51.786202Z",
+      "created": "2021-04-26T13:25:35.958734Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"
@@ -262,7 +262,7 @@ WARNING:ocfl.object:### Inventory for v3{
       }
     },
     "v3": {
-      "created": "2021-04-18T15:14:51.787447Z",
+      "created": "2021-04-26T13:25:35.959946Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"

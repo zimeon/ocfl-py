@@ -10,7 +10,7 @@ The `--version` argument will show version number and exit (but we still tave to
 
 ```
 > python ocfl-store.py --version --root=tmp/root --list
-ocfl-store.py is part of ocfl-py version 1.2.1
+ocfl-store.py is part of ocfl-py version 1.2.2
 ```
 
 

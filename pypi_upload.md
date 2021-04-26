@@ -6,6 +6,7 @@ Updating ocfl-py on pypi
 
     * main copy of code is https://github.com/zimeon/ocfl-py
     * on PyPi ocfl-py is at <https://pypi.org/project/ocfl-py>
+    * now just working in `main` branch, noting releases via https://github.com/zimeon/ocfl-py/releases
 
 Putting up a new version
 ------------------------
@@ -16,13 +17,14 @@ Putting up a new version
     4. Check all changes described in `CHANGES.md`
     5. Check code is up-to-date with `main` branch on github
     6. Check all tests good (`tox`)
-    7. Check out `main` and merge in working branch
-    8. Upload new version to PyPI:
+    7. Upload new version to PyPI:
 
       ```
       pip install --upgrade setuptools wheel twine
       python setup.py sdist bdist_wheel; ls dist
       twine upload dist/*1.X.X*
       ```
-    9. Check on PyPI at <https://pypi.org/project/ocfl-py>
-    10. Finally, in `develop` branch, start new version number by editing `ocfl/_version.py` and `CHANGES.md`
+    8. Check on PyPI at <https://pypi.org/project/ocfl-py>
+    9. Check everything up to date in `main` on github
+    10. Mark github release via https://github.com/zimeon/ocfl-py/releases
+    11. Start new version number by editing `ocfl/_version.py` and `CHANGES.md` and pushing to main
