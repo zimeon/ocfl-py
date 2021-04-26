@@ -7,8 +7,6 @@ ocfl-py - An OCFL implementation in Python
 .. image:: https://coveralls.io/repos/github/zimeon/ocfl-py/badge.svg?branch=main
   :target: https://coveralls.io/github/zimeon/ocfl-py?branch=main
 
-**WORK IN PROGRESS - NO GUARANTEE, NO MONEY BACK :-)**
-
 Attempts to follow `OCFL specification v1.0
 <https://ocfl.io/1.0/spec/>`_, see `implementation status for errors and warnings
 <https://github.com/zimeon/ocfl-py/blob/main/docs/validation_status.md>`_ for
@@ -23,11 +21,14 @@ This code attempts to support the OCFL specification v1.0 and additional
 developments. To get the most up to date version check out the ``main``
 branch from github (or if you are reckless you can try the ``develop`` branch).
 
-I hope to keep a version not too far out of date on `PyPI
-<https://pypi.org/project/ocfl-py/>`_ too, which can be installed or upgraded
-to the current version with:
+I hope to keep a fairly current version on `PyPI
+<https://pypi.org/project/ocfl-py/>`_, which can be installed or upgraded
+with:
 
     pip install --upgrade ocfl-py
+
+The latest version is in the `main` branch on `github
+<https://github.com/zimeon/ocfl-py>`_.
 
 Use
 ---
@@ -37,14 +38,14 @@ There should then be three scripts available:
 - ``ocfl-validate.py`` - validate OCFL objects, OCFL storage roots or standalone OCFL inventory files
 - ``ocfl-object.py`` - build, manipulate, extract from or validate an OCFL object
 - ``ocfl-store.py`` - add or access OCFL objects under an OCFL storage root
+- ``ocfl-sidecar.py`` - update OCFL inventory sidecar file (useful for manually building examples and test cases)
 
 Each script takes ``-h`` for help.
 
 See `examples in docs folder
 <https://github.com/zimeon/ocfl-py/tree/main/docs>`_ for use of these scripts.
 
-The code is also available as a module ``ocfl`` for other python code to use. However,
-the interfaces should not be considered stable at the moment.
+The code is also available as a module ``ocfl`` for other python code to use.
 
 Contributing
 ------------
