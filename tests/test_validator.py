@@ -69,6 +69,7 @@ class TestAll(unittest.TestCase):
                            # 'E092_algorithm_change_incorrect_digest': ['E092'],  FIXME https://github.com/OCFL/fixtures/pull/67
                            'E092_E093_content_path_does_not_exist': ['E092b', 'E093b'],
                            'E093_fixity_digest_mismatch': ['E093a'],
+                           'E093_fixity_digest_mismatch_in_v1': ['E093a'],
                            'E094_message_not_a_string': ['E094'],
                            'E095_conflicting_logical_paths': ['E095b'],
                            'E095_non_unique_logical_paths': ['E095a'],
