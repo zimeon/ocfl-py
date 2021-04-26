@@ -29,7 +29,7 @@ class TestAll(unittest.TestCase):
                            'E003_no_decl': ['E003a'],
                            'E008_E036_no_versions_no_head': ['E008', 'E036d'],
                            'E009_version_two_only': ['E009'],
-                           # 'E010_missing_versions': ['E010'],  # FIXME https://github.com/zimeon/ocfl-py/issues/63
+                           'E010_missing_versions': ['E046'],  # FIXME - Check code https://github.com/OCFL/spec/issues/540
                            'E015_content_not_in_content_dir': ['E042a'],  # FIXME - What should test case and error be?
                            'E017_invalid_content_dir': ['E017'],
                            'E019_inconsistent_content_dir': ['E042a'],  # FIXME - What should error be?
