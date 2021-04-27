@@ -1,5 +1,9 @@
 # ocfl-py changelog
 
+## 2021-??-?? v1.2.3
+
+  * Additional validation improvements
+
 ## 2021-04-26 v1.2.2
 
   * Validation improvements:
