@@ -415,16 +415,28 @@
     }
   },
  "E066b": {
-    "params": ["version_dir" , "prior_head", "where"],
+    "params": ["version" , "prior_head", "where"],
     "description": {
        "en": "OCFL Object inventory manifest for %s in %s doesn't have a subset of manifest entries of inventory for %s"
     }
   },
   "E066c": {
-    "params": ["prior_head", "version_dir", "file", "prior_content", "where", "current_content"],
+    "params": ["prior_head", "version", "file", "prior_content", "where", "current_content"],
     "description": {
        "en": "OCFL Object %s inventory %s version state has file %s that maps to different content files (%s) than in the %s inventory (%s)"
     }
+  },
+  "E066d": {
+      "params": ["where", "version", "digest", "logical_files", "prior_head"],
+      "description": {
+         "en": "OCFL Object %s inventory %s version state has digest %s (mapping to logical files %s) that does not appear in the %s inventory"
+      }
+  },
+  "E066e": {
+      "params": ["prior_head", "version", "digest", "logical_files", "where"],
+      "description": {
+         "en": "OCFL Object %s inventory %s version state has digest %s (mapping to logical files %s) that does not appear in the %s inventory"
+      }
   },
   "E067": {
     "params": ["entry"],
@@ -614,7 +626,7 @@
     "spec": "In addition to the inventory in the OCFL Object Root, every version directory SHOULD include an inventory file that is an Inventory of all content for versions up to and including that particular version"
   },
   "W011": {
-    "params": ["key", "version_dir" , "prior_head", "where"],
+    "params": ["key", "version" , "prior_head", "where"],
     "description": {
        "en": "OCFL Object version metadata '%s' for %s in %s inventory does not match that in %s inventory"
     },

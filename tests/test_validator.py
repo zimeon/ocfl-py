@@ -60,7 +60,7 @@ class TestAll(unittest.TestCase):
                            'E061_invalid_sidecar': ['E061'],
                            'E063_no_inv': ['E063'],
                            'E064_different_root_and_latest_inventories': ['E064'],
-                           'E066_E092_old_manifest_digest_incorrect': ['E092a'],
+                           'E066_E092_old_manifest_digest_incorrect': ['E066d', 'E066e', 'E092a'],
                            'E066_algorithm_change_state_mismatch': ['E066b'],
                            'E066_inconsistent_version_state': ['E066b'],
                            'E067_file_in_extensions_dir': ['E067'],

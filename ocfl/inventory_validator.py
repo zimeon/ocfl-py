@@ -10,9 +10,15 @@ from .validation_logger import ValidationLogger
 from .w3c_datetime import str_to_datetime
 
 
-def get_file_map(inventory, version_dir):
-    """Get a map of files in state to files on disk for version_dir in inventory."""
-    state = inventory['versions'][version_dir]['state']
+def get_file_map(inventory, version):
+    """Get a map of files in state to files on disk for version in inventory.
+
+    Returns a dictionary: file_in_state -> set(content_files)
+
+    The set of content_files may includes references to duplicate files in
+    later versions than the version being described.
+    """
+    state = inventory['versions'][version]['state']
     manifest = inventory['manifest']
     file_map = {}
     for digest in state:
@@ -432,9 +438,11 @@ class InventoryValidator():
         return True
 
     def validate_as_prior_version(self, prior):
-        """Check that prior is a valid InventoryValidator for a prior version of the current inventory object.
+        """Check that prior is a valid prior version of the current inventory object.
 
-        Both inventories are assumed to have been checked for internal consistency.
+        The input prior is also expected to be an InventoryValidator object and
+        both self and prior inventories are assumed to have been checked for
+        internal consistency.
         """
         # Must have a subset of versions which also check zero padding format etc.
         if not set(prior.all_versions) < set(self.all_versions):
@@ -442,22 +450,53 @@ class InventoryValidator():
         else:
             # Check references to files but realize that there might be different
             # digest algorithms between versions
-            version_dir = 'no-version'
-            for version_dir in prior.all_versions:
-                prior_map = get_file_map(prior.inventory, version_dir)
-                self_map = get_file_map(self.inventory, version_dir)
+            version = 'no-version'
+            for version in prior.all_versions:
+                # If the digest algorithm is the same then we can make a
+                # direct check on whether the state blocks match
+                if prior.digest_algorithm == self.digest_algorithm:
+                    self.compare_states_for_version(prior, version)
+                # Now check the mappings from state to content files which must
+                # be consistent even if the digestAlgorithm is different between
+                # versions
+                prior_map = get_file_map(prior.inventory, version)
+                self_map = get_file_map(self.inventory, version)
                 if prior_map.keys() != self_map.keys():
-                    self.error('E066b', version_dir=version_dir, prior_head=prior.head)
+                    self.error('E066b', version=version, prior_head=prior.head)
                 else:
                     # Check them all...
                     for file in prior_map:
                         if not prior_map[file].issubset(self_map[file]):
-                            self.error('E066c', version_dir=version_dir, prior_head=prior.head,
+                            self.error('E066c', version=version, prior_head=prior.head,
                                        file=file, prior_content=','.join(prior_map[file]),
                                        current_content=','.join(self_map[file]))
-            # Check metadata
-            prior_version = prior.inventory['versions'][version_dir]
-            self_version = self.inventory['versions'][version_dir]
-            for key in ('created', 'message', 'user'):
-                if prior_version.get(key) != self_version.get(key):
-                    self.warning('W011', version_dir=version_dir, prior_head=prior.head, key=key)
+                # Check metadata
+                prior_version = prior.inventory['versions'][version]
+                self_version = self.inventory['versions'][version]
+                for key in ('created', 'message', 'user'):
+                    if prior_version.get(key) != self_version.get(key):
+                        self.warning('W011', version=version, prior_head=prior.head, key=key)
+
+    def compare_states_for_version(self, prior, version):
+        """Compare state blocks for version between self and prior.
+
+        The digest algorithm must be the same in both, do not call otherwise!
+        Looks only for digests that appear in one but not in the other, the code
+        in validate_as_prior_version(..) does a check for whether the same sets
+        of logical files appear and we don't want to duplicate an error message
+        about that.
+
+        While the mapping checks in validate_as_prior_version(..) do all that is
+        necessary to detect an error, the additional errors that may be generated
+        here provide more detailed diagnostics in the case that the digest
+        algorithm is the same across versions being compared.
+        """
+        self_state = self.inventory['versions'][version]['state']
+        prior_state = prior.inventory['versions'][version]['state']
+        for digest in set(self_state.keys()).union(prior_state.keys()):
+            if digest not in prior_state:
+                self.error('E066d', version=version, prior_head=prior.head,
+                           digest=digest, logical_files=', '.join(self_state[digest]))
+            elif digest not in self_state:
+                self.error('E066e', version=version, prior_head=prior.head,
+                           digest=digest, logical_files=', '.join(prior_state[digest]))

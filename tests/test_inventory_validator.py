@@ -300,11 +300,13 @@ class TestAll(unittest.TestCase):
         log.clear()
         # Good inventory in spite of diferent digests
         iv.all_versions = ['v1', 'v2']
+        iv.digest_algorithm = 'a1'
         iv.inventory = {"manifest": {"a1d1": ["v1/content/f1"],
                                      "a1d2": ["v1/content/f2"],
                                      "a1d3": ["v2/content/f3"]},
                         "versions": {"v1": {"state": {"a1d1": ["f1"], "a1d2": ["f2"]}},
                                      "v2": {"state": {"a1d1": ["f1"], "a1d3": ["f3"]}}}}
+        prior.digest_algorithm = 'a2'
         prior.inventory = {"manifest": {"a2d1": ["v1/content/f1"],
                                         "a2d2": ["v1/content/f2"]},
                            "versions": {"v1": {"state": {"a2d1": ["f1"], "a2d2": ["f2"]}}}}
@@ -321,6 +323,31 @@ class TestAll(unittest.TestCase):
         prior.inventory["manifest"]["a2d2"] = ["v1/content/f2--moved"]
         iv.validate_as_prior_version(prior)
         self.assertEqual(log.errors, ["E066c"])
+
+    def test_compare_states_for_version(self):
+        """Test compare_states_for_version method."""
+        log = TLogger()
+        iv = InventoryValidator(log=log)
+        prior = InventoryValidator(log=TLogger())
+        # Same digests
+        iv.inventory = {
+            "versions": {"v99": {"state": {"a1d1": ["f1"], "a1d2": ["f2", "f3"]}}}}
+        prior.inventory = {
+            "versions": {"v99": {"state": {"a1d1": ["f1"], "a1d2": ["f2", "f3"]}}}}
+        iv.compare_states_for_version(prior, 'v99')
+        self.assertEqual(log.errors, [])
+        log.clear()
+        # Extra in iv
+        iv.inventory = {
+            "versions": {"v99": {"state": {"a1d1": ["f1"], "a1d2": ["f2", "f3"], "a1d3": ["f4"]}}}}
+        iv.compare_states_for_version(prior, 'v99')
+        self.assertEqual(log.errors, ['E066d'])
+        log.clear()
+        # Extra in prior
+        iv.inventory = {
+            "versions": {"v99": {"state": {"a1d2": ["f2", "f3"]}}}}
+        iv.compare_states_for_version(prior, 'v99')
+        self.assertEqual(log.errors, ['E066e'])
 
     def test_check_content_path(self):
         """Test check_content_path method."""
