@@ -176,7 +176,11 @@ class Validator():
                     pass
                 elif entry.name == 'extensions':
                     self.validate_extensions_dir()
+                elif re.match(r'''v\d+$''', entry.name):
+                    # Looks like a version directory so give more specific error
+                    self.log.error('E046b', dir=entry.name)
                 else:
+                    # Simply an unexpected directory
                     self.log.error('E001b', dir=entry.name)
             else:
                 self.log.error('E001c', entry=entry.name)
@@ -304,7 +308,7 @@ class Validator():
                     else:
                         self.log.error("E015", where=version_dir, entry=entry)
             except (fs.errors.ResourceNotFound, fs.errors.DirectoryExpected):
-                self.log.error('E046', version_dir=version_dir)
+                self.log.error('E046a', version_dir=version_dir)
         # Extract any digests in fixity and organize by filepath
         fixity_digests = {}
         if 'fixity' in inventory:

@@ -29,7 +29,7 @@ class TestAll(unittest.TestCase):
                            'E003_no_decl': ['E003a'],
                            'E008_E036_no_versions_no_head': ['E008', 'E036d'],
                            'E009_version_two_only': ['E009'],
-                           'E010_missing_versions': ['E046'],  # FIXME - Check code https://github.com/OCFL/spec/issues/540
+                           'E010_missing_versions': ['E046a'],  # FIXME - Check code https://github.com/OCFL/spec/issues/540
                            'E015_content_not_in_content_dir': ['E042a'],  # FIXME - What should test case and error be?
                            'E017_invalid_content_dir': ['E017'],
                            'E019_inconsistent_content_dir': ['E042a'],  # FIXME - What should error be?
@@ -47,8 +47,8 @@ class TestAll(unittest.TestCase):
                            'E041_no_manifest': ['E041a'],
                            'E041_manifest_not_object': ['E041c'],
                            'E042_bad_manifest_content_path': ['E042a'],
-                           'E046_missing_version_dir': ['E046'],
-                           'E046_root_not_most_recent': ['E001b'],
+                           'E046_missing_version_dir': ['E046a'],
+                           'E046_root_not_most_recent': ['E046b'],
                            'E049_E050_E054_bad_version_block_values': ['E049d', 'E050b', 'E050c', 'E054a', 'E094'],
                            'E049_created_no_timezone': ['E049a'],
                            'E049_created_not_to_seconds': ['E049b'],
