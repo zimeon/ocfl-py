@@ -224,10 +224,16 @@
        "en": "OCFL Object %s inventory versions block is not a JSON object"
     }
   },
-  "E046": {
+  "E046a": {
     "params": ["version_dir"],
     "description": {
        "en": "OCFL Object root inventory describes version %s but no corresponding version directory is present"
+    }
+  },
+  "E046b": {
+    "params": ["dir"],
+    "description": {
+       "en": "OCFL Object includes directory %s that looks like a version directory but isn't a valid version in the inventory"
     }
   },
   "E048": {
