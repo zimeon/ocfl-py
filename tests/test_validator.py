@@ -24,12 +24,15 @@ class TestAll(unittest.TestCase):
         for bad, codes in {'does_not_even_exist': ['E003c'],
                            'E001_extra_dir_in_root': ['E001b'],
                            'E001_extra_file_in_root': ['E001a'],
-                           'E001_v2_file_in_root': [],
+                           'E001_invalid_version_format': ['E009'],  # E009 OK, see https://github.com/OCFL/fixtures/pull/80
+                           'E001_v2_file_in_root': ['E001a'],
                            'E003_E063_empty': ['E003a', 'E063'],
                            'E003_no_decl': ['E003a'],
                            'E008_E036_no_versions_no_head': ['E008', 'E036d'],
                            'E009_version_two_only': ['E009'],
                            'E010_missing_versions': ['E046a'],  # FIXME - Check code https://github.com/OCFL/spec/issues/540
+                           'E010_skipped_versions': ['E010'],
+                           'E011_E013_invalid_padded_head_version': ['E011', 'E040', 'E064'],  # E011 only OK, see https://github.com/OCFL/spec/issues/541
                            'E015_content_not_in_content_dir': ['E042a'],  # FIXME - What should test case and error be?
                            'E017_invalid_content_dir': ['E017'],
                            'E019_inconsistent_content_dir': ['E042a'],  # FIXME - What should error be?
@@ -37,6 +40,7 @@ class TestAll(unittest.TestCase):
                            'E023_missing_file': ['E092b'],
                            'E023_old_manifest_missing_entries': ['E023b'],
                            'E024_empty_dir_in_content': ['E024'],
+                           'E025_wrong_digest_algorithm': ['E025a'],
                            'E033_inventory_bad_json': ['E033'],
                            'E036_no_id': ['E036a'],
                            'E036_no_head': ['E036d'],
@@ -44,6 +48,7 @@ class TestAll(unittest.TestCase):
                            'E040_head_not_most_recent': ['E040'],
                            'E040_wrong_head_doesnt_exist': ['E040'],
                            'E040_wrong_head_format': ['E040'],
+                           'E040_wrong_version_in_version_dir': ['E066a'],  # FIXME
                            'E041_no_manifest': ['E041a'],
                            'E041_manifest_not_object': ['E041c'],
                            'E042_bad_manifest_content_path': ['E042a'],
@@ -57,6 +62,7 @@ class TestAll(unittest.TestCase):
                            'E050_state_repeated_digest': ['E050f'],
                            'E053_E052_invalid_logical_paths': ['E052', 'E053'],
                            'E058_no_sidecar': ['E058a'],
+                           'E060_E064_root_inventory_digest_mismatch': ['E060', 'E064'],
                            'E061_invalid_sidecar': ['E061'],
                            'E063_no_inv': ['E063'],
                            'E064_different_root_and_latest_inventories': ['E064'],
@@ -66,7 +72,7 @@ class TestAll(unittest.TestCase):
                            'E067_file_in_extensions_dir': ['E067'],
                            'E092_bad_manifest_digest': ['E092a'],
                            'E092_content_file_digest_mismatch': ['E092a'],
-                           # 'E092_algorithm_change_incorrect_digest': ['E092'],  FIXME https://github.com/OCFL/fixtures/pull/67
+                           'E092_algorithm_change_incorrect_digest': ['E092a'],
                            'E092_E093_content_path_does_not_exist': ['E092b', 'E093b'],
                            'E093_fixity_digest_mismatch': ['E093a'],
                            'E093_fixity_digest_mismatch_in_v1': ['E093a'],
