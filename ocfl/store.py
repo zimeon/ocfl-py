@@ -34,12 +34,19 @@ class Store():
         self.declaration_tvalue = 'ocfl_1.0'
         self.spec_file = 'ocfl_1.0.txt'
         self.layout_file = 'ocfl_layout.json'
+        self.registered_extensions = [
+            # '0002-flat-direct-storage-layout',  # not included because doesn't have config
+            '0003-hash-and-id-n-tuple-storage-layout',
+            '0004-hashed-n-tuple-storage-layout'
+        ]
         #
         self.root_fs = None
         self.num_traversal_errors = 0
         self.extension = None
         self.description = None
         self.log = None
+        self.num_objects = 0
+        self.good_objects = 0
 
     def open_root_fs(self, create=False):
         """Open pyfs filesystem for this OCFL storage root."""
@@ -146,7 +153,10 @@ class Store():
         """
         for (dirpath, dirs, files) in ocfl_walk(self.root_fs, is_storage_root=True):
             if dirpath == '/':
-                pass  # Ignore files in storage root
+                if 'extensions' in dirs:
+                    self.validate_extensions_dir()
+                    dirs.remove('extensions')
+                # Ignore any other files in storage root
             elif (len(dirs) + len(files)) == 0:
                 self.traversal_error("E073", path=dirpath)
             elif len(files) == 0:
@@ -168,19 +178,35 @@ class Store():
                 else:
                     self.traversal_error("E072", path=dirpath)
 
+    def validate_extensions_dir(self):
+        """Validate content of extensions directory inside storage root.
+
+        Validate the extensions directory by checking that there aren't any
+        entries in the extensions directory that aren't directories themselves.
+        Where there are extension directories they SHOULD be registered and
+        this code relies up the registered_extensions property to list known
+        storage root extensions.
+        """
+        for entry in self.root_fs.scandir('extensions'):
+            if entry.is_dir:
+                if entry.name not in self.registered_extensions:
+                    self.log.warning('W901', entry=entry.name)  # FIXME - No good warning code in spec
+            else:
+                self.traversal_error('E086', entry=entry.name)
+
     def list(self):
         """List contents of this OCFL storage root."""
         self.open_root_fs()
         self.check_root_structure()
-        num_objects = 0
+        self.num_objects = 0
         for dirpath in self.object_paths():
             with ocfl_opendir(self.root_fs, dirpath) as obj_fs:
                 # Parse inventory to extract id
                 id = Object(obj_fs=obj_fs).id_from_inventory()
                 print("%s -- id=%s" % (dirpath, id))
-                num_objects += 1
+                self.num_objects += 1
                 # FIXME - maybe do some more stuff in here
-        logging.info("Found %d OCFL Objects under root %s", num_objects, self.root)
+        logging.info("Found %d OCFL Objects under root %s", self.num_objects, self.root)
 
     def validate_hierarchy(self, validate_objects=True, check_digests=True, show_warnings=False):
         """Validate storage root hierarchy.
@@ -217,18 +243,18 @@ class Store():
         except StoreException as e:
             valid = False
             logging.info("Storage root structure is INVALID (%s)", str(e))
-        num_objects, good_objects = self.validate_hierarchy(validate_objects=validate_objects, check_digests=check_digests, show_warnings=show_warnings)
+        self.num_objects, self.good_objects = self.validate_hierarchy(validate_objects=validate_objects, check_digests=check_digests, show_warnings=show_warnings)
         if validate_objects:
-            if good_objects == num_objects:
-                logging.info("Objects checked: %d / %d are VALID", good_objects, num_objects)
+            if self.good_objects == self.num_objects:
+                logging.info("Objects checked: %d / %d are VALID", self.good_objects, self.num_objects)
             else:
                 valid = False
-                logging.info("Objects checked: %d / %d are INVALID", num_objects - good_objects, num_objects)
+                logging.info("Objects checked: %d / %d are INVALID", self.num_objects - self.good_objects, self.num_objects)
         else:
             logging.info("Not checking OCFL objects")
+        print(str(self.log))
         if self.num_traversal_errors > 0:
             valid = False
-            print(str(self.log))
             logging.info("Encountered %d errors traversing storage root", self.num_traversal_errors)
         # FIXME - do some stuff in here
         if valid:

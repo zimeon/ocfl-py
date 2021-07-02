@@ -1,0 +1,4 @@
+{
+    "extension": "0003-hash-and-id-n-tuple-storage-layout",
+    "description": "OCFL Community Extension 0003: Hashed Truncated N-tuple Trees with Object ID Encapsulating Directory for OCFL Storage Hierarchies"
+}

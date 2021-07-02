@@ -155,7 +155,24 @@ class TestAll(unittest.TestCase):
 
     def test_validate(self):
         """Test validate method."""
-        for root in ['extra_fixtures/good-storage-roots/fedora-root',
-                     'extra_fixtures/good-storage-roots/simple-root']:
-            s = Store(root=root)
-            self.assertTrue(s.validate())
+        s = Store(root='extra_fixtures/good-storage-roots/fedora-root')
+        self.assertTrue(s.validate())
+        self.assertEqual(s.num_objects, 176)
+        self.assertEqual(s.good_objects, 176)
+        # Simple case of three objects
+        s = Store(root='extra_fixtures/good-storage-roots/simple-root')
+        self.assertTrue(s.validate())
+        self.assertEqual(s.num_objects, 3)
+        self.assertEqual(s.good_objects, 3)
+        # Reg extension will not give warning
+        s = Store(root='extra_fixtures/good-storage-roots/reg-extension-dir-root')
+        self.assertTrue(s.validate())
+        self.assertEqual(s.num_objects, 1)
+        self.assertEqual(s.good_objects, 1)
+        self.assertNotIn('W901', s.log.codes)
+        # Unreg extension will give warning
+        s = Store(root='extra_fixtures/good-storage-roots/unreg-extension-dir-root')
+        self.assertTrue(s.validate())
+        self.assertEqual(s.num_objects, 1)
+        self.assertEqual(s.good_objects, 1)
+        self.assertIn('W901', s.log.codes)

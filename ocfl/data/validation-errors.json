@@ -462,6 +462,12 @@
        "en": "OCFL storage root hierarchy contains an empty directory: %s"
     }
   },
+  "E086": {
+    "params": ["entry"],
+    "description": {
+       "en": "OCFL Storage Root extensions direct contains an unexpected non-directory entry: %s"
+    }
+  },
   "E087": {
     "description": {
        "en": "NOTE - E087 is a processing instruction and can't be tested for."
@@ -642,6 +648,12 @@
     "params": ["entry"],
     "description": {
        "en": "OCFL Object includes unregistered extension directory '%s'"
+    }
+  },
+  "W901": {
+    "params": ["entry"],
+    "description": {
+       "en": "OCFL Storage Root includes unregistered extension directory '%s'"
     }
   }
 }
