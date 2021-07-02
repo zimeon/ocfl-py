@@ -5,6 +5,7 @@
   * Additional validation improvements:
     * Checks between version state in different version inventories
     * Check to see is extra directories look like version directories
+    * Fix URI scheme syntax check
   * Use additional fixtures in https://github.com/OCFL/fixtures for tests
 
 ## 2021-04-26 v1.2.2
