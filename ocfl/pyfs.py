@@ -74,8 +74,11 @@ def ocfl_walk(f, dir='/', is_storage_root=False):
 
     For walking storage roots (is_storage_root=True) then the condition to
     descend is:
-        1) this is the root (dirpaht == '/'), or
+        1) this is the root (dirpath == '/'), or
         2) there are no files in this directory (see https://ocfl.io/1.0/spec/#root-structure)
+
+    For each directory will yield (dirpath, dirs, files) as does os.walk. The
+    value of dirs my be pruned to avoid descending into particular directories.
 
     FIXME - QUICK AND DIRTY HACK, CAN DO BETTER!
     """
@@ -88,7 +91,6 @@ def ocfl_walk(f, dir='/', is_storage_root=False):
         entries = f.listdir(dirpath)
         files = []
         dirs = []
-        dirpaths = []
         for entry in entries:
             entry_path = fs.path.join(dirpath, entry)
             is_dir = True
@@ -100,14 +102,15 @@ def ocfl_walk(f, dir='/', is_storage_root=False):
                 pass  # Assume to be a directory
             if is_dir:
                 dirs.append(entry)
-                dirpaths.append(entry_path)
             else:
                 files.append(entry)
+        yield(dirpath, dirs, files)
+        # dirs may have been modified to prune
         if not is_storage_root or dirpath == '/' or len(files) == 0:
             # If this is not the storage root itself and there are files
             # present then we should not descend further
-            stack.extend(dirpaths)
-        yield(dirpath, dirs, files)
+            for entry in dirs:
+                stack.append(fs.path.join(dirpath, entry))
 
 
 def ocfl_opendir(pyfs, dir, **kwargs):

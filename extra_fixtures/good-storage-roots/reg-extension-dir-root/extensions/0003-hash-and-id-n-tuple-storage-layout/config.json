@@ -1,0 +1,7 @@
+{
+    "extensionName": "0003-hash-and-id-n-tuple-storage-layout",
+    "digestAlgorithm": "sha256",
+    "tupleSize": 3,
+    "numberOfTuples": 4
+}
+
