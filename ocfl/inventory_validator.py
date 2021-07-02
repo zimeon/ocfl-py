@@ -65,7 +65,9 @@ class InventoryValidator():
             if not isinstance(iid, str) or iid == '':
                 self.error("E037a")
             else:
-                if not re.match(r'''(\w+):.+''', iid):
+                # URI syntax https://www.rfc-editor.org/rfc/rfc3986.html#section-3.1 :
+                # scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+                if not re.match(r'''[a-z][a-z\d\+\-\.]*:.+''', iid, re.IGNORECASE):
                     self.warning("W005", id=iid)
                 self.id = iid
         else:
