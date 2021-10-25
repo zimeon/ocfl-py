@@ -279,7 +279,7 @@ class TestAll(unittest.TestCase):
         iv.check_digests_present_and_used(manifest, ['aaa', 'bbb'])
         self.assertEqual(len(log.errors), 0)
         iv.check_digests_present_and_used(manifest, ['aaa'])
-        self.assertIn('E050b', log.errors)
+        self.assertIn('E107', log.errors)
         log.clear()
         iv.check_digests_present_and_used(manifest, ['aaa', 'bbb', 'ccc'])
         self.assertIn('E050a', log.errors)

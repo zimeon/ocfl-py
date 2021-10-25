@@ -32,10 +32,11 @@ class InventoryValidator():
     """Class for OCFL Inventory Validator."""
 
     def __init__(self, log=None, where='???',
-                 lax_digests=False):
+                 lax_digests=False, spec_version='1.0'):
         """Initialize OCFL Inventory Validator."""
         self.log = ValidationLogger() if log is None else log
         self.where = where
+        self.spec_version = spec_version
         # Object state
         self.inventory = None
         self.id = None
@@ -74,7 +75,7 @@ class InventoryValidator():
             self.error("E036a")
         if 'type' not in inventory:
             self.error("E036b")
-        elif inventory['type'] != 'https://ocfl.io/1.0/spec/#inventory':
+        elif inventory['type'] != 'https://ocfl.io/' + self.spec_version + '/spec/#inventory':
             self.error("E038")
         if 'digestAlgorithm' not in inventory:
             self.error("E036c")
@@ -381,7 +382,7 @@ class InventoryValidator():
             self.error("E050a", digests=", ".join(sorted(not_in_manifest)))
         not_in_state = in_manifest.difference(in_state)
         if len(not_in_state) > 0:
-            self.error("E050b", digests=", ".join(sorted(not_in_state)))
+            self.error("E107", digests=", ".join(sorted(not_in_state)))
 
     def digest_regex(self):
         """Return regex for validating un-normalized digest format."""

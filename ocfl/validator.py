@@ -41,6 +41,7 @@ class Validator():
         ]
         # The following actually initialized in initialize() method
         self.id = None
+        self.spec_version = None
         self.digest_algorithm = None
         self.content_directory = None
         self.inventory_digest_files = None
@@ -54,6 +55,7 @@ class Validator():
         Must be called between attempts to validate objects.
         """
         self.id = None
+        self.spec_version = '1.0'  # default to latest published version
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
         self.inventory_digest_files = {}  # index by version_dir, algorithms may differ
@@ -79,7 +81,7 @@ class Validator():
         except fs.errors.CreateFailed:
             self.log.error('E003c', path=path)
             return False
-        # Object declaration
+        # Object declaration, set spec version number
         namastes = find_namastes(0, pyfs=self.obj_fs)
         if len(namastes) == 0:
             self.log.error('E003a')
@@ -87,6 +89,16 @@ class Validator():
             self.log.error('E003b', files=len(namastes))
         elif not namastes[0].content_ok(pyfs=self.obj_fs):
             self.log.error('E007')
+        else:
+            # Extract and check spec version number
+            spec_version = None
+            for version in ('1.1', '1.0'):
+                if namastes[0].filename == '0=ocfl_object_' + version:
+                    spec_version = version
+            if spec_version is None:
+                self.log.error('E006', filename=namastes[0].filename)
+            else:
+                self.spec_version = spec_version
         # Object root inventory file
         inv_file = 'inventory.json'
         if not self.obj_fs.exists(inv_file):
@@ -126,7 +138,8 @@ class Validator():
             self.log.error('E033', where=where, explanation=str(e))
             raise ValidatorAbortException
         inv_validator = InventoryValidator(log=self.log, where=where,
-                                           lax_digests=self.lax_digests)
+                                           lax_digests=self.lax_digests,
+                                           spec_version=self.spec_version)
         inv_validator.validate(inventory)
         return inventory, inv_validator
 
@@ -165,7 +178,7 @@ class Validator():
         All expected_files must be present and no other files.
         All expected_dirs must be present and no other dirs.
         """
-        expected_files = ['0=ocfl_object_1.0', 'inventory.json',
+        expected_files = ['0=ocfl_object_' + self.spec_version, 'inventory.json',
                           'inventory.json.' + self.digest_algorithm]
         for entry in self.obj_fs.scandir(''):
             if entry.is_file:

@@ -57,6 +57,12 @@
        "en": "OCFL Storage Root hierarchy includes directory %s with an unrecognized object declaration %s, ignoring"
     }
   },
+  "E006": {
+    "params": ["filename"],
+    "description": {
+      "en": "The OCFL object conformance declaration filename must be 0=ocfl_object_, followed by the OCFL specification version number, got %s instead"
+    }
+  },
   "E007": {
     "description": {
        "en": "OCFL Object declaration file contents do not match file name without leading 0= (the 'dvalue')"
@@ -276,12 +282,6 @@
     "params": ["where", "digests"],
     "description": {
        "en": "OCFL Object %s inventory state refers to one or more digests that are not in the manifest (%s)"
-    }
-  },
-  "E050b": {
-    "params": ["where", "digests"],
-    "description": {
-       "en": "OCFL Object %s inventory manifest refers to one or more digests that are not in any state (%s)"
     }
   },
   "E050c": {
