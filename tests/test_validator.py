@@ -128,6 +128,7 @@ class TestAll(unittest.TestCase):
                            'E049_created_no_timezone': ['E049a'],
                            'E049_created_not_to_seconds': ['E049b'],
                            'E050_manifest_digest_wrong_case': ['E050f'],
+                           'E050_state_digest_not_in_manifest': ['E050f'],
                            'E053_E052_invalid_logical_paths': ['E052', 'E053'],
                            'E058_no_sidecar': ['E058a'],
                            'E060_E064_root_inventory_digest_mismatch': ['E060', 'E064'],
@@ -149,7 +150,7 @@ class TestAll(unittest.TestCase):
                            'E100_E099_fixity_invalid_content_paths': ['E057d'],  # E057 OK, different test approach
                            'E100_E099_manifest_invalid_content_paths': ['E099', 'E100'],
                            'E101_non_unique_content_paths': ['E101a'],
-                           #'E107_file_in_manifest_not_used': ['E107']
+                           'E107_file_in_manifest_not_used': ['E107']
                            }.items():
             v = Validator()
             filepath = 'fixtures/1.1/bad-objects/' + bad
