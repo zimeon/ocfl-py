@@ -179,7 +179,10 @@ class InventoryValidator():
         listed in the manifest are referenced.
         """
         if not isinstance(fixity, dict):
-            self.error('E056a')
+            self.error('E056a' if self.spec_version == '1.0' else 'E111a')
+        elif len(fixity) == 0 and self.spec_version != '1.0':
+            # Empty object was not forbidden in 1.0 but is in 1.1
+            self.error('E111b')
         else:
             for digest_algorithm in fixity:
                 known_digest = True

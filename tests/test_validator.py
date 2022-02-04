@@ -61,6 +61,7 @@ class TestAll(unittest.TestCase):
                            'E050_state_digest_different_case': ['E050f'],
                            'E050_state_repeated_digest': ['E050f'],
                            'E053_E052_invalid_logical_paths': ['E052', 'E053'],
+                           'E056_null_fixity': ['E056a'],
                            'E058_no_sidecar': ['E058a'],
                            'E060_E064_root_inventory_digest_mismatch': ['E060', 'E064'],
                            'E061_invalid_sidecar': ['E061'],
@@ -150,7 +151,9 @@ class TestAll(unittest.TestCase):
                            'E100_E099_fixity_invalid_content_paths': ['E057d'],  # E057 OK, different test approach
                            'E100_E099_manifest_invalid_content_paths': ['E099', 'E100'],
                            'E101_non_unique_content_paths': ['E101a'],
-                           'E107_file_in_manifest_not_used': ['E107']
+                           'E107_file_in_manifest_not_used': ['E107'],
+                           'E111_empty_fixity': ['E111b'],
+                           'E111_null_fixity': ['E111a']
                            }.items():
             v = Validator()
             filepath = 'fixtures/1.1/bad-objects/' + bad
