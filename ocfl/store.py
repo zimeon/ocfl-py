@@ -91,7 +91,7 @@ class Store():
         # Create a layout declaration
         if self.disposition is not None:
             with self.root_fs.open(self.layout_file, 'w') as fh:
-                layout = {'key': self.disposition,
+                layout = {'extension': self.disposition,
                           'description': "Non-standard layout from ocfl-py disposition -- FIXME"}
                 json.dump(layout, fh, sort_keys=True, indent=2)
         logging.info("Created OCFL storage root %s", self.root)
