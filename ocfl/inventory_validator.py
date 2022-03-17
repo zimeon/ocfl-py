@@ -10,10 +10,10 @@ from .validation_logger import ValidationLogger
 from .w3c_datetime import str_to_datetime
 
 
-def get_file_map(inventory, version):
-    """Get a map of files in state to files on disk for version in inventory.
+def get_logical_path_map(inventory, version):
+    """Get a map of logical paths in state to files on disk for version in inventory.
 
-    Returns a dictionary: file_in_state -> set(content_files)
+    Returns a dictionary: logical_path_in_state -> set(content_files)
 
     The set of content_files may includes references to duplicate files in
     later versions than the version being described.
@@ -446,11 +446,11 @@ class InventoryValidator():
     def validate_as_prior_version(self, prior):
         """Check that prior is a valid prior version of the current inventory object.
 
-        The input prior is also expected to be an InventoryValidator object and
-        both self and prior inventories are assumed to have been checked for
+        The input variable prior is also expected to be an InventoryValidator object
+        and both self and prior inventories are assumed to have been checked for
         internal consistency.
         """
-        # Must have a subset of versions which also check zero padding format etc.
+        # Must have a subset of versions which also checks zero padding format etc.
         if not set(prior.all_versions) < set(self.all_versions):
             self.error('E066a', prior_head=prior.head)
         else:
@@ -462,20 +462,26 @@ class InventoryValidator():
                 # direct check on whether the state blocks match
                 if prior.digest_algorithm == self.digest_algorithm:
                     self.compare_states_for_version(prior, version)
-                # Now check the mappings from state to content files which must
+                # Now check the mappings from state to logical path, which must
                 # be consistent even if the digestAlgorithm is different between
-                # versions
-                prior_map = get_file_map(prior.inventory, version)
-                self_map = get_file_map(self.inventory, version)
-                if prior_map.keys() != self_map.keys():
-                    self.error('E066b', version=version, prior_head=prior.head)
+                # versions. Get maps from logical paths to files on disk:
+                prior_map = get_logical_path_map(prior.inventory, version)
+                self_map = get_logical_path_map(self.inventory, version)
+                # Look first for differences in logical paths listed
+                only_in_prior = prior_map.keys() - self_map.keys()
+                only_in_self = self_map.keys() - prior_map.keys()
+                if only_in_prior or only_in_self:
+                    if only_in_prior:
+                        self.error('E066b', version=version, prior_head=prior.head, only_in=prior.head, logical_paths=','.join(only_in_prior))
+                    if only_in_self:
+                        self.error('E066b', version=version, prior_head=prior.head, only_in=self.where, logical_paths=','.join(only_in_self))
                 else:
-                    # Check them all...
-                    for file in prior_map:
-                        if not prior_map[file].issubset(self_map[file]):
+                    # Check them all in details - digests must match
+                    for logical_path in prior_map:
+                        if not prior_map[logical_path].issubset(self_map[logical_path]):
                             self.error('E066c', version=version, prior_head=prior.head,
-                                       file=file, prior_content=','.join(prior_map[file]),
-                                       current_content=','.join(self_map[file]))
+                                       logical_path=logical_path, prior_content=','.join(prior_map[logical_path]),
+                                       current_content=','.join(self_map[logical_path]))
                 # Check metadata
                 prior_version = prior.inventory['versions'][version]
                 self_version = self.inventory['versions'][version]
