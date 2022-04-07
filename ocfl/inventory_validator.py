@@ -492,7 +492,8 @@ class InventoryValidator():
     def compare_states_for_version(self, prior, version):
         """Compare state blocks for version between self and prior.
 
-        The digest algorithm must be the same in both, do not call otherwise!
+        Assumes the same digest algorithm in both, do not call otherwise!
+
         Looks only for digests that appear in one but not in the other, the code
         in validate_as_prior_version(..) does a check for whether the same sets
         of logical files appear and we don't want to duplicate an error message
