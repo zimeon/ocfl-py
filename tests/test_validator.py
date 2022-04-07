@@ -154,8 +154,7 @@ class TestAll(unittest.TestCase):
                            'E100_E099_manifest_invalid_content_paths': ['E099', 'E100'],
                            'E101_non_unique_content_paths': ['E101a'],
                            'E107_file_in_manifest_not_used': ['E107'],
-                           'E111_empty_fixity': ['E111b'],
-                           'E111_null_fixity': ['E111a']
+                           'E111_null_fixity': ['E111']
                            }.items():
             v = Validator()
             filepath = 'fixtures/1.1/bad-objects/' + bad
@@ -212,7 +211,8 @@ class TestAll(unittest.TestCase):
         """Check good objects (v1.0, v1.1 and extra) pass."""
         for base_dir in ['fixtures/1.0/good-objects',
                          'fixtures/1.1/good-objects',
-                         'extra_fixtures/1.0/good-objects']:
+                         'extra_fixtures/1.0/good-objects',
+                         'extra_fixtures/1.1/good-objects']:
             for name in os.listdir(base_dir):
                 filepath = extra_fixture_maybe_zip(os.path.join(base_dir, name))
                 v = Validator()

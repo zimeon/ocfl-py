@@ -32,9 +32,9 @@ class TestAll(unittest.TestCase):
                 }
             }}
         vl = ValidationLogger(lang='zz', validation_codes=vc)
-        vl.error_or_warning("E111")
+        vl.error_or_warning("E333")
         self.assertEqual(len(vl.messages), 1)
-        self.assertIn("Unknown error: E111 - params ({})", vl.messages[-1])
+        self.assertIn("Unknown error: E333 - params ({})", vl.messages[-1])
         vl.error_or_warning("E222", one="two", three="four")
         self.assertEqual(len(vl.messages), 2)
         self.assertIn("Unknown error: E222 - params ({'one': 'two', 'three': 'four'})", vl.messages[-1])
@@ -67,9 +67,9 @@ class TestAll(unittest.TestCase):
     def test_error(self):
         """Test error method."""
         vl = ValidationLogger()
-        vl.error("E111")
+        vl.error("E333")
         self.assertEqual(vl.num_errors, 1)
-        self.assertIn("Unknown error: E111 - params ({})", vl.messages[-1])
+        self.assertIn("Unknown error: E333 - params ({})", vl.messages[-1])
 
     def test_warning(self):
         """Test warning method."""
