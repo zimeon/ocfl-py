@@ -184,10 +184,22 @@
        "en": "OCFL Object %s inventory id `%s` does not match the value in the root inventory `%s`"
     }
   },
-  "E038": {
+  "E038a": {
     "params": ["where", "expected", "got"],
     "description": {
        "en": "OCFL Object %s inventory `type` attribute has wrong value (expected %s, got %s)"
+    }
+  },
+  "E038b": {
+    "params": ["where", "got", "assumed_spec_version"],
+    "description": {
+       "en": "OCFL Object %s inventory `type` attribute does not look like a valid specification URI (got %s), will proceed as if using version %s"
+    }
+  },
+  "E038c": {
+    "params": ["where", "got", "assumed_spec_version"],
+    "description": {
+       "en": "OCFL Object %s inventory `type` attribute has an unsupported specification version number (%s), will proceed as if using version %s"
     }
   },
   "E039": {

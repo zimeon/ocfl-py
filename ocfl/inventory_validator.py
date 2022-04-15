@@ -48,6 +48,8 @@ class InventoryValidator():
         self.head = 'UNKNOWN'
         # Validation control
         self.lax_digests = lax_digests
+        # Configuration
+        self.spec_versions_supported = ('1.0', '1.1')
 
     def error(self, code, **args):
         """Error with added context."""
@@ -57,8 +59,13 @@ class InventoryValidator():
         """Warning with added context."""
         self.log.warning(code, where=self.where, **args)
 
-    def validate(self, inventory):
-        """Validate a given inventory."""
+    def validate(self, inventory, extract_spec_version=False):
+        """Validate a given inventory.
+
+        If extract_spec_version is True then will look at the type value to determine
+        the specification version. In the case that there is no type value or it isn't
+        valid, then other tests will be based on the version given in self.spec_version.
+        """
         # Basic structure
         self.inventory = inventory
         if 'id' in inventory:
@@ -75,8 +82,18 @@ class InventoryValidator():
             self.error("E036a")
         if 'type' not in inventory:
             self.error("E036b")
+        elif not isinstance(inventory['type'], str):
+            self.error("E999")
+        elif extract_spec_version:
+            m = re.match(r'''https://ocfl.io/(\d+.\d)/spec/#inventory''', inventory['type'])
+            if not m:
+                self.error('E038b', got=inventory['type'], assumed_spec_version=self.spec_version)
+            elif m.group(1) in self.spec_versions_supported:
+                self.spec_version = m.group(1)
+            else:
+                self.error("E038c", got=m.group(1), assumed_spec_version=self.spec_version)
         elif inventory['type'] != 'https://ocfl.io/' + self.spec_version + '/spec/#inventory':
-            self.error("E038", expected='https://ocfl.io/' + self.spec_version + '/spec/#inventory', got=inventory['type'])
+            self.error("E038a", expected='https://ocfl.io/' + self.spec_version + '/spec/#inventory', got=inventory['type'])
         if 'digestAlgorithm' not in inventory:
             self.error("E036c")
         elif inventory['digestAlgorithm'] == 'sha512':
