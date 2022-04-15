@@ -72,5 +72,5 @@ class TestAll(unittest.TestCase):
         self.assertIn("does not exist", find_path_type("this_path_does_not_exist"))
         self.assertIn("nor can parent", find_path_type("still_nope/nope_doesnt_exist"))
         self.assertEqual(find_path_type("ocfl"), "no 0= declaration file")
-        self.assertIn("more than one 0= declaration file", find_path_type("extra_fixtures/misc/multiple_declarations"))
+        self.assertEqual(find_path_type("extra_fixtures/misc/multiple_declarations"), 'root')
         self.assertIn("unrecognized", find_path_type("extra_fixtures/misc/unknown_declaration"))

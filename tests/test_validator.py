@@ -21,7 +21,7 @@ class TestAll(unittest.TestCase):
 
     def test01_bad_v1_0(self):
         """Check bad v1.0 objects fail."""
-        for bad, codes in {'does_not_even_exist': ['E003c'],
+        for bad, codes in {'does_not_even_exist': ['E003e'],
                            'E001_extra_dir_in_root': ['E001b'],
                            'E001_extra_file_in_root': ['E001a'],
                            'E001_invalid_version_format': ['E009'],  # E009 OK, see https://github.com/OCFL/fixtures/pull/80
@@ -100,13 +100,14 @@ class TestAll(unittest.TestCase):
 
     def test02_bad_v1_1(self):
         """Check bad v1.1 objects fail."""
-        for bad, codes in {'does_not_even_exist': ['E003c'],
+        for bad, codes in {'does_not_even_exist': ['E003e'],
                            'E001_extra_dir_in_root': ['E001b'],
                            'E001_extra_file_in_root': ['E001a'],
                            'E001_invalid_version_format': ['E009'],  # E009 OK, see https://github.com/OCFL/fixtures/pull/80
                            'E001_v2_file_in_root': ['E001a'],
                            'E003_E063_empty': ['E003a', 'E063'],
                            'E003_no_decl': ['E003a'],
+                           'E003_two_declarations': ['E003b'],
                            'E008_E036_no_versions_no_head': ['E008', 'E036d'],
                            'E010_missing_versions': ['E046a'],  # FIXME - Check code https://github.com/OCFL/spec/issues/540
                            'E010_skipped_versions': ['E010'],
