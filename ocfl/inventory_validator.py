@@ -76,7 +76,7 @@ class InventoryValidator():
         if 'type' not in inventory:
             self.error("E036b")
         elif inventory['type'] != 'https://ocfl.io/' + self.spec_version + '/spec/#inventory':
-            self.error("E038")
+            self.error("E038", expected='https://ocfl.io/' + self.spec_version + '/spec/#inventory', got=inventory['type'])
         if 'digestAlgorithm' not in inventory:
             self.error("E036c")
         elif inventory['digestAlgorithm'] == 'sha512':

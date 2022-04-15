@@ -23,26 +23,33 @@
     }
   },
   "E003a": {
+    "params": ["assumed_version"],
     "description": {
-       "en": "OCFL Object version declaration file is missing"
+       "en": "OCFL Object version declaration file is missing (assuming version %s)"
     }
   },
   "E003b": {
-    "params": ["files"],
+    "params": ["files", "using_version"],
     "description": {
-       "en": "OCFL Object includes more that one file that looks like an object declaration (got %s)"
+       "en": "OCFL Object includes more that one file that looks like an object declaration (got %s), using version %s"
     }
   },
   "E003c": {
-    "params": ["path"],
+    "params": ["path", "assumed_version"],
     "description": {
-       "en": "No OCFL Object to validate at path %s. The root of an OCFL Object must be a directory containing an object declaration"
+       "en": "OCFL Object includes one or move object declaration files (starting 0=) but no valid version number could be extracted from any of them (assuming version %s)"
     }
   },
   "E003d": {
     "params": ["path"],
     "description": {
        "en": "OCFL Storage Root hierarchy includes directory %s with more that one file that looks like an object declaration, ignoring"
+    }
+  },
+  "E003e": {
+    "params": ["path"],
+    "description": {
+       "en": "No OCFL Object to validate at path %s. The root of an OCFL Object must be a directory containing an object declaration"
     }
   },
   "E004a": {
@@ -64,8 +71,9 @@
     }
   },
   "E007": {
+    "params": ["filename"],
     "description": {
-       "en": "OCFL Object declaration file contents do not match file name without leading 0= (the 'dvalue')"
+       "en": "OCFL Object declaration file %s contents do not match file name without leading 0= (the 'dvalue')"
     }
   },
   "E008": {
@@ -177,9 +185,9 @@
     }
   },
   "E038": {
-    "params": ["where"],
+    "params": ["where", "expected", "got"],
     "description": {
-       "en": "OCFL Object %s inventory `type` attribute has wrong value"
+       "en": "OCFL Object %s inventory `type` attribute has wrong value (expected %s, got %s)"
     }
   },
   "E039": {

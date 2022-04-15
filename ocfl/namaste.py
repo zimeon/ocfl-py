@@ -25,7 +25,9 @@ def find_namastes(d, dir='', pyfs=None, limit=10):
     """Find NAMASTE files with tag d in dir, return list of Namaste objects.
 
     limit sets a limit on the number of Namaste objects returned, a NamasteException
-    will be raised if more than limit files with tag d are found.
+    will be raised if more than limit files with tag d are found. Returns the values
+    sorter by filename to ensure consistent behaviour when multiple match files are
+    present.
     """
     prefix = str(d) + '='
     if pyfs is not None:
@@ -34,7 +36,7 @@ def find_namastes(d, dir='', pyfs=None, limit=10):
         filenames = [f for f in os.listdir(dir) if f.startswith(prefix)]
     if len(filenames) > limit:
         raise NamasteException("Found too many Namaste files with tag %s in %s" % (d, dir))
-    return [Namaste(d, tvalue=filename[len(prefix):]) for filename in filenames]
+    return [Namaste(d, tvalue=filename[len(prefix):]) for filename in sorted(filenames)]
 
 
 def get_namaste(d, dir):

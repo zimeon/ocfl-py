@@ -134,9 +134,10 @@ def find_path_type(path):
     namastes = find_namastes(0, pyfs=pyfs)
     if len(namastes) == 0:
         return "no 0= declaration file"
-    if len(namastes) > 1:
-        return "more than one 0= declaration file"
-    m = re.match(r'''ocfl(_object)?_(\d+\.\d+)$''', namastes[0].tvalue)
-    if m:
-        return 'root' if m.group(1) is None else 'object'
-    return "unrecognized 0= declaration file 0=%s" % (namastes[0].tvalue)
+    # Look at the first 0= Namaste file that is of OCFL form to determine type, if there are
+    # multiple declarations this will be caught later
+    for namaste in namastes:
+        m = re.match(r'''ocfl(_object)?_(\d+\.\d+)$''', namaste.tvalue)
+        if m:
+            return 'root' if m.group(1) is None else 'object'
+    return "unrecognized 0= declaration file or files (first is %s)" % (namastes[0].tvalue)
