@@ -132,12 +132,17 @@ class Validator():
             pass
         return self.log.num_errors == 0
 
-    def validate_inventory(self, inv_file, where='root'):
+    def validate_inventory(self, inv_file, where='root', extract_spec_version=False):
         """Validate a given inventory file, record errors with self.log.error().
 
         Returns inventory object for use in later validation
         of object content. Does not look at anything else in the
         object itself.
+
+        where - used for reporting messages of where inventory is in object
+
+        extract_spec_version - if set True will attempt to take spec_version from the
+            inventory itself instead of using the spec_version provided
         """
         try:
             with self.obj_fs.openbin(inv_file, 'r') as fh:
@@ -148,7 +153,7 @@ class Validator():
         inv_validator = InventoryValidator(log=self.log, where=where,
                                            lax_digests=self.lax_digests,
                                            spec_version=self.spec_version)
-        inv_validator.validate(inventory)
+        inv_validator.validate(inventory, extract_spec_version=extract_spec_version)
         return inventory, inv_validator
 
     def validate_inventory_digest(self, inv_file, digest_algorithm, where="root"):

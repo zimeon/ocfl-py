@@ -532,14 +532,14 @@ class Object():
             self.log.info("OCFL object at %s is INVALID", objdir)
         return passed
 
-    def validate_inventory(self, path, show_warnings=True, show_errors=True):
+    def validate_inventory(self, path, show_warnings=True, show_errors=True, extract_spec_version=False):
         """Validate just an OCFL Object inventory at path."""
         validator = Validator(show_warnings=show_warnings,
                               show_errors=show_errors)
         try:
             (inv_dir, inv_file) = fs.path.split(path)
             validator.obj_fs = open_fs(inv_dir, create=False)
-            validator.validate_inventory(inv_file, where='standalone')
+            validator.validate_inventory(inv_file, where='standalone', extract_spec_version=extract_spec_version)
         except fs.errors.ResourceNotFound:
             validator.log.error('E033', where='standalone', explanation='failed to open directory')
         except ValidatorAbortException:
