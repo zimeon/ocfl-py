@@ -63,7 +63,7 @@ setup(
     install_requires=[
         'bagit>=1.8.1',
         'dateutils>=0.6.6',
-        'fs>2.4.0',
+        'fs>2.4.13',
         'fs_s3fs>=1.1.1',
         'pairtree>=0.8.1'
     ],
