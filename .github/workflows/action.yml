@@ -21,11 +21,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install pycodestyle pydocstyle pylint
           python setup.py install
-      - name: Lint with pycodestyle and pydocstyles
+      - name: Lint with pycodestyle
         run: |
           pycodestyle --ignore=E501,W503 *.py ocfl tests
+      - name: Lint with pydocstyle
+        run: |
           pydocstyle *.py ocfl tests
-          pylint --disable=unneeded-not,line-too-long,unnecessary-semicolon,trailg-whitespace,missing-final-newline,bad-indentation,multiple-statements,bare-except,missing-module-docstring,missing-class-docstring,missing-function-docstring,W0511,W0622,W0707,C0103,R0902,R0911,R0912,R0913,R0914,R0915,R1702
+      - name: Lint with pyliny
+        run: |
+          pylint --disable=unneeded-not,line-too-long,unnecessary-semicolon,trailg-whitespace,missing-final-newline,bad-indentation,multiple-statements,bare-except,missing-module-docstring,missing-class-docstring,missing-function-docstring,W0511,W0622,W0707,C0103,R0902,R0911,R0912,R0913,R0914,R0915,R1702 *.py ocfl tests
       - name: Test with pytest
         run: |
           pytest
