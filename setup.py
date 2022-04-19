@@ -5,7 +5,7 @@ from pathlib import Path
 from setuptools import setup, Command
 
 # Extract version number
-verfile = Path.read_text("ocfl/_version.py")
+verfile = Path("ocfl/_version.py").read_text()
 match = re.search(r"^__version__ = '(\d\.\d.\d+(\.\d+)?)'",
                   verfile, re.MULTILINE)
 if match:
@@ -59,7 +59,7 @@ setup(
                  "Libraries :: Python Modules"],
     url='https://github.com/zimeon/ocfl-py',
     description='ocfl-py - A Python implementation of OCFL',
-    long_description=Path.read_text('README'),
+    long_description=Path('README').read_text(),
     install_requires=[
         'bagit>=1.8.1',
         'dateutils>=0.6.6',
