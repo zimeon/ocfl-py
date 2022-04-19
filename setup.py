@@ -1,10 +1,11 @@
 """Setup for ocfl-py."""
 import os
 import re
+from pathlib import Path
 from setuptools import setup, Command
 
 # Extract version number
-verfile = open("ocfl/_version.py", "rt", encoding="utf-8").read()
+verfile = Path.read_text("ocfl/_version.py")
 match = re.search(r"^__version__ = '(\d\.\d.\d+(\.\d+)?)'",
                   verfile, re.MULTILINE)
 if match:
@@ -58,7 +59,7 @@ setup(
                  "Libraries :: Python Modules"],
     url='https://github.com/zimeon/ocfl-py',
     description='ocfl-py - A Python implementation of OCFL',
-    long_description=open('README', "r", encoding="utf-8").read(),
+    long_description=Path.read_text('README'),
     install_requires=[
         'bagit>=1.8.1',
         'dateutils>=0.6.6',

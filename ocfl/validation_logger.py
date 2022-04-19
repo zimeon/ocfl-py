@@ -28,7 +28,7 @@ class ValidationLogger():
         if validation_codes is not None:
             self.validation_codes = validation_codes
         elif self.validation_codes is None:
-            with open(os.path.join(os.path.dirname(__file__), 'data/validation-errors.json'), 'r') as fh:
+            with open(os.path.join(os.path.dirname(__file__), 'data/validation-errors.json'), 'r', encoding="utf-8") as fh:
                 self.validation_codes = json.load(fh)
 
     def error_or_warning(self, code, severity='error', **args):
