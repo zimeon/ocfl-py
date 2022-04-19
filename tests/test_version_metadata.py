@@ -31,7 +31,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(d['user'], {'name': 'c', 'address': 'd'})
         self.assertEqual(d['extra'], 'x')
         # with load from file
-        with open('tests/testdata/inventories/inv_1_good.json') as fh:
+        with open('tests/testdata/inventories/inv_1_good.json', 'r', encoding="utf-8") as fh:
             inventory = json.load(fh)
         m = VersionMetadata(inventory=inventory, version='v1')
         self.assertEqual(m.version, 'v1')

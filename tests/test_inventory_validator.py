@@ -459,7 +459,7 @@ class TestAll(unittest.TestCase):
                            'inventory_E042b_unknown_version': ['E042b'],
                            'inventory_E042b_zero_padding_mismatch': ['E042b']}.items():
             filepath = 'extra_fixtures/bad-inventories/' + bad + '.json'
-            with open(filepath, 'r') as fh:
+            with open(filepath, 'r', encoding="utf-8") as fh:
                 inventory = json.load(fh)
             log = TLogger()
             iv = InventoryValidator(log=log)

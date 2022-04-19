@@ -38,11 +38,11 @@ class TestAll(unittest.TestCase):
         """Test bag_extracted_version method."""
         # Write bag with no metadata
         tempdir = tempfile.mkdtemp(prefix='test_bag1')
-        with open(os.path.join(tempdir, 'my_file'), 'w') as fh:
+        with open(os.path.join(tempdir, 'my_file'), 'w', encoding="utf-8") as fh:
             fh.write("Something\n")
         metadata = VersionMetadata()
         bag_extracted_version(tempdir, metadata)
-        with open(os.path.join(tempdir, 'bag-info.txt'), 'r') as fh:
+        with open(os.path.join(tempdir, 'bag-info.txt'), 'r', encoding="utf-8") as fh:
             info = fh.read()
         self.assertNotIn('Contact-Email', info)
         self.assertNotIn('Contact-Name', info)
@@ -51,7 +51,7 @@ class TestAll(unittest.TestCase):
         self.assertIn('Payload-Oxum', info)
         # Write bag with all metadata
         tempdir = tempfile.mkdtemp(prefix='test_bag2')
-        with open(os.path.join(tempdir, 'my_file2'), 'w') as fh:
+        with open(os.path.join(tempdir, 'my_file2'), 'w', encoding="utf-8") as fh:
             fh.write("Something else\n")
         metadata = VersionMetadata()
         metadata.message = "hello"
@@ -59,7 +59,7 @@ class TestAll(unittest.TestCase):
         metadata.address = "mailto:a.person@example.org"
         metadata.id = 'info:a-bag-2'
         bag_extracted_version(tempdir, metadata)
-        with open(os.path.join(tempdir, 'bag-info.txt'), 'r') as fh:
+        with open(os.path.join(tempdir, 'bag-info.txt'), 'r', encoding="utf-8") as fh:
             info = fh.read()
         self.assertIn('Contact-Email: a.person@example.org', info)
         self.assertIn('Contact-Name: A Person', info)

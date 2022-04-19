@@ -86,7 +86,7 @@ class TestAll(unittest.TestCase):
         self.maxDiff = None
         oo = Object(digest_algorithm="md5")
         inventory = {'manifest': {}, 'versions': {}}
-        with open('fixtures/1.0/content/spec-ex-full/v1_inventory.json') as fh:
+        with open('fixtures/1.0/content/spec-ex-full/v1_inventory.json', 'r', encoding="utf-8") as fh:
             v_inventory = json.load(fh)
         metadata = VersionMetadata(inventory=v_inventory, version='v1')
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
@@ -107,7 +107,7 @@ class TestAll(unittest.TestCase):
                            'user': {'address': 'alice@example.com', 'name': 'Alice'}}})
         self.assertNotIn('fixity', inventory)
         # Now add second version to check forward delta
-        with open('fixtures/1.0/content/spec-ex-full/v2_inventory.json') as fh:
+        with open('fixtures/1.0/content/spec-ex-full/v2_inventory.json', 'r', encoding="utf-8") as fh:
             v_inventory = json.load(fh)
         metadata = VersionMetadata(inventory=v_inventory, version='v2')
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full/v2')
@@ -129,7 +129,7 @@ class TestAll(unittest.TestCase):
         oo = Object(digest_algorithm="md5", fixity=['sha1'])
         inventory = {'manifest': {}, 'versions': {}, 'fixity': {'sha1': {}}}
         md1 = VersionMetadata()
-        with open('fixtures/1.0/content/spec-ex-full/v1_inventory.json') as fh:
+        with open('fixtures/1.0/content/spec-ex-full/v1_inventory.json', 'r', encoding="utf-8") as fh:
             v_inventory = json.load(fh)
         md1 = VersionMetadata(inventory=v_inventory, version='v1')
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full/v1')

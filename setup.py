@@ -4,7 +4,7 @@ import re
 from setuptools import setup, Command
 
 # Extract version number
-verfile = open("ocfl/_version.py", "rt").read()
+verfile = open("ocfl/_version.py", "rt", encoding="utf-8").read()
 match = re.search(r"^__version__ = '(\d\.\d.\d+(\.\d+)?)'",
                   verfile, re.MULTILINE)
 if match:
@@ -58,7 +58,7 @@ setup(
                  "Libraries :: Python Modules"],
     url='https://github.com/zimeon/ocfl-py',
     description='ocfl-py - A Python implementation of OCFL',
-    long_description=open('README').read(),
+    long_description=open('README', "r", encoding="utf-8").read(),
     install_requires=[
         'bagit>=1.8.1',
         'dateutils>=0.6.6',
