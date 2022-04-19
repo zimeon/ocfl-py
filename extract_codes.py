@@ -22,7 +22,7 @@ class Code():
         """Initialize Code object."""
         self.code = code
         self.desc = desc
-        self.suffixes = dict()
+        self.suffixes = {}
 
     def add_suffix(self, suffix, link=None, desc=None):
         """Add details for one code suffix, which may be None."""
@@ -70,7 +70,7 @@ class Codes():
 
     def __init__(self):
         """Initialize Codes object."""
-        self.codes = dict()
+        self.codes = {}
 
     def add_spec(self, code, desc):
         """Add a code from the specification."""
@@ -133,7 +133,7 @@ def main():
 
     # 4. Write table of what is implemented and raise warnings
     logging.info("Writing summary to %s", VALIDATION_STATUS_MD)
-    with open(VALIDATION_STATUS_MD, "w") as fh:
+    with open(VALIDATION_STATUS_MD, "w", encoding="utf-8") as fh:
         fh.write("# Implementation status for errors and warnings\n\n")
         fh.write("The following tables show the implementation status of all errors and warnings in the OCFL v1.0 specification, with links to the specification and into the code repository.\n\n")
         fh.write("## Errors\n\n")

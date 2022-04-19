@@ -494,10 +494,10 @@ class InventoryValidator():
                         self.error('E066b', version=version, prior_head=prior.head, only_in=self.where, logical_paths=','.join(only_in_self))
                 else:
                     # Check them all in details - digests must match
-                    for logical_path in prior_map:
-                        if not prior_map[logical_path].issubset(self_map[logical_path]):
+                    for logical_path, this_map in prior_map.items():
+                        if not this_map.issubset(self_map[logical_path]):
                             self.error('E066c', version=version, prior_head=prior.head,
-                                       logical_path=logical_path, prior_content=','.join(prior_map[logical_path]),
+                                       logical_path=logical_path, prior_content=','.join(this_map),
                                        current_content=','.join(self_map[logical_path]))
                 # Check metadata
                 prior_version = prior.inventory['versions'][version]

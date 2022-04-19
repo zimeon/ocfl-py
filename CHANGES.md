@@ -11,6 +11,7 @@
   * Use additional fixtures in https://github.com/OCFL/fixtures for tests
   * Improve handling of inconsistent state between version inventories errors (E066, https://github.com/zimeon/ocfl-py/issues/85)
   * Improve handling of fixity block issues (E056/E111, https://github.com/zimeon/ocfl-py/issues/79, https://github.com/zimeon/ocfl-py/issues/87)
+  * Running tests on Python 3.6, 3.7, 3.8, 3.9
 
 ## 2021-04-26 v1.2.2
 

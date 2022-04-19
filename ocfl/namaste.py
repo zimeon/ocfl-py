@@ -98,7 +98,7 @@ class Namaste():
         if pyfs is not None:
             pyfs.writetext(fs.path.join(dir, self.filename), self.content + "\n")
         else:
-            with open(os.path.join(dir, self.filename), 'w') as fh:
+            with open(os.path.join(dir, self.filename), 'w', encoding="utf-8") as fh:
                 fh.write(self.content + "\n")
 
     def check_content(self, dir='', pyfs=None):
@@ -114,7 +114,7 @@ class Namaste():
         else:
             if not os.path.isfile(filepath):
                 raise NamasteException("Namaste file %s does not exist!" % (filepath))
-            with open(filepath, 'r') as fh:
+            with open(filepath, 'r', encoding="utf-8") as fh:
                 content = fh.read()
         if self.tvalue != self._tr_func(content):
             raise NamasteException("Content of Namaste file %s doesn't match tvalue %s" % (filepath, self.tvalue))
