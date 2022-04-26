@@ -68,8 +68,14 @@ class TestAll(unittest.TestCase):
         self.assertIn('W004', log.warns)
         log.clear()
         iv.validate({"id": "like:uri", "type": "wrong type", "digestAlgorithm": "my_digest"})
-        self.assertIn('E038', log.errors)
+        self.assertIn('E038a', log.errors)
         self.assertIn('E039', log.errors)
+        log.clear()
+        iv.validate({"id": "like:uri", "type": "wrong type", "digestAlgorithm": "my_digest"}, extract_spec_version=True)
+        self.assertIn('E038b', log.errors)
+        log.clear()
+        iv.validate({"id": "like:uri", "type": "https://ocfl.io/100.9/spec/#inventory", "digestAlgorithm": "my_digest"}, extract_spec_version=True)
+        self.assertIn('E038c', log.errors)
         iv = InventoryValidator(log=log, lax_digests=True)
         log.clear()
         iv.validate({"id": "like:uri", "type": "wrong type", "digestAlgorithm": "my_digest"})
@@ -279,7 +285,7 @@ class TestAll(unittest.TestCase):
         iv.check_digests_present_and_used(manifest, ['aaa', 'bbb'])
         self.assertEqual(len(log.errors), 0)
         iv.check_digests_present_and_used(manifest, ['aaa'])
-        self.assertIn('E050b', log.errors)
+        self.assertIn('E107', log.errors)
         log.clear()
         iv.check_digests_present_and_used(manifest, ['aaa', 'bbb', 'ccc'])
         self.assertIn('E050a', log.errors)
@@ -453,7 +459,7 @@ class TestAll(unittest.TestCase):
                            'inventory_E042b_unknown_version': ['E042b'],
                            'inventory_E042b_zero_padding_mismatch': ['E042b']}.items():
             filepath = 'extra_fixtures/bad-inventories/' + bad + '.json'
-            with open(filepath, 'r') as fh:
+            with open(filepath, 'r', encoding="utf-8") as fh:
                 inventory = json.load(fh)
             log = TLogger()
             iv = InventoryValidator(log=log)

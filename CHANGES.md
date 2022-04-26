@@ -1,13 +1,17 @@
 # ocfl-py changelog
 
-## 2021-??-?? v1.2.3
+## 2022-04-26 v1.3.0
 
+  * Add preliminary handling of OCFL v1.1 (https://github.com/zimeon/ocfl-py/issues/81)
   * Additional validation improvements:
     * Checks between version state in different version inventories
     * Check to see is extra directories look like version directories
     * Fix URI scheme syntax check (https://github.com/zimeon/ocfl-py/issues/75)
     * Check extensions directory in storage root (https://github.com/zimeon/ocfl-py/issues/76)
   * Use additional fixtures in https://github.com/OCFL/fixtures for tests
+  * Improve handling of inconsistent state between version inventories errors (E066, https://github.com/zimeon/ocfl-py/issues/85)
+  * Improve handling of fixity block issues (E056/E111, https://github.com/zimeon/ocfl-py/issues/79, https://github.com/zimeon/ocfl-py/issues/87)
+  * Running tests on Python 3.6, 3.7, 3.8, 3.9
 
 ## 2021-04-26 v1.2.2
 

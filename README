@@ -2,24 +2,27 @@
 ocfl-py - An OCFL implementation in Python
 ==========================================
 
-.. image:: https://travis-ci.com/zimeon/ocfl-py.svg?branch=main
-  :target: https://travis-ci.com/zimeon/ocfl-py
-.. image:: https://coveralls.io/repos/github/zimeon/ocfl-py/badge.svg?branch=main
-  :target: https://coveralls.io/github/zimeon/ocfl-py?branch=main
-
-Attempts to follow `OCFL specification v1.0
-<https://ocfl.io/1.0/spec/>`_, see `implementation status for errors and warnings
+`ocfl-py` is a Python reference implementation of the Oxford Common File Layout
+(OCFL). It also provides a number of command-line tools that may be useful for
+validating and manipulating OCFL Objects and OCFL Storage Roots. The code
+attempts to follow the current `Draft OCFL specification v1.1
+<https://ocfl.io/draft/spec/>`_ while retaining support for `v1.0
+<https://ocfl.io/1.0/spec/>`_. See `implementation status for errors and warnings
 <https://github.com/zimeon/ocfl-py/blob/main/docs/validation_status.md>`_ for
 details of validator support.
+
+See also `OCFL-Core
+<https://github.com/inveniosoftware/ocflcore>`_ which is another Python implementation
+of OCFL, designed to support the InvenioRDM repository, and `other OCFL implementations
+<https://github.com/OCFL/spec/wiki/Implementations>`_.
 
 Installing
 ----------
 
 This code requires Python 3.
 
-This code attempts to support the OCFL specification v1.0 and additional
-developments. To get the most up to date version check out the ``main``
-branch from github (or if you are reckless you can try the ``develop`` branch).
+This code attempts to support the OCFL specifications v1.1 draft and v1.0. To get
+the most up to date version check out the ``main`` branch from github.
 
 I hope to keep a fairly current version on `PyPI
 <https://pypi.org/project/ocfl-py/>`_, which can be installed or upgraded
@@ -33,7 +36,7 @@ The latest version is in the `main` branch on `github
 Use
 ---
 
-There should then be three scripts available:
+There should then be four command-line scripts available:
 
 - ``ocfl-validate.py`` - validate OCFL objects, OCFL storage roots or standalone OCFL inventory files
 - ``ocfl-object.py`` - build, manipulate, extract from or validate an OCFL object
@@ -60,7 +63,7 @@ for guidelines for contributing.
 Copyright and License
 ---------------------
 
-Copyright 2018--2021 Simeon Warner and `contributors
+Copyright 2018--2022 Simeon Warner and `contributors
 <https://github.com/zimeon/ocfl-py/graphs/contributors>`_.
 Provided under the MIT license, see `LICENSE.txt
 <https://github.com/zimeon/ocfl-py/blob/main/LICENSE.txt>`_.

@@ -41,6 +41,7 @@ class Validator():
         ]
         # The following actually initialized in initialize() method
         self.id = None
+        self.spec_version = None
         self.digest_algorithm = None
         self.content_directory = None
         self.inventory_digest_files = None
@@ -54,6 +55,7 @@ class Validator():
         Must be called between attempts to validate objects.
         """
         self.id = None
+        self.spec_version = '1.0'  # default to latest published version
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
         self.inventory_digest_files = {}  # index by version_dir, algorithms may differ
@@ -77,16 +79,34 @@ class Validator():
                 self.obj_fs = path
                 path = self.obj_fs.desc('')
         except fs.errors.CreateFailed:
-            self.log.error('E003c', path=path)
+            self.log.error('E003e', path=path)
             return False
-        # Object declaration
+        # Object declaration, set spec version number. If there are multiple declarations,
+        # look for the lastest object version then report any others as errors
         namastes = find_namastes(0, pyfs=self.obj_fs)
         if len(namastes) == 0:
-            self.log.error('E003a')
-        elif len(namastes) > 1:
-            self.log.error('E003b', files=len(namastes))
-        elif not namastes[0].content_ok(pyfs=self.obj_fs):
-            self.log.error('E007')
+            self.log.error('E003a', assumed_version=self.spec_version)
+        else:
+            spec_version = None
+            for namaste in namastes:
+                # Extract and check spec version number
+                this_file_version = None
+                for version in ('1.1', '1.0'):
+                    if namaste.filename == '0=ocfl_object_' + version:
+                        this_file_version = version
+                        break
+                if this_file_version is None:
+                    self.log.error('E006', filename=namaste.filename)
+                elif spec_version is None or this_file_version > spec_version:
+                    spec_version = this_file_version
+                    if not namaste.content_ok(pyfs=self.obj_fs):
+                        self.log.error('E007', filename=namaste.filename)
+            if spec_version is None:
+                self.log.error('E003c', assumed_version=self.spec_version)
+            else:
+                self.spec_version = spec_version
+                if len(namastes) > 1:
+                    self.log.error('E003b', files=len(namastes), using_version=self.spec_version)
         # Object root inventory file
         inv_file = 'inventory.json'
         if not self.obj_fs.exists(inv_file):
@@ -102,7 +122,7 @@ class Validator():
             self.digest_algorithm = inv_validator.digest_algorithm
             self.validate_inventory_digest(inv_file, self.digest_algorithm)
             # Object root
-            self.validate_object_root(all_versions)
+            self.validate_object_root(all_versions, already_checked=[namaste.filename for namaste in namastes])
             # Version inventory files
             (prior_manifest_digests, prior_fixity_digests) = self.validate_version_inventories(all_versions)
             if inventory_is_valid:
@@ -112,12 +132,17 @@ class Validator():
             pass
         return self.log.num_errors == 0
 
-    def validate_inventory(self, inv_file, where='root'):
+    def validate_inventory(self, inv_file, where='root', extract_spec_version=False):
         """Validate a given inventory file, record errors with self.log.error().
 
         Returns inventory object for use in later validation
         of object content. Does not look at anything else in the
         object itself.
+
+        where - used for reporting messages of where inventory is in object
+
+        extract_spec_version - if set True will attempt to take spec_version from the
+            inventory itself instead of using the spec_version provided
         """
         try:
             with self.obj_fs.openbin(inv_file, 'r') as fh:
@@ -126,8 +151,9 @@ class Validator():
             self.log.error('E033', where=where, explanation=str(e))
             raise ValidatorAbortException
         inv_validator = InventoryValidator(log=self.log, where=where,
-                                           lax_digests=self.lax_digests)
-        inv_validator.validate(inventory)
+                                           lax_digests=self.lax_digests,
+                                           spec_version=self.spec_version)
+        inv_validator.validate(inventory, extract_spec_version=extract_spec_version)
         return inventory, inv_validator
 
     def validate_inventory_digest(self, inv_file, digest_algorithm, where="root"):
@@ -159,17 +185,17 @@ class Validator():
         else:
             self.log.error("E058b", inv_digest_file=inv_digest_file)
 
-    def validate_object_root(self, version_dirs):
+    def validate_object_root(self, version_dirs, already_checked):
         """Validate object root.
 
         All expected_files must be present and no other files.
         All expected_dirs must be present and no other dirs.
         """
-        expected_files = ['0=ocfl_object_1.0', 'inventory.json',
+        expected_files = ['0=ocfl_object_' + self.spec_version, 'inventory.json',
                           'inventory.json.' + self.digest_algorithm]
         for entry in self.obj_fs.scandir(''):
             if entry.is_file:
-                if entry.name not in expected_files:
+                if entry.name not in expected_files and entry.name not in already_checked:
                     self.log.error('E001a', file=entry.name)
             elif entry.is_dir:
                 if entry.name in version_dirs:

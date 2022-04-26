@@ -79,12 +79,12 @@ class TestAll(unittest.TestCase):
         self.assertRaises(StoreException, s.check_root_structure)
         # Wrong declaration
         decl = os.path.join(tempdir, '0=something_else')
-        with open(decl, 'w') as fh:
+        with open(decl, 'w', encoding="utf-8") as fh:
             fh.close()
         self.assertRaises(StoreException, s.check_root_structure)
         # Two declarations
         decl2 = os.path.join(tempdir, '0=ocfl_1.0')
-        with open(decl2, 'w') as fh:
+        with open(decl2, 'w', encoding="utf-8") as fh:
             fh.write("not correct")
             fh.close()
         self.assertRaises(StoreException, s.check_root_structure)
@@ -93,7 +93,7 @@ class TestAll(unittest.TestCase):
         self.assertRaises(StoreException, s.check_root_structure)
         os.remove(decl2)
         # All good
-        with open(decl2, 'w') as fh:
+        with open(decl2, 'w', encoding="utf-8") as fh:
             fh.write("ocfl_1.0\n")
             fh.close()
         self.assertTrue(s.check_root_structure())

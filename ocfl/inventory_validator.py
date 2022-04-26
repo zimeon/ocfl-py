@@ -10,10 +10,10 @@ from .validation_logger import ValidationLogger
 from .w3c_datetime import str_to_datetime
 
 
-def get_file_map(inventory, version):
-    """Get a map of files in state to files on disk for version in inventory.
+def get_logical_path_map(inventory, version):
+    """Get a map of logical paths in state to files on disk for version in inventory.
 
-    Returns a dictionary: file_in_state -> set(content_files)
+    Returns a dictionary: logical_path_in_state -> set(content_files)
 
     The set of content_files may includes references to duplicate files in
     later versions than the version being described.
@@ -32,10 +32,11 @@ class InventoryValidator():
     """Class for OCFL Inventory Validator."""
 
     def __init__(self, log=None, where='???',
-                 lax_digests=False):
+                 lax_digests=False, spec_version='1.0'):
         """Initialize OCFL Inventory Validator."""
         self.log = ValidationLogger() if log is None else log
         self.where = where
+        self.spec_version = spec_version
         # Object state
         self.inventory = None
         self.id = None
@@ -47,6 +48,8 @@ class InventoryValidator():
         self.head = 'UNKNOWN'
         # Validation control
         self.lax_digests = lax_digests
+        # Configuration
+        self.spec_versions_supported = ('1.0', '1.1')
 
     def error(self, code, **args):
         """Error with added context."""
@@ -56,8 +59,13 @@ class InventoryValidator():
         """Warning with added context."""
         self.log.warning(code, where=self.where, **args)
 
-    def validate(self, inventory):
-        """Validate a given inventory."""
+    def validate(self, inventory, extract_spec_version=False):
+        """Validate a given inventory.
+
+        If extract_spec_version is True then will look at the type value to determine
+        the specification version. In the case that there is no type value or it isn't
+        valid, then other tests will be based on the version given in self.spec_version.
+        """
         # Basic structure
         self.inventory = inventory
         if 'id' in inventory:
@@ -74,8 +82,18 @@ class InventoryValidator():
             self.error("E036a")
         if 'type' not in inventory:
             self.error("E036b")
-        elif inventory['type'] != 'https://ocfl.io/1.0/spec/#inventory':
-            self.error("E038")
+        elif not isinstance(inventory['type'], str):
+            self.error("E999")
+        elif extract_spec_version:
+            m = re.match(r'''https://ocfl.io/(\d+.\d)/spec/#inventory''', inventory['type'])
+            if not m:
+                self.error('E038b', got=inventory['type'], assumed_spec_version=self.spec_version)
+            elif m.group(1) in self.spec_versions_supported:
+                self.spec_version = m.group(1)
+            else:
+                self.error("E038c", got=m.group(1), assumed_spec_version=self.spec_version)
+        elif inventory['type'] != 'https://ocfl.io/' + self.spec_version + '/spec/#inventory':
+            self.error("E038a", expected='https://ocfl.io/' + self.spec_version + '/spec/#inventory', got=inventory['type'])
         if 'digestAlgorithm' not in inventory:
             self.error("E036c")
         elif inventory['digestAlgorithm'] == 'sha512':
@@ -178,7 +196,10 @@ class InventoryValidator():
         listed in the manifest are referenced.
         """
         if not isinstance(fixity, dict):
-            self.error('E056a')
+            # The value of fixity must be a JSON object. In v1.0 I catch not an object
+            # as part of E056 but this was clarified as E111 in v1.1. The value may
+            # be an empty object in either case
+            self.error('E056a' if self.spec_version == '1.0' else 'E111')
         else:
             for digest_algorithm in fixity:
                 known_digest = True
@@ -381,7 +402,7 @@ class InventoryValidator():
             self.error("E050a", digests=", ".join(sorted(not_in_manifest)))
         not_in_state = in_manifest.difference(in_state)
         if len(not_in_state) > 0:
-            self.error("E050b", digests=", ".join(sorted(not_in_state)))
+            self.error("E107", digests=", ".join(sorted(not_in_state)))
 
     def digest_regex(self):
         """Return regex for validating un-normalized digest format."""
@@ -442,11 +463,11 @@ class InventoryValidator():
     def validate_as_prior_version(self, prior):
         """Check that prior is a valid prior version of the current inventory object.
 
-        The input prior is also expected to be an InventoryValidator object and
-        both self and prior inventories are assumed to have been checked for
+        The input variable prior is also expected to be an InventoryValidator object
+        and both self and prior inventories are assumed to have been checked for
         internal consistency.
         """
-        # Must have a subset of versions which also check zero padding format etc.
+        # Must have a subset of versions which also checks zero padding format etc.
         if not set(prior.all_versions) < set(self.all_versions):
             self.error('E066a', prior_head=prior.head)
         else:
@@ -458,20 +479,26 @@ class InventoryValidator():
                 # direct check on whether the state blocks match
                 if prior.digest_algorithm == self.digest_algorithm:
                     self.compare_states_for_version(prior, version)
-                # Now check the mappings from state to content files which must
+                # Now check the mappings from state to logical path, which must
                 # be consistent even if the digestAlgorithm is different between
-                # versions
-                prior_map = get_file_map(prior.inventory, version)
-                self_map = get_file_map(self.inventory, version)
-                if prior_map.keys() != self_map.keys():
-                    self.error('E066b', version=version, prior_head=prior.head)
+                # versions. Get maps from logical paths to files on disk:
+                prior_map = get_logical_path_map(prior.inventory, version)
+                self_map = get_logical_path_map(self.inventory, version)
+                # Look first for differences in logical paths listed
+                only_in_prior = prior_map.keys() - self_map.keys()
+                only_in_self = self_map.keys() - prior_map.keys()
+                if only_in_prior or only_in_self:
+                    if only_in_prior:
+                        self.error('E066b', version=version, prior_head=prior.head, only_in=prior.head, logical_paths=','.join(only_in_prior))
+                    if only_in_self:
+                        self.error('E066b', version=version, prior_head=prior.head, only_in=self.where, logical_paths=','.join(only_in_self))
                 else:
-                    # Check them all...
-                    for file in prior_map:
-                        if not prior_map[file].issubset(self_map[file]):
+                    # Check them all in details - digests must match
+                    for logical_path, this_map in prior_map.items():
+                        if not this_map.issubset(self_map[logical_path]):
                             self.error('E066c', version=version, prior_head=prior.head,
-                                       file=file, prior_content=','.join(prior_map[file]),
-                                       current_content=','.join(self_map[file]))
+                                       logical_path=logical_path, prior_content=','.join(this_map),
+                                       current_content=','.join(self_map[logical_path]))
                 # Check metadata
                 prior_version = prior.inventory['versions'][version]
                 self_version = self.inventory['versions'][version]
@@ -482,7 +509,8 @@ class InventoryValidator():
     def compare_states_for_version(self, prior, version):
         """Compare state blocks for version between self and prior.
 
-        The digest algorithm must be the same in both, do not call otherwise!
+        Assumes the same digest algorithm in both, do not call otherwise!
+
         Looks only for digests that appear in one but not in the other, the code
         in validate_as_prior_version(..) does a check for whether the same sets
         of logical files appear and we don't want to duplicate an error message

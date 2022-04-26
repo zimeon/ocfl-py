@@ -25,7 +25,9 @@ def find_namastes(d, dir='', pyfs=None, limit=10):
     """Find NAMASTE files with tag d in dir, return list of Namaste objects.
 
     limit sets a limit on the number of Namaste objects returned, a NamasteException
-    will be raised if more than limit files with tag d are found.
+    will be raised if more than limit files with tag d are found. Returns the values
+    sorter by filename to ensure consistent behaviour when multiple match files are
+    present.
     """
     prefix = str(d) + '='
     if pyfs is not None:
@@ -34,7 +36,7 @@ def find_namastes(d, dir='', pyfs=None, limit=10):
         filenames = [f for f in os.listdir(dir) if f.startswith(prefix)]
     if len(filenames) > limit:
         raise NamasteException("Found too many Namaste files with tag %s in %s" % (d, dir))
-    return [Namaste(d, tvalue=filename[len(prefix):]) for filename in filenames]
+    return [Namaste(d, tvalue=filename[len(prefix):]) for filename in sorted(filenames)]
 
 
 def get_namaste(d, dir):
@@ -96,7 +98,7 @@ class Namaste():
         if pyfs is not None:
             pyfs.writetext(fs.path.join(dir, self.filename), self.content + "\n")
         else:
-            with open(os.path.join(dir, self.filename), 'w') as fh:
+            with open(os.path.join(dir, self.filename), 'w', encoding="utf-8") as fh:
                 fh.write(self.content + "\n")
 
     def check_content(self, dir='', pyfs=None):
@@ -112,7 +114,7 @@ class Namaste():
         else:
             if not os.path.isfile(filepath):
                 raise NamasteException("Namaste file %s does not exist!" % (filepath))
-            with open(filepath, 'r') as fh:
+            with open(filepath, 'r', encoding="utf-8") as fh:
                 content = fh.read()
         if self.tvalue != self._tr_func(content):
             raise NamasteException("Content of Namaste file %s doesn't match tvalue %s" % (filepath, self.tvalue))

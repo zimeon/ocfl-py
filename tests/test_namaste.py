@@ -78,7 +78,7 @@ class TestAll(unittest.TestCase):
         n.write(tempdir)
         filepath = os.path.join(tempdir, '0=balloon')
         self.assertTrue(os.path.isfile(filepath))
-        with open(filepath, 'r') as fh:
+        with open(filepath, 'r', encoding="utf-8") as fh:
             self.assertEqual(fh.read(), 'balloon\n')
         # With fs filesystem
         tmpfs = fs.tempfs.TempFS()
