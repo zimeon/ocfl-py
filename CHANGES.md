@@ -1,6 +1,6 @@
 # ocfl-py changelog
 
-## 2022-??-?? v1.3.0
+## 2022-04-26 v1.3.0
 
   * Add preliminary handling of OCFL v1.1 (https://github.com/zimeon/ocfl-py/issues/81)
   * Additional validation improvements:
