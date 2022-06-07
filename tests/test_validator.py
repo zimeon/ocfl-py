@@ -154,6 +154,7 @@ class TestAll(unittest.TestCase):
                            'E100_E099_fixity_invalid_content_paths': ['E057d'],  # E057 OK, different test approach
                            'E100_E099_manifest_invalid_content_paths': ['E099', 'E100'],
                            'E101_non_unique_content_paths': ['E101a'],
+                           'E103_older_spec_v2': ['E103'],
                            'E107_file_in_manifest_not_used': ['E107'],
                            'E111_null_fixity': ['E111']
                            }.items():
