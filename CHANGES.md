@@ -1,5 +1,9 @@
 # ocfl-py changelog
 
+## 2022-XX-XX v1.3.1
+
+  * Drop Python 3.6 from testing
+
 ## 2022-04-26 v1.3.0
 
   * Add preliminary handling of OCFL v1.1 (https://github.com/zimeon/ocfl-py/issues/81)
