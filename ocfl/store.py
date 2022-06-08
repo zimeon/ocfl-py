@@ -202,8 +202,8 @@ class Store():
         for dirpath in self.object_paths():
             with ocfl_opendir(self.root_fs, dirpath) as obj_fs:
                 # Parse inventory to extract id
-                id = Object(obj_fs=obj_fs).id_from_inventory()
-                print("%s -- id=%s" % (dirpath, id))
+                identifier = Object(obj_fs=obj_fs).id_from_inventory()
+                print("%s -- id=%s" % (dirpath, identifier))
                 self.num_objects += 1
                 # FIXME - maybe do some more stuff in here
         logging.info("Found %d OCFL Objects under root %s", self.num_objects, self.root)
@@ -226,7 +226,7 @@ class Store():
                     good_objects += 1
                 else:
                     logging.info("Object at %s in INVALID", dirpath)
-                messages = validator.__str__(prefix='[[' + dirpath + ']]')  # FIXME - how to show warnings sensibly?
+                messages = validator.__str__(prefix='[[' + dirpath + ']]')  # pylint: disable=unnecessary-dunder-call
                 if messages != '':
                     print(messages)
                 num_objects += 1

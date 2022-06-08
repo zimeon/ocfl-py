@@ -31,7 +31,7 @@ class Coverage(ShellCommand):
 
     description = "run coverage"
 
-    def run(self):  # pylint: disable=no-self-use
+    def run(self):
         """Run coverage program."""
         os.system("coverage run --source=ocfl setup.py test")
         os.system("coverage report")

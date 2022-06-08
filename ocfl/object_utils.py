@@ -62,15 +62,15 @@ def next_version(version):
     m = re.match(r'''v((\d)\d*)$''', version)
     if not m:
         raise ObjectException("Bad version '%s'" % version)
-    next = int(m.group(1)) + 1
+    next_n = int(m.group(1)) + 1
     if m.group(2) == '0':
         # Zero-padded version
-        next_v = ('v0%0' + str(len(version) - 2) + 'd') % next
+        next_v = ('v0%0' + str(len(version) - 2) + 'd') % next_n
         if len(next_v) != len(version):
             raise ObjectException("Version number overflow for zero-padded version %d to %d" % (version, next_v))
         return next_v
     # Not zero-padded
-    return 'v' + str(next)
+    return 'v' + str(next_n)
 
 
 def remove_first_directory(path):

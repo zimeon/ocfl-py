@@ -20,8 +20,8 @@ def _file_digest(pyfs, filename, digester):
     support the .update() and .hexdigest() methods.
     """
     if pyfs is None:
-        (dir, name) = fs.path.split(filename)
-        with open_fs(dir) as dir_fs:
+        (dir_name, name) = fs.path.split(filename)
+        with open_fs(dir_name) as dir_fs:
             _fs_digest(dir_fs, name, digester)
     else:
         _fs_digest(pyfs, filename, digester)
