@@ -62,9 +62,13 @@ class Validator():
         self.root_inv_validator = None
         self.obj_fs = None
 
-    def __str__(self, prefix=''):
-        """Make string representation of validation log."""
-        return self.log.__str__(prefix=prefix)
+    def status_str(self, prefix=''):
+        """Return string representation of validation log, with optional prefix"""
+        return self.log.status_str(prefix=prefix)
+
+    def __str__(self):
+        """Return string representation of validation log."""
+        return self.status_str()
 
     def validate(self, path):
         """Validate OCFL object at path or pyfs root.

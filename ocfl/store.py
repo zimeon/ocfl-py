@@ -226,7 +226,7 @@ class Store():
                     good_objects += 1
                 else:
                     logging.info("Object at %s in INVALID", dirpath)
-                messages = validator.__str__(prefix='[[' + dirpath + ']]')  # pylint: disable=unnecessary-dunder-call
+                messages = validator.status_str(prefix='[[' + dirpath + ']]')
                 if messages != '':
                     print(messages)
                 num_objects += 1
