@@ -63,7 +63,7 @@ class Validator():
         self.obj_fs = None
 
     def status_str(self, prefix=''):
-        """Return string representation of validation log, with optional prefix"""
+        """Return string representation of validation log, with optional prefix."""
         return self.log.status_str(prefix=prefix)
 
     def __str__(self):
@@ -236,19 +236,26 @@ class Validator():
 
         Also keep a record of any content digests different from those in the root inventory
         so that we can also check them when validating the content.
+
+        version_dirs is an array of version directory names and is assumed to be in
+        version sequence (1, 2, 3...).
         """
         prior_manifest_digests = {}  # file -> algorithm -> digest -> [versions]
         prior_fixity_digests = {}  # file -> algorithm -> digest -> [versions]
         if len(version_dirs) == 0:
             return prior_manifest_digests, prior_fixity_digests
         last_version = version_dirs[-1]
+        prev_version_dir = "NONE"  # will be set for first directory with inventory
+        prev_spec_version = '1.0'  # lowest version
         for version_dir in version_dirs:
             inv_file = fs.path.join(version_dir, 'inventory.json')
             if not self.obj_fs.exists(inv_file):
                 self.log.warning('W010', where=version_dir)
-            elif version_dir == last_version:
+                continue
+            # There is an inventory file for this version directory, check it
+            if version_dir == last_version:
                 # Don't validate in this case. Per the spec the inventory in the last version
-                # MUST be identical to the copy in the object root
+                # MUST be identical to the copy in the object root, just check that
                 root_inv_file = 'inventory.json'
                 if not ocfl_files_identical(self.obj_fs, inv_file, root_inv_file):
                     self.log.error('E064', root_inv_file=root_inv_file, inv_file=inv_file)
@@ -257,9 +264,13 @@ class Validator():
                     # which file has the incorrect digest if they don't match
                     self.validate_inventory_digest(inv_file, self.digest_algorithm, where=version_dir)
                 self.inventory_digest_files[version_dir] = 'inventory.json.' + self.digest_algorithm
+                this_spec_version = self.spec_version
             else:
                 # Note that inventories in prior versions may use different digest algorithms
-                version_inventory, inv_validator = self.validate_inventory(inv_file, where=version_dir)
+                # from the current invenotory. Also,
+                # an may accord with the same or earlier versions of the specification
+                version_inventory, inv_validator = self.validate_inventory(inv_file, where=version_dir, extract_spec_version=True)
+                this_spec_version = inv_validator.spec_version
                 digest_algorithm = inv_validator.digest_algorithm
                 self.validate_inventory_digest(inv_file, digest_algorithm, where=version_dir)
                 self.inventory_digest_files[version_dir] = 'inventory.json.' + digest_algorithm
@@ -304,6 +315,13 @@ class Validator():
                                 if digest not in prior_fixity_digests[filepath][digest_algorithm]:
                                     prior_fixity_digests[filepath][digest_algorithm][digest] = []
                                 prior_fixity_digests[filepath][digest_algorithm][digest].append(version_dir)
+            # We are validating the inventories in sequence and each new version must
+            # follow the same or later spec version to previous inventories
+            if prev_spec_version > this_spec_version:
+                self.log.error('E103', where=version_dir, this_spec_version=this_spec_version,
+                               prev_version_dir=prev_version_dir, prev_spec_version=prev_spec_version)
+            prev_version_dir = version_dir
+            prev_spec_version = this_spec_version
         return prior_manifest_digests, prior_fixity_digests
 
     def validate_content(self, inventory, version_dirs, prior_manifest_digests, prior_fixity_digests):
