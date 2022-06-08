@@ -63,7 +63,7 @@ class Validator():
         self.obj_fs = None
 
     def status_str(self, prefix=''):
-        """Return string representation of validation log, with optional prefix"""
+        """Return string representation of validation log, with optional prefix."""
         return self.log.status_str(prefix=prefix)
 
     def __str__(self):
