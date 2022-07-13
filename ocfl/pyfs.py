@@ -21,8 +21,11 @@ from fs_s3fs import S3FS
 def open_fs(fs_url, **kwargs):
     """Open a pyfs filesystem.
 
-    Like fs.open_fs will simply return FS if an instance if given as
-    the fs_url parameter.
+    Like fs.open_fs will simply return FS if an instance is given as
+    the fs_url parameter. Otherwwise will attempt to open the fs_url
+    as either a local filesystem path (no `://` in string) or else
+    as a FS filesystem with special handling for the case of an S3
+    filesystem which has
     """
     if isinstance(fs_url, fs.base.FS):
         return fs_url
@@ -42,8 +45,9 @@ def open_fs(fs_url, **kwargs):
         bucket_name, _, dir_path = parse_result.resource.partition("/")
         if not bucket_name:
             raise fs.opener.errors.OpenerError("invalid bucket name in '{}'".format(fs_url))
-        # Instead of allowing this to be turned on by a strict=1 in the
-        # URL query params, allow it to be turned off by strict!=1
+        # Instead of the default opener behavior where strict is True unless
+        # explicitly set !=1 in the URL query paremeter, we set False unless
+        # explicity set via strict=1 in the URL query params
         strict = (
             parse_result.params["strict"] == "1"
             if "strict" in parse_result.params
