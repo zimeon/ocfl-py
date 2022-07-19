@@ -161,8 +161,8 @@ Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` cont
 INFO:ocfl.object:Extracted v4 into tmp/extracted_v4
 INFO:bagit:Creating bag for directory tmp/extracted_v4
 INFO:bagit:Creating data directory
-INFO:bagit:Moving my_content to tmp/extracted_v4/tmptldrzvei/my_content
-INFO:bagit:Moving tmp/extracted_v4/tmptldrzvei to data
+INFO:bagit:Moving my_content to tmp/extracted_v4/tmp75tr8ac5/my_content
+INFO:bagit:Moving tmp/extracted_v4/tmp75tr8ac5 to data
 INFO:bagit:Using 1 processes to generate manifests: sha512
 INFO:bagit:Generating manifest lines for file data/my_content/dracula.txt
 INFO:bagit:Generating manifest lines for file data/my_content/dunwich.txt
