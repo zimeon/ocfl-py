@@ -36,7 +36,7 @@ jobs:
         run: |
           pytest
   documentation_job:
-    needs: tests
+    needs: tests_job
     runs-on: ubuntu-latest
     steps:
       - run: gh pr comment $PR --body "Tests succeeded, hurrah!"
