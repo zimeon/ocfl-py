@@ -1,9 +1,9 @@
-name: GHitHub actions workflow for ocfl-py
+name: Push workflow for ocfl-py
 
 on: [push]
 
 jobs:
-  tests:
+  tests_job:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -13,7 +13,7 @@ jobs:
         with:
           submodules: true
           recursive: true
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
@@ -35,8 +35,8 @@ jobs:
       - name: Test with pytest
         run: |
           pytest
-  documentation:
-    need: tests
+  documentation_job:
+    needs: tests
     runs-on: ubuntu-latest
     steps:
       - run: gh pr comment $PR --body "Tests succeeded, hurrah!"
