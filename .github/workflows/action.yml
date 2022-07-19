@@ -15,7 +15,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-          recursive: true
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
@@ -45,7 +44,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-          recursive: true
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
@@ -70,7 +68,7 @@ jobs:
           gh pr comment $PR --body "Tests succeeded. Updating extracted errors codes and demo documentation..."
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git commit -m "Update error codes and demo docs" docs
+          git commit -m "Update error codes and demo docs [actions skip]" docs
           git push --verbose
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
