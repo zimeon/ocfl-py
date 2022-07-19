@@ -37,7 +37,6 @@ class TestAll(unittest.TestCase):
                            'E017_invalid_content_dir': ['E017'],
                            'E019_inconsistent_content_dir': ['E042a'],  # FIXME - What should error be?
                            'E023_extra_file': ['E023a'],
-                           'E023_missing_file': ['E092b'],
                            'E023_old_manifest_missing_entries': ['E023b'],
                            'E024_empty_dir_in_content': ['E024'],
                            'E025_wrong_digest_algorithm': ['E025a'],
@@ -116,7 +115,6 @@ class TestAll(unittest.TestCase):
                            'E017_invalid_content_dir': ['E017'],
                            'E019_inconsistent_content_dir': ['E042a'],  # FIXME - What should error be?
                            'E023_extra_file': ['E023a'],
-                           'E023_missing_file': ['E092b'],
                            'E023_old_manifest_missing_entries': ['E023b'],
                            'E025_wrong_digest_algorithm': ['E025a'],
                            'E036_no_id': ['E036a'],
