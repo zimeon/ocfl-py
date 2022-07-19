@@ -1,6 +1,6 @@
 # OCFL Object Root Store manipulation script
 
-_Output from `/home/runner/work/ocfl-py/ocfl-py/tests/test_demo_ocfl_store_script.py`._
+_Output from `tests/test_demo_ocfl_store_script.py`._
 
 ## 1. Test showing version number.
 

@@ -75,5 +75,6 @@ class DemoTestCase(unittest.TestCase):
         """Run tests in demo mode."""
         cls.demo = True
         print("# " + title + "\n")
-        print("_Output from `" + main.__file__ + "`._")
+        script_name = re.sub(r'''^.*/tests/''', 'tests/', main.__file__)
+        print("_Output from `" + script_name + "`._")
         unittest.main(verbosity=0)  # No dots added while running
