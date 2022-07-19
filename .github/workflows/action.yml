@@ -68,6 +68,8 @@ jobs:
       - name: Update github
         run: |
           gh pr comment $PR --body "Tests succeeded. Updating extracted errors codes and demo documentation..."
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git commit -m "Update error codes and demo docs" docs
           git push --verbose
         env:
