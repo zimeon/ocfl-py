@@ -25,7 +25,7 @@ Now that we have the object it is of course valid.
 
 ```
 > python ocfl-validate.py tmp/obj
-INFO:ocfl.object:OCFL object at tmp/obj is VALID
+INFO:ocfl.object:OCFL v1.0 Object at tmp/obj is VALID
 ```
 
 
@@ -35,7 +35,7 @@ Looking inside the object we see `v1` with the expected 2 content files.
 
 ```
 > python ocfl-object.py --show --objdir tmp/obj
-WARNING:ocfl.object:OCFL object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED) 
+WARNING:ocfl.object:OCFL v1.0 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
 WARNING:ocfl.object:Object tree
 [tmp/obj]
 ├── 0=ocfl_object_1.0 
@@ -73,7 +73,7 @@ Looking inside the object we now see `v1` and `v2`. There are no content files i
 
 ```
 > python ocfl-object.py --show --objdir tmp/obj
-WARNING:ocfl.object:OCFL object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED) 
+WARNING:ocfl.object:OCFL v1.0 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
 WARNING:ocfl.object:Object tree
 [tmp/obj]
 ├── 0=ocfl_object_1.0 
@@ -113,7 +113,7 @@ Looking inside again we see that `v3` does add another content file.
 
 ```
 > python ocfl-object.py --show --objdir tmp/obj
-WARNING:ocfl.object:OCFL object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED) 
+WARNING:ocfl.object:OCFL v1.0 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
 WARNING:ocfl.object:Object tree
 [tmp/obj]
 ├── 0=ocfl_object_1.0 

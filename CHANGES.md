@@ -3,6 +3,8 @@
 ## 2022-XX-XX v1.3.1
 
   * Drop Python 3.6 from testing
+  * Adjust for removed `E023_missing_file` fixture (https://github.com/OCFL/fixtures/pull/99)
+  * Add note of specification version number in validation output
 
 ## 2022-04-26 v1.3.0
 
