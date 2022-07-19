@@ -1,0 +1,35 @@
+name: Tests for ocfl-py
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8", "3.9"]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          recursive: true
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pycodestyle pydocstyle pylint  # For testing and linting
+      - name: Lint with pycodestyle
+        run: |
+          pycodestyle --ignore=E501,W503 *.py ocfl tests
+      - name: Lint with pydocstyle
+        run: |
+          pydocstyle *.py ocfl tests
+      - name: Lint with pylint
+        run: |
+          pylint --disable=line-too-long,raise-missing-from,fixme,redefined-builtin,invalid-name,consider-using-f-string,too-many-instance-attributes,too-many-return-statements,too-many-branches,too-many-arguments,too-many-locals,too-many-statements,too-many-nested-blocks *.py ocfl tests
+      - name: Test with pytest
+        run: |
+          pytest
