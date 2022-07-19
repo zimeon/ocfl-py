@@ -1,6 +1,9 @@
 name: Push workflow for ocfl-py
 
-on: [push]
+on:
+  push:
+    branches-ignore:
+      - "main"
 
 jobs:
   tests_job:
@@ -39,6 +42,21 @@ jobs:
     needs: tests_job
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Python "3.9"
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.9"
+          cache: 'pip'
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          recursive: true
+      - name: Update error codes
+        run: |
+          ./extract_codes.py
+      - name: Build demo documenation
+        run: |
+          ./build_demo_docs.sh
       - run: gh pr comment $PR --body "Tests succeeded, hurrah!"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
