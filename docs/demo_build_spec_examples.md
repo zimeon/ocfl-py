@@ -1,6 +1,6 @@
 # Build the specification examples
 
-_Output from `tests/test_demo_build_spec_examples.py`._
+_Output from `/home/runner/work/ocfl-py/ocfl-py/tests/test_demo_build_spec_examples.py`._
 
 ## 1. Test for minumal example.
 
@@ -90,7 +90,7 @@ WARNING:ocfl.object:### Inventory for v1{
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2022-07-19T14:10:17.338637Z",
+      "created": "2022-07-19T16:55:41.572414Z",
       "state": {
         "7dcc352f96c56dc...c31": [
           "foo/bar.xml"
@@ -157,7 +157,7 @@ WARNING:ocfl.object:### Inventory for v2{
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2022-07-19T14:10:17.338637Z",
+      "created": "2022-07-19T16:55:41.572414Z",
       "state": {
         "7dcc352f96c56dc...c31": [
           "foo/bar.xml"
@@ -171,7 +171,7 @@ WARNING:ocfl.object:### Inventory for v2{
       }
     },
     "v2": {
-      "created": "2022-07-19T14:10:17.340331Z",
+      "created": "2022-07-19T16:55:41.573140Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"
@@ -236,7 +236,7 @@ WARNING:ocfl.object:### Inventory for v3{
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2022-07-19T14:10:17.338637Z",
+      "created": "2022-07-19T16:55:41.572414Z",
       "state": {
         "7dcc352f96c56dc...c31": [
           "foo/bar.xml"
@@ -250,7 +250,7 @@ WARNING:ocfl.object:### Inventory for v3{
       }
     },
     "v2": {
-      "created": "2022-07-19T14:10:17.340331Z",
+      "created": "2022-07-19T16:55:41.573140Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"
@@ -262,7 +262,7 @@ WARNING:ocfl.object:### Inventory for v3{
       }
     },
     "v3": {
-      "created": "2022-07-19T14:10:17.341567Z",
+      "created": "2022-07-19T16:55:41.573676Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"

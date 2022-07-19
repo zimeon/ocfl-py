@@ -38,7 +38,7 @@ class Code():
     def desc_links(self, suffix):
         """Generate description and link for this suffix in code."""
         if len(self.suffixes[suffix]['link']) > 0:
-            links = ' '.join(self.suffixes[suffix]['link'])
+            links = ' '.join(sorted(self.suffixes[suffix]['link']))
         else:
             links = "_Not implemented_"
         desc = self.suffixes[suffix]['desc'] or "**Missing description**"
