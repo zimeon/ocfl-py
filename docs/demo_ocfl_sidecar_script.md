@@ -1,6 +1,6 @@
 # OCFL Sidecar creation and update script
 
-_Output from `tests/test_demo_ocfl_sidecar_script.py`._
+_Output from `/home/runner/work/ocfl-py/ocfl-py/tests/test_demo_ocfl_sidecar_script.py`._
 
 ## 1. Test showing version number.
 
@@ -28,7 +28,7 @@ mkdir: created directory 'tmp/obj'
 
 ```
 > cp -v fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json tmp/obj
-fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json -> tmp/obj/inventory.json
+'fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json' -> 'tmp/obj/inventory.json'
 ```
 
 
