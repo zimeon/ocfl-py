@@ -1,6 +1,6 @@
 name: Tests for ocfl-py
-jobs:
-  build:
+runs:
+    using: "composite"
     steps:
       - name: Install dependencies
         run: |

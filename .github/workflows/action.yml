@@ -3,7 +3,7 @@ name: GHitHub actions workflow for ocfl-py
 on: [push]
 
 jobs:
-  build:
+  tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -19,3 +19,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
       - uses: ./.github/actions/run-tests
+  documentation:
+    need: tests
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh pr comment $PR --body "Tests succeeded, hurrah!"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ github.event.pr.html_url }}
