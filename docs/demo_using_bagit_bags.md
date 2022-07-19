@@ -1,6 +1,6 @@
 # OCFL Object manipulation using Bagit bags to import and export versions
 
-_Output from `/home/runner/work/ocfl-py/ocfl-py/tests/test_demo_using_bagit_bags.py`._
+_Output from `tests/test_demo_using_bagit_bags.py`._
 
 ## 1. Test building from bags.
 
@@ -161,8 +161,8 @@ Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` cont
 INFO:ocfl.object:Extracted v4 into tmp/extracted_v4
 INFO:bagit:Creating bag for directory tmp/extracted_v4
 INFO:bagit:Creating data directory
-INFO:bagit:Moving my_content to tmp/extracted_v4/tmpwlknrq55/my_content
-INFO:bagit:Moving tmp/extracted_v4/tmpwlknrq55 to data
+INFO:bagit:Moving my_content to tmp/extracted_v4/tmpfb2yg195/my_content
+INFO:bagit:Moving tmp/extracted_v4/tmpfb2yg195 to data
 INFO:bagit:Using 1 processes to generate manifests: sha512
 INFO:bagit:Generating manifest lines for file data/my_content/dracula.txt
 INFO:bagit:Generating manifest lines for file data/my_content/dunwich.txt

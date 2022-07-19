@@ -1,6 +1,6 @@
 # OCFL Object manipulation script
 
-_Output from `/home/runner/work/ocfl-py/ocfl-py/tests/test_demo_ocfl_object_script.py`._
+_Output from `tests/test_demo_ocfl_object_script.py`._
 
 ## 1. Test showing version number.
 
@@ -34,7 +34,7 @@ WARNING:ocfl.object:### Inventory for v1{
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2022-07-19T16:55:42.388410Z",
+      "created": "2022-07-19T17:11:36.941914Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -65,7 +65,7 @@ WARNING:ocfl.object:### Inventory for v1{
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2022-07-19T16:55:42.646580Z",
+      "created": "2022-07-19T17:11:37.242050Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -90,7 +90,7 @@ WARNING:ocfl.object:### Inventory for v2{
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2022-07-19T16:55:42.646580Z",
+      "created": "2022-07-19T17:11:37.242050Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -98,7 +98,7 @@ WARNING:ocfl.object:### Inventory for v2{
       }
     },
     "v2": {
-      "created": "2022-07-19T16:55:42.647111Z",
+      "created": "2022-07-19T17:11:37.242683Z",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
           "a_file.txt"
@@ -123,7 +123,7 @@ WARNING:ocfl.object:### Inventory for v3{
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2022-07-19T16:55:42.646580Z",
+      "created": "2022-07-19T17:11:37.242050Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -131,7 +131,7 @@ WARNING:ocfl.object:### Inventory for v3{
       }
     },
     "v2": {
-      "created": "2022-07-19T16:55:42.647111Z",
+      "created": "2022-07-19T17:11:37.242683Z",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
           "a_file.txt"
@@ -139,7 +139,7 @@ WARNING:ocfl.object:### Inventory for v3{
       }
     },
     "v3": {
-      "created": "2022-07-19T16:55:42.647426Z",
+      "created": "2022-07-19T17:11:37.243052Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
