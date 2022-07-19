@@ -469,10 +469,9 @@ class Object():
                               check_digests=False,
                               lax_digests=self.lax_digests)
         passed = validator.validate(objdir)
-        if passed:
-            self.log.warning("OCFL object at %s has VALID STRUCTURE (DIGESTS NOT CHECKED) ", objdir)
-        else:
-            self.log.warning("OCFL object at %s is INVALID", objdir)
+        self.log.warning("OCFL v%s Object at %s %s",
+                         validator.spec_version, objdir,
+                         'has VALID STRUCTURE (DIGESTS NOT CHECKED)' if passed else 'is INVALID')
         tree = '[' + objdir + ']\n'
         self.open_fs(objdir)
         entries = sorted(self.obj_fs.listdir(''))
@@ -526,10 +525,9 @@ class Object():
         messages = str(validator)
         if messages != '':
             print(messages)
-        if passed:
-            self.log.info("OCFL object at %s is VALID", objdir)
-        else:
-            self.log.info("OCFL object at %s is INVALID", objdir)
+        self.log.info("OCFL v%s Object at %s is %s",
+                      validator.spec_version, objdir,
+                      'VALID' if passed else 'INVALID')
         return passed
 
     def validate_inventory(self, path, show_warnings=True, show_errors=True, extract_spec_version=False):
@@ -548,10 +546,9 @@ class Object():
         messages = str(validator)
         if messages != '':
             print(messages)
-        if passed:
-            self.log.info("Standalone OCFL inventory at %s is VALID", path)
-        else:
-            self.log.info("Standalone OCFL inventory at %s is INVALID", path)
+        self.log.info("Standalone OCFL v%s inventory at %s is %s",
+                      validator.spec_version, path,
+                      'VALID' if passed else 'INVALID')
         return passed
 
     def extract(self, objdir, version, dstdir):
