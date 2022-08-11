@@ -108,7 +108,7 @@ def ocfl_walk(f, dir='/', is_storage_root=False):
                 dirs.append(entry)
             else:
                 files.append(entry)
-        yield(dirpath, dirs, files)
+        yield (dirpath, dirs, files)
         # dirs may have been modified to prune
         if not is_storage_root or dirpath == '/' or len(files) == 0:
             # If this is not the storage root itself and there are files

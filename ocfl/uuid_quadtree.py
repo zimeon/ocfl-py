@@ -49,6 +49,6 @@ class UUIDQuadtree(Dispositor):
         for segment in segments:
             if not re.match(r'''[\da-f]{4}$''', segment):
                 raise Exception("Bad path segment %s in UUIDQuadtree path %s" % (segment, path))
-        return(self.prefix + segments[0] + segments[1] + '-'
-               + segments[2] + '-' + segments[3] + '-' + segments[4] + '-'
-               + segments[5] + segments[6] + segments[7])
+        return (self.prefix + segments[0] + segments[1] + '-'
+                            + segments[2] + '-' + segments[3] + '-' + segments[4] + '-'
+                            + segments[5] + segments[6] + segments[7])
