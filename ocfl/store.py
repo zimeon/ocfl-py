@@ -239,6 +239,8 @@ class Store():
         self.open_root_fs()
         try:
             self.check_root_structure()
+            if self.extension is not None:
+                logging.info("Storage root %s declares extension %s" % (self.layout_file, self.extension))
             logging.info("Storage root structure is VALID")
         except StoreException as e:
             valid = False
