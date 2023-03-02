@@ -15,7 +15,7 @@ If submitting a pull request:
    * Understand that this code and any merged contributions are covered by the [MIT license](LICENSE.txt)
    * Please discuss in a issue before submitting a pull request for significant changes
    * Please submit pull requests against the `main` branch
-   * Please write code that passes the linting tests in `.travis.yml`, these include:
+   * Please write code that passes the linting tests in `.github/workflows/action.yml`, these include:
      * `pycodestyle` implements [PEP8](https://www.python.org/dev/peps/pep-0008/) with the following warnings disabled:
        * Line length is not enforced (E501), just be reasonable
        * Where necessary, line breaks should occur before binary operators (warning W504 is enabled, but W503 is disabled)
@@ -24,6 +24,6 @@ If submitting a pull request:
      * `pylint` implements more complex static analysis and looks for code smells, some rules are disabled including:
        * [Checks already implemented in `pycodestyle` and `pydocstyle`](http://pylint.pycqa.org/en/latest/faq.html#i-am-using-another-popular-linter-alongside-pylint-which-messages-should-i-disable-to-avoid-duplicates)
        * A FIXME doesn't generate and error, but please avoid anyway (W0511)
-       * See `.travis.yml` for current exclusions
+       * See `.github/workflows/action.yml` for current exclusions
    * Please don't repeat code
    * Please cover the code with tests
