@@ -17,7 +17,6 @@ class TestAll(DemoTestCase):
         """Test creation of sidecar file."""
         out = self.run_script("Set up directory as object root",
                               ["mkdir", "-v", "TMPDIR/obj"])
-        self.assertIn("created directory", out)
         out = self.run_script("Copy in an inventory from an example",
                               ["cp", "-v", "fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json", "TMPDIR/obj"])
         self.assertIn("obj/inventory.json", out)

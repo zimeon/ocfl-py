@@ -97,7 +97,7 @@ def main():
     codes = Codes()
 
     # 1. Get validation codes from github
-    md = requests.get(VALIDATION_CODES_URL).text
+    md = requests.get(VALIDATION_CODES_URL, timeout=10).text
     for line in md.split('\n'):
         m = re.match(r'''\|\s*([EW]\d\d\d)\s*\|\s*([^\|]+)\|''', line)
         if m:
