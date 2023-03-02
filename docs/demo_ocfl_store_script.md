@@ -48,9 +48,9 @@ INFO:root:Copied
 ```
 > python ocfl-store.py --root=extra_fixtures/good-storage-roots/simple-root --list
 INFO:root:Found 3 OCFL Objects under root extra_fixtures/good-storage-roots/simple-root
+http%3A%2F%2Fexample.org%2Fminimal_mixed_digests -- id=http://example.org/minimal_mixed_digests
 ark%3A%2F12345%2Fbcd987 -- id=ark:/12345/bcd987
 ark%3A123%2Fabc -- id=ark:123/abc
-http%3A%2F%2Fexample.org%2Fminimal_mixed_digests -- id=http://example.org/minimal_mixed_digests
 ```
 
 
