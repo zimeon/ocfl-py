@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.7", "3.8", "3.9"]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -33,7 +33,7 @@ jobs:
           pydocstyle *.py ocfl tests
       - name: Lint with pylint
         run: |
-          pylint --disable=line-too-long,raise-missing-from,fixme,redefined-builtin,invalid-name,consider-using-f-string,too-many-instance-attributes,too-many-return-statements,too-many-branches,too-many-arguments,too-many-locals,too-many-statements,too-many-nested-blocks *.py ocfl tests
+          pylint --disable=line-too-long,raise-missing-from,fixme,redefined-builtin,invalid-name,consider-using-f-string,too-many-instance-attributes,too-many-return-statements,too-many-branches,too-many-arguments,too-many-locals,too-many-statements,too-many-nested-blocks,broad-exception-raised,superfluous-parens *.py ocfl tests
       - name: Test with pytest
         run: |
           pytest
