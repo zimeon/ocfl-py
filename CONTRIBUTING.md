@@ -13,7 +13,7 @@ If you propose a major change or new feature, please submit an issue to discuss 
 If submitting a pull request:
 
    * Understand that this code and any merged contributions are covered by the [MIT license](LICENSE.txt)
-   * First creats an [issue](https://github.com/zimeon/ocfl-py/issues) to discuss the proposed change
+   * First create an [issue](https://github.com/zimeon/ocfl-py/issues) to discuss the proposed change
    * Please submit pull requests against the `main` branch
    * Please write code that passes the linting tests in `.github/workflows/action.yml`, these include:
      * `pycodestyle` implements [PEP8](https://www.python.org/dev/peps/pep-0008/) with the following warnings disabled:
