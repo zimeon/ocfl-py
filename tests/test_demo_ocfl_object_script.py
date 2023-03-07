@@ -60,7 +60,7 @@ class TestAll(DemoTestCase):
 
     def test04_extract(self):
         """Test extract of version."""
-        out = self.run_script("Extract v1",
+        out = self.run_script("Extract v1 of an OCFL v1.0 object",
                               ["python", "ocfl-object.py",
                                "--extract", "v1",
                                "--objdir", "fixtures/1.0/good-objects/spec-ex-full",
@@ -77,10 +77,10 @@ class TestAll(DemoTestCase):
         self.assertFalse(os.path.exists(os.path.join(self.tmpdir, "v1/empty2.txt")))
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v1/foo/bar.xml")), 272)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v1/image.tiff")), 2021)
-        out = self.run_script("Extract v2",
+        out = self.run_script("Extract v2 of content in the same OCFL v1.1 object",
                               ["python", "ocfl-object.py",
                                "--extract", "v2",
-                               "--objdir", "fixtures/1.0/good-objects/spec-ex-full",
+                               "--objdir", "fixtures/1.1/good-objects/spec-ex-full",
                                "--dstdir", "TMPDIR/v2",
                                "-v"])
         # Expect:
