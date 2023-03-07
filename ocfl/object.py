@@ -39,7 +39,7 @@ class Object():
 
     def __init__(self, identifier=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
-                 forward_delta=True, dedupe=True,
+                 spec_version='1.0', forward_delta=True, dedupe=True,
                  lax_digests=False, fixity=None, verbose=True,
                  obj_fs=None, path=None, create=False):
         """Initialize OCFL object.
@@ -48,7 +48,8 @@ class Object():
           identifier - id for this object
           content_directory - allow override of the default 'content'
           digest_algorithm - allow override of the default 'sha512'
-          filepath_normalization = allow override of default 'uri'
+          filepath_normalization - allow override of default 'uri'
+          spec_version - OCFL specification version
           forward_delta - set False to turn off foward delta. With forward delta
             turned off, the same content will be repeated in a new version
             rather than simply being included by reference through the
@@ -71,6 +72,7 @@ class Object():
         self.content_directory = content_directory
         self.digest_algorithm = digest_algorithm
         self.filepath_normalization = filepath_normalization
+        self.spec_version = spec_version
         self.forward_delta = forward_delta
         self.dedupe = dedupe
         self.fixity = fixity
@@ -138,7 +140,7 @@ class Object():
         """Create inventory start with metadata from self."""
         inventory = {
             'id': self.id,
-            'type': 'https://ocfl.io/1.0/spec/#inventory',
+            'type': 'https://ocfl.io/' + self.spec_version + '/spec/#inventory',
             'digestAlgorithm': self.digest_algorithm,
             'versions': {},
             'manifest': {}
@@ -250,12 +252,16 @@ class Object():
                                                    metadata=metadata)
             yield (vdir, inventory, manifest_to_srcfile)
 
+    def object_declaration_object(self):
+        """NAMASTE object declaration Namaste object."""
+        return Namaste(0, 'ocfl_object_' + self.spec_version)
+
     def write_object_declaration(self):
         """Write NAMASTE object declaration.
 
         Assumes self.obj_fs is open for this object.
         """
-        Namaste(0, 'ocfl_object_1.0').write(pyfs=self.obj_fs)
+        self.object_declaration_object().write(pyfs=self.obj_fs)
 
     def write_inventory_and_sidecar(self, inventory, vdir='', write_inventory=True):
         """Write inventory and sidecar to vdir in the current object.
@@ -469,6 +475,7 @@ class Object():
                               check_digests=False,
                               lax_digests=self.lax_digests)
         passed = validator.validate(objdir)
+        self.spec_version = validator.spec_version
         self.log.warning("OCFL v%s Object at %s %s",
                          validator.spec_version, objdir,
                          'has VALID STRUCTURE (DIGESTS NOT CHECKED)' if passed else 'is INVALID')
@@ -477,6 +484,7 @@ class Object():
         entries = sorted(self.obj_fs.listdir(''))
         n = 0
         seen_sidecar = False
+        object_declaration_filename = self.object_declaration_object().filename
         for entry in entries:
             n += 1
             note = entry + ' '
@@ -499,7 +507,7 @@ class Object():
                     else:
                         v_note += '<--- ???'
                     v_notes.append(v_note)
-            elif entry in ('0=ocfl_object_1.0', INVENTORY_FILENAME):
+            elif entry in (object_declaration_filename, INVENTORY_FILENAME):
                 pass
             elif entry.startswith(INVENTORY_FILENAME + '.'):
                 if seen_sidecar:
