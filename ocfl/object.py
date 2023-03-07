@@ -608,9 +608,10 @@ class Object():
             inventory = json.load(fh)
         # Validate
         iv = InventoryValidator()
-        iv.validate(inventory)
+        iv.validate(inventory=inventory, extract_spec_version=True)
         if iv.log.num_errors > 0:
             raise ObjectException("Root inventory is not valid (%d errors)" % iv.log.num_errors)
+        self.spec_version = iv.spec_version
         digest_algorithm = iv.digest_algorithm
         # Normalize digests in place
         manifest = inventory['manifest']
