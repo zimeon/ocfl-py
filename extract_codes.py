@@ -9,9 +9,9 @@ import fs
 
 from ocfl.validation_logger import ValidationLogger
 
-SPEC_URL = 'https://ocfl.io/1.0/spec'
+SPEC_URL = 'https://ocfl.io/1.1/spec'
 GITHUB_REPO = 'https://github.com/zimeon/ocfl-py'
-VALIDATION_CODES_URL = 'https://raw.githubusercontent.com/OCFL/spec/master/validation/validation-codes.md'
+VALIDATION_CODES_URL = 'https://raw.githubusercontent.com/OCFL/spec/main/1.1/spec/validation-codes.md'
 VALIDATION_STATUS_MD = 'docs/validation_status.md'
 
 
@@ -135,7 +135,7 @@ def main():
     logging.info("Writing summary to %s", VALIDATION_STATUS_MD)
     with open(VALIDATION_STATUS_MD, "w", encoding="utf-8") as fh:
         fh.write("# Implementation status for errors and warnings\n\n")
-        fh.write("The following tables show the implementation status of all errors and warnings in the OCFL v1.0 specification, with links to the specification and into the code repository.\n\n")
+        fh.write("The following tables show the implementation status of all errors and warnings in the OCFL v1.1 specification, with links to the specification and into the code repository.\n\n")
         fh.write("## Errors\n\n")
         fh.write("| Code | Specification text (or suffixed code) | Implementation status and message/links |\n")
         fh.write("| --- | --- | --- |\n")
