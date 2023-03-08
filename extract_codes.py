@@ -17,6 +17,7 @@ VALIDATION_CODES_URL = 'https://raw.githubusercontent.com/OCFL/spec/main/1.1/spe
 VALIDATION_STATUS_MD = 'docs/validation_status.md'
 VALIDATION_STATUS_MD_NEW = 'docs/validation_status.md~'
 
+
 class Code():
     """Class for details of one error or warning code."""
 
