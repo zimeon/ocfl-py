@@ -2,12 +2,12 @@
 """Extract list of currently implemented error and warning codes."""
 import datetime
 import logging
-import fs
 import os
 import os.path
 import re
-import requests
 import subprocess
+import requests
+import fs
 
 from ocfl.validation_logger import ValidationLogger
 
@@ -152,12 +152,12 @@ def main():
     # 5. Is there any change except the date?
     code = subprocess.run(['diff', '--brief', '--ignore-matching-lines', 'Generated\\ by',
                            VALIDATION_STATUS_MD,
-                           VALIDATION_STATUS_MD_NEW]).returncode
+                           VALIDATION_STATUS_MD_NEW], check=False).returncode
     if code == 0:
-        logging.info("No change, leaving old output in %s" % VALIDATION_STATUS_MD)
+        logging.info("No change, leaving old output in %s", VALIDATION_STATUS_MD)
     else:
         os.replace(VALIDATION_STATUS_MD_NEW, VALIDATION_STATUS_MD)
-        logging.info("Updated %s" % VALIDATION_STATUS_MD)
+        logging.info("Updated %s", VALIDATION_STATUS_MD)
 
 
 if __name__ == "__main__":
