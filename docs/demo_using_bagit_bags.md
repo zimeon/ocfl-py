@@ -25,7 +25,7 @@ Now that we have the object it is of course valid.
 
 ```
 > python ocfl-validate.py tmp/obj
-INFO:ocfl.object:OCFL v1.0 Object at tmp/obj is VALID
+INFO:ocfl.object:OCFL v1.1 Object at tmp/obj is VALID
 ```
 
 
@@ -35,10 +35,10 @@ Looking inside the object we see `v1` with the expected 2 content files.
 
 ```
 > python ocfl-object.py --show --objdir tmp/obj
-WARNING:ocfl.object:OCFL v1.0 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
+WARNING:ocfl.object:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
 WARNING:ocfl.object:Object tree
 [tmp/obj]
-├── 0=ocfl_object_1.0 
+├── 0=ocfl_object_1.1 
 ├── inventory.json 
 ├── inventory.json.sha512 
 └── v1 
@@ -73,10 +73,10 @@ Looking inside the object we now see `v1` and `v2`. There are no content files i
 
 ```
 > python ocfl-object.py --show --objdir tmp/obj
-WARNING:ocfl.object:OCFL v1.0 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
+WARNING:ocfl.object:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
 WARNING:ocfl.object:Object tree
 [tmp/obj]
-├── 0=ocfl_object_1.0 
+├── 0=ocfl_object_1.1 
 ├── inventory.json 
 ├── inventory.json.sha512 
 ├── v1 
@@ -113,10 +113,10 @@ Looking inside again we see that `v3` does add another content file.
 
 ```
 > python ocfl-object.py --show --objdir tmp/obj
-WARNING:ocfl.object:OCFL v1.0 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
+WARNING:ocfl.object:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
 WARNING:ocfl.object:Object tree
 [tmp/obj]
-├── 0=ocfl_object_1.0 
+├── 0=ocfl_object_1.1 
 ├── inventory.json 
 ├── inventory.json.sha512 
 ├── v1 
@@ -161,8 +161,8 @@ Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` cont
 INFO:ocfl.object:Extracted v4 into tmp/extracted_v4
 INFO:bagit:Creating bag for directory tmp/extracted_v4
 INFO:bagit:Creating data directory
-INFO:bagit:Moving my_content to tmp/extracted_v4/tmpvqynu28x/my_content
-INFO:bagit:Moving tmp/extracted_v4/tmpvqynu28x to data
+INFO:bagit:Moving my_content to tmp/extracted_v4/tmpb2tzz3pw/my_content
+INFO:bagit:Moving tmp/extracted_v4/tmpb2tzz3pw to data
 INFO:bagit:Using 1 processes to generate manifests: sha512
 INFO:bagit:Generating manifest lines for file data/my_content/dracula.txt
 INFO:bagit:Generating manifest lines for file data/my_content/dunwich.txt
@@ -184,12 +184,12 @@ We note that the OCFL object had only one `content` file in `v4` but the extract
 diff -r tmp/extracted_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
 1,2c1
 < Bag-Software-Agent: bagit.py v1.8.1 <https://github.com/LibraryOfCongress/bagit-python>
-< Bagging-Date: 2023-03-07
+< Bagging-Date: 2023-03-08
 ---
 > Bagging-Date: 2020-01-04
 diff -r tmp/extracted_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagmanifest-sha512.txt
 2c2
-< 5bc77f9daa3498d07fb09b1d49b7a3646346a082a77c6544cf6d1fffbe4ecb5067bbf513b2af4f828e90ed9ae21a2ee8efcfa9cf796d36a272f76d7426a710d6 bag-info.txt
+< fb20d9575bd2a36d589c32af7118552b96b2ca8500d8a90494be8f4354c31909a70a0b2792c9b89652f59725895b5326a57e423e2065d5edfe380f47a9c82c40 bag-info.txt
 ---
 > 10624e6d45462def7af66d1a0d977606c7b073b01809c1d42258cfab5c34a275480943cbe78044416aee1f23822cc3762f92247b8f39b5c6ddc5ae32a8f94ce5 bag-info.txt
 ```
