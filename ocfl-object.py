@@ -40,6 +40,8 @@ def parse_arguments():
                             help='Source Bagit bag path (alternative to --srcdir)')
 
     obj_params = parser.add_argument_group(title="OCFL object parameters")
+    obj_params.add_argument('--spec-version', '--spec', action='store', default='1.1',
+                            help='OCFL specification version to adhere to')
     obj_params.add_argument('--digest', default='sha512',
                             help='Digest algorithm to use')
     obj_params.add_argument('--fixity', action='append',
@@ -77,6 +79,7 @@ def parse_arguments():
 def do_object_operation(args):
     """Implement object operations in a way that can be reused by ocfl-store.py."""
     obj = ocfl.Object(identifier=args.id,
+                      spec_version=args.spec_version,
                       digest_algorithm=args.digest,
                       filepath_normalization=args.normalization,
                       forward_delta=not args.no_forward_delta,

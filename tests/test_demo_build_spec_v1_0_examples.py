@@ -16,6 +16,7 @@ class TestAll(DemoTestCase):
                                "--build",
                                "--src", "fixtures/1.0/content/spec-ex-minimal",
                                "--id", "http://example.org/minimal",
+                               "--spec-version", "1.0",
                                "--digest", "sha512-spec-ex",
                                "--created", "2018-10-02T12:00:00Z",
                                "--message", "One file",
@@ -33,6 +34,7 @@ class TestAll(DemoTestCase):
                               ["python", "ocfl-object.py",
                                "--build",
                                "--src", "fixtures/1.0/content/spec-ex-full",
+                               "--spec-version", "1.0",
                                "--id", "ark:/12345/bcd987",
                                "--fixity", "md5",
                                "--fixity", "sha1",
@@ -51,6 +53,7 @@ class TestAll(DemoTestCase):
                                "--build",
                                "--src", "fixtures/1.0/content/spec-ex-diff-paths",
                                "--id", "http://example.org/diff-paths",
+                               "--spec-version", "1.0",
                                "--digest", "sha512-spec-ex",
                                "--normalization", "md5",
                                "--created", "2019-03-14T20:31:00Z",
@@ -63,4 +66,4 @@ class TestAll(DemoTestCase):
 
 if __name__ == "__main__":
     # Run in demo mode if run directly instead of through py.test
-    TestAll.run_as_demo(title="Build the specification examples")
+    TestAll.run_as_demo(title="Build the v1.0 specification examples")
