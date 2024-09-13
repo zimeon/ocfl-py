@@ -1,10 +1,11 @@
 # ocfl-py changelog
 
-## 2022-XX-XX v1.3.1
+## 2024-XX-XX v1.4.0
 
-  * Drop Python 3.6 from testing
+  * Drop Python 3.6 and 3.7 from testing, add 3.11
   * Adjust for removed `E023_missing_file` fixture (https://github.com/OCFL/fixtures/pull/99)
   * Add note of specification version number in validation output
+  * Ignore `logs` directory if present in object root (extra fixture https://github.com/OCFL/fixtures/issues/108)
 
 ## 2022-04-26 v1.3.0
 
