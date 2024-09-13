@@ -207,7 +207,7 @@ class Validator():
                 elif entry.name == 'logs':
                     # We simply ignore any logs directory from a validation point
                     # of view. The directory MAY be present but its contents are
-                    # locally defined and is MAY also be empty. See:
+                    # locally defined and it MAY also be empty. See:
                     # https://ocfl.io/1.1/spec/#logs-directory
                     pass
                 elif entry.name == 'extensions':
