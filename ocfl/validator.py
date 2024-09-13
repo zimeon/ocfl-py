@@ -204,6 +204,12 @@ class Validator():
             elif entry.is_dir:
                 if entry.name in version_dirs:
                     pass
+                elif entry.name == 'logs':
+                    # We simply ignore any logs directory from a validation point
+                    # of view. The directory MAY be present but its contents are
+                    # locally defined and it MAY also be empty. See:
+                    # https://ocfl.io/1.1/spec/#logs-directory
+                    pass
                 elif entry.name == 'extensions':
                     self.validate_extensions_dir()
                 elif re.match(r'''v\d+$''', entry.name):
