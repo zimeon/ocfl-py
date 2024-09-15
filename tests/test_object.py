@@ -296,16 +296,12 @@ class TestAll(unittest.TestCase):
                               'inventory.json', 'inventory.json.sha512',
                               'v1', 'v2']))
 
-    def test12_show(self):
-        """Test show method."""
-        s = io.StringIO()
-        oo = Object()
-        oo.log.addHandler(logging.StreamHandler(s))
-        oo.show(objdir='fixtures/1.0/good-objects/minimal_one_version_one_file')
-        out = s.getvalue()
-        self.assertIn('[fixtures/1.0/good-objects/minimal_one_version_one_file]', out)
-        self.assertTrue('├── 0=ocfl_object_1.0' in out)
-        # FIXME - need real tests in here when there is real output
+    def test12_tree(self):
+        """Test tree method."""
+        s = Object().tree(objdir='fixtures/1.0/good-objects/minimal_one_version_one_file')
+        self.assertIn('[fixtures/1.0/good-objects/minimal_one_version_one_file]', s)
+        self.assertTrue('├── 0=ocfl_object_1.0' in s)
+        self.assertTrue('    ├── content (1 files)' in s)
 
     def test_validate(self):
         """Test validate method."""

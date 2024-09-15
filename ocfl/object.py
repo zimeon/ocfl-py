@@ -458,8 +458,13 @@ class Object():
             self.obj_fs.remove(INVENTORY_FILENAME + '.' + old_digest_algorithm)
         self.log.info("Updated OCFL object %s in %s by adding %s", self.id, objdir, head)
 
-    def show(self, objdir):
-        """Show OCFL object at objdir."""
+    def tree(self, objdir):
+        """Build human readable tree showing OCFL object at objdir.
+
+        objdir - object directory to examine
+
+        Returns human readable string with tree of object structure.
+        """
         def _show_indent(level, last=False, last_v=False):
             """Indent string for tree view at level for intermediate or last."""
             tree_next = '├── '
@@ -476,6 +481,7 @@ class Object():
                               lax_digests=self.lax_digests)
         passed = validator.validate(objdir)
         self.spec_version = validator.spec_version
+        self.content_directory = validator.content_directory
         self.log.warning("OCFL v%s Object at %s %s",
                          validator.spec_version, objdir,
                          'has VALID STRUCTURE (DIGESTS NOT CHECKED)' if passed else 'is INVALID')
@@ -521,7 +527,7 @@ class Object():
             for v_note in v_notes:
                 nn += 1
                 tree += _show_indent(1, last, (nn == len(v_notes))) + v_note + "\n"
-        self.log.warning("Object tree\n%s", tree)
+        return tree
 
     def validate(self, objdir, show_warnings=True, show_errors=True, check_digests=True):
         """Validate OCFL object at objdir."""

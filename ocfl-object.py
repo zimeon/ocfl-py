@@ -120,7 +120,7 @@ def do_object_operation(args):
                    srcdir=srcdir,
                    metadata=metadata)
     elif args.show:
-        obj.show(objdir=args.objdir)
+        logging.warning("Object tree\n" + obj.tree(objdir=args.objdir))
     elif args.validate:
         obj.validate(objdir=args.objdir)
     elif args.extract:
