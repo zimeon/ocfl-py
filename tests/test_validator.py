@@ -35,7 +35,7 @@ class TestAll(unittest.TestCase):
                            'E011_E013_invalid_padded_head_version': ['E011', 'E040', 'E064'],  # E011 only OK, see https://github.com/OCFL/spec/issues/541
                            'E015_content_not_in_content_dir': ['E042a'],  # FIXME - What should test case and error be?
                            'E017_invalid_content_dir': ['E017'],
-                           'E019_inconsistent_content_dir': ['E042a'],  # FIXME - What should error be?
+                           'E019_inconsistent_content_dir': ['E042c'],  # FIXME - What should error be? Should be E020
                            'E023_extra_file': ['E023a'],
                            'E023_old_manifest_missing_entries': ['E023b'],
                            'E024_empty_dir_in_content': ['E024'],
@@ -113,7 +113,9 @@ class TestAll(unittest.TestCase):
                            'E011_E013_invalid_padded_head_version': ['E011', 'E040', 'E064'],  # E011 only OK, see https://github.com/OCFL/spec/issues/541
                            'E015_content_not_in_content_dir': ['E042a'],  # FIXME - What should test case and error be?
                            'E017_invalid_content_dir': ['E017'],
-                           'E019_inconsistent_content_dir': ['E042a'],  # FIXME - What should error be?
+                           'E019_content_dir_set_in_v2_not_v1': ['E019'],
+                           'E019_inconsistent_content_dir': ['E042c'],  # FIXME - What should error be? Should be E020
+                           'E020_inconsistent_content_directory': ['E020'],
                            'E023_extra_file': ['E023a'],
                            'E023_old_manifest_missing_entries': ['E023b'],
                            'E025_wrong_digest_algorithm': ['E025a'],

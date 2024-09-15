@@ -44,6 +44,7 @@ class Validator():
         self.spec_version = None
         self.digest_algorithm = None
         self.content_directory = None
+        self.content_directory_set = None
         self.inventory_digest_files = None
         self.root_inv_validator = None
         self.obj_fs = None
@@ -123,6 +124,7 @@ class Validator():
             all_versions = inv_validator.all_versions
             self.id = inv_validator.id
             self.content_directory = inv_validator.content_directory
+            self.content_directory_set = inv_validator.content_directory_set
             self.digest_algorithm = inv_validator.digest_algorithm
             self.validate_inventory_digest(inv_file, self.digest_algorithm)
             # Object root
@@ -143,7 +145,8 @@ class Validator():
         of object content. Does not look at anything else in the
         object itself.
 
-        where - used for reporting messages of where inventory is in object
+        where - used for reporting messages of where inventory is in object, will
+            be either 'root' or the version directory
 
         extract_spec_version - if set True will attempt to take spec_version from the
             inventory itself instead of using the spec_version provided
@@ -250,6 +253,8 @@ class Validator():
         prior_fixity_digests = {}  # file -> algorithm -> digest -> [versions]
         if len(version_dirs) == 0:
             return prior_manifest_digests, prior_fixity_digests
+        first_version = version_dirs[0]
+        first_version_content_directory_set = False
         last_version = version_dirs[-1]
         prev_version_dir = "NONE"  # will be set for first directory with inventory
         prev_spec_version = '1.0'  # lowest version
@@ -272,9 +277,9 @@ class Validator():
                 self.inventory_digest_files[version_dir] = 'inventory.json.' + self.digest_algorithm
                 this_spec_version = self.spec_version
             else:
-                # Note that inventories in prior versions may use different digest algorithms
-                # from the current invenotory. Also,
-                # an may accord with the same or earlier versions of the specification
+                # Note that inventories in prior versions may use different digest
+                # algorithms from the current invenotory. Also, they may accord
+                # with the same or earlier versions of the specification
                 version_inventory, inv_validator = self.validate_inventory(inv_file, where=version_dir, extract_spec_version=True)
                 this_spec_version = inv_validator.spec_version
                 digest_algorithm = inv_validator.digest_algorithm
@@ -283,6 +288,21 @@ class Validator():
                 if self.id and 'id' in version_inventory:
                     if version_inventory['id'] != self.id:
                         self.log.error('E037b', where=version_dir, root_id=self.id, version_id=version_inventory['id'])
+                if first_version:
+                    first_version_content_directory_set = inv_validator.content_directory_set
+                    if not first_version_content_directory_set and self.content_directory_set:
+                        self.log.error('E019', where='root')
+                        first_version_content_directory_set = False  # report E019 just once
+                elif not first_version_content_directory_set and inv_validator.content_directory_set:
+                    # E019 is a rather odd and specific error condition: that if
+                    # the contentDirectory is set for any version it must be set
+                    # the first version. It isn't clear that this is very usefully
+                    # different from E020 that picks up inconsistency between ant
+                    # two versions.
+                    self.log.error('E019', where=version_dir)
+                    first_version_content_directory_set = False  # report E019 just once
+                if self.content_directory != inv_validator.content_directory:
+                    self.log.error('E020', where=version_dir, root_content_directory=self.content_directory, version_content_directory=inv_validator.content_directory)
                 if 'manifest' in version_inventory:
                     # Check that all files listed in prior inventories are in manifest
                     not_seen = set(prior_manifest_digests.keys())

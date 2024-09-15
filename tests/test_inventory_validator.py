@@ -379,7 +379,7 @@ class TestAll(unittest.TestCase):
         log.clear()
         iv.content_directory = 'xyz'
         self.assertFalse(iv.check_content_path('v1/content/anything', cp, cd))
-        self.assertEqual(log.errors, ['E042a'])
+        self.assertEqual(log.errors, ['E042c'])
         log.clear()
         self.assertTrue(iv.check_content_path('v1/xyz/anything', cp, cd))
         self.assertEqual(log.errors, [])
@@ -392,7 +392,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(log.errors, ['E042a'])
         log.clear()
         self.assertFalse(iv.check_content_path('v1/x/1', cp, cd))
-        self.assertEqual(log.errors, ['E042a'])
+        self.assertEqual(log.errors, ['E042c'])
         log.clear()
         self.assertFalse(iv.check_content_path('v1/xyz/1/', cp, cd))
         self.assertEqual(log.errors, ['E100'])
@@ -456,6 +456,7 @@ class TestAll(unittest.TestCase):
     def test_bad_inventory_files(self):
         """Test bad inventory files."""
         for bad, codes in {'inventory_E042a_bad_content_paths': ['E042a'],
+                           'inventory_E042c_bad_content_paths': ['E042c'],
                            'inventory_E042b_unknown_version': ['E042b'],
                            'inventory_E042b_zero_padding_mismatch': ['E042b']}.items():
             filepath = 'extra_fixtures/bad-inventories/' + bad + '.json'

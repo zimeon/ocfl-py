@@ -1,0 +1,21 @@
+{
+  "id": "urn:example-E020",
+  "type": "https://ocfl.io/1.1/spec/#inventory",
+  "digestAlgorithm": "sha512",
+  "head": "v1",
+  "contentDirectory": "somewhere",
+  "manifest": {
+  },
+  "versions": {
+    "v1": {
+      "created": "2021-03-31T08:22:37.241208990-05:00",
+      "state": {
+      },
+      "message": "Simple example",
+      "user": {
+        "name": "tester",
+        "address": "mailto:tests@example.com"
+      }
+    }
+  }
+}

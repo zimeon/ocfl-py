@@ -1,0 +1,37 @@
+{
+  "id": "urn:example-E019",
+  "type": "https://ocfl.io/1.1/spec/#inventory",
+  "digestAlgorithm": "sha512",
+  "head": "v2",
+  "contentDirectory": "stuff",
+  "manifest": {
+    "d676d268eda2be94283dc2371c340a7e7700f4befbf246c9e570decba4a715d475ee53550cd0ee1c028f2d60e5abb1dd2e8fbba01c60d2a391c776463d232c73": [
+      "v2/stuff/test.txt"
+    ]
+  },
+  "versions": {
+    "v1": {
+      "created": "2021-03-31T08:22:37.241208990-05:00",
+      "state": {
+      },
+      "message": "Simple example",
+      "user": {
+        "name": "tester",
+        "address": "mailto:tests@example.com"
+      }
+    },
+    "v2": {
+      "created": "2021-03-31T08:51:24.084110226-05:00",
+      "state": {
+        "d676d268eda2be94283dc2371c340a7e7700f4befbf246c9e570decba4a715d475ee53550cd0ee1c028f2d60e5abb1dd2e8fbba01c60d2a391c776463d232c73": [
+          "test-2.txt"
+        ]
+      },
+      "message": "Simple example v2",
+      "user": {
+        "name": "tester",
+        "address": "mailto:tests@example.com"
+      }
+    }
+  }
+}

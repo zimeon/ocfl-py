@@ -42,6 +42,7 @@ class InventoryValidator():
         self.id = None
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
+        self.content_directory_set = False
         self.all_versions = []
         self.manifest_files = None
         self.unnormalized_digests = None
@@ -114,6 +115,7 @@ class InventoryValidator():
                 self.error("E018")
             else:
                 self.content_directory = cd
+                self.content_directory_set = True
         manifest_files_correct_format = None
         if 'manifest' not in inventory:
             self.error("E041a")
@@ -443,11 +445,14 @@ class InventoryValidator():
         if path.startswith('/') or path.endswith('/'):
             self.error("E100", path=path)
             return False
-        m = re.match(r'''^(v\d+/''' + self.content_directory + r''')/(.+)''', path)
+        m = re.match(r'''^(v\d+)/([^/]+)/(.+)''', path)
         if not m:
             self.error("E042a", path=path)
             return False
-        elements = m.group(2).split('/')
+        elif m.group(2) != self.content_directory:
+            self.error("E042c", path=path, content_directory=self.content_directory)
+            return False
+        elements = m.group(3).split('/')
         for element in elements:
             if element in ('', '.', '..'):
                 self.error("E099", path=path)
@@ -457,7 +462,7 @@ class InventoryValidator():
             self.error("E101a", path=path)
             return False
         content_paths.add(path)
-        content_directories.add('/'.join([m.group(1)] + elements[0:-1]))
+        content_directories.add('/'.join([m.group(1), m.group(2)] + elements[0:-1]))
         return True
 
     def validate_as_prior_version(self, prior):

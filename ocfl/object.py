@@ -499,7 +499,7 @@ class Object():
                         if seen_v_sidecar:
                             v_note += '<--- multiple inventory digests?'
                             seen_v_sidecar = True
-                    elif v_entry == 'content':
+                    elif v_entry == self.content_directory:
                         num_files = 0
                         for (v_dirpath, v_dirs, v_files) in self.obj_fs.walk(fs.path.join(entry, v_entry)):  # pylint: disable=unused-variable
                             num_files += len(v_files)
