@@ -6,6 +6,7 @@
   * Adjust for removed `E023_missing_file` fixture (https://github.com/OCFL/fixtures/pull/99)
   * Add note of specification version number in validation output
   * Ignore `logs` directory if present in object root (extra fixture https://github.com/OCFL/fixtures/issues/108)
+  * Changed Object.show() method to Object.tree() that returns string
 
 ## 2022-04-26 v1.3.0
 
