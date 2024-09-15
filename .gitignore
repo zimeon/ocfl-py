@@ -4,6 +4,7 @@ tmp
 __pycache__
 *.pyc
 *~
+.DS_store
 minimal.txt
 full.txt
 build/
