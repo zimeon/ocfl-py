@@ -90,7 +90,6 @@ def ocfl_walk(f, dir='/', is_storage_root=False):
         dir = '/' + dir
     stack = [dir]
     while len(stack) > 0:
-        # print("Stack " + str(stack))
         dirpath = stack.pop()
         entries = f.listdir(dirpath)
         files = []
@@ -100,7 +99,6 @@ def ocfl_walk(f, dir='/', is_storage_root=False):
             is_dir = True
             try:
                 info = f.getinfo(entry_path)
-                # print(entry_path + " info: " + str(info))
                 is_dir = info.is_dir
             except fs.errors.ResourceNotFound:
                 pass  # Assume to be a directory
