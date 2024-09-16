@@ -80,7 +80,7 @@ try:
                           dedupe=not args.no_dedupe,
                           fixity=args.fixity)
         if args.show_object:
-            logging.warning("Object tree\n" + obj.tree(objdir=args.objdir))
+            logging.warning("Object tree\n%s", obj.tree(objdir=args.objdir))
         else:
             logging.error("create/build/validate not implemented")
     else:

@@ -449,7 +449,7 @@ class InventoryValidator():
         if not m:
             self.error("E042a", path=path)
             return False
-        elif m.group(2) != self.content_directory:
+        if m.group(2) != self.content_directory:
             self.error("E042c", path=path, content_directory=self.content_directory)
             return False
         elements = m.group(3).split('/')
