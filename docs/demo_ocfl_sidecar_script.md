@@ -20,7 +20,7 @@ ocfl-sidecar.py is part of ocfl-py version 1.3.0
 
 ```
 > mkdir -v tmp/obj
-tmp/obj
+mkdir: created directory 'tmp/obj'
 ```
 
 
@@ -28,7 +28,7 @@ tmp/obj
 
 ```
 > cp -v fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json tmp/obj
-fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json -> tmp/obj/inventory.json
+'fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json' -> 'tmp/obj/inventory.json'
 ```
 
 
