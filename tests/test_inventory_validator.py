@@ -40,7 +40,7 @@ class TestAll(unittest.TestCase):
     def test_validate(self):
         """Test validate method."""
         log = TLogger()
-        iv = InventoryValidator(log=log)
+        iv = InventoryValidator(log=log, default_spec_version='1.1')
         iv.validate({})
         self.assertIn('E036a', log.errors)
         self.assertIn('E036b', log.errors)
@@ -68,13 +68,13 @@ class TestAll(unittest.TestCase):
         self.assertIn('W004', log.warns)
         log.clear()
         iv.validate({"id": "like:uri", "type": "wrong type", "digestAlgorithm": "my_digest"})
-        self.assertIn('E038a', log.errors)
+        self.assertIn('E038b', log.errors)
         self.assertIn('E039', log.errors)
         log.clear()
-        iv.validate({"id": "like:uri", "type": "wrong type", "digestAlgorithm": "my_digest"}, extract_spec_version=True)
+        iv.validate({"id": "like:uri", "type": "wrong type", "digestAlgorithm": "my_digest"})
         self.assertIn('E038b', log.errors)
         log.clear()
-        iv.validate({"id": "like:uri", "type": "https://ocfl.io/100.9/spec/#inventory", "digestAlgorithm": "my_digest"}, extract_spec_version=True)
+        iv.validate({"id": "like:uri", "type": "https://ocfl.io/100.9/spec/#inventory", "digestAlgorithm": "my_digest"})
         self.assertIn('E038c', log.errors)
         iv = InventoryValidator(log=log, lax_digests=True)
         log.clear()
@@ -123,7 +123,7 @@ class TestAll(unittest.TestCase):
     def test_validate_fixity(self):
         """Test validate_fixity method."""
         log = TLogger()
-        iv = InventoryValidator(log=log)
+        iv = InventoryValidator(log=log, default_spec_version='1.0')
         iv.validate_fixity("not a fixity block", [])
         self.assertIn('E056a', log.errors)
         log.clear()
@@ -191,7 +191,7 @@ class TestAll(unittest.TestCase):
     def test_validate_versions(self):
         """Test validate_versions method."""
         log = TLogger()
-        iv = InventoryValidator(log=log)
+        iv = InventoryValidator(log=log, default_spec_version='1.0')
         self.assertEqual(iv.validate_versions({}, [], set()), [])
         self.assertEqual(len(log.errors), 0)
         log.clear()

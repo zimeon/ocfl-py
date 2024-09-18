@@ -39,7 +39,7 @@ class Object():
 
     def __init__(self, identifier=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
-                 spec_version='1.0', forward_delta=True, dedupe=True,
+                 spec_version='1.1', forward_delta=True, dedupe=True,
                  lax_digests=False, fixity=None, verbose=True,
                  obj_fs=None, path=None, create=False):
         """Initialize OCFL object.
@@ -544,14 +544,14 @@ class Object():
                       'VALID' if passed else 'INVALID')
         return passed
 
-    def validate_inventory(self, path, show_warnings=True, show_errors=True, extract_spec_version=False):
+    def validate_inventory(self, path, show_warnings=True, show_errors=True, force_spec_version=None):
         """Validate just an OCFL Object inventory at path."""
         validator = Validator(show_warnings=show_warnings,
                               show_errors=show_errors)
         try:
             (inv_dir, inv_file) = fs.path.split(path)
             validator.obj_fs = open_fs(inv_dir, create=False)
-            validator.validate_inventory(inv_file, where='standalone', extract_spec_version=extract_spec_version)
+            validator.validate_inventory(inv_file, where='standalone', force_spec_version=force_spec_version)
         except fs.errors.ResourceNotFound:
             validator.log.error('E033', where='standalone', explanation='failed to open directory')
         except ValidatorAbortException:
@@ -614,7 +614,7 @@ class Object():
             inventory = json.load(fh)
         # Validate
         iv = InventoryValidator()
-        iv.validate(inventory=inventory, extract_spec_version=True)
+        iv.validate(inventory=inventory)
         if iv.log.num_errors > 0:
             raise ObjectException("Root inventory is not valid (%d errors)" % iv.log.num_errors)
         self.spec_version = iv.spec_version

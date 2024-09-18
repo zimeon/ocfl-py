@@ -187,7 +187,7 @@ class TestAll(unittest.TestCase):
 
     def test06_build_inventory(self):
         """Test build_inventory."""
-        oo = Object(digest_algorithm="md5")
+        oo = Object(digest_algorithm="md5", spec_version='1.0')
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
         inventory = None
         for (dummy_vdir, inventory, dummy_manifest_to_srcfile) in oo.build_inventory(src_fs,
@@ -205,7 +205,7 @@ class TestAll(unittest.TestCase):
     def test07_write_object_declaration(self):
         """Test write_object_declaration."""
         tmpfs = fs.tempfs.TempFS(identifier='test_write_object_declaration')
-        oo = Object(obj_fs=tmpfs)
+        oo = Object(obj_fs=tmpfs, spec_version='1.0')
         oo.write_object_declaration()
         self.assertEqual(tmpfs.listdir('/'), ['0=ocfl_object_1.0'])
 
@@ -234,7 +234,7 @@ class TestAll(unittest.TestCase):
     def test09_build(self):
         """Test write method."""
         tempdir = tempfile.mkdtemp(prefix='test_write')
-        oo = Object()
+        oo = Object(spec_version='1.0')
         self.assertRaises(ObjectException, oo.build, srcdir='fixtures/1.0/content/spec-ex-full')
         oo.id = 'uri:firkin'
         objdir = os.path.join(tempdir, '1')
@@ -260,7 +260,7 @@ class TestAll(unittest.TestCase):
     def test10_create(self):
         """Test create method."""
         tempdir = tempfile.mkdtemp(prefix='test_create')
-        oo = Object()
+        oo = Object(spec_version='1.0')
         self.assertRaises(ObjectException, oo.create, srcdir='fixtures/1.0/content/spec-ex-full/v1')
         oo.id = 'uri:kliderkin'
         objdir = os.path.join(tempdir, '1')
@@ -275,7 +275,7 @@ class TestAll(unittest.TestCase):
     def test11_update(self):
         """Test update method."""
         tempdir = tempfile.mkdtemp(prefix='test_update')
-        oo = Object()
+        oo = Object(spec_version='1.0')
         # First create and object
         oo.id = 'uri:wumpus'
         objdir = os.path.join(tempdir, '1')
@@ -298,33 +298,47 @@ class TestAll(unittest.TestCase):
 
     def test12_tree(self):
         """Test tree method."""
-        s = Object().tree(objdir='fixtures/1.0/good-objects/minimal_one_version_one_file')
+        s = Object(spec_version='1.0').tree(objdir='fixtures/1.0/good-objects/minimal_one_version_one_file')
         self.assertIn('[fixtures/1.0/good-objects/minimal_one_version_one_file]', s)
         self.assertTrue('├── 0=ocfl_object_1.0' in s)
         self.assertTrue('    ├── content (1 files)' in s)
 
     def test_validate(self):
         """Test validate method."""
-        oo = Object()
+        oo = Object(spec_version='1.0')
         self.assertTrue(oo.validate(objdir='fixtures/1.0/good-objects/minimal_one_version_one_file'))
         # Error cases
         self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/E001_E004_no_files'))
         self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/E001_no_decl'))
         self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/E036_no_id'))
+        #
+        oo = Object(spec_version='1.1')
+        self.assertTrue(oo.validate(objdir='fixtures/1.1/good-objects/minimal_one_version_one_file'))
+        # Error cases
+        self.assertFalse(oo.validate(objdir='fixtures/1.1/bad-objects/E001_E004_no_files'))
+        self.assertFalse(oo.validate(objdir='fixtures/1.1/bad-objects/E001_no_decl'))
+        self.assertFalse(oo.validate(objdir='fixtures/1.1/bad-objects/E036_no_id'))
 
     def test_validate_inventory(self):
         """Test validate_inventory method."""
-        oo = Object()
+        oo = Object(spec_version='1.0')
         self.assertTrue(oo.validate_inventory(path='fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json'))
         # Error cases
         self.assertFalse(oo.validate_inventory(path='tests/testdata/i_do_not_exist'))
         self.assertFalse(oo.validate_inventory(path='fixtures/1.0/bad-objects/E036_no_id/inventory.json'))
         self.assertFalse(oo.validate_inventory(path='tests/testdata//namaste/0=frog'))  # not JSON
+        #
+        oo = Object(spec_version='1.1')
+        self.assertTrue(oo.validate_inventory(path='fixtures/1.1/good-objects/minimal_one_version_one_file/inventory.json'))
+        # Error cases
+        self.assertFalse(oo.validate_inventory(path='tests/testdata/i_do_not_exist'))
+        self.assertFalse(oo.validate_inventory(path='fixtures/1.1/bad-objects/E036_no_id/inventory.json'))
+        self.assertFalse(oo.validate_inventory(path='tests/testdata//namaste/0=frog'))  # not JSON
 
     def test_parse_inventory(self):
         """Test parse_inventory method."""
         oo = Object()
-        oo.open_fs('fixtures/1.0/good-objects/minimal_one_version_one_file')
+        oo.open_fs('fixtures/1.1/good-objects/minimal_one_version_one_file')
         inv = oo.parse_inventory()
         self.assertEqual(inv['id'], "ark:123/abc")
         digest = "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f"
@@ -333,7 +347,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(inv['versions']['v1']['state'][digest],
                          ["a_file.txt"])
         # Digest normalization on read -- file has mixed case but result should be same
-        oo.open_fs('fixtures/1.0/good-objects/minimal_mixed_digests')
+        oo.open_fs('fixtures/1.1/good-objects/minimal_mixed_digests')
         inv = oo.parse_inventory()
         self.assertEqual(inv['id'], "http://example.org/minimal_mixed_digests")
         self.assertEqual(inv['manifest'][digest],
@@ -366,25 +380,25 @@ class TestAll(unittest.TestCase):
         tempdir = tempfile.mkdtemp(prefix='test_extract')
         oo = Object()
         dstdir = os.path.join(tempdir, 'vvv1')
-        oo.extract('fixtures/1.0/good-objects/minimal_one_version_one_file', 'v1', dstdir)
+        oo.extract('fixtures/1.1/good-objects/minimal_one_version_one_file', 'v1', dstdir)
         self.assertEqual(os.listdir(tempdir), ['vvv1'])
         self.assertEqual(os.listdir(dstdir), ['a_file.txt'])
         # Specify "head" and expect v3
         oo = Object()
         dstdir = os.path.join(tempdir, 'vvv2')
-        oo.extract('fixtures/1.0/good-objects/spec-ex-full', 'head', dstdir)
+        oo.extract('fixtures/1.1/good-objects/spec-ex-full', 'head', dstdir)
         self.assertEqual(set(os.listdir(dstdir)), set(["foo", "empty2.txt", "image.tiff"]))
         # Error, no v4
-        self.assertRaises(ObjectException, oo.extract, 'fixtures/1.0/good-objects/spec-ex-full', 'v4', dstdir)
+        self.assertRaises(ObjectException, oo.extract, 'fixtures/1.1/good-objects/spec-ex-full', 'v4', dstdir)
         # Error, dstdir already exists
-        self.assertRaises(ObjectException, oo.extract, 'fixtures/1.0/good-objects/spec-ex-full', 'head', tempdir)
+        self.assertRaises(ObjectException, oo.extract, 'fixtures/1.1/good-objects/spec-ex-full', 'head', tempdir)
         # Error, parent dir does not exist
         dstdir = os.path.join(tempdir, 'intermediate/vvv3')
-        self.assertRaises(ObjectException, oo.extract, 'fixtures/1.0/good-objects/spec-ex-full', 'head', dstdir)
+        self.assertRaises(ObjectException, oo.extract, 'fixtures/1.1/good-objects/spec-ex-full', 'head', dstdir)
 
     def test_id_from_inventory(self):
         """Test id_from_inventory method."""
-        oo = Object(path='fixtures/1.0/good-objects/minimal_one_version_one_file')
+        oo = Object(path='fixtures/1.1/good-objects/minimal_one_version_one_file')
         self.assertEqual(oo.id_from_inventory(), 'ark:123/abc')
-        oo = Object(path='fixtures/1.0/bad-objects/E036_no_id')
+        oo = Object(path='fixtures/1.1/bad-objects/E036_no_id')
         self.assertEqual(oo.id_from_inventory(), 'UNKNOWN-ID')
