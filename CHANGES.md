@@ -2,11 +2,13 @@
 
 ## 2024-XX-XX v1.4.0
 
-  * Drop Python 3.6 and 3.7 from testing, add 3.11
+  * Change from "1.0" to "1.1" as default specification version
   * Adjust for removed `E023_missing_file` fixture (https://github.com/OCFL/fixtures/pull/99)
   * Add note of specification version number in validation output
   * Ignore `logs` directory if present in object root (extra fixture https://github.com/OCFL/fixtures/issues/108)
   * Changed Object.show() method to Object.tree() that returns string
+  * Change validator to use `force_spec_version` to validate against a specific version and remove old `extract_spec_version` with that becoming the default behavior unless force is specified
+  * Drop Python 3.6 and 3.7 from testing, add 3.11
 
 ## 2022-04-26 v1.3.0
 

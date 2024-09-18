@@ -1,7 +1,9 @@
 """OCFL Inventory Validator.
 
 Code to validate the Python representation of an OCFL Inventory
-as read with json.load(). Does not examine anything in storage.
+as read with json.load(). Does not examine anything in storage and
+designed to be used on inventories alone or before any validation
+of files on storage.
 """
 import re
 
@@ -32,14 +34,15 @@ class InventoryValidator():
     """Class for OCFL Inventory Validator."""
 
     def __init__(self, log=None, where='???',
-                 lax_digests=False, spec_version='1.0'):
+                 lax_digests=False, default_spec_version='1.1'):
         """Initialize OCFL Inventory Validator."""
         self.log = ValidationLogger() if log is None else log
         self.where = where
-        self.spec_version = spec_version
+        self.default_spec_version = default_spec_version
         # Object state
         self.inventory = None
         self.id = None
+        self.spec_version = self.default_spec_version
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
         self.content_directory_set = False
@@ -60,15 +63,20 @@ class InventoryValidator():
         """Warning with added context."""
         self.log.warning(code, where=self.where, **args)
 
-    def validate(self, inventory, extract_spec_version=False):
+    def validate(self, inventory, force_spec_version=None):
         """Validate a given inventory.
 
-        If extract_spec_version is True then will look at the type value to determine
-        the specification version. In the case that there is no type value or it isn't
-        valid, then other tests will be based on the version given in self.spec_version.
+        Normally, code will look at the type value to determine the specification
+        version against which to validate the inventory. In the case that there
+        is no type value or it isn't valid, then other tests will be based on the
+        specification version given in self.default_spec_version.
+
+        If force_spec_version is set then the specified specification version
+        will be used for validation.
         """
         # Basic structure
         self.inventory = inventory
+        self.spec_version = self.default_spec_version if force_spec_version is None else force_spec_version
         if 'id' in inventory:
             iid = inventory['id']
             if not isinstance(iid, str) or iid == '':
@@ -85,7 +93,11 @@ class InventoryValidator():
             self.error("E036b")
         elif not isinstance(inventory['type'], str):
             self.error("E999")
-        elif extract_spec_version:
+        elif (force_spec_version
+                and inventory['type'] != 'https://ocfl.io/' + force_spec_version + '/spec/#inventory'):
+            self.error("E038a", expected='https://ocfl.io/' + force_spec_version + '/spec/#inventory', got=inventory['type'])
+        else:
+            # Extract specification version
             m = re.match(r'''https://ocfl.io/(\d+.\d)/spec/#inventory''', inventory['type'])
             if not m:
                 self.error('E038b', got=inventory['type'], assumed_spec_version=self.spec_version)
@@ -93,8 +105,6 @@ class InventoryValidator():
                 self.spec_version = m.group(1)
             else:
                 self.error("E038c", got=m.group(1), assumed_spec_version=self.spec_version)
-        elif inventory['type'] != 'https://ocfl.io/' + self.spec_version + '/spec/#inventory':
-            self.error("E038a", expected='https://ocfl.io/' + self.spec_version + '/spec/#inventory', got=inventory['type'])
         if 'digestAlgorithm' not in inventory:
             self.error("E036c")
         elif inventory['digestAlgorithm'] == 'sha512':

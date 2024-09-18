@@ -27,11 +27,15 @@ class ValidatorAbortException(Exception):
 class Validator():
     """Class for OCFL Validator."""
 
-    def __init__(self, log=None, show_warnings=False, show_errors=True, check_digests=True, lax_digests=False, lang='en'):
+    def __init__(self, log=None, show_warnings=False, show_errors=True,
+                 check_digests=True, lax_digests=False,
+                 force_spec_version=None, default_spec_version='1.1', lang='en'):
         """Initialize OCFL validator."""
         self.log = log
         self.check_digests = check_digests
         self.lax_digests = lax_digests
+        self.force_spec_version = force_spec_version
+        self.default_spec_version = default_spec_version
         if self.log is None:
             self.log = ValidationLogger(show_warnings=show_warnings, show_errors=show_errors, lang=lang)
         self.registered_extensions = [
@@ -56,7 +60,7 @@ class Validator():
         Must be called between attempts to validate objects.
         """
         self.id = None
-        self.spec_version = '1.0'  # default to latest published version
+        self.spec_version = self.default_spec_version
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
         self.inventory_digest_files = {}  # index by version_dir, algorithms may differ
@@ -138,7 +142,7 @@ class Validator():
             pass
         return self.log.num_errors == 0
 
-    def validate_inventory(self, inv_file, where='root', extract_spec_version=False):
+    def validate_inventory(self, inv_file, where='root', force_spec_version=None):
         """Validate a given inventory file, record errors with self.log.error().
 
         Returns inventory object for use in later validation
@@ -148,8 +152,8 @@ class Validator():
         where - used for reporting messages of where inventory is in object, will
             be either 'root' or the version directory
 
-        extract_spec_version - if set True will attempt to take spec_version from the
-            inventory itself instead of using the spec_version provided
+        force_spec_version - if set None will attempt to take spec_version from the
+            inventory itself instead of using the spec version provided
         """
         try:
             with self.obj_fs.openbin(inv_file, 'r') as fh:
@@ -159,8 +163,8 @@ class Validator():
             raise ValidatorAbortException
         inv_validator = InventoryValidator(log=self.log, where=where,
                                            lax_digests=self.lax_digests,
-                                           spec_version=self.spec_version)
-        inv_validator.validate(inventory, extract_spec_version=extract_spec_version)
+                                           default_spec_version=self.spec_version)
+        inv_validator.validate(inventory, force_spec_version=force_spec_version)
         return inventory, inv_validator
 
     def validate_inventory_digest(self, inv_file, digest_algorithm, where="root"):
@@ -280,7 +284,7 @@ class Validator():
                 # Note that inventories in prior versions may use different digest
                 # algorithms from the current invenotory. Also, they may accord
                 # with the same or earlier versions of the specification
-                version_inventory, inv_validator = self.validate_inventory(inv_file, where=version_dir, extract_spec_version=True)
+                version_inventory, inv_validator = self.validate_inventory(inv_file, where=version_dir)
                 this_spec_version = inv_validator.spec_version
                 digest_algorithm = inv_validator.digest_algorithm
                 self.validate_inventory_digest(inv_file, digest_algorithm, where=version_dir)

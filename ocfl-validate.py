@@ -61,8 +61,7 @@ for path in args.path:
         obj = ocfl.Object(lax_digests=args.lax_digests)
         if obj.validate_inventory(path,
                                   show_warnings=show_warnings,
-                                  show_errors=not args.very_quiet,
-                                  extract_spec_version=True):
+                                  show_errors=not args.very_quiet):
             num_good += 1
     else:
         log.error("Bad path %s (%s)", path, path_type)
