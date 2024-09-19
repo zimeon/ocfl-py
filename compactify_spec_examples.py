@@ -1,5 +1,10 @@
 #!/usr/bin/env python
-"""Compactify example JSON for spec."""
+"""Compactify example JSON for OCFL specification.
+
+Takes the long digests and replaces them with first 6 characters,
+an ellipsis, and then the last 6 characters. Input from stdin
+and output to stdout.
+"""
 import re
 import sys
 
