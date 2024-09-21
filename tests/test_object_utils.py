@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """Object tests."""
-import argparse
 import unittest
-from ocfl.object_utils import remove_first_directory, make_unused_filepath, next_version, add_object_args, add_shared_args, check_shared_args, find_path_type
+from ocfl.object_utils import remove_first_directory, make_unused_filepath, next_version, find_path_type
 
 
 class TestAll(unittest.TestCase):
@@ -40,29 +39,6 @@ class TestAll(unittest.TestCase):
         # overflow
         self.assertRaises(Exception, next_version, 'v09')
         self.assertRaises(Exception, next_version, 'v0999')
-
-    def test_add_object_args(self):
-        """Test (kinda) adding object args."""
-        parser = argparse.ArgumentParser()
-        add_object_args(parser)
-        args = parser.parse_args(['--skip', 'aa'])
-        self.assertIn('aa', args.skip)
-
-    def test_add_shared_args(self):
-        """Test (kinda) adding shared args."""
-        parser = argparse.ArgumentParser()
-        add_shared_args(parser)
-        args = parser.parse_args(['--version', '-v'])
-        self.assertTrue(args.version)
-        self.assertTrue(args.verbose)
-
-    def test_check_shared_args(self):
-        """Test check of shared args."""
-        parser = argparse.ArgumentParser()
-        add_shared_args(parser)
-        parser.parse_args(['--version', '-v'])
-        check_shared_args(parser.parse_args(['-v']))
-        self.assertRaises(SystemExit, check_shared_args, parser.parse_args(['--version']))
 
     def test_find_path_type(self):
         """Test find_path_type function."""

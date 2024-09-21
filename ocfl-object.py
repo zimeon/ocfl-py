@@ -1,10 +1,16 @@
 #!/usr/bin/env python
-"""OCFL Object and Inventory Builder."""
+"""OCFL Object and Inventory builder command line tool.
+
+This tool has no awareness of storage roots or the structure
+and requirements around them. It is designed to manipulate
+OCFL Objects or just Inventory files alone.
+"""
 import argparse
 import logging
 import sys
 
 import ocfl
+from ocfl.command_line_utils import add_version_metadata_args, add_object_args, add_shared_args, check_shared_args
 
 
 class FatalError(Exception):
@@ -54,11 +60,11 @@ def parse_arguments():
                             help='Destination Bagit bag path (alternative to --dstdir)')
 
     # Version metadata and object settings
-    ocfl.add_version_metadata_args(obj_params)
-    ocfl.add_object_args(obj_params)
-    ocfl.add_shared_args(parser)
+    add_version_metadata_args(obj_params)
+    add_object_args(obj_params)
+    add_shared_args(parser)
     args = parser.parse_args()
-    ocfl.check_shared_args(args)
+    check_shared_args(args)
 
     # Require command and only one command
     cmds = ['create', 'build', 'update', 'show', 'validate', 'extract']
@@ -143,7 +149,6 @@ def do_object_operation(args):
 if __name__ == "__main__":
     try:
         aargs = parse_arguments()
-        logging.basicConfig(level=logging.INFO if aargs.verbose else logging.WARN)
         do_object_operation(aargs)
     except (FatalError, ocfl.ObjectException) as e:
         # Show message but otherwise exit quietly

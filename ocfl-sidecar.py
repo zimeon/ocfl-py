@@ -5,6 +5,7 @@ import logging
 import os.path
 
 import ocfl
+from ocfl.command_line_utils import add_shared_args, check_shared_args
 
 INVENTORY_NAME = "inventory.json"
 
@@ -17,9 +18,9 @@ def parse_arguments():
                         help="OCFL inventory files or directories containing them")
     parser.add_argument("--digest", default=None,
                         help="Digest algorithm to use overriding any in inventory")
-    ocfl.add_shared_args(parser)
+    add_shared_args(parser)
     args = parser.parse_args()
-    ocfl.check_shared_args(args)
+    check_shared_args(args)
     return args
 
 
@@ -44,7 +45,6 @@ def create_sidecar(args, directory):
 def main():
     """Run from command line."""
     args = parse_arguments()
-    logging.basicConfig(level=logging.INFO if args.verbose else logging.WARN)
     paths = ["."] if len(args.path) == 0 else args.path
     for path in paths:
         logging.info("Looking at path %s", path)

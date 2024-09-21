@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Utility functions to support the OCFL Object library."""
 import re
-import sys
 
 import fs
 import fs.path
@@ -16,42 +15,6 @@ NORMALIZATIONS = ['uri', 'md5']  # Must match possibilities in map_filepaths()
 
 class ObjectException(Exception):
     """Exception class for OCFL Object."""
-
-
-def add_object_args(parser):
-    """Add Object settings to argparse or argument group instance parser."""
-    # Disk scanning
-    parser.add_argument('--skip', action='append', default=['README.md', '.DS_Store'],
-                        help='directories and files to ignore')
-    parser.add_argument('--normalization', '--norm', default=None,
-                        help='filepath normalization strategy (None, %s)' %
-                        (', '.join(NORMALIZATIONS)))
-    # Versioning strategy settings
-    parser.add_argument('--no-forward-delta', action='store_true',
-                        help='do not use forward deltas')
-    parser.add_argument('--no-dedupe', '--no-dedup', action='store_true',
-                        help='do not use deduplicate files within a version')
-    # Validation settings
-    parser.add_argument('--lax-digests', action='store_true',
-                        help='allow use of any known digest')
-    # Object files
-    parser.add_argument('--objdir', '--obj',
-                        help='read from or write to OCFL object directory objdir')
-
-
-def add_shared_args(parser):
-    """Add arguments to be shared by any ocfl-py scripts."""
-    parser.add_argument('--verbose', '-v', action='store_true',
-                        help="be more verbose")
-    parser.add_argument('--version', action='store_true',
-                        help='Show version number and exit')
-
-
-def check_shared_args(args):
-    """Check arguments set with add_shared_args."""
-    if args.version:
-        print("%s is part of ocfl-py version %s" % (fs.path.basename(sys.argv[0]), __version__))
-        sys.exit(0)
 
 
 def next_version(version):

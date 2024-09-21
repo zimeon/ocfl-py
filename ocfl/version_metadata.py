@@ -2,19 +2,6 @@
 from .w3c_datetime import datetime_to_str
 
 
-def add_version_metadata_args(parser):
-    """Add version metadata settings to argparse instance parser."""
-    parser.add_argument('--created', default=None,
-                        help='creation time to be used with version(s) added, else '
-                             'current time will be recorded')
-    parser.add_argument('--message', default=None,
-                        help='message to be recorded with version(s) added')
-    parser.add_argument('--name', default=None,
-                        help='name of user adding version(s) to object')
-    parser.add_argument('--address', default=None,
-                        help='address of user adding version(s) to object')
-
-
 class VersionMetadataException(Exception):
     """Exception class for OCFL Object."""
 
