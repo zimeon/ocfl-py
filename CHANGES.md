@@ -1,7 +1,8 @@
 # ocfl-py changelog
 
-## 2024-XX-XX v1.4.0
+## 2024-XX-XX v2.0.0
 
+  * SIGNIFICANT REWORKING to align better with specification language and approach. Includes refactoring, command line tool changes, and API changes.
   * Change from "1.0" to "1.1" as default specification version
   * Adjust for removed `E023_missing_file` fixture (https://github.com/OCFL/fixtures/pull/99)
   * Add note of specification version number in validation output
