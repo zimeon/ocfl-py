@@ -1,20 +1,18 @@
-"""Identity layout tests."""
-import os.path
+"""0003: Hashed Truncated N-tuple Trees with Object ID layout tests."""
 import unittest
-from ocfl.layout_0003_hash_and_id_n_tuple import Layout_0003_Hash_And_Id_N_Tuple, _percent_encode, _get_encapsulation_directory, _id_to_path
+from ocfl.layout_0003_hash_and_id_n_tuple import Layout_0003_Hash_And_Id_N_Tuple, _percent_encode, _id_to_path
 
 
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
     def test__percent_encode(self):
-          self.assertEqual(_percent_encode('.'), '%2e')
-          self.assertEqual(_percent_encode('ç'), '%c3%a7')
-
-    def test__get_encapsulation_directory(self):
-        pass
+        """Test _percent_encode function."""
+        self.assertEqual(_percent_encode('.'), '%2e')
+        self.assertEqual(_percent_encode('ç'), '%c3%a7')
 
     def test__id_to_path(self):
+        """Test _id_to_path function."""
         self.assertEqual(_id_to_path(identifier='object-01', digest_algorithm='sha256', tuple_size=3, number_of_tuples=3),
                          '3c0/ff4/240/object-01')
         self.assertEqual(_id_to_path(identifier='object-01', digest_algorithm='md5', tuple_size=3, number_of_tuples=3),

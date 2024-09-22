@@ -1,4 +1,4 @@
-"""0002 0003: Hashed Truncated N-tuple Trees with Object ID Encapsulating Directory for OCFL Storage Hierarchies handler.
+"""0003: Hashed Truncated N-tuple Trees with Object ID Encapsulating Directory for OCFL Storage Hierarchies handler.
 
 Specified by: https://ocfl.github.io/extensions/0003-hash-and-id-n-tuple-storage-layout.html
 """
@@ -12,7 +12,7 @@ from .layout import Layout, LayoutException
 
 
 def _percent_encode(c):
-    """Function to return % encoded version of string c."""
+    """Return % encoded version of string c."""
     c_bytes = c.encode('utf8')
     s = ''
     for b in c_bytes:
@@ -21,6 +21,7 @@ def _percent_encode(c):
 
 
 def _get_encapsulation_directory(object_id, digest):
+    """Return directory to encapsulate object."""
     d = ''
     for c in object_id:
         if re.match(r'[A-Za-z0-9-_]{1}', c):
@@ -33,12 +34,12 @@ def _get_encapsulation_directory(object_id, digest):
 
 
 def _id_to_path(identifier, digest_algorithm, tuple_size, number_of_tuples):
-    """Function to get storage path from identifier."""
+    """Return storage path from identifier."""
     digest = string_digest(identifier, digest_algorithm)
     digest = digest.lower()  # Not necessary for current digests
     path = ''
     for i in range(number_of_tuples):
-        tuple = digest[i*tuple_size:i*tuple_size+tuple_size]
+        tuple = digest[i * tuple_size:i * tuple_size + tuple_size]
         path = os.path.join(path, tuple)
     encapsulation_directory = _get_encapsulation_directory(identifier, digest=digest)
     path = os.path.join(path, encapsulation_directory)

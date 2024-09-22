@@ -48,14 +48,3 @@ class Ntree(Layout):
         if self.encapsulate:
             segments.append(identifier)
         return os.path.join(*segments)  # pylint: disable=no-value-for-parameter
-
-    def relative_path_to_identifier(self, path):
-        """Convert relative path to identifier."""
-        encap_id = ''
-        if self.encapsulate:
-            (path, encap_id) = os.path.split(path)
-        # Combine all directories
-        identifier = ''.join(path.split(os.sep))
-        if self.encapsulate and identifier != encap_id:
-            raise Exception("Bad ntree path: id from path (%s) does not match encapsulation id (%s)" % (identifier, encap_id))
-        return identifier

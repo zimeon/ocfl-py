@@ -42,28 +42,3 @@ class TestAll(unittest.TestCase):
         self.assertEqual(nt.identifier_to_path('abcdefg'), 'abc/def/g/abcdefg')
         self.assertEqual(nt.identifier_to_path('abcdefgh'), 'abc/def/gh/abcdefgh')
         self.assertEqual(nt.identifier_to_path('abcdefghi'), 'abc/def/ghi/abcdefghi')
-
-    def test03_path_to_identifier(self):
-        """Test path interpretation."""
-        nt = Ntree(n=2, encapsulate=False)
-        self.assertEqual(nt.path_to_identifier(''), '')
-        self.assertEqual(nt.path_to_identifier('a'), 'a')
-        self.assertEqual(nt.path_to_identifier('ab'), 'ab')
-        self.assertEqual(nt.path_to_identifier('ab/c'), 'abc')
-        self.assertEqual(nt.path_to_identifier('ab/cd/e'), 'abcde')
-        nt = Ntree(n=3, encapsulate=False)
-        self.assertEqual(nt.path_to_identifier('abc/def/g'), 'abcdefg')
-        self.assertEqual(nt.path_to_identifier('abc/def/gh'), 'abcdefgh')
-        self.assertEqual(nt.path_to_identifier('abc/def/ghi'), 'abcdefghi')
-        nt = Ntree(n=2)
-        self.assertEqual(nt.path_to_identifier(''), '')
-        self.assertEqual(nt.path_to_identifier('a/a'), 'a')
-        self.assertEqual(nt.path_to_identifier('ab/ab'), 'ab')
-        self.assertEqual(nt.path_to_identifier('ab/c/abc'), 'abc')
-        self.assertEqual(nt.path_to_identifier('ab/cd/e/abcde'), 'abcde')
-        nt = Ntree(n=3)
-        self.assertEqual(nt.path_to_identifier('abc/def/g/abcdefg'), 'abcdefg')
-        self.assertEqual(nt.path_to_identifier('abc/def/gh/abcdefgh'), 'abcdefgh')
-        self.assertEqual(nt.path_to_identifier('abc/def/ghi/abcdefghi'), 'abcdefghi')
-        # Bad ones
-        self.assertRaises(Exception, nt.path_to_identifier, 'abc/def/g/a-diff-g')

@@ -61,13 +61,3 @@ class Layout:
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to some root."""
         raise Exception("No yet implemented")
-
-    def relative_path_to_identifier(self, path):
-        """Convert relative path to identifier."""
-        raise Exception("No yet implemented")
-
-    def path_to_identifier(self, path, root=None):
-        """Convert path relative to root to identifier."""
-        if root is not None:
-            path = self.strip_root(path, root)
-        return self.relative_path_to_identifier(path)

@@ -54,6 +54,7 @@ class Store():
         """Initialize OCFL Storage Root."""
         self.root = root
         self.layout_name = layout_name
+        self.layout_description = None
         self.lax_digests = lax_digests
         self._layout = None  # Lazily initialized in layout property
         #
@@ -61,15 +62,12 @@ class Store():
         self.spec_file = 'ocfl_1.0.txt'
         self.layout_file = 'ocfl_layout.json'
         self.registered_extensions = [
-            # '0002-flat-direct-storage-layout',  # not included because doesn't have config
-            '0003-hash-and-id-n-tuple-storage-layout',
-            '0004-hashed-n-tuple-storage-layout'
+            '0002-flat-direct-storage-layout',
+            '0003-hash-and-id-n-tuple-storage-layout'
         ]
         #
         self.root_fs = None
         self.num_traversal_errors = 0
-        self.extension = None
-        self.description = None
         self.log = None
         self.num_objects = 0
         self.good_objects = 0

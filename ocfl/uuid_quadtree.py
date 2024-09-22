@@ -39,16 +39,3 @@ class UUIDQuadtree(Layout):
             raise Exception("UUIDQuadtree identifier %s not valid" % (identifier))
         return os.path.join(match.group(1), match.group(2), match.group(3), match.group(4),
                             match.group(5), match.group(6), match.group(7), match.group(8))
-
-    def relative_path_to_identifier(self, path):
-        """Convert relative path to identifier."""
-        # Combine all directories
-        segments = path.split(os.sep)
-        if len(segments) != 8:
-            raise Exception("Exepected path 8 segments in UUIDQuadtree, got %d from %s" % (len(segments), path))
-        for segment in segments:
-            if not re.match(r'''[\da-f]{4}$''', segment):
-                raise Exception("Bad path segment %s in UUIDQuadtree path %s" % (segment, path))
-        return (self.prefix + segments[0] + segments[1] + '-'
-                            + segments[2] + '-' + segments[3] + '-' + segments[4] + '-'
-                            + segments[5] + segments[6] + segments[7])
