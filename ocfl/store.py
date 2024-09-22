@@ -147,9 +147,9 @@ class Store():
                 if self.layout.name == self.layout_name:
                     logging.info("Storage root layout is %s", self.layout_name)
                 else:
-                    logging.warn("Non-canonical layout name %s, should be %s", self.layout_name, self.layout.name)
+                    logging.warning("Non-canonical layout name %s, should be %s", self.layout_name, self.layout.name)
             except StoreException as e:
-                raise StoreException("Storage root %s includes ocfl_layout.json with unknown layout %s" % (self.root, self.layout_name))
+                raise StoreException("Storage root %s includes ocfl_layout.json with unknown layout %s (%s)" % (self.root, self.layout_name, str(e)))
         # Other files are allowed...
         return True
 
@@ -171,7 +171,6 @@ class Store():
                 or 'description' not in layout or not isinstance(layout['description'], str)):
             raise StoreException("Storage root %s has layout file doesn't have required extension and description string entries" % (self.root))
         return layout['extension'], layout['description']
-
 
     def object_paths(self):
         """Generate object paths for every obect in the OCFL storage root.

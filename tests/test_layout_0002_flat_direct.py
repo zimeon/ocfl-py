@@ -8,6 +8,7 @@ class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
     def test_name(self):
+        """Test canonical name."""
         self.assertEqual(Layout_0002_Flat_Direct().name, '0002-flat-direct-storage-layout')
 
     def test_identifier_to_path(self):

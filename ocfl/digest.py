@@ -70,6 +70,20 @@ def file_digest(filename, digest_type='sha512', pyfs=None):
     raise ValueError("Unsupport digest type %s" % (digest_type))
 
 
+def string_digest(txt, digest_type='sha512'):
+    """Digest of txt string with given digest in normalized form."""
+    txt_enc = txt.encode('utf8')
+    if digest_type == 'sha512':
+        return hashlib.sha512(txt_enc).hexdigest()
+    if digest_type == 'sha256':
+        return hashlib.sha256(txt_enc).hexdigest()
+    if digest_type == 'sha1':
+        return hashlib.sha1(txt_enc).hexdigest()
+    if digest_type == 'md5':
+        return hashlib.md5(txt_enc).hexdigest()
+    raise ValueError("Unsupport digest type %s" % (digest_type))
+
+
 DIGEST_REGEXES = {
     'sha512': r'''^[0-9a-fA-F]{128}$''',
     'sha256': r'''^[0-9a-fA-F]{64}$''',

@@ -12,7 +12,7 @@ class Layout_0002_Flat_Direct(Layout):
 
     @property
     def name(self):
-        """Canonical name"""
+        """Canonical name."""
         return "0002-flat-direct-storage-layout"
 
     def identifier_to_path(self, identifier):
@@ -22,11 +22,7 @@ class Layout_0002_Flat_Direct(Layout):
         return identifier
 
     def relative_path_to_identifier(self, path):
-        """Convert relative path to identifier.
-
-        It is an error to include more than one path segment so raise
-        and exception if os.sep exists in the path.
-        """
+        """Convert relative path to identifier."""
         if os.sep in path:
             raise Exception("Relative path in Identity layout must not have multiple path segments!")
         return self.decode(path)

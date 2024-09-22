@@ -10,7 +10,7 @@ class Layout_NNNN_Flat_Quoted(Layout):
     @property
     def name(self):
         """Canonical name of this layout extension."""
-        return("nnnn-flat-quoted-storage-layout")
+        return "nnnn-flat-quoted-storage-layout"
 
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to root."""
