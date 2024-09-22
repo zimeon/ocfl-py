@@ -10,7 +10,7 @@ The `--version` argument will show version number and exit
 
 ```
 > python ocfl-sidecar.py --version
-ocfl-sidecar.py is part of ocfl-py version 1.4.0
+ocfl-sidecar.py is part of ocfl-py version 1.9.0
 ```
 
 
@@ -20,7 +20,7 @@ ocfl-sidecar.py is part of ocfl-py version 1.4.0
 
 ```
 > mkdir -v tmp/obj
-mkdir: created directory 'tmp/obj'
+tmp/obj
 ```
 
 
@@ -28,7 +28,7 @@ mkdir: created directory 'tmp/obj'
 
 ```
 > cp -v fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json tmp/obj
-'fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json' -> 'tmp/obj/inventory.json'
+fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json -> tmp/obj/inventory.json
 ```
 
 

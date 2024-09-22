@@ -10,11 +10,11 @@ Imagine that we have a Bagit bag [`tests/testdata/bags/uaa_v1`](https://github.c
 
 ```
 > python ocfl-object.py --create --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v1 -v
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v1/data/my_content/dracula.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v1/data/my_content/poe.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v1/bagit.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v1/bag-info.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v1/manifest-sha512.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v1/data/my_content/dracula.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v1/data/my_content/poe.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v1/bagit.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v1/bag-info.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v1/manifest-sha512.txt
 INFO:ocfl.object:Created OCFL object info:bb123cd4567 in tmp/obj
 ```
 
@@ -55,13 +55,13 @@ If we have a bag [`tests/testdata/bags/uaa_v2`](https://github.com/zimeon/ocfl-p
 
 ```
 > python ocfl-object.py --update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v2 -v
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v2/data/my_content/a_second_copy_of_dracula.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v2/data/my_content/dracula.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v2/data/my_content/poe-nevermore.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v2/data/my_content/another_directory/a_third_copy_of_dracula.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v2/bagit.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v2/bag-info.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v2/manifest-sha512.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v2/data/my_content/a_second_copy_of_dracula.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v2/data/my_content/dracula.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v2/data/my_content/poe-nevermore.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v2/data/my_content/another_directory/a_third_copy_of_dracula.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v2/bagit.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v2/bag-info.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v2/manifest-sha512.txt
 INFO:ocfl.object:Will update info:bb123cd4567 v1 -> v2
 INFO:ocfl.object:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v2
 ```
@@ -96,12 +96,12 @@ Similarly we can `--update` with [`tests/testdata/bags/uaa_v3`](https://github.c
 
 ```
 > python ocfl-object.py --update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v3 -v
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v3/data/my_content/dracula.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v3/data/my_content/poe-nevermore.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v3/data/my_content/another_directory/a_third_copy_of_dracula.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v3/bagit.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v3/bag-info.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v3/manifest-sha512.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v3/data/my_content/dracula.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v3/data/my_content/poe-nevermore.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v3/data/my_content/another_directory/a_third_copy_of_dracula.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v3/bagit.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v3/bag-info.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v3/manifest-sha512.txt
 INFO:ocfl.object:Will update info:bb123cd4567 v2 -> v3
 INFO:ocfl.object:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v3
 ```
@@ -140,13 +140,13 @@ Finally, we can `--update` again with [`tests/testdata/bags/uaa_v4`](https://git
 
 ```
 > python ocfl-object.py --update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v4 -v
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v4/data/my_content/dracula.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v4/data/my_content/dunwich.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v4/data/my_content/poe-nevermore.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v4/data/my_content/another_directory/a_third_copy_of_dracula.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v4/bagit.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v4/bag-info.txt
-INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v4/manifest-sha512.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v4/data/my_content/dracula.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v4/data/my_content/dunwich.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v4/data/my_content/poe-nevermore.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v4/data/my_content/another_directory/a_third_copy_of_dracula.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v4/bagit.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v4/bag-info.txt
+INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v4/manifest-sha512.txt
 INFO:ocfl.object:Will update info:bb123cd4567 v3 -> v4
 INFO:ocfl.object:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v4
 ```
@@ -161,8 +161,8 @@ Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` cont
 INFO:ocfl.object:Extracted v4 into tmp/extracted_v4
 INFO:bagit:Creating bag for directory tmp/extracted_v4
 INFO:bagit:Creating data directory
-INFO:bagit:Moving my_content to tmp/extracted_v4/tmpbg3z426b/my_content
-INFO:bagit:Moving tmp/extracted_v4/tmpbg3z426b to data
+INFO:bagit:Moving my_content to /privatetmp/extracted_v4/tmpencsvfim/my_content
+INFO:bagit:Moving /privatetmp/extracted_v4/tmpencsvfim to data
 INFO:bagit:Using 1 processes to generate manifests: sha512
 INFO:bagit:Generating manifest lines for file data/my_content/dracula.txt
 INFO:bagit:Generating manifest lines for file data/my_content/dunwich.txt
@@ -184,17 +184,14 @@ We note that the OCFL object had only one `content` file in `v4` but the extract
 diff -r tmp/extracted_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
 1,2c1
 < Bag-Software-Agent: bagit.py v1.8.1 <https://github.com/LibraryOfCongress/bagit-python>
-< Bagging-Date: 2024-09-18
+< Bagging-Date: 2024-09-21
 ---
 > Bagging-Date: 2020-01-04
 diff -r tmp/extracted_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagmanifest-sha512.txt
-1d0
-< 5c2e2b9cacc93cb315d57f09fac6d199c3378313b6cf918bb0a70e1839c4e4c0c2e5a7f9ae869cf7755e09a196a835be1af7c510d3d5faa5d0c0b3f6be9f816a manifest-sha512.txt
-3c2,3
-< 0a78f6216eb591c273b67b496912af2d83e9275a4e0e81bcbe9a0064361aa41b3fa2151c0b2c39af524de1ac8b8ab8769551a4ee9f66d71d0207195b05443bfa bag-info.txt
+2c2
+< 739a49c2e667abf35527f926185ff7d06f207a5c350e3ba563c8343bc76faa4d4832a429a401664968518744630865560111cb55592c681b67e118eceb63ffa4 bag-info.txt
 ---
 > 10624e6d45462def7af66d1a0d977606c7b073b01809c1d42258cfab5c34a275480943cbe78044416aee1f23822cc3762f92247b8f39b5c6ddc5ae32a8f94ce5 bag-info.txt
-> 5c2e2b9cacc93cb315d57f09fac6d199c3378313b6cf918bb0a70e1839c4e4c0c2e5a7f9ae869cf7755e09a196a835be1af7c510d3d5faa5d0c0b3f6be9f816a manifest-sha512.txt
 ```
 
 (last command exited with return code 1)

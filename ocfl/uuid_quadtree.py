@@ -6,7 +6,7 @@ import os
 import os.path
 import re
 
-from .dispositor import Dispositor
+from .layout import Dispositor
 
 
 class UUIDQuadtree(Dispositor):

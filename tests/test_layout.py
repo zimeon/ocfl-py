@@ -1,6 +1,6 @@
-"""Dispositor base class tests."""
+"""Digest tests."""
 import unittest
-from ocfl.dispositor import Dispositor
+from ocfl.layout import Dispositor
 
 
 class TestAll(unittest.TestCase):

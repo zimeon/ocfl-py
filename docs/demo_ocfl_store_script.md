@@ -10,7 +10,7 @@ The `--version` argument will show version number and exit (but we still tave to
 
 ```
 > python ocfl-store.py --version --root=tmp/root --list
-ocfl-store.py is part of ocfl-py version 1.4.0
+ocfl-store.py is part of ocfl-py version 1.9.0
 ```
 
 
@@ -35,7 +35,7 @@ INFO:root:Found 0 OCFL Objects under root tmp/root
 ### 2.3 Add object
 
 ```
-> python ocfl-store.py --root=tmp/root --add --src fixtures/1.0/good-objects/minimal_one_version_one_file --disposition identity -v
+> python ocfl-store.py --root=tmp/root --add --src fixtures/1.0/good-objects/minimal_one_version_one_file --layout identity -v
 INFO:root:Copying from fixtures/1.0/good-objects/minimal_one_version_one_file to tmp/root/ark%3A123%2Fabc
 INFO:root:Copied
 ```

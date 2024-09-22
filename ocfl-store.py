@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(description='Manpulate or validate an OCFL Stor
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--root',
                     help='OCFL Storage Root path (must be supplied either via --root or $OCFL_ROOT)')
-parser.add_argument('--disposition', '-d', default=None,
+parser.add_argument('--layout', '-d', default=None,
                     help='Disposition of objects under root')
 parser.add_argument('--quiet', '-q', action='store_true',
                     help="be quiet, do not show warnings")
@@ -55,7 +55,7 @@ check_shared_args(args)
 
 try:
     store = ocfl.Store(root=get_storage_root(args),
-                       disposition=args.disposition,
+                       layout=args.layout,
                        lax_digests=args.lax_digests)
     if args.init:
         store.initialize()

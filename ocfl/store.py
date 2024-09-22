@@ -6,15 +6,35 @@ should enable application beyond the operating system filesystem.
 import json
 import logging
 import re
+
 import fs
 from fs.copy import copy_dir
 
-from .disposition import get_dispositor
 from .namaste import find_namastes, Namaste
 from .object import Object
 from .pyfs import open_fs, ocfl_walk, ocfl_opendir
 from .validator import Validator
 from .validation_logger import ValidationLogger
+
+# Specific layout
+from .identity import Identity
+from .ntree import Ntree
+from .uuid_quadtree import UUIDQuadtree
+
+
+def get_dispositor(layout=None):
+    """Find Dispositor object for the given layout."""
+    if layout == 'pairtree':
+        return Ntree(n=2)
+    if layout == 'tripletree':
+        return Ntree(n=3)
+    if layout == 'quadtree':
+        return Ntree(n=4)
+    if layout == 'uuid_quadtree':
+        return UUIDQuadtree()
+    if layout == 'identity':
+        return Identity()
+    raise Exception("Unsupported layout %s, aborting!" % (layout))
 
 
 class StoreException(Exception):
@@ -24,10 +44,10 @@ class StoreException(Exception):
 class Store():
     """Class for handling OCFL Storage Root and include OCFL Objects."""
 
-    def __init__(self, root=None, disposition=None, lax_digests=False):
+    def __init__(self, root=None, layout=None, lax_digests=False):
         """Initialize OCFL Storage Root."""
         self.root = root
-        self.disposition = disposition
+        self.layout = layout
         self.lax_digests = lax_digests
         self._dispositor = None
         #
@@ -62,7 +82,7 @@ class Store():
         Lazily initialized.
         """
         if not self._dispositor:
-            self._dispositor = get_dispositor(disposition=self.disposition)
+            self._dispositor = get_dispositor(layout=self.layout)
         return self._dispositor
 
     def traversal_error(self, code, **kwargs):
@@ -89,10 +109,10 @@ class Store():
         # Create root declaration
         Namaste(d=0, content=self.declaration_tvalue).write(pyfs=self.root_fs)
         # Create a layout declaration
-        if self.disposition is not None:
+        if self.layout is not None:
             with self.root_fs.open(self.layout_file, 'w') as fh:
-                layout = {'extension': self.disposition,
-                          'description': "Non-standard layout from ocfl-py disposition -- FIXME"}
+                layout = {'extension': self.layout,
+                          'description': "Non-standard layout from ocfl-py layout -- FIXME"}
                 json.dump(layout, fh, sort_keys=True, indent=2)
         logging.info("Created OCFL storage root %s", self.root)
 

@@ -1,11 +1,11 @@
 """Identity mapping of identifier to directory structure."""
 import os
 
-from .dispositor import Dispositor
+from .layout import Dispositor
 
 
 class Identity(Dispositor):
-    """Class to support trivial identity disposition."""
+    """Class to support trivial identity layout."""
 
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to root."""

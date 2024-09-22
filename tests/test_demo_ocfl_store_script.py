@@ -34,7 +34,7 @@ class TestAll(DemoTestCase):
                                "--root=TMPDIR/root",
                                "--add",
                                "--src", "fixtures/1.0/good-objects/minimal_one_version_one_file",
-                               "--disposition", "identity",
+                               "--layout", "identity",
                                "-v"])
         self.assertIn("Copying from fixtures/1.0/good-objects/minimal_one_version_one_file to", out)
         self.assertIn("root/ark%3A123%2Fabc", out)

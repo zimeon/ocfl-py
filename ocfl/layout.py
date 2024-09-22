@@ -1,11 +1,11 @@
-"""Base class for Dispositor objects."""
+"""Handle different storage layouts."""
 import os
 import os.path
 from urllib.parse import quote_plus, unquote_plus
 
 
 class Dispositor:
-    """Base class for disposition handlers -- let's call them Dispositors."""
+    """Base class for layout handlers -- let's call them Dispositors."""
 
     def strip_root(self, path, root):
         """Remove root from path, throw exception on failure."""

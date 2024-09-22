@@ -6,7 +6,7 @@ import os
 import tempfile
 import unittest
 
-from ocfl.store import Store, StoreException
+from ocfl.store import get_dispositor, Store, StoreException
 from ocfl.identity import Identity
 from ocfl.validation_logger import ValidationLogger
 
@@ -14,14 +14,30 @@ from ocfl.validation_logger import ValidationLogger
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
+    def test_get_dispositor(self):
+        """Test everything, just a little."""
+        d = get_dispositor('pairtree')
+        self.assertEqual(d.identifier_to_path('abcd'), 'ab/cd/abcd')
+        d = get_dispositor('tripletree')
+        self.assertEqual(d.identifier_to_path('abcd'), 'abc/d/abcd')
+        d = get_dispositor('quadtree')
+        self.assertEqual(d.identifier_to_path('abcde'), 'abcd/e/abcde')
+        d = get_dispositor('uuid_quadtree')
+        self.assertEqual(d.identifier_to_path('urn:uuid:6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
+                         '6ba7/b810/9dad/11d1/80b4/00c0/4fd4/30c8')
+        # Errors
+        self.assertRaises(Exception, get_dispositor)
+        self.assertRaises(Exception, get_dispositor, None)
+        self.assertRaises(Exception, get_dispositor, 'unknown')
+
     def test_init(self):
         """Test Store init."""
         s = Store()
         self.assertEqual(s.root, None)
-        self.assertEqual(s.disposition, None)
-        s = Store(root='a', disposition='b')
+        self.assertEqual(s.layout, None)
+        s = Store(root='a', layout='b')
         self.assertEqual(s.root, 'a')
-        self.assertEqual(s.disposition, 'b')
+        self.assertEqual(s.layout, 'b')
 
     def test_open_root_fs(self):
         """Test open_root_fs method."""
@@ -42,7 +58,7 @@ class TestAll(unittest.TestCase):
 
     def test_dispositor(self):
         """Test dispositor property."""
-        s = Store(root='x', disposition='identity')
+        s = Store(root='x', layout='identity')
         self.assertTrue(isinstance(s.dispositor, Identity))
 
     def test_traversal_error(self):
@@ -54,25 +70,25 @@ class TestAll(unittest.TestCase):
 
     def test_object_path(self):
         """Test object_path method."""
-        s = Store(root='x/y', disposition='identity')
+        s = Store(root='x/y', layout='identity')
         self.assertEqual(s.object_path('id1'), 'id1')
-        s = Store(root='z/a', disposition='uuid_quadtree')
+        s = Store(root='z/a', layout='uuid_quadtree')
         self.assertEqual(s.object_path('urn:uuid:6ba7b810-9dad-11d1-80b4-00c04fd430c8'), '6ba7/b810/9dad/11d1/80b4/00c0/4fd4/30c8')
 
     def test_initialize(self):
         """Test initialize method."""
         tempdir = tempfile.mkdtemp(prefix='test_init')
-        s = Store(root=tempdir, disposition='identity')
+        s = Store(root=tempdir, layout='identity')
         self.assertRaises(StoreException, s.initialize)
         tempdir = os.path.join(tempdir, 'aaa')
-        s = Store(root=tempdir, disposition='identity')
+        s = Store(root=tempdir, layout='identity')
         s.initialize()
         self.assertTrue(os.path.isfile(os.path.join(tempdir, '0=ocfl_1.0')))
 
     def test_check_root_structure(self):
         """Test check_root_structure method."""
         tempdir = os.path.join(tempfile.mkdtemp(prefix='test_root'), 'rrr')
-        s = Store(root=tempdir, disposition='identity')
+        s = Store(root=tempdir, layout='identity')
         # No declaration
         os.mkdir(tempdir)
         s.open_root_fs()

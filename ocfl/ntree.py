@@ -16,11 +16,11 @@ import os
 import os.path
 from pairtree import id_encode, id_decode
 
-from .dispositor import Dispositor
+from .layout import Dispositor
 
 
 class Ntree(Dispositor):
-    """Class to support pairtree and related dispositions."""
+    """Class to support pairtree and related layouts."""
 
     def __init__(self, n=2, encapsulate=True):
         """Initialize Dispositor."""
