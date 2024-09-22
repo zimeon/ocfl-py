@@ -1,22 +1,22 @@
-"""Identity dispositor tests."""
+"""Identity layout tests."""
 import os.path
 import unittest
-from ocfl.identity import Identity
+from ocfl.layout_nnnn_flat_quoted import Layout_NNNN_Flat_Quoted
 
 
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
-    def test01_identifier_to_path(self):
+    def test_identifier_to_path(self):
         """Test identifier_to_path."""
-        d = Identity()
+        d = Layout_NNNN_Flat_Quoted()
         self.assertEqual(d.identifier_to_path(''), '')
         self.assertEqual(d.identifier_to_path('abc'), 'abc')
         self.assertEqual(d.identifier_to_path('this n that'), 'this+n+that')
 
-    def test02_relative_path_to_identifier(self):
+    def test_relative_path_to_identifier(self):
         """Test relative_path_to_identifier."""
-        d = Identity()
+        d = Layout_NNNN_Flat_Quoted()
         self.assertEqual(d.relative_path_to_identifier(''), '')
         self.assertEqual(d.relative_path_to_identifier('abc'), 'abc')
         self.assertEqual(d.relative_path_to_identifier('this+n+that'), 'this n that')

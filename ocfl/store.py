@@ -16,25 +16,31 @@ from .pyfs import open_fs, ocfl_walk, ocfl_opendir
 from .validator import Validator
 from .validation_logger import ValidationLogger
 
-# Specific layout
-from .identity import Identity
+# Specific layouts
+from .layout_0002_flat_direct import Layout_0002_Flat_Direct
+from .layout_0003_hash_and_id_n_tuple import Layout_0003_Hash_And_Id_N_Tuple
+from .layout_nnnn_flat_quoted import Layout_NNNN_Flat_Quoted
 from .ntree import Ntree
 from .uuid_quadtree import UUIDQuadtree
 
 
-def get_dispositor(layout=None):
-    """Find Dispositor object for the given layout."""
-    if layout == 'pairtree':
+def get_layout(layout_name=None):
+    """Find Layout object for the given layout name."""
+    if layout_name in ('0002-flat-direct-storage-layout', '0002', 'flat-direct'):
+        return Layout_0002_Flat_Direct()
+    if layout_name in ('0003-hash-and-id-n-tuple-storage-layout', '0003'):
+        return Layout_0003_Hash_And_Id_N_Tuple()
+    if layout_name in ('nnnn-flat-quoted-storage-layout', 'flat-quoted'):
+        return Layout_NNNN_Flat_Quoted()
+    if layout_name == 'pairtree':
         return Ntree(n=2)
-    if layout == 'tripletree':
+    if layout_name == 'tripletree':
         return Ntree(n=3)
-    if layout == 'quadtree':
+    if layout_name == 'quadtree':
         return Ntree(n=4)
-    if layout == 'uuid_quadtree':
+    if layout_name == 'uuid_quadtree':
         return UUIDQuadtree()
-    if layout == 'identity':
-        return Identity()
-    raise Exception("Unsupported layout %s, aborting!" % (layout))
+    raise StoreException("Unsupported layout_name %s, aborting!" % (layout_name))
 
 
 class StoreException(Exception):
@@ -44,12 +50,12 @@ class StoreException(Exception):
 class Store():
     """Class for handling OCFL Storage Root and include OCFL Objects."""
 
-    def __init__(self, root=None, layout=None, lax_digests=False):
+    def __init__(self, root=None, layout_name=None, lax_digests=False):
         """Initialize OCFL Storage Root."""
         self.root = root
-        self.layout = layout
+        self.layout_name = layout_name
         self.lax_digests = lax_digests
-        self._dispositor = None
+        self._layout = None  # Lazily initialized in layout property
         #
         self.declaration_tvalue = 'ocfl_1.0'
         self.spec_file = 'ocfl_1.0.txt'
@@ -76,14 +82,14 @@ class Store():
             raise StoreException("Failed to open OCFL storage root filesystem '%s' (%s)" % (self.root, str(e)))
 
     @property
-    def dispositor(self):
-        """Instance of dispositor class.
+    def layout(self):
+        """Instance of layout class.
 
         Lazily initialized.
         """
-        if not self._dispositor:
-            self._dispositor = get_dispositor(layout=self.layout)
-        return self._dispositor
+        if not self._layout:
+            self._layout = get_layout(layout_name=self.layout_name)
+        return self._layout
 
     def traversal_error(self, code, **kwargs):
         """Record error traversing OCFL storage root."""
@@ -96,7 +102,7 @@ class Store():
 
     def object_path(self, identifier):
         """Path to OCFL object with given identifier relative to the OCFL storage root."""
-        return self.dispositor.identifier_to_path(identifier)
+        return self.layout.identifier_to_path(identifier)
 
     def initialize(self):
         """Create and initialize a new OCFL storage root."""
@@ -109,11 +115,10 @@ class Store():
         # Create root declaration
         Namaste(d=0, content=self.declaration_tvalue).write(pyfs=self.root_fs)
         # Create a layout declaration
-        if self.layout is not None:
-            with self.root_fs.open(self.layout_file, 'w') as fh:
-                layout = {'extension': self.layout,
-                          'description': "Non-standard layout from ocfl-py layout -- FIXME"}
-                json.dump(layout, fh, sort_keys=True, indent=2)
+        with self.root_fs.open(self.layout_file, 'w') as fh:
+            layout = {'extension': self.layout.name,
+                      'description': "Non-standard layout from ocfl-py layout -- FIXME"}
+            json.dump(layout, fh, sort_keys=True, indent=2)
         logging.info("Created OCFL storage root %s", self.root)
 
     def check_root_structure(self):
@@ -132,10 +137,19 @@ class Store():
             raise StoreException("Storage root %s declaration file not as expected, got %s" % (self.root, namastes[0].filename))
         if not namastes[0].content_ok(pyfs=self.root_fs):
             raise StoreException("Storage root %s required declaration file %s has invalid content" % (self.root, namastes[0].filename))
-        # Specification file and layout file
+        # Specification file
         if self.root_fs.exists(self.spec_file) and not self.root_fs.isfile(self.spec_file):
             raise StoreException("Storage root %s includes a specification entry that isn't a file" % (self.root))
-        self.extension, self.description = self.parse_layout_file()
+        # Layout file (if present)
+        if self.root_fs.exists(self.layout_file):
+            self.layout_name, self.layout_description = self.parse_layout_file()
+            try:
+                if self.layout.name == self.layout_name:
+                    logging.info("Storage root layout is %s", self.layout_name)
+                else:
+                    logging.warn("Non-canonical layout name %s, should be %s", self.layout_name, self.layout.name)
+            except StoreException as e:
+                raise StoreException("Storage root %s includes ocfl_layout.json with unknown layout %s" % (self.root, self.layout_name))
         # Other files are allowed...
         return True
 
@@ -144,23 +158,20 @@ class Store():
 
         Returns:
           - (extension, description) strings on success,
-          - (None, None) if there is now layout file (it is optional)
           - otherwise raises a StoreException.
         """
-        if self.root_fs.exists(self.layout_file):
-            try:
-                with self.root_fs.open(self.layout_file) as fh:
-                    layout = json.load(fh)
-                if not isinstance(layout, dict):
-                    raise StoreException("Storage root %s has layout file that isn't a JSON object" % (self.root))
-                if ('extension' not in layout or not isinstance(layout['extension'], str)
-                        or 'description' not in layout or not isinstance(layout['description'], str)):
-                    raise StoreException("Storage root %s has layout file doesn't have required extension and description string entries" % (self.root))
-                return layout['extension'], layout['description']
-            except Exception as e:  # FIXME - more specific?
-                raise StoreException("OCFL storage root %s has layout file that can't be read (%s)" % (self.root, str(e)))
-        else:
-            return None, None
+        try:
+            with self.root_fs.open(self.layout_file) as fh:
+                layout = json.load(fh)
+        except Exception as e:
+            raise StoreException("OCFL storage root %s has layout file that can't be read/parsed (%s)" % (self.root, str(e)))
+        if not isinstance(layout, dict):
+            raise StoreException("Storage root %s has layout file that isn't a JSON object" % (self.root))
+        if ('extension' not in layout or not isinstance(layout['extension'], str)
+                or 'description' not in layout or not isinstance(layout['description'], str)):
+            raise StoreException("Storage root %s has layout file doesn't have required extension and description string entries" % (self.root))
+        return layout['extension'], layout['description']
+
 
     def object_paths(self):
         """Generate object paths for every obect in the OCFL storage root.

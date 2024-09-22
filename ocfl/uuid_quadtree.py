@@ -6,14 +6,14 @@ import os
 import os.path
 import re
 
-from .layout import Dispositor
+from .layout import Layout
 
 
-class UUIDQuadtree(Dispositor):
+class UUIDQuadtree(Layout):
     """Class to support UUID URIs with quadtree directory names."""
 
     def __init__(self, prefix='urn:uuid:'):
-        """Initialize Dispositor."""
+        """Initialize Layout."""
         super().__init__()
         self.prefix = prefix
 

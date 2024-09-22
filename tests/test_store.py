@@ -6,38 +6,40 @@ import os
 import tempfile
 import unittest
 
-from ocfl.store import get_dispositor, Store, StoreException
-from ocfl.identity import Identity
+from ocfl.store import get_layout, Store, StoreException
+from ocfl.layout_0002_flat_direct import Layout_0002_Flat_Direct
 from ocfl.validation_logger import ValidationLogger
 
 
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
-    def test_get_dispositor(self):
+    def test_get_layout(self):
         """Test everything, just a little."""
-        d = get_dispositor('pairtree')
+        d = get_layout(layout_name='0002-flat-direct-storage-layout')
+        self.assertEqual(d.identifier_to_path('ab cd'), 'ab cd')
+        d = get_layout(layout_name='pairtree')
         self.assertEqual(d.identifier_to_path('abcd'), 'ab/cd/abcd')
-        d = get_dispositor('tripletree')
+        d = get_layout('tripletree')
         self.assertEqual(d.identifier_to_path('abcd'), 'abc/d/abcd')
-        d = get_dispositor('quadtree')
+        d = get_layout('quadtree')
         self.assertEqual(d.identifier_to_path('abcde'), 'abcd/e/abcde')
-        d = get_dispositor('uuid_quadtree')
+        d = get_layout('uuid_quadtree')
         self.assertEqual(d.identifier_to_path('urn:uuid:6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
                          '6ba7/b810/9dad/11d1/80b4/00c0/4fd4/30c8')
         # Errors
-        self.assertRaises(Exception, get_dispositor)
-        self.assertRaises(Exception, get_dispositor, None)
-        self.assertRaises(Exception, get_dispositor, 'unknown')
+        self.assertRaises(Exception, get_layout)
+        self.assertRaises(Exception, get_layout, None)
+        self.assertRaises(Exception, get_layout, 'unknown')
 
     def test_init(self):
         """Test Store init."""
         s = Store()
         self.assertEqual(s.root, None)
-        self.assertEqual(s.layout, None)
-        s = Store(root='a', layout='b')
+        self.assertEqual(s.layout_name, None)
+        s = Store(root='a', layout_name='b')
         self.assertEqual(s.root, 'a')
-        self.assertEqual(s.layout, 'b')
+        self.assertEqual(s.layout_name, 'b')
 
     def test_open_root_fs(self):
         """Test open_root_fs method."""
@@ -56,10 +58,10 @@ class TestAll(unittest.TestCase):
         s.open_root_fs(create=True)
         self.assertIsNot(s.root_fs, None)
 
-    def test_dispositor(self):
-        """Test dispositor property."""
-        s = Store(root='x', layout='identity')
-        self.assertTrue(isinstance(s.dispositor, Identity))
+    def test_layout(self):
+        """Test layout property."""
+        s = Store(root='x', layout_name='0002-flat-direct-storage-layout')
+        self.assertTrue(isinstance(s.layout, Layout_0002_Flat_Direct))
 
     def test_traversal_error(self):
         """Test traversal_error method."""
@@ -70,25 +72,25 @@ class TestAll(unittest.TestCase):
 
     def test_object_path(self):
         """Test object_path method."""
-        s = Store(root='x/y', layout='identity')
+        s = Store(root='x/y', layout_name='0002-flat-direct-storage-layout')
         self.assertEqual(s.object_path('id1'), 'id1')
-        s = Store(root='z/a', layout='uuid_quadtree')
+        s = Store(root='z/a', layout_name='uuid_quadtree')
         self.assertEqual(s.object_path('urn:uuid:6ba7b810-9dad-11d1-80b4-00c04fd430c8'), '6ba7/b810/9dad/11d1/80b4/00c0/4fd4/30c8')
 
     def test_initialize(self):
         """Test initialize method."""
         tempdir = tempfile.mkdtemp(prefix='test_init')
-        s = Store(root=tempdir, layout='identity')
+        s = Store(root=tempdir, layout_name='0002-flat-direct-storage-layout')
         self.assertRaises(StoreException, s.initialize)
         tempdir = os.path.join(tempdir, 'aaa')
-        s = Store(root=tempdir, layout='identity')
+        s = Store(root=tempdir, layout_name='0002-flat-direct-storage-layout')
         s.initialize()
         self.assertTrue(os.path.isfile(os.path.join(tempdir, '0=ocfl_1.0')))
 
     def test_check_root_structure(self):
         """Test check_root_structure method."""
         tempdir = os.path.join(tempfile.mkdtemp(prefix='test_root'), 'rrr')
-        s = Store(root=tempdir, layout='identity')
+        s = Store(root=tempdir, layout_name='0002-flat-direct-storage-layout')
         # No declaration
         os.mkdir(tempdir)
         s.open_root_fs()
@@ -121,7 +123,6 @@ class TestAll(unittest.TestCase):
         """Test parse_layout_file method."""
         s = Store(root="mem://")
         s.open_root_fs(create=True)
-        self.assertEqual(s.parse_layout_file(), (None, None))
         s.root_fs.writetext('ocfl_layout.json', '{"extension": "aa", "description": "bb"}')
         self.assertEqual(s.parse_layout_file(), ("aa", "bb"))
         s.root_fs.writetext('ocfl_layout.json', '["aa", "bb"]')

@@ -1,6 +1,6 @@
 """Digest tests."""
 import unittest
-from ocfl.layout import Dispositor
+from ocfl.layout import Layout
 
 
 class TestAll(unittest.TestCase):
@@ -8,8 +8,8 @@ class TestAll(unittest.TestCase):
 
     def test01_almost_everything(self):
         """Test almost everything, just a little."""
-        d = Dispositor()
-        self.assertEqual(type(d), Dispositor)
+        d = Layout()
+        self.assertEqual(type(d), Layout)
         self.assertEqual(d.strip_root('a/b', 'a'), 'b')
         self.assertEqual(d.strip_root('a/b', ''), 'a/b')
         self.assertEqual(d.strip_root('a/b/c', 'a/b/c'), '.')
@@ -31,6 +31,6 @@ class TestAll(unittest.TestCase):
 
     def test02_path_to_identifier(self):
         """Test path_to_identifier."""
-        d = Dispositor()
+        d = Layout()
         d.relative_path_to_identifier = lambda x: x  # so we get result from path_to_identifier
         self.assertEqual(d.path_to_identifier('a/b/c/', 'a/b'), 'c')

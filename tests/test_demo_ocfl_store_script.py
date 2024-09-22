@@ -22,6 +22,7 @@ class TestAll(DemoTestCase):
                               ["python", "ocfl-store.py",
                                "--root=TMPDIR/root",
                                "--init",
+                               "--layout=nnnn-flat-quoted-storage-layout",
                                "-v"])
         self.assertIn("Created OCFL storage root", out)
         out = self.run_script("List empty store",
@@ -34,7 +35,6 @@ class TestAll(DemoTestCase):
                                "--root=TMPDIR/root",
                                "--add",
                                "--src", "fixtures/1.0/good-objects/minimal_one_version_one_file",
-                               "--layout", "identity",
                                "-v"])
         self.assertIn("Copying from fixtures/1.0/good-objects/minimal_one_version_one_file to", out)
         self.assertIn("root/ark%3A123%2Fabc", out)
@@ -56,6 +56,7 @@ class TestAll(DemoTestCase):
         out = self.run_script("Create new store",
                               ["python", "ocfl-store.py",
                                "--root=TMPDIR/root",
+                               "--layout=0002-flat-direct-storage-layout",
                                "--init",
                                "-v"])
         self.assertIn("Created OCFL storage root", out)
