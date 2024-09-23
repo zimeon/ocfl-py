@@ -68,28 +68,30 @@ def parse_arguments():
 
 def do_store_operation(args):
     """Do operation on store based on args."""
-    store = ocfl.Store(root=get_storage_root(args),
-                       layout_name=args.layout,
-                       lax_digests=args.lax_digests)
+    store = ocfl.StorageRoot(root=get_storage_root(args),
+                             layout_name=args.layout,
+                             lax_digests=args.lax_digests)
     if args.cmd == 'init':
         store.initialize()
     elif args.cmd == 'list':
-        store.list()
+        for (dirpath, identifier) in store.list_objects():
+            print("%s -- id=%s" % (dirpath, identifier))
+        print("Found %d OCFL Objects under root %s" % (store.num_objects, store.root))
     elif args.cmd == 'validate':
         store.validate(show_warnings=not args.quiet)
     elif args.cmd == 'add':
         if not args.src:
-            raise ocfl.StoreException("Must specify object path with --src")
+            raise ocfl.StorageRootException("Must specify object path with --src")
         store.add(object_path=args.src)
     elif args.cmd == 'purge':
         logging.error("purge not implemented")
     elif args.cmd in ('show', 'validate_object'):
         if not args.id:
-            raise ocfl.StoreException("Must specify id to act on an object in the store")
+            raise ocfl.StorageRootException("Must specify id to act on an object in the store")
         objdir = store.object_path(args.id)
         obj = ocfl.Object(identifier=args.id)
         if args.cmd == 'show':
-            logging.warning("Object tree\n%s", obj.tree(objdir=args.objdir))
+            logging.warning("Object tree\n%s", obj.tree(objdir=objdir))
         else:
             logging.error("validate not implemented")
     else:
@@ -100,6 +102,6 @@ if __name__ == "__main__":
     try:
         aargs = parse_arguments()
         do_store_operation(aargs)
-    except (ocfl.StoreException, ocfl.ObjectException) as e:
+    except (ocfl.StorageRootException, ocfl.ObjectException) as e:
         logging.error(str(e))
         sys.exit(1)

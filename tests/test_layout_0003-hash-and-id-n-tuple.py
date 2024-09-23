@@ -26,7 +26,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(_id_to_path(identifier='..hor/rib:le-$id', digest_algorithm='sha256', tuple_size=3, number_of_tuples=3),
                          '487/326/d8c/%2e%2ehor%2frib%3ale-%24id')
         self.assertEqual(_id_to_path(identifier='..hor/rib:le-$id', digest_algorithm='md5', tuple_size=3, number_of_tuples=3),
-                         '083/197/66f/%2e%2ehor%2frib%3ale-%24id') #08319766fb6c2935dd175b94267717e0
+                         '083/197/66f/%2e%2ehor%2frib%3ale-%24id')  # digest: 08319766fb6c2935dd175b94267717e0
         self.assertEqual(_id_to_path(identifier='..Hor/rib:lè-$id', digest_algorithm='sha256', tuple_size=3, number_of_tuples=3),
                          '373/529/21a/%2e%2eHor%2frib%3al%c3%a8-%24id')
         long_object_id = 'abcdefghij' * 26

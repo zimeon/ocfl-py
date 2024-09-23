@@ -40,17 +40,18 @@ def get_layout(layout_name=None):
         return Ntree(n=4)
     if layout_name == 'uuid_quadtree':
         return UUIDQuadtree()
-    raise StoreException("Unsupported layout_name %s, aborting!" % (layout_name))
+    raise StorageRootException("Unsupported layout_name %s, aborting!" % (layout_name))
 
 
-class StoreException(Exception):
+class StorageRootException(Exception):
     """Exception class for OCFL Storage Root."""
 
 
-class Store():
+class StorageRoot():
     """Class for handling OCFL Storage Root and include OCFL Objects."""
 
-    def __init__(self, root=None, layout_name=None, lax_digests=False):
+    def __init__(self, root=None, layout_name=None, lax_digests=False,
+                 spec_version=None):
         """Initialize OCFL Storage Root."""
         self.root = root
         self.layout_name = layout_name
@@ -58,7 +59,9 @@ class Store():
         self.lax_digests = lax_digests
         self._layout = None  # Lazily initialized in layout property
         #
-        self.declaration_tvalue = 'ocfl_1.0'
+        if spec_version not in (None, '1.0', '1.1'):
+            raise StorageException("Unsupported OCFL specification version %s requested", spec_version)
+        self.spec_version = spec_version
         self.spec_file = 'ocfl_1.0.txt'
         self.layout_file = 'ocfl_layout.json'
         self.registered_extensions = [
@@ -77,7 +80,18 @@ class Store():
         try:
             self.root_fs = open_fs(self.root, create=create)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
-            raise StoreException("Failed to open OCFL storage root filesystem '%s' (%s)" % (self.root, str(e)))
+            raise StorageRootException("Failed to open OCFL storage root filesystem '%s' (%s)" % (self.root, str(e)))
+
+    def root_declaration_object(self):
+        """NAMASTE object declaration Namaste object."""
+        return Namaste(0, 'ocfl_' + self.spec_version)
+
+    def write_root_declaration(self, root_fs):
+        """Write NAMASTE object declaration.
+
+        Assumes self.obj_fs is open for this object.
+        """
+        self.root_declaration_object().write(pyfs=root_fs)
 
     @property
     def layout(self):
@@ -107,11 +121,13 @@ class Store():
         (parent, root_dir) = fs.path.split(self.root)
         parent_fs = open_fs(parent)
         if parent_fs.exists(root_dir):
-            raise StoreException("OCFL storage root %s already exists, aborting!" % (self.root))
+            raise StorageRootException("OCFL storage root %s already exists, aborting!" % (self.root))
         self.root_fs = parent_fs.makedir(root_dir)
-        logging.debug("Created OCFL storage root at %s", self.root)
+        logging.debug("Created OCFL storage root directory at %s", self.root)
         # Create root declaration
-        Namaste(d=0, content=self.declaration_tvalue).write(pyfs=self.root_fs)
+        if self.spec_version is None:
+            self.spec_version = '1.1'
+        self.write_root_declaration(self.root_fs)
         # Create a layout declaration
         with self.root_fs.open(self.layout_file, 'w') as fh:
             layout = {'extension': self.layout.name,
@@ -123,21 +139,28 @@ class Store():
         """Check the OCFL storage root structure.
 
         Assumed that self.root_fs filesystem is available. Raises
-        StoreException if there is an error.
+        StorageRootException if there is an error.
         """
         # Storage root declaration
         namastes = find_namastes(0, pyfs=self.root_fs)
         if len(namastes) == 0:
-            raise StoreException("Storage root %s lacks required 0= declaration file" % (self.root))
+            raise StorageRootException("Storage root %s lacks required 0= declaration file" % (self.root))
         if len(namastes) > 1:
-            raise StoreException("Storage root %s has more than one 0= style declaration file" % (self.root))
-        if namastes[0].tvalue != self.declaration_tvalue:
-            raise StoreException("Storage root %s declaration file not as expected, got %s" % (self.root, namastes[0].filename))
+            raise StorageRootException("Storage root %s has more than one 0= style declaration file" % (self.root))
+        spec_version = None
+        for version in ('1.1', '1.0'):
+            if namastes[0].filename == '0=ocfl_' + version:
+                spec_version = version
+                break
+        else:
+            raise StorageRootException("Storage root %s has unrecognized 0= declaration file %s" % (self.root, namastes[0].filename))
+        if self.spec_version is not None and self.spec_version != spec_version:
+            raise StorageRootException("Storage root %s 0= declaration is for spec version %s, not %s as expected" % (self.root, spec_version, self.spec_version))
         if not namastes[0].content_ok(pyfs=self.root_fs):
-            raise StoreException("Storage root %s required declaration file %s has invalid content" % (self.root, namastes[0].filename))
+            raise StorageRootException("Storage root %s required declaration file %s has invalid content" % (self.root, namastes[0].filename))
         # Specification file
         if self.root_fs.exists(self.spec_file) and not self.root_fs.isfile(self.spec_file):
-            raise StoreException("Storage root %s includes a specification entry that isn't a file" % (self.root))
+            raise StorageRootException("Storage root %s includes a specification entry that isn't a file" % (self.root))
         # Layout file (if present)
         if self.root_fs.exists(self.layout_file):
             self.layout_name, self.layout_description = self.parse_layout_file()
@@ -146,8 +169,8 @@ class Store():
                     logging.info("Storage root layout is %s", self.layout_name)
                 else:
                     logging.warning("Non-canonical layout name %s, should be %s", self.layout_name, self.layout.name)
-            except StoreException as e:
-                raise StoreException("Storage root %s includes ocfl_layout.json with unknown layout %s (%s)" % (self.root, self.layout_name, str(e)))
+            except StorageRootException as e:
+                raise StorageRootException("Storage root %s includes ocfl_layout.json with unknown layout %s (%s)" % (self.root, self.layout_name, str(e)))
         # Other files are allowed...
         return True
 
@@ -156,18 +179,18 @@ class Store():
 
         Returns:
           - (extension, description) strings on success,
-          - otherwise raises a StoreException.
+          - otherwise raises a StorageRootException.
         """
         try:
             with self.root_fs.open(self.layout_file) as fh:
                 layout = json.load(fh)
         except Exception as e:
-            raise StoreException("OCFL storage root %s has layout file that can't be read/parsed (%s)" % (self.root, str(e)))
+            raise StorageRootException("OCFL storage root %s has layout file that can't be read/parsed (%s)" % (self.root, str(e)))
         if not isinstance(layout, dict):
-            raise StoreException("Storage root %s has layout file that isn't a JSON object" % (self.root))
+            raise StorageRootException("Storage root %s has layout file that isn't a JSON object" % (self.root))
         if ('extension' not in layout or not isinstance(layout['extension'], str)
                 or 'description' not in layout or not isinstance(layout['description'], str)):
-            raise StoreException("Storage root %s has layout file doesn't have required extension and description string entries" % (self.root))
+            raise StorageRootException("Storage root %s has layout file doesn't have required extension and description string entries" % (self.root))
         return layout['extension'], layout['description']
 
     def object_paths(self):
@@ -197,7 +220,7 @@ class Store():
                 elif len(zero_eqs) == 1:
                     declaration = zero_eqs[0]
                     match = re.match(r'''0=ocfl_object_(\d+\.\d+)''', declaration)
-                    if match and match.group(1) == '1.0':
+                    if match and match.group(1) in ('1.0', '1.1'):  # FIXME - look up supported versions
                         yield dirpath.lstrip('/')
                     elif match:
                         self.traversal_error("E004a", path=dirpath, version=match.group(1))
@@ -222,8 +245,14 @@ class Store():
             else:
                 self.traversal_error('E086', entry=entry.name)
 
-    def list(self):
-        """List contents of this OCFL storage root."""
+    def list_objects(self):
+        """Generator to list contents of this OCFL storage root.
+
+        Yields tuple for each object which contains (dirpath, identifier)
+
+        Side effects: The count of num_objects is updated through the taversal
+        of the storage root and is available afterwards.
+        """
         self.open_root_fs()
         self.check_root_structure()
         self.num_objects = 0
@@ -231,10 +260,9 @@ class Store():
             with ocfl_opendir(self.root_fs, dirpath) as obj_fs:
                 # Parse inventory to extract id
                 identifier = Object(obj_fs=obj_fs).id_from_inventory()
-                print("%s -- id=%s" % (dirpath, identifier))
                 self.num_objects += 1
+                yield (dirpath, identifier)
                 # FIXME - maybe do some more stuff in here
-        logging.info("Found %d OCFL Objects under root %s", self.num_objects, self.root)
 
     def validate_hierarchy(self, validate_objects=True, check_digests=True, show_warnings=False):
         """Validate storage root hierarchy.
@@ -268,7 +296,7 @@ class Store():
         try:
             self.check_root_structure()
             logging.info("Storage root structure is VALID")
-        except StoreException as e:
+        except StorageRootException as e:
             valid = False
             logging.info("Storage root structure is INVALID (%s)", str(e))
         self.num_objects, self.good_objects = self.validate_hierarchy(validate_objects=validate_objects, check_digests=check_digests, show_warnings=show_warnings)
@@ -308,4 +336,4 @@ class Store():
             logging.info("Copied")
         except Exception as e:
             logging.error("Copy failed: %s", str(e))
-            raise StoreException("Add object failed!")
+            raise StorageRootException("Add object failed!")

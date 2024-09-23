@@ -3,7 +3,7 @@ import sys
 from ._version import __version__
 from .object import *
 from .version_metadata import *
-from .store import *
+from .storage_root import *
 from .digest import *
 from .bagger import bag_as_source, bag_extracted_version, BaggerError
 from .object_utils import find_path_type

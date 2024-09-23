@@ -1,7 +1,7 @@
 """OCFL Validator.
 
 Philosophy of this code is to keep it separate from the implementations
-of Store, Object and Version used to build and manipulate OCFL data, but
+of StorageRoot, Object and Version used to build and manipulate OCFL data, but
 to leverage lower level functions such as digest creation etc.. Code style
 is plain/verbose with detailed and specific validation errors that might
 help someone debug an implementation.

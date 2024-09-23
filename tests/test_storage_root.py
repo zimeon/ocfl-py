@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Store tests."""
+"""Storage root tests."""
 import io
 import logging
 import os
 import tempfile
 import unittest
 
-from ocfl.store import get_layout, Store, StoreException
+from ocfl.storage_root import get_layout, StorageRoot, StorageRootException
 from ocfl.layout_0002_flat_direct import Layout_0002_Flat_Direct
 from ocfl.validation_logger import ValidationLogger
 
@@ -33,17 +33,17 @@ class TestAll(unittest.TestCase):
         self.assertRaises(Exception, get_layout, 'unknown')
 
     def test_init(self):
-        """Test Store init."""
-        s = Store()
+        """Test StorageRoot init."""
+        s = StorageRoot()
         self.assertEqual(s.root, None)
         self.assertEqual(s.layout_name, None)
-        s = Store(root='a', layout_name='b')
+        s = StorageRoot(root='a', layout_name='b')
         self.assertEqual(s.root, 'a')
         self.assertEqual(s.layout_name, 'b')
 
     def test_open_root_fs(self):
         """Test open_root_fs method."""
-        s = Store()
+        s = StorageRoot()
         self.assertIs(s.root_fs, None)
         tempdir = tempfile.mkdtemp(prefix='test_open_root_fs')
         print(tempdir)
@@ -52,63 +52,67 @@ class TestAll(unittest.TestCase):
         self.assertIsNot(s.root_fs, None)
         # Error - open without create, then succeed with create
         rootdir = os.path.join(tempdir, 'xyz')
-        s = Store()
+        s = StorageRoot()
         s.root = rootdir
-        self.assertRaises(StoreException, s.open_root_fs)
+        self.assertRaises(StorageRootException, s.open_root_fs)
         s.open_root_fs(create=True)
         self.assertIsNot(s.root_fs, None)
 
     def test_layout(self):
         """Test layout property."""
-        s = Store(root='x', layout_name='0002-flat-direct-storage-layout')
+        s = StorageRoot(root='x', layout_name='0002-flat-direct-storage-layout')
         self.assertTrue(isinstance(s.layout, Layout_0002_Flat_Direct))
 
     def test_traversal_error(self):
         """Test traversal_error method."""
-        s = Store()
+        s = StorageRoot()
         self.assertEqual(s.num_traversal_errors, 0)
         s.traversal_error("oops")
         self.assertEqual(s.num_traversal_errors, 1)
 
     def test_object_path(self):
         """Test object_path method."""
-        s = Store(root='x/y', layout_name='0002-flat-direct-storage-layout')
+        s = StorageRoot(root='x/y', layout_name='0002-flat-direct-storage-layout')
         self.assertEqual(s.object_path('id1'), 'id1')
-        s = Store(root='z/a', layout_name='uuid_quadtree')
+        s = StorageRoot(root='z/a', layout_name='uuid_quadtree')
         self.assertEqual(s.object_path('urn:uuid:6ba7b810-9dad-11d1-80b4-00c04fd430c8'), '6ba7/b810/9dad/11d1/80b4/00c0/4fd4/30c8')
 
     def test_initialize(self):
         """Test initialize method."""
-        tempdir = tempfile.mkdtemp(prefix='test_init')
-        s = Store(root=tempdir, layout_name='0002-flat-direct-storage-layout')
-        self.assertRaises(StoreException, s.initialize)
-        tempdir = os.path.join(tempdir, 'aaa')
-        s = Store(root=tempdir, layout_name='0002-flat-direct-storage-layout')
+        tempdir= tempfile.mkdtemp(prefix='test_init_1')
+        s = StorageRoot(root=tempdir, layout_name='0002-flat-direct-storage-layout')
+        self.assertRaises(StorageRootException, s.initialize)
+        tempdir2= os.path.join(tempdir, 'aaa')
+        s = StorageRoot(root=tempdir2, layout_name='0002-flat-direct-storage-layout', spec_version='1.0')
         s.initialize()
-        self.assertTrue(os.path.isfile(os.path.join(tempdir, '0=ocfl_1.0')))
+        self.assertTrue(os.path.isfile(os.path.join(tempdir2, '0=ocfl_1.0')))
+        tempdir2= os.path.join(tempdir, 'bbb')
+        s = StorageRoot(root=tempdir2, layout_name='0002-flat-direct-storage-layout')
+        s.initialize()
+        self.assertTrue(os.path.isfile(os.path.join(tempdir2, '0=ocfl_1.1')))
 
     def test_check_root_structure(self):
         """Test check_root_structure method."""
         tempdir = os.path.join(tempfile.mkdtemp(prefix='test_root'), 'rrr')
-        s = Store(root=tempdir, layout_name='0002-flat-direct-storage-layout')
+        s = StorageRoot(root=tempdir, layout_name='0002-flat-direct-storage-layout')
         # No declaration
         os.mkdir(tempdir)
         s.open_root_fs()
-        self.assertRaises(StoreException, s.check_root_structure)
+        self.assertRaises(StorageRootException, s.check_root_structure)
         # Wrong declaration
         decl = os.path.join(tempdir, '0=something_else')
         with open(decl, 'w', encoding="utf-8") as fh:
             fh.close()
-        self.assertRaises(StoreException, s.check_root_structure)
+        self.assertRaises(StorageRootException, s.check_root_structure)
         # Two declarations
         decl2 = os.path.join(tempdir, '0=ocfl_1.0')
         with open(decl2, 'w', encoding="utf-8") as fh:
             fh.write("not correct")
             fh.close()
-        self.assertRaises(StoreException, s.check_root_structure)
+        self.assertRaises(StorageRootException, s.check_root_structure)
         os.remove(decl)
         # Right file, wrong content
-        self.assertRaises(StoreException, s.check_root_structure)
+        self.assertRaises(StorageRootException, s.check_root_structure)
         os.remove(decl2)
         # All good
         with open(decl2, 'w', encoding="utf-8") as fh:
@@ -117,25 +121,25 @@ class TestAll(unittest.TestCase):
         self.assertTrue(s.check_root_structure())
         # Spec "file" a directory
         os.mkdir(os.path.join(tempdir, "ocfl_1.0.txt"))
-        self.assertRaises(StoreException, s.check_root_structure)
+        self.assertRaises(StorageRootException, s.check_root_structure)
 
     def test_parse_layout_file(self):
         """Test parse_layout_file method."""
-        s = Store(root="mem://")
+        s = StorageRoot(root="mem://")
         s.open_root_fs(create=True)
         s.root_fs.writetext('ocfl_layout.json', '{"extension": "aa", "description": "bb"}')
         self.assertEqual(s.parse_layout_file(), ("aa", "bb"))
         s.root_fs.writetext('ocfl_layout.json', '["aa", "bb"]')
-        self.assertRaises(StoreException, s.parse_layout_file)
+        self.assertRaises(StorageRootException, s.parse_layout_file)
         s.root_fs.writetext('ocfl_layout.json', '{"extension": "yy", "description": ["zz"]}')
-        self.assertRaises(StoreException, s.parse_layout_file)
+        self.assertRaises(StorageRootException, s.parse_layout_file)
         s.root_fs.remove('ocfl_layout.json')
         s.root_fs.makedir('ocfl_layout.json')
-        self.assertRaises(StoreException, s.parse_layout_file)
+        self.assertRaises(StorageRootException, s.parse_layout_file)
 
     def test_object_paths(self):
         """Test object_paths generator."""
-        s = Store(root='extra_fixtures/good-storage-roots/fedora-root')
+        s = StorageRoot(root='extra_fixtures/good-storage-roots/fedora-root')
         s.open_root_fs()
         paths = list(s.object_paths())
         self.assertEqual(len(paths), 176)
@@ -144,7 +148,7 @@ class TestAll(unittest.TestCase):
         log_io = io.StringIO()
         logger = logging.getLogger()
         logger.addHandler(logging.StreamHandler(log_io))
-        s = Store(root='zip://extra_fixtures/bad-storage-roots/simple-bad-root.zip')  # Using ZipFS
+        s = StorageRoot(root='zip://extra_fixtures/bad-storage-roots/simple-bad-root.zip')  # Using ZipFS
         s.open_root_fs()
         paths = list(s.object_paths())
         self.assertEqual(len(paths), 2)
@@ -156,14 +160,14 @@ class TestAll(unittest.TestCase):
         self.assertIn("E004b - path='/object_unrecognized_declaration', declaration='0=special_object_yeah'", log_out)
         self.assertIn("E072 - path='/dir_with_file_but_no_declaration'", log_out)
         # Specific error cases
-        s = Store(root='extra_fixtures/bad-storage-roots/E072_root_with_file_not_in_object')
+        s = StorageRoot(root='extra_fixtures/bad-storage-roots/E072_root_with_file_not_in_object')
         s.open_root_fs()
         s.log = ValidationLogger()
         self.assertEqual(list(s.object_paths()), ['dir2/minimal_no_content'])
         self.assertEqual(s.num_traversal_errors, 1)
         self.assertIn('E072', s.log.codes)
         #
-        s = Store(root='zip://extra_fixtures/bad-storage-roots/E073_root_with_empty_dir.zip')
+        s = StorageRoot(root='zip://extra_fixtures/bad-storage-roots/E073_root_with_empty_dir.zip')
         s.open_root_fs()
         s.log = ValidationLogger()
         self.assertEqual(list(s.object_paths()), [])
@@ -172,23 +176,23 @@ class TestAll(unittest.TestCase):
 
     def test_validate(self):
         """Test validate method."""
-        s = Store(root='extra_fixtures/good-storage-roots/fedora-root')
+        s = StorageRoot(root='extra_fixtures/good-storage-roots/fedora-root')
         self.assertTrue(s.validate())
         self.assertEqual(s.num_objects, 176)
         self.assertEqual(s.good_objects, 176)
         # Simple case of three objects
-        s = Store(root='extra_fixtures/good-storage-roots/simple-root')
+        s = StorageRoot(root='extra_fixtures/good-storage-roots/simple-root')
         self.assertTrue(s.validate())
         self.assertEqual(s.num_objects, 3)
         self.assertEqual(s.good_objects, 3)
         # Reg extension will not give warning
-        s = Store(root='extra_fixtures/good-storage-roots/reg-extension-dir-root')
+        s = StorageRoot(root='extra_fixtures/good-storage-roots/reg-extension-dir-root')
         self.assertTrue(s.validate())
         self.assertEqual(s.num_objects, 1)
         self.assertEqual(s.good_objects, 1)
         self.assertNotIn('W901', s.log.codes)
         # Unreg extension will give warning
-        s = Store(root='extra_fixtures/good-storage-roots/unreg-extension-dir-root')
+        s = StorageRoot(root='extra_fixtures/good-storage-roots/unreg-extension-dir-root')
         self.assertTrue(s.validate())
         self.assertEqual(s.num_objects, 1)
         self.assertEqual(s.good_objects, 1)
