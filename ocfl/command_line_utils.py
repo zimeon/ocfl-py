@@ -16,6 +16,19 @@ class ObjectException(Exception):
     """Exception class for OCFL Object."""
 
 
+def add_version_arg(parser):
+    """Add --version argument."""
+    parser.add_argument('--version', action='store_true',
+                        help='Show version number and exit')
+
+
+def check_version_arg(args):
+    """Check for --version argument."""
+    if args.version:
+        print("%s is part of ocfl-py version %s" % (fs.path.basename(sys.argv[0]), __version__))
+        sys.exit(0)
+
+
 def add_version_metadata_args(parser):
     """Add version metadata settings to argparse instance parser."""
     parser.add_argument('--created', default=None,
@@ -52,17 +65,14 @@ def add_object_args(parser):
 
 def add_shared_args(parser):
     """Add arguments to be shared by any ocfl-py scripts."""
+    add_version_arg(parser)
     parser.add_argument('--verbose', '-v', action='store_true',
                         help="be more verbose")
-    parser.add_argument('--version', action='store_true',
-                        help='Show version number and exit')
 
 
 def check_shared_args(args):
     """Check arguments set with add_shared_args, and also set logging."""
-    if args.version:
-        print("%s is part of ocfl-py version %s" % (fs.path.basename(sys.argv[0]), __version__))
-        sys.exit(0)
+    check_version_arg(args)
     # Set up logging
     logging.basicConfig(level=logging.INFO if args.verbose else logging.WARN)
 

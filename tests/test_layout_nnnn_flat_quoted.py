@@ -1,5 +1,4 @@
 """Layout_NNNN_Flat_Quoted layout tests."""
-import os.path
 import unittest
 from ocfl.layout_nnnn_flat_quoted import Layout_NNNN_Flat_Quoted
 

@@ -8,7 +8,7 @@ import re
 import codecs
 
 from .digest import string_digest
-from .layout import Layout, LayoutException
+from .layout import Layout
 
 
 def _percent_encode(c):

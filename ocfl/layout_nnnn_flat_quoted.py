@@ -1,7 +1,5 @@
-"""Identity mapping of identifier to directory structure."""
-import os
-
-from .layout import Layout, LayoutException
+"""Layout_NNNN_Flat_Quoted mapping of identifier to directory structure."""
+from .layout import Layout
 
 
 class Layout_NNNN_Flat_Quoted(Layout):
