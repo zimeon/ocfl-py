@@ -10,6 +10,11 @@ class Layout_NNNN_Flat_Quoted(Layout):
         """Canonical name of this layout extension."""
         return "nnnn-flat-quoted-storage-layout"
 
+    @property
+    def description(self):
+        """Description of this layout to go in ocfl_layout.json."""
+        return "Local extension, flat layout with simple quoting of object ids"
+
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to root."""
         return self.encode(identifier)

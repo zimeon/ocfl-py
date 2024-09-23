@@ -18,13 +18,9 @@ class TestAll(unittest.TestCase):
         """Test everything, just a little."""
         d = get_layout(layout_name='0002-flat-direct-storage-layout')
         self.assertEqual(d.identifier_to_path('ab cd'), 'ab cd')
-        d = get_layout(layout_name='pairtree')
+        d = get_layout(layout_name='nnnn-tuple-tree')
         self.assertEqual(d.identifier_to_path('abcd'), 'ab/cd/abcd')
-        d = get_layout('tripletree')
-        self.assertEqual(d.identifier_to_path('abcd'), 'abc/d/abcd')
-        d = get_layout('quadtree')
-        self.assertEqual(d.identifier_to_path('abcde'), 'abcd/e/abcde')
-        d = get_layout('uuid_quadtree')
+        d = get_layout('nnnn-uuid-quadtree')
         self.assertEqual(d.identifier_to_path('urn:uuid:6ba7b810-9dad-11d1-80b4-00c04fd430c8'),
                          '6ba7/b810/9dad/11d1/80b4/00c0/4fd4/30c8')
         # Errors
@@ -74,19 +70,19 @@ class TestAll(unittest.TestCase):
         """Test object_path method."""
         s = StorageRoot(root='x/y', layout_name='0002-flat-direct-storage-layout')
         self.assertEqual(s.object_path('id1'), 'id1')
-        s = StorageRoot(root='z/a', layout_name='uuid_quadtree')
+        s = StorageRoot(root='z/a', layout_name='nnnn-uuid-quadtree')
         self.assertEqual(s.object_path('urn:uuid:6ba7b810-9dad-11d1-80b4-00c04fd430c8'), '6ba7/b810/9dad/11d1/80b4/00c0/4fd4/30c8')
 
     def test_initialize(self):
         """Test initialize method."""
-        tempdir= tempfile.mkdtemp(prefix='test_init_1')
+        tempdir = tempfile.mkdtemp(prefix='test_init_1')
         s = StorageRoot(root=tempdir, layout_name='0002-flat-direct-storage-layout')
         self.assertRaises(StorageRootException, s.initialize)
-        tempdir2= os.path.join(tempdir, 'aaa')
+        tempdir2 = os.path.join(tempdir, 'aaa')
         s = StorageRoot(root=tempdir2, layout_name='0002-flat-direct-storage-layout', spec_version='1.0')
         s.initialize()
         self.assertTrue(os.path.isfile(os.path.join(tempdir2, '0=ocfl_1.0')))
-        tempdir2= os.path.join(tempdir, 'bbb')
+        tempdir2 = os.path.join(tempdir, 'bbb')
         s = StorageRoot(root=tempdir2, layout_name='0002-flat-direct-storage-layout')
         s.initialize()
         self.assertTrue(os.path.isfile(os.path.join(tempdir2, '0=ocfl_1.1')))

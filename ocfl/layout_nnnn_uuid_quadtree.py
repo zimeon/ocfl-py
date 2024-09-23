@@ -9,7 +9,7 @@ import re
 from .layout import Layout
 
 
-class UUIDQuadtree(Layout):
+class Layout_NNNN_UUID_Quadtree(Layout):
     """Class to support UUID URIs with quadtree directory names."""
 
     def __init__(self, prefix='urn:uuid:'):

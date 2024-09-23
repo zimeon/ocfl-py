@@ -15,6 +15,11 @@ class Layout_0002_Flat_Direct(Layout):
         """Canonical name."""
         return "0002-flat-direct-storage-layout"
 
+    @property
+    def description(self):
+        """Description of this layout to go in ocfl_layout.json."""
+        return "Extension 0002: Flat Direct Storage Layout"
+
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to root."""
         if identifier in ('', '.', '..') or os.sep in identifier:

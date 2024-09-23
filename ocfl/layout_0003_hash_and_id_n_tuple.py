@@ -60,6 +60,11 @@ class Layout_0003_Hash_And_Id_N_Tuple(Layout):
         """Canonical name."""
         return '0003-hash-and-id-n-tuple-storage-layout'
 
+    @property
+    def description(self):
+        """Description of this layout to go in ocfl_layout.json."""
+        return "Extension 0003: Hashed Truncated N-tuple Trees with Object ID Encapsulating Directory for OCFL Storage Hierarchies"
+
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to root.
 

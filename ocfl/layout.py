@@ -37,14 +37,19 @@ class Layout:
     @property
     def name(self):
         """Canonical name of this layout to go in ocfl_layout.json."""
-        raise Exception("No yet implemented")
+        raise LayoutException("No yet implemented")
+
+    @property
+    def description(self):
+        """Description of this layout to go in ocfl_layout.json."""
+        raise LayoutException("No yet implemented")
 
     def strip_root(self, path, root):
         """Remove root from path, throw exception on failure."""
         root = root.rstrip(os.sep)  # ditch any trailing path separator
         if os.path.commonprefix((path, root)) == root:
             return os.path.relpath(path, start=root)
-        raise Exception("Path %s is not in root %s" % (path, root))
+        raise LayoutException("Path %s is not in root %s" % (path, root))
 
     def is_valid(self, identifier):  # pylint: disable=unused-argument
         """Return True if identifier is valid, always True in this base implementation."""
@@ -60,4 +65,4 @@ class Layout:
 
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to some root."""
-        raise Exception("No yet implemented")
+        raise LayoutException("No yet implemented")

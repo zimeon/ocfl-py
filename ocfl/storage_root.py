@@ -20,8 +20,8 @@ from .validation_logger import ValidationLogger
 from .layout_0002_flat_direct import Layout_0002_Flat_Direct
 from .layout_0003_hash_and_id_n_tuple import Layout_0003_Hash_And_Id_N_Tuple
 from .layout_nnnn_flat_quoted import Layout_NNNN_Flat_Quoted
-from .ntree import Ntree
-from .uuid_quadtree import UUIDQuadtree
+from .layout_nnnn_tuple_tree import Layout_NNNN_Tuple_Tree
+from .layout_nnnn_uuid_quadtree import Layout_NNNN_UUID_Quadtree
 
 
 def get_layout(layout_name=None):
@@ -32,14 +32,10 @@ def get_layout(layout_name=None):
         return Layout_0003_Hash_And_Id_N_Tuple()
     if layout_name in ('nnnn-flat-quoted-storage-layout', 'flat-quoted'):
         return Layout_NNNN_Flat_Quoted()
-    if layout_name == 'pairtree':
-        return Ntree(n=2)
-    if layout_name == 'tripletree':
-        return Ntree(n=3)
-    if layout_name == 'quadtree':
-        return Ntree(n=4)
-    if layout_name == 'uuid_quadtree':
-        return UUIDQuadtree()
+    if layout_name == 'nnnn-tuple-tree':
+        return Layout_NNNN_Tuple_Tree()
+    if layout_name == 'nnnn-uuid-quadtree':
+        return Layout_NNNN_UUID_Quadtree()
     raise StorageRootException("Unsupported layout_name %s, aborting!" % (layout_name))
 
 
@@ -60,13 +56,20 @@ class StorageRoot():
         self._layout = None  # Lazily initialized in layout property
         #
         if spec_version not in (None, '1.0', '1.1'):
-            raise StorageException("Unsupported OCFL specification version %s requested", spec_version)
+            raise StorageRootException("Unsupported OCFL specification version %s requested" % (spec_version))
         self.spec_version = spec_version
         self.spec_file = 'ocfl_1.0.txt'
         self.layout_file = 'ocfl_layout.json'
         self.registered_extensions = [
             '0002-flat-direct-storage-layout',
             '0003-hash-and-id-n-tuple-storage-layout'
+        ]
+        self.supported_layouts = [
+            '0002-flat-direct-storage-layout',
+            '0003-hash-and-id-n-tuple-storage-layout',
+            'nnnn-flat-quoted-storage-layout',
+            'nnnn-tuple-tree',
+            'nnnn-uuid-quadtree'
         ]
         #
         self.root_fs = None
@@ -131,7 +134,7 @@ class StorageRoot():
         # Create a layout declaration
         with self.root_fs.open(self.layout_file, 'w') as fh:
             layout = {'extension': self.layout.name,
-                      'description': "Non-standard layout from ocfl-py layout -- FIXME"}
+                      'description': self.layout.description}
             json.dump(layout, fh, sort_keys=True, indent=2)
         logging.info("Created OCFL storage root %s", self.root)
 
@@ -246,9 +249,10 @@ class StorageRoot():
                 self.traversal_error('E086', entry=entry.name)
 
     def list_objects(self):
-        """Generator to list contents of this OCFL storage root.
+        """List contents of this OCFL storage root.
 
-        Yields tuple for each object which contains (dirpath, identifier)
+        Generator that yields tuple for each object, which contain
+        (dirpath, identifier)
 
         Side effects: The count of num_objects is updated through the taversal
         of the storage root and is available afterwards.

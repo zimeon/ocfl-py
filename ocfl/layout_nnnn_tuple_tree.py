@@ -19,14 +19,13 @@ from pairtree import id_encode, id_decode
 from .layout import Layout
 
 
-class Ntree(Layout):
+class Layout_NNNN_Tuple_Tree(Layout):
     """Class to support pairtree and related layouts."""
 
-    def __init__(self, n=2, encapsulate=True):
+    def __init__(self, tuple_size=2):
         """Initialize Layout."""
         super().__init__()
-        self.n = n
-        self.encapsulate = encapsulate
+        self.tuple_size = tuple_size
 
     def encode(self, identifier):
         """Pairtree encode identifier."""
@@ -41,10 +40,10 @@ class Ntree(Layout):
         identifier = self.encode(identifier)
         id_remains = identifier
         segments = []
-        while len(id_remains) > self.n:
-            segments.append(id_remains[0:self.n])
-            id_remains = id_remains[self.n:]
+        while len(id_remains) > self.tuple_size:
+            segments.append(id_remains[0:self.tuple_size])
+            id_remains = id_remains[self.tuple_size:]
         segments.append(id_remains)  # the statement means that segmets will always have at least one element
-        if self.encapsulate:
-            segments.append(identifier)
+        # Use full identifier to encapsulate
+        segments.append(identifier)
         return os.path.join(*segments)  # pylint: disable=no-value-for-parameter
