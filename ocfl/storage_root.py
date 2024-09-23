@@ -58,7 +58,6 @@ class StorageRoot():
         if spec_version not in (None, '1.0', '1.1'):
             raise StorageRootException("Unsupported OCFL specification version %s requested" % (spec_version))
         self.spec_version = spec_version
-        self.spec_file = 'ocfl_1.0.txt'
         self.layout_file = 'ocfl_layout.json'
         self.registered_extensions = [
             '0002-flat-direct-storage-layout',
@@ -73,10 +72,13 @@ class StorageRoot():
         ]
         #
         self.root_fs = None
+        # Validation records
         self.num_traversal_errors = 0
         self.log = None
         self.num_objects = 0
         self.good_objects = 0
+        self.structure_error = None
+        self.traversal_errors = None
 
     def open_root_fs(self, create=False):
         """Open pyfs filesystem for this OCFL storage root."""
@@ -147,23 +149,20 @@ class StorageRoot():
         # Storage root declaration
         namastes = find_namastes(0, pyfs=self.root_fs)
         if len(namastes) == 0:
-            raise StorageRootException("Storage root %s lacks required 0= declaration file" % (self.root))
+            raise StorageRootException("E069a Storage root %s lacks required 0= declaration file" % (self.root))
         if len(namastes) > 1:
-            raise StorageRootException("Storage root %s has more than one 0= style declaration file" % (self.root))
+            raise StorageRootException("E069b Storage root %s has more than one 0= style declaration file" % (self.root))
         spec_version = None
         for version in ('1.1', '1.0'):
             if namastes[0].filename == '0=ocfl_' + version:
                 spec_version = version
                 break
         else:
-            raise StorageRootException("Storage root %s has unrecognized 0= declaration file %s" % (self.root, namastes[0].filename))
+            raise StorageRootException("E069c Storage root %s has unrecognized 0= declaration file %s" % (self.root, namastes[0].filename))
         if self.spec_version is not None and self.spec_version != spec_version:
-            raise StorageRootException("Storage root %s 0= declaration is for spec version %s, not %s as expected" % (self.root, spec_version, self.spec_version))
+            raise StorageRootException("E069d Storage root %s 0= declaration is for spec version %s, not %s as expected" % (self.root, spec_version, self.spec_version))
         if not namastes[0].content_ok(pyfs=self.root_fs):
-            raise StorageRootException("Storage root %s required declaration file %s has invalid content" % (self.root, namastes[0].filename))
-        # Specification file
-        if self.root_fs.exists(self.spec_file) and not self.root_fs.isfile(self.spec_file):
-            raise StorageRootException("Storage root %s includes a specification entry that isn't a file" % (self.root))
+            raise StorageRootException("E069e Storage root %s required declaration file %s has invalid content" % (self.root, namastes[0].filename))
         # Layout file (if present)
         if self.root_fs.exists(self.layout_file):
             self.layout_name, self.layout_description = self.parse_layout_file()
@@ -268,63 +267,72 @@ class StorageRoot():
                 yield (dirpath, identifier)
                 # FIXME - maybe do some more stuff in here
 
-    def validate_hierarchy(self, validate_objects=True, check_digests=True, show_warnings=False):
-        """Validate storage root hierarchy.
+    def validate_hierarchy(self, validate_objects=True, check_digests=True,
+                           show_warnings=False, max_errors=100):
+        """Validate storage root hierarchy and, optionally, all objects.
 
         Returns:
             num_objects - number of objects checked
             good_objects - number of objects checked that were found to be valid
+            errors - list of [dirpath, message] pairs for up to max_errors errors
         """
         num_objects = 0
         good_objects = 0
+        errors = []
         for dirpath in self.object_paths():
             if validate_objects:
                 validator = Validator(check_digests=check_digests,
                                       lax_digests=self.lax_digests,
                                       show_warnings=show_warnings)
-                if validator.validate(ocfl_opendir(self.root_fs, dirpath)):
+                # FIXME - Should check that all objest are not higher spec
+                # version that storage root https://ocfl.io/1.1/spec/#E081
+                if validator.validate_object(ocfl_opendir(self.root_fs, dirpath)):
                     good_objects += 1
                 else:
-                    logging.info("Object at %s in INVALID", dirpath)
-                messages = validator.status_str(prefix='[[' + dirpath + ']]')
-                if messages != '':
-                    print(messages)
+                    logging.debug("Object at %s in INVALID", dirpath)
+                if len(errors) < max_errors:
+                    # Record detail of errors (and warnings if show_warnings)
+                    messages = validator.status_str(prefix='[[' + dirpath + ']]')
+                    if messages != '':
+                        errors.append([dirpath, messages])
                 num_objects += 1
-        return num_objects, good_objects
+        return num_objects, good_objects, errors
 
-    def validate(self, validate_objects=True, check_digests=True, show_warnings=False, show_errors=True, lang='en'):
-        """Validate OCFL storage root and optionally all objects."""
+    def validate(self, validate_objects=True, check_digests=True,
+                 show_warnings=False, show_errors=True, max_errors=100,
+                 lang='en'):
+        """Validate OCFL storage root, structure, and optionally all objects.
+
+        Returns:
+        - True if everything checked is valid, false otherwise
+
+        Side effects:
+        - self.num_objects - number of objects examined
+        - self.good_objects - number of valid objects
+        - self.errors - list of [dirpath, message] pairs for up to max_errors errors
+        - self.structure_error - Error in storage root structure
+        - self.log - ValidationLogger object with any traversal errors
+        """
         valid = True
+        self.structure_error = None
         self.log = ValidationLogger(show_warnings=show_warnings, show_errors=show_errors, lang=lang)
         self.open_root_fs()
         try:
             self.check_root_structure()
-            logging.info("Storage root structure is VALID")
         except StorageRootException as e:
             valid = False
-            logging.info("Storage root structure is INVALID (%s)", str(e))
-        self.num_objects, self.good_objects = self.validate_hierarchy(validate_objects=validate_objects, check_digests=check_digests, show_warnings=show_warnings)
-        if validate_objects:
-            if self.good_objects == self.num_objects:
-                logging.info("Objects checked: %d / %d are VALID", self.good_objects, self.num_objects)
-            else:
-                valid = False
-                logging.info("Objects checked: %d / %d are INVALID", self.num_objects - self.good_objects, self.num_objects)
-        else:
-            logging.info("Not checking OCFL objects")
-        print(str(self.log))
+            self.structure_error = str(e)
+            logging.debug("Storage root structure is INVALID (%s)", str(e))
+        self.num_objects, self.good_objects, self.errors = self.validate_hierarchy(validate_objects=validate_objects, check_digests=check_digests, show_warnings=show_warnings, max_errors=max_errors)
         if self.num_traversal_errors > 0:
             valid = False
-            logging.info("Encountered %d errors traversing storage root", self.num_traversal_errors)
-        # FIXME - do some stuff in here
-        if valid:
-            logging.info("Storage root %s is VALID", self.root)
-        else:
-            logging.info("Storage root %s is INVALID", self.root)
         return valid
 
     def add(self, object_path):
-        """Add pre-constructed object from object_path."""
+        """Add pre-constructed object from object_path.
+
+        The identifier is extracted from the object.
+        """
         self.open_root_fs()
         self.check_root_structure()
         # Sanity check

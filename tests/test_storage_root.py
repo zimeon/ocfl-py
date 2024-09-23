@@ -115,9 +115,6 @@ class TestAll(unittest.TestCase):
             fh.write("ocfl_1.0\n")
             fh.close()
         self.assertTrue(s.check_root_structure())
-        # Spec "file" a directory
-        os.mkdir(os.path.join(tempdir, "ocfl_1.0.txt"))
-        self.assertRaises(StorageRootException, s.check_root_structure)
 
     def test_parse_layout_file(self):
         """Test parse_layout_file method."""

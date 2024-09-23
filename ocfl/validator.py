@@ -1,4 +1,4 @@
-"""OCFL Validator.
+"""OCFL Object Validator.
 
 Philosophy of this code is to keep it separate from the implementations
 of StorageRoot, Object and Version used to build and manipulate OCFL data, but
@@ -25,7 +25,7 @@ class ValidatorAbortException(Exception):
 
 
 class Validator():
-    """Class for OCFL Validator."""
+    """Class for OCFL Object Validator."""
 
     def __init__(self, log=None, show_warnings=False, show_errors=True,
                  check_digests=True, lax_digests=False,
@@ -75,8 +75,11 @@ class Validator():
         """Return string representation of validation log."""
         return self.status_str()
 
-    def validate(self, path):
+    def validate_object(self, path):
         """Validate OCFL object at path or pyfs root.
+
+        Designed to be called multiple times if used to validate many objects
+        when validating a storage root, for example.
 
         Returns True if valid (warnings permitted), False otherwise.
         """

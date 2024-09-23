@@ -11,7 +11,7 @@ from ocfl.command_line_utils import add_version_arg, check_version_arg, check_sh
 def add_common_args(parser):
     """Add argparse arguments that are common to many commands."""
     parser.add_argument('--root',
-                        help='OCFL Storage Root path (must be supplied either via --root or $OCFL_ROOT)')
+                        help='OCFL Storage Root path (must be supplied either via --root or $OCFL_ROOT). The "zip://" prefix can be used with zipped roots.')
     parser.add_argument('--layout', default=None,
                         help='Layout of objects under storage root')
     parser.add_argument('--lax-digests', action='store_true',
@@ -40,6 +40,12 @@ def parse_arguments():
 
     validate_parser = subparsers.add_parser('validate', help='Validate a storage root and optioally its contents')
     add_common_args(validate_parser)
+    validate_parser.add_argument('--validate-objects', default=False,
+                                 help='validate each object in the storage root (MAY TAKE TIME)')
+    validate_parser.add_argument('--check-digests', default=False,
+                                 help='if validating each object, also check all digest (MAY TAKE LOTS OF TIME)')
+    validate_parser.add_argument('--max_errors', default=100,
+                                 help='maximum number of errors to record/show')
 
     add_parser = subparsers.add_parser('add', help='Add object at --src to the storage root')
     add_common_args(add_parser)
@@ -66,6 +72,34 @@ def parse_arguments():
     return args
 
 
+def validate(store, args):
+    """Validate storage root with various outputs.
+
+    """
+    valid = store.validate(show_warnings=not args.quiet,
+                           validate_objects=args.validate_objects,
+                           check_digests=args.check_digests,
+                           max_errors=args.max_errors)
+    if store.structure_error is not None:
+        print(store.structure_error)
+    for (dirpath, messages) in store.errors:
+        print(dirpath)
+        print(messages)
+    print(str(store.log))
+    if args.validate_objects:
+        if store.good_objects == store.num_objects:
+            print("Objects checked: %d / %d are VALID" % (store.good_objects, store.num_objects))
+        else:
+            valid = False
+            print("Objects checked: %d / %d are INVALID" % (store.num_objects - store.good_objects, store.num_objects))
+    else:
+        print("Did not check OCFL objects")
+    if valid:
+        print("Storage root %s is VALID" % (store.root))
+    else:
+        print("Storage root %s is INVALID" % (store.root))
+
+
 def do_store_operation(args):
     """Do operation on store based on args."""
     store = ocfl.StorageRoot(root=get_storage_root(args),
@@ -78,7 +112,7 @@ def do_store_operation(args):
             print("%s -- id=%s" % (dirpath, identifier))
         print("Found %d OCFL Objects under root %s" % (store.num_objects, store.root))
     elif args.cmd == 'validate':
-        store.validate(show_warnings=not args.quiet)
+        validate(store, args)
     elif args.cmd == 'add':
         if not args.src:
             raise ocfl.StorageRootException("Must specify object path with --src")

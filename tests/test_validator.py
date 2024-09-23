@@ -93,7 +93,7 @@ class TestAll(unittest.TestCase):
             filepath = 'fixtures/1.0/bad-objects/' + bad
             if not os.path.isdir(filepath):
                 filepath = extra_fixture_maybe_zip('extra_fixtures/1.0/bad-objects/' + bad)
-            self.assertFalse(v.validate(filepath), msg=" for v1.0 object at " + filepath)
+            self.assertFalse(v.validate_object(filepath), msg=" for v1.0 object at " + filepath)
             for code in codes:
                 self.assertIn(code, v.log.codes, msg="for v1.0 object at " + filepath)
 
@@ -162,7 +162,7 @@ class TestAll(unittest.TestCase):
             filepath = 'fixtures/1.1/bad-objects/' + bad
             if not os.path.isdir(filepath):
                 filepath = extra_fixture_maybe_zip('extra_fixtures/1.1/bad-objects/' + bad)
-            self.assertFalse(v.validate(filepath), msg=" for v1.1 object at " + filepath)
+            self.assertFalse(v.validate_object(filepath), msg=" for v1.1 object at " + filepath)
             for code in codes:
                 self.assertIn(code, v.log.codes, msg="for v1.1 object at " + filepath)
 
@@ -185,7 +185,7 @@ class TestAll(unittest.TestCase):
             filepath = 'fixtures/1.0/warn-objects/' + warn
             if not os.path.isdir(filepath):
                 filepath = extra_fixture_maybe_zip('extra_fixtures/1.0/warn-objects/' + warn)
-            self.assertTrue(v.validate(filepath), msg="for v1.0 object at " + filepath)
+            self.assertTrue(v.validate_object(filepath), msg="for v1.0 object at " + filepath)
             self.assertEqual(set(codes), set(v.log.codes), msg="for v1.0 object at " + filepath)
 
     def test04_warn_1_1(self):
@@ -206,7 +206,7 @@ class TestAll(unittest.TestCase):
             filepath = 'fixtures/1.1/warn-objects/' + warn
             if not os.path.isdir(filepath):
                 filepath = extra_fixture_maybe_zip('extra_fixtures/1.1/warn-objects/' + warn)
-            self.assertTrue(v.validate(filepath), msg="for v1.1 object at " + filepath)
+            self.assertTrue(v.validate_object(filepath), msg="for v1.1 object at " + filepath)
             self.assertEqual(set(codes), set(v.log.codes), msg="for v1.1 object at " + filepath)
 
     def test05_good(self):
@@ -218,4 +218,4 @@ class TestAll(unittest.TestCase):
             for name in os.listdir(base_dir):
                 filepath = extra_fixture_maybe_zip(os.path.join(base_dir, name))
                 v = Validator()
-                self.assertTrue(v.validate(filepath), msg="for object at " + filepath)
+                self.assertTrue(v.validate_object(filepath), msg="for object at " + filepath)

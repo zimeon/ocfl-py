@@ -373,7 +373,7 @@ class Object():
         """
         self.open_fs(objdir)
         validator = Validator(check_digests=False, lax_digests=self.lax_digests)
-        if not validator.validate(objdir):
+        if not validator.validate_object(objdir):
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
         inventory = self.parse_inventory()
         self.id = inventory['id']
@@ -479,7 +479,7 @@ class Object():
                               show_errors=True,
                               check_digests=False,
                               lax_digests=self.lax_digests)
-        passed = validator.validate(objdir)
+        passed = validator.validate_object(objdir)
         self.spec_version = validator.spec_version
         self.content_directory = validator.content_directory
         self.log.warning("OCFL v%s Object at %s %s",
@@ -535,7 +535,7 @@ class Object():
                               show_errors=show_errors,
                               check_digests=check_digests,
                               lax_digests=self.lax_digests)
-        passed = validator.validate(objdir)
+        passed = validator.validate_object(objdir)
         messages = str(validator)
         if messages != '':
             print(messages)
