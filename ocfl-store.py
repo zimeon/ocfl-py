@@ -2,6 +2,7 @@
 """OCFL Storage Root Command Line Tool."""
 import argparse
 import logging
+import os.path
 import sys
 
 import ocfl
@@ -33,6 +34,10 @@ def parse_arguments():
     # Separate sub-parsers for each command
     init_parser = subparsers.add_parser('init',
                                         help='Initialize/create storage root')
+    init_parser.add_argument('--spec-version', '--spec', action='store', default='1.1',
+                             help='OCFL specification version to adhere to')
+    init_parser.add_argument('--layout-params', action='store', default=None,
+                             help='Specify parameters for the selected storage layout as a JSON string (including the extensionName is optional)')
     add_common_args(init_parser)
 
     list_parser = subparsers.add_parser('list', help='List contents of storage root')
@@ -40,9 +45,9 @@ def parse_arguments():
 
     validate_parser = subparsers.add_parser('validate', help='Validate a storage root and optioally its contents')
     add_common_args(validate_parser)
-    validate_parser.add_argument('--validate-objects', default=False,
+    validate_parser.add_argument('--validate-objects', action='store_true', default=False,
                                  help='validate each object in the storage root (MAY TAKE TIME)')
-    validate_parser.add_argument('--check-digests', default=False,
+    validate_parser.add_argument('--check-digests', action='store_true', default=False,
                                  help='if validating each object, also check all digest (MAY TAKE LOTS OF TIME)')
     validate_parser.add_argument('--max_errors', default=100,
                                  help='maximum number of errors to record/show')
@@ -60,6 +65,11 @@ def parse_arguments():
     show_parser = subparsers.add_parser('show', help='Show versions and files in an OCFL object')
     add_common_args(show_parser)
     show_parser.add_argument('--id', default=None,
+                             help='identifier of object')
+
+    path_parser = subparsers.add_parser('path', help='Show path to a specific OCFL object')
+    add_common_args(path_parser)
+    path_parser.add_argument('--id', default=None,
                              help='identifier of object')
 
     validate_object_parser = subparsers.add_parser('validate-object', help='Validate an OCFL object')
@@ -111,7 +121,8 @@ def do_store_operation(args):
                              layout_name=args.layout,
                              lax_digests=args.lax_digests)
     if args.cmd == 'init':
-        store.initialize()
+        store.initialize(spec_version=args.spec_version, layout_params=args.layout_params)
+        print("Created OCFL storage root %s" % (store.root))
     elif args.cmd == 'list':
         for (dirpath, identifier) in store.list_objects():
             print("%s -- id=%s" % (dirpath, identifier))
@@ -124,15 +135,22 @@ def do_store_operation(args):
         store.add(object_path=args.src)
     elif args.cmd == 'purge':
         logging.error("purge not implemented")
-    elif args.cmd in ('show', 'validate_object'):
+    elif args.cmd in ('show', 'path', 'validate_object'):
         if not args.id:
             raise ocfl.StorageRootException("Must specify id to act on an object in the store")
         objdir = store.object_path(args.id)
-        obj = ocfl.Object(identifier=args.id)
-        if args.cmd == 'show':
-            logging.warning("Object tree\n%s", obj.tree(objdir=objdir))
+        if args.cmd == 'path':
+            if args.quiet:
+                # Just print the full path
+                print(os.path.join(store.root, objdir))
+            else:
+                print("Path to %s insite root %s is %s" % (args.id, store.root, objdir))
         else:
-            logging.error("validate not implemented")
+            obj = ocfl.Object(identifier=args.id)
+            if args.cmd == 'show':
+                logging.warning("Object tree\n%s", obj.tree(objdir=objdir))
+            else:
+                logging.error("validate not implemented")
     else:
         logging.warning("No command, nothing to do.")
 

@@ -17,6 +17,7 @@ collision in this part within a given path.
 
 See: https://ocfl.io/1.1/spec/#root-hierarchies
 """
+import json
 import os
 import os.path
 from urllib.parse import quote_plus, unquote_plus
@@ -34,6 +35,16 @@ class Layout:
     throw an exception if called.
     """
 
+    def __init__(self):
+        """Initialize.
+
+        This is trivial so we don't expect sub-class implementations to call
+        this __init__. Instead they will replace it and define PARAMS for the
+        new class.
+        """
+        # Config - overrride this in sub-class with a dictionary
+        self.PARAMS = None
+
     @property
     def name(self):
         """Canonical name of this layout to go in ocfl_layout.json."""
@@ -42,6 +53,16 @@ class Layout:
     @property
     def description(self):
         """Description of this layout to go in ocfl_layout.json."""
+        raise LayoutException("No yet implemented")
+
+    @property
+    def config_file(self):
+        """Location of config.json configuration file for the layout extenstion."""
+        return os.path.join('extensions', self.name, 'config.json')
+
+    @property
+    def config(self):
+        """Dictionary with config.json configuration for the layout extenstion."""
         raise LayoutException("No yet implemented")
 
     def strip_root(self, path, root):
@@ -66,3 +87,56 @@ class Layout:
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to some root."""
         raise LayoutException("No yet implemented")
+
+    def read_layout_params(self, root_fs=None, params_required=False):
+        """Look for and read and layout configuration parameters.
+
+        Parameters:
+          root_fs - the storage root fs object
+          params_required - if True then throw exception for params file not present
+
+        Returns:
+          params - dict of params read
+        """
+        config = None
+        if root_fs.exists(self.config_file):
+            try:
+                with root_fs.open(self.config_file) as fh:
+                    config = json.load(fh)
+            except Exception as e:
+                raise LayoutException("Storage root extension config file %s exists but can't be read/parsed (%s)" % (self.config_file, str(e)))
+            if not isinstance(config, dict):
+                raise LayoutException("Storage root extension config %s contents not a JSON object" % (self.config_file))
+        elif params_required:
+            raise LayoutException("Storage root extension config %s expected but not present" % (self.config_file))
+        if config is not None:
+            self.check_and_set_layout_params(config, require_extension_name=True)
+
+    def check_and_set_layout_params(self, config, require_extension_name=False):
+        """Check the layout extension params and set for this layout object."""
+        # Check the extensionName
+        if not require_extension_name and 'extensionName' not in config:
+            # Fine if we don't require the extension name
+            pass
+        elif config.get('extensionName') != self.name:
+            raise LayoutException("Storage root extension config extensionName is %s, expected %s" % (config.get('extensionName'), self.name))
+        # Read and check the parameters (ignore any extra params)
+        for key, method in self.PARAMS.items():
+            method(config.get(key))
+
+    def write_layout_params(self, root_fs=None):
+        """Write the config.json file with layout parameters if need for this layout.
+
+        Does nothing if there is no config.json required for this payout.
+        """
+        if self.PARAMS is None:
+            # Nothing to write if there are no params
+            return
+        if root_fs.exists(self.config_file):
+            raise LayoutException("Storage root extension layout config %s already exists" % (self.config_file))
+        try:
+            root_fs.makedirs(os.path.dirname(self.config_file))
+            with root_fs.open(self.config_file, 'w') as fh:
+                json.dump(self.config, fh, indent=2)
+        except Exception as e:
+            raise LayoutException("Storage root extension config file %s exists but can't be read/parsed (%s)" % (self.config_file, str(e)))

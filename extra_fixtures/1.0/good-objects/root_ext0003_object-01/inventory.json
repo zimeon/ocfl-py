@@ -1,0 +1,26 @@
+{
+  "digestAlgorithm": "sha512",
+  "head": "v1",
+  "id": "object-01",
+  "manifest": {
+    "e07bb2e677ebd50e820f89adb1c5b76a5976f9e566c1cd5a2fe13e231c7e67f09d15e88802f66efea4d3a86ae01fc448c63490dbe369dc6b488db8c4084c6be0": [
+      "v1/content/file.txt"
+    ]
+  },
+  "type": "https://ocfl.io/1.0/spec/#inventory",
+  "versions": {
+    "v1": {
+      "created": "2024-09-30T02:03:00Z",
+      "message": "Test object for storage ext 00003",
+      "state": {
+        "e07bb2e677ebd50e820f89adb1c5b76a5976f9e566c1cd5a2fe13e231c7e67f09d15e88802f66efea4d3a86ae01fc448c63490dbe369dc6b488db8c4084c6be0": [
+          "file.txt"
+        ]
+      },
+      "user": {
+        "address": "mailto:person@example.org",
+        "name": "A Person"
+      }
+    }
+  }
+}

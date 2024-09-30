@@ -25,7 +25,11 @@ from .layout_nnnn_uuid_quadtree import Layout_NNNN_UUID_Quadtree
 
 
 def get_layout(layout_name=None):
-    """Find Layout object for the given layout name."""
+    """Find Layout object for the given layout name.
+
+    Returns a layout object for the appropriate layour if the layour_name
+    is recognized, otherwise throws a StorageRootException.
+    """
     if layout_name in ('0002-flat-direct-storage-layout', '0002', 'flat-direct'):
         return Layout_0002_Flat_Direct()
     if layout_name in ('0003-hash-and-id-n-tuple-storage-layout', '0003'):
@@ -54,10 +58,9 @@ class StorageRoot():
         self.layout_description = None
         self.lax_digests = lax_digests
         self._layout = None  # Lazily initialized in layout property
-        #
-        if spec_version not in (None, '1.0', '1.1'):
-            raise StorageRootException("Unsupported OCFL specification version %s requested" % (spec_version))
-        self.spec_version = spec_version
+        self.spec_version = None
+        if spec_version is not None:
+            self.check_spec_version(spec_version)
         self.layout_file = 'ocfl_layout.json'
         self.registered_extensions = [
             '0002-flat-direct-storage-layout',
@@ -80,6 +83,14 @@ class StorageRoot():
         self.errors = None
         self.structure_error = None
         self.traversal_errors = None
+
+    def check_spec_version(self, spec_version, default='1.1'):
+        """Check the OCFL specification version is supported."""
+        if spec_version is None and self.spec_version is None:
+            spec_version = default
+        if spec_version not in ('1.0', '1.1'):
+            raise StorageRootException("Unsupported OCFL specification version %s requested" % (spec_version))
+        self.spec_version = spec_version
 
     def open_root_fs(self, create=False):
         """Open pyfs filesystem for this OCFL storage root."""
@@ -123,8 +134,18 @@ class StorageRoot():
         """Path to OCFL object with given identifier relative to the OCFL storage root."""
         return self.layout.identifier_to_path(identifier)
 
-    def initialize(self):
+    def initialize(self, spec_version=None, layout_params=None):
         """Create and initialize a new OCFL storage root."""
+        # Do the checks we can before we do anything on storage
+        if self.layout is not None and layout_params is not None:
+            # Parse as JSON
+            try:
+                config = json.loads(layout_params)
+            except Exception as e:
+                raise StorageRootException("Bad layout params supplied: %s" % (str(e)))
+            self.layout.check_and_set_layout_params(config=config)
+        self.check_spec_version(spec_version=spec_version)
+        # Now create the storage root
         (parent, root_dir) = fs.path.split(self.root)
         parent_fs = open_fs(parent)
         if parent_fs.exists(root_dir):
@@ -132,19 +153,18 @@ class StorageRoot():
         self.root_fs = parent_fs.makedir(root_dir)
         logging.debug("Created OCFL storage root directory at %s", self.root)
         # Create root declaration
-        if self.spec_version is None:
-            self.spec_version = '1.1'
         self.write_root_declaration(self.root_fs)
         # Create a layout declaration if the layout ise set, it is valid to have
-        # a storage roo with no layout information
+        # a storage root with no layout information
         if self.layout is not None:
             with self.root_fs.open(self.layout_file, 'w') as fh:
                 layout = {'extension': self.layout.name,
                           'description': self.layout.description}
                 json.dump(layout, fh, sort_keys=True, indent=2)
+            # Do we need to qrite a extension description?
+            self.layout.write_layout_params(root_fs=self.root_fs)
         else:
-            logging.debug("No layout set so not %f file written", self.layout_file)
-        logging.info("Created OCFL storage root %s", self.root)
+            logging.debug("No layout set so no %s file written", self.layout_file)
 
     def check_root_structure(self):
         """Check the OCFL storage root structure.
@@ -179,6 +199,8 @@ class StorageRoot():
                     logging.warning("Non-canonical layout name %s, should be %s", self.layout_name, self.layout.name)
             except StorageRootException as e:
                 raise StorageRootException("Storage root %s includes ocfl_layout.json with unknown layout %s (%s)" % (self.root, self.layout_name, str(e)))
+            # Is there a corresponding extensions dir with params in config.json?
+            self.layout.read_layout_params(root_fs=self.root_fs)
         # Other files are allowed...
         return True
 

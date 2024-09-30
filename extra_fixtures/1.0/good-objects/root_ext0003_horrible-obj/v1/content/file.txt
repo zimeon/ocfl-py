@@ -1,0 +1,2 @@
+This is the one file in object with name "..hor/rib:le-$id"
+

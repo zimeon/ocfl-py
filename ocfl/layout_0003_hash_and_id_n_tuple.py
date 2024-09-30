@@ -8,7 +8,7 @@ import re
 import codecs
 
 from .digest import string_digest
-from .layout import Layout
+from .layout import Layout, LayoutException
 
 
 def _percent_encode(c):
@@ -49,11 +49,67 @@ def _id_to_path(identifier, digest_algorithm, tuple_size, number_of_tuples):
 class Layout_0003_Hash_And_Id_N_Tuple(Layout):
     """Class to support trivial identity layout."""
 
-    def __init__(self, params=None):
+    def __init__(self):
         """Initialize."""
         self.digest_algorithm = 'sha256'
         self.tuple_size = 3
         self.number_of_tuples = 3
+        # Config
+        self.PARAMS = {'digestAlgorithm': self.check_digest_algorithm,
+                       'tupleSize': self.check_tuple_size,
+                       'numberOfTuples': self.check_number_of_tuples}
+
+    def check_digest_algorithm(self, value):
+        """Check digestAlgorithm parameter.
+
+        From extension:
+            Description: The digest algorithm to apply to the OCFL object
+              identifier; MUST be an algorithm that is allowed in the OCFL
+              fixity block
+            Type: string
+            Constraints: Must not be empty
+            Default: sha256
+        """
+        if value is None:
+            raise LayoutException('digestAlgorithm parameter must be specified')
+        try:
+            string_digest('aa', digest_type=value)
+        except ValueError as e:
+            raise LayoutException('digestAlgorithm parameter specifies unknown or unsupported digests %s (%s)' % (value, str(e)))
+        self.digest_algorithm = value
+
+    def check_tuple_size(self, value):
+        """Check tuple size paremeter.
+
+        From extension:
+            Name: `tupleSize`
+            Description: Indicates the size of the segments (in characters)
+              that the digest is split into
+            Type: number
+            Constraints: An integer between 0 and 32 inclusive
+            Default: 3
+        """
+        if value is None:
+            raise LayoutException('tupleSize parameter must be specified')
+        if not isinstance(value, int) or value < 0 or value > 32:
+            raise LayoutException('tupleSize parameter must be aninteger between 0 and 32 inclusive')
+        self.tuple_size = value
+
+    def check_number_of_tuples(self, value):
+        """Check numberOfTuples parameter.
+
+        From extension:
+            Name: `numberOfTuples`
+            Description: Indicates how many segments are used for path generation
+            Type: number
+            Constraints: An integer between 0 and 32 inclusive
+            Default: 3
+        """
+        if value is None:
+            raise LayoutException('numberOfTuples parameter must be specified')
+        if not isinstance(value, int) or value < 0 or value > 32:
+            raise LayoutException('numberOfTuples parameter must be aninteger between 0 and 32 inclusive')
+        self.number_of_tuples = value
 
     @property
     def name(self):
@@ -64,6 +120,14 @@ class Layout_0003_Hash_And_Id_N_Tuple(Layout):
     def description(self):
         """Description of this layout to go in ocfl_layout.json."""
         return "Extension 0003: Hashed Truncated N-tuple Trees with Object ID Encapsulating Directory for OCFL Storage Hierarchies"
+
+    @property
+    def config(self):
+        """Dictionary with config.json configuration for the layout extenstion."""
+        return {'extensionName': self.name,
+                'digestAlgorithm': self.digest_algorithm,
+                'tupleSize': self.tuple_size,
+                'numberOfTuples': self.number_of_tuples}
 
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to root.
@@ -82,5 +146,7 @@ class Layout_0003_Hash_And_Id_N_Tuple(Layout):
             appended (so it would be 165 chars with sha256).
         6. The encapsulation directory name is joined to the end of the path.
         """
-        return _id_to_path(identifier, self.digest_algorithm,
-                           self.number_of_tuples, self.tuple_size)
+        return _id_to_path(identifier=identifier,
+                           digest_algorithm=self.digest_algorithm,
+                           tuple_size=self.tuple_size,
+                           number_of_tuples=self.number_of_tuples)
