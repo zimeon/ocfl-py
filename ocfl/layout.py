@@ -29,7 +29,7 @@ class LayoutException(Exception):
 class Layout:
     """Base class for layout handlers.
 
-    This base class includes some commont implementations where that makes
+    This base class includes some common implementations where that makes
     sense for certain methods, other methods must be replace and will
     throw an exception if called.
     """

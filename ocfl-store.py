@@ -75,6 +75,11 @@ def parse_arguments():
 def validate(store, args):
     """Validate storage root with various outputs.
 
+    args - dictionary of options including:
+      quiet - do not show warnings if True
+      validate_objects - True to validate each object in tree
+      check_digests - True to check all digests for each object
+      max_error - Maximum number of error to show
     """
     valid = store.validate(show_warnings=not args.quiet,
                            validate_objects=args.validate_objects,

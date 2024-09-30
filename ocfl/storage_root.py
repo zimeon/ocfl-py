@@ -77,6 +77,7 @@ class StorageRoot():
         self.log = None
         self.num_objects = 0
         self.good_objects = 0
+        self.errors = None
         self.structure_error = None
         self.traversal_errors = None
 
@@ -102,9 +103,10 @@ class StorageRoot():
     def layout(self):
         """Instance of layout class.
 
-        Lazily initialized.
+        Lazily initialized. Will return either a valid layout name or None
+        if the layout is not set.
         """
-        if not self._layout:
+        if not self._layout and self.layout_name is not None:
             self._layout = get_layout(layout_name=self.layout_name)
         return self._layout
 
@@ -133,11 +135,15 @@ class StorageRoot():
         if self.spec_version is None:
             self.spec_version = '1.1'
         self.write_root_declaration(self.root_fs)
-        # Create a layout declaration
-        with self.root_fs.open(self.layout_file, 'w') as fh:
-            layout = {'extension': self.layout.name,
-                      'description': self.layout.description}
-            json.dump(layout, fh, sort_keys=True, indent=2)
+        # Create a layout declaration if the layout ise set, it is valid to have
+        # a storage roo with no layout information
+        if self.layout is not None:
+            with self.root_fs.open(self.layout_file, 'w') as fh:
+                layout = {'extension': self.layout.name,
+                          'description': self.layout.description}
+                json.dump(layout, fh, sort_keys=True, indent=2)
+        else:
+            logging.debug("No layout set so not %f file written", self.layout_file)
         logging.info("Created OCFL storage root %s", self.root)
 
     def check_root_structure(self):
