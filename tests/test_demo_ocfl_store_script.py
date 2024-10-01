@@ -32,9 +32,14 @@ class TestAll(DemoTestCase):
                                "--root=TMPDIR/root",
                                "--src", "fixtures/1.0/good-objects/minimal_one_version_one_file",
                                "-v"])
-        self.assertIn("Copying from fixtures/1.0/good-objects/minimal_one_version_one_file to", out)
-        self.assertIn("root/ark%3A123%2Fabc", out)
-        self.assertIn("Copied", out)
+        self.assertIn("Added object ark:123/abc", out)
+        self.assertIn("path ark%3A123%2Fabc", out)
+        out = self.run_script("Error if we try to add the same object again",
+                              ["python", "ocfl-store.py", "add",
+                               "--root=TMPDIR/root",
+                               "--src", "fixtures/1.0/good-objects/minimal_one_version_one_file",
+                               "-v"])
+        self.assertIn("Add object failed because path ark%3A123%2Fabc exists", out)
 
     def test02_explore_simple_root(self):
         """Test exploration of a simple OCFL object root."""
@@ -59,6 +64,30 @@ class TestAll(DemoTestCase):
                                "--root=TMPDIR/root",
                                "-v"])
         self.assertIn("Must specify object path with --src", out)
+
+    def test04_build_ext0003_examples(self):
+        """Build examples from storage root extension 0003."""
+        # Example 2
+        out = self.run_script("Create new store",
+                              ["python", "ocfl-store.py", "init",
+                               "--root=TMPDIR/ex2",
+                               "--spec-version=1.0",
+                               "--layout=0003-hash-and-id-n-tuple-storage-layout",
+                               "--layout-params={\"digestAlgorithm\":\"md5\", \"tupleSize\":2, \"numberOfTuples\":15}",
+                               "-v"])
+        self.assertIn("Created OCFL storage root", out)
+        out = self.run_script("Create add object-01",
+                              ["python", "ocfl-store.py", "add",
+                               "--root=TMPDIR/ex2",
+                               "--src=extra_fixtures/1.0/good-objects/root_ext0003_object-01"])
+        self.assertIn("Added object object-01", out)
+        self.assertIn("ff/75/53/44/92/48/5e/ab/b3/9f/86/35/67/28/88/object-01", out)
+        out = self.run_script("Create add horrible-obj",
+                              ["python", "ocfl-store.py", "add",
+                               "--root=TMPDIR/ex2",
+                               "--src=extra_fixtures/1.0/good-objects/root_ext0003_horrible-obj"])
+        self.assertIn("Added object ..hor/rib:le-$id", out)
+        self.assertIn("08/31/97/66/fb/6c/29/35/dd/17/5b/94/26/77/17/%2e%2ehor%2frib%3ale-%24id", out)
 
 
 if __name__ == "__main__":

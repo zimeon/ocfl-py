@@ -51,6 +51,7 @@ class Layout_0003_Hash_And_Id_N_Tuple(Layout):
 
     def __init__(self):
         """Initialize."""
+        super().__init__()
         self.digest_algorithm = 'sha256'
         self.tuple_size = 3
         self.number_of_tuples = 3

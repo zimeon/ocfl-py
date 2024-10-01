@@ -359,7 +359,11 @@ class StorageRoot():
     def add(self, object_path):
         """Add pre-constructed object from object_path.
 
-        The identifier is extracted from the object.
+        The identifier is extracted from the object and the path is determined
+        by the storage layouts
+
+        Return the (identifier, path) on success, raises a StorageException on
+        failure.
         """
         self.open_root_fs()
         self.check_root_structure()
@@ -370,10 +374,11 @@ class StorageRoot():
         identifier = inventory['id']
         # Now copy
         path = self.object_path(identifier)
-        logging.info("Copying from %s to %s", object_path, fs.path.join(self.root, path))
+        if self.root_fs.exists(path):
+            raise StorageRootException("Add object failed because path %s exists" % (path))
+        logging.debug("Copying from %s to %s", object_path, fs.path.join(self.root, path))
         try:
             copy_dir(o.obj_fs, '/', self.root_fs, path)
-            logging.info("Copied")
         except Exception as e:
-            logging.error("Copy failed: %s", str(e))
-            raise StorageRootException("Add object failed!")
+            raise StorageRootException("Add object at path %s failed! (%s)" % (path, str(e)))
+        return (identifier, path)

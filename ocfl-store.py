@@ -132,7 +132,8 @@ def do_store_operation(args):
     elif args.cmd == 'add':
         if not args.src:
             raise ocfl.StorageRootException("Must specify object path with --src")
-        store.add(object_path=args.src)
+        (identifier, path) = store.add(object_path=args.src)
+        print("Added object %s at path %s" % (identifier, path))
     elif args.cmd == 'purge':
         logging.error("purge not implemented")
     elif args.cmd in ('show', 'path', 'validate_object'):
