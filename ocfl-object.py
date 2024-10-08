@@ -10,74 +10,90 @@ import logging
 import sys
 
 import ocfl
-from ocfl.command_line_utils import add_version_metadata_args, add_object_args, add_shared_args, check_shared_args
+from ocfl.command_line_utils import add_version_arg, check_version_arg, add_version_metadata_args, add_object_args, add_verbosity_args, check_verbosity_args
 
 
 class FatalError(Exception):
     """Exception class for conditions that should abort with message."""
 
 
-def parse_arguments():
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description='Manipulate or validate an OCFL object or inventory.',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-    # This should really be done with add_mutually_exclusive_group() but
-    # the current argparse doesn't support grouping and a title for that
-    # so use a plain group instead and will check later
-    commands = parser.add_argument_group(title="Commands (exactly one required)")
-    commands.add_argument('--create', action='store_true',
-                          help='Create a new object with version 1 files in --srcdir or from --srcbag')
-    commands.add_argument('--build', action='store_true',
-                          help='Build a new object from version directories in --srcdir')
-    commands.add_argument('--update', action='store_true',
-                          help='Update an object by adding a new version from files in --srcdir or from --srcbag')
-    commands.add_argument('--show', action='store_true',
-                          help='Show versions and files in an OCFL object')
-    commands.add_argument('--validate', action='store_true',
-                          help='Validate an OCFL object (use ocfl-validate.py for more control)')
-    commands.add_argument('--extract', action='store', default=None,
-                          help='Extract a specific version (or "head") into --dstdir')
-
-    src_params = parser.add_argument_group(title="Source files")
-    src_params.add_argument('--srcdir', '--src', action='store',
-                            help='Source directory path')
-    src_params.add_argument('--srcbag', action='store',
-                            help='Source Bagit bag path (alternative to --srcdir)')
-
+def add_common_args(parser, include_version_metadata=False, objdir_required=True):
+    """Add argparse arguments that are common to many commands."""
+    add_verbosity_args(parser)
+    # Object files
+    parser.add_argument('--objdir', '--obj', required=objdir_required,
+                        help='read from or write to OCFL object directory objdir')
+    # Version metadata and object settings
     obj_params = parser.add_argument_group(title="OCFL object parameters")
     obj_params.add_argument('--spec-version', '--spec', action='store', default='1.1',
                             help='OCFL specification version to adhere to')
     obj_params.add_argument('--digest', default='sha512',
-                            help='Digest algorithm to use')
+                            help='digest algorithm to use')
     obj_params.add_argument('--fixity', action='append',
-                            help='Add fixity type to add')
+                            help='add fixity type to add')
     obj_params.add_argument('--id', default=None,
-                            help='Identifier of object')
-    obj_params.add_argument('--dstdir', '--dst', action='store', default='/tmp/ocfl-out',
-                            help='Destination directory path')
-    obj_params.add_argument('--dstbag', action='store',
-                            help='Destination Bagit bag path (alternative to --dstdir)')
-
-    # Version metadata and object settings
-    add_version_metadata_args(obj_params)
+                            help='identifier of object')
     add_object_args(obj_params)
-    add_shared_args(parser)
+    if include_version_metadata:
+        add_version_metadata_args(obj_params)
+
+
+def parse_arguments():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description='Manipulate or validate an OCFL Object or Inventory.',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    # The only options at the top level are --help and --version
+    add_version_arg(parser)
+
+    subparsers = parser.add_subparsers(dest='cmd',
+                                       help='(Show sub-command help with command -h)')
+
+    # Separate sub-parsers for each command
+    create_parser = subparsers.add_parser('create',
+                                          help='create a new object with version 1 files in --srcdir or from --srcbag')
+    add_common_args(create_parser, include_version_metadata=True, objdir_required=False)
+    create_parser.add_argument('--srcdir', '--src', action='store',
+                               help='source directory path')
+    create_parser.add_argument('--srcbag', action='store',
+                               help='source Bagit bag path (alternative to --srcdir)')
+
+    build_parser = subparsers.add_parser('build',
+                                         help='build a new object from version directories in --srcdir')
+    add_common_args(build_parser, include_version_metadata=True, objdir_required=False)
+    build_parser.add_argument('--srcdir', '--src', action='store',
+                              help='source directory path')
+
+    update_parser = subparsers.add_parser('update',
+                                          help='update an object by adding a new version from files in --srcdir or from --srcbag')
+    add_common_args(update_parser, include_version_metadata=True)
+    update_parser.add_argument('--srcdir', '--src', action='store',
+                               help='source directory path')
+    update_parser.add_argument('--srcbag', action='store',
+                               help='source Bagit bag path (alternative to --srcdir)')
+
+    add_parser = subparsers.add_parser('show',
+                                       help='show versions and files in an OCFL object')
+    add_common_args(add_parser)
+
+    validate_parser = subparsers.add_parser('validate',
+                                            help='validate an OCFL object (use ocfl-validate.py for more control)')
+    add_common_args(validate_parser)
+
+    extract_parser = subparsers.add_parser('extract',
+                                           help='extract a specific version (or "head") into --dstdir')
+    add_common_args(extract_parser)
+    extract_parser.add_argument('--objver', action='store', default='head',
+                                help='object version content to extract (defaults to latest version)')
+    extract_parser.add_argument('--dstdir', '--dst', action='store', default='/tmp/ocfl-out',
+                                help='destination directory path')
+    extract_parser.add_argument('--dstbag', action='store',
+                                help='destination Bagit bag path (alternative to --dstdir)')
+
     args = parser.parse_args()
-    check_shared_args(args)
-
-    # Require command and only one command
-    cmds = ['create', 'build', 'update', 'show', 'validate', 'extract']
-    num_cmds = 0
-    for cmd in cmds:
-        if getattr(args, cmd):
-            num_cmds += 1
-    if num_cmds != 1:
-        raise FatalError("Exactly one command (%s) must be specified" % ', '.join(cmds))
-
-    # Must not specify both srcdir and srcbag
-    if args.srcdir and args.srcbag:
-        raise FatalError("Must not specify both --srcdir and --srcbag")
+    check_version_arg(args)
+    if args.cmd is None:
+        raise FatalError("No command, nothing to do (use -h to show help)")
+    check_verbosity_args(args)
 
     return args
 
@@ -92,7 +108,7 @@ def do_object_operation(args):
                       dedupe=not args.no_dedupe,
                       lax_digests=args.lax_digests,
                       fixity=args.fixity)
-    if args.create:
+    if args.cmd == 'create':
         srcdir = args.srcdir
         metadata = ocfl.VersionMetadata(args=args)
         if args.srcbag is not None:
@@ -108,14 +124,14 @@ def do_object_operation(args):
         obj.create(srcdir=srcdir,
                    metadata=metadata,
                    objdir=args.objdir)
-    elif args.build:
+    elif args.cmd == 'build':
         if args.srcdir is None:
             raise FatalError("Must specify --srcdir containing version directories when building an OCFL object!")
         metadata = ocfl.VersionMetadata(args=args)
         obj.build(srcdir=args.srcdir,
                   metadata=metadata,
                   objdir=args.objdir)
-    elif args.update:
+    elif args.cmd == 'update':
         srcdir = args.srcdir
         metadata = ocfl.VersionMetadata(args=args)
         if args.srcbag is not None:
@@ -125,25 +141,24 @@ def do_object_operation(args):
         obj.update(objdir=args.objdir,
                    srcdir=srcdir,
                    metadata=metadata)
-    elif args.show:
+    elif args.cmd == 'show':
         logging.warning("Object tree\n%s", obj.tree(objdir=args.objdir))
-    elif args.validate:
+    elif args.cmd == 'validate':
         obj.validate(objdir=args.objdir)
-    elif args.extract:
+    elif args.cmd == 'extract':
         if args.dstdir and args.dstbag:
             args.dstdir = None  # Override dstdir if dstbag specified
-        version = args.extract
         dst = args.dstdir or args.dstbag
         metadata = obj.extract(objdir=args.objdir,
-                               version=version,
+                               version=args.objver,
                                dstdir=dst)
         if args.dstdir:
-            print("Extracted content for %s in %s" % (version, dst))
+            print("Extracted content for %s in %s" % (metadata.version, dst))
         else:  # args.dstbag
             ocfl.bag_extracted_version(dst, metadata)
-            print("Extracted content for %s saved as Bagit bag in %s" % (version, dst))
+            print("Extracted content for %s saved as Bagit bag in %s" % (metadata.version, dst))
     else:
-        raise FatalError("Command argument not supported!")
+        logging.error("Unrecognized command!")
 
 
 if __name__ == "__main__":
@@ -151,6 +166,5 @@ if __name__ == "__main__":
         aargs = parse_arguments()
         do_object_operation(aargs)
     except (FatalError, ocfl.ObjectException) as e:
-        # Show message but otherwise exit quietly
-        print('Error - ' + str(e))
+        logging.error(str(e))
         sys.exit(1)

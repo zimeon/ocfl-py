@@ -19,7 +19,7 @@ class ObjectException(Exception):
 def add_version_arg(parser):
     """Add --version argument."""
     parser.add_argument('--version', action='store_true',
-                        help='Show version number and exit')
+                        help='show version number and exit')
 
 
 def check_version_arg(args):
@@ -58,23 +58,36 @@ def add_object_args(parser):
     # Validation settings
     parser.add_argument('--lax-digests', action='store_true',
                         help='allow use of any known digest')
-    # Object files
-    parser.add_argument('--objdir', '--obj',
-                        help='read from or write to OCFL object directory objdir')
 
 
-def add_shared_args(parser):
-    """Add arguments to be shared by any ocfl-py scripts."""
-    add_version_arg(parser)
+def add_verbosity_args(parser):
+    """Add arguments controlling verbosity that are shared by many ocfl-py scripts.
+
+    Parameters:
+        parser - and argparse.Parser object
+    """
     parser.add_argument('--verbose', '-v', action='store_true',
                         help="be more verbose")
+    parser.add_argument('--debug', action='store_true',
+                        help="show debugging messages (more verbose than -v)")
+    parser.add_argument('--quiet', '-q', action='store_true',
+                        help="be quiet, do not show warnings")
 
 
-def check_shared_args(args):
-    """Check arguments set with add_shared_args, and also set logging."""
-    check_version_arg(args)
-    # Set up logging
-    logging.basicConfig(level=logging.INFO if args.verbose else logging.WARN)
+def check_verbosity_args(args):
+    """Check verbosity arguments and set root logging level.
+
+    Parameters:
+        args - arguments from argparse
+    """
+    level = logging.WARN
+    if args.debug:
+        level = logging.DEBUG
+    elif args.verbose:
+        level = logging.INFO
+    elif args.quiet:
+        level = logging.ERROR
+    logging.basicConfig(level=level)
 
 
 def get_storage_root(args):

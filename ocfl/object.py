@@ -568,9 +568,14 @@ class Object():
     def extract(self, objdir, version, dstdir):
         """Extract version from object at objdir into dstdir.
 
+        Parameters:
+            objdir - directory for the object
+            version - version to be extracted ('v1', etc.) or 'head' for latest
+            dstdir - directory to create with extracted version
+
         The dstdir itself must not exist but the parent directory must.
 
-        Returns the version block from the inventory.
+        Returns a VersionMetadata object for the version extracted.
         """
         self.open_fs(objdir)
         # Read inventory, set up version

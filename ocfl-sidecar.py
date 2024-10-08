@@ -5,7 +5,7 @@ import logging
 import os.path
 
 import ocfl
-from ocfl.command_line_utils import add_shared_args, check_shared_args
+from ocfl.command_line_utils import add_version_arg, check_version_arg, add_verbosity_args, check_verbosity_args
 
 INVENTORY_NAME = "inventory.json"
 
@@ -18,9 +18,11 @@ def parse_arguments():
                         help="OCFL inventory files or directories containing them")
     parser.add_argument("--digest", default=None,
                         help="Digest algorithm to use overriding any in inventory")
-    add_shared_args(parser)
+    add_version_arg(parser)
+    add_verbosity_args(parser)
     args = parser.parse_args()
-    check_shared_args(args)
+    check_version_arg(args)
+    check_verbosity_args(args)
     return args
 
 

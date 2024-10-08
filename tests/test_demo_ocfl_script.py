@@ -15,9 +15,9 @@ class TestAll(DemoTestCase):
         self.assertIn("ocfl.py is part of ocfl-py version", out)
 
     def test01_create_add(self):
-        """Test store initialization and object addition."""
+        """Test store creation and object addition."""
         out = self.run_script("Create new store",
-                              ["python", "ocfl.py", "init",
+                              ["python", "ocfl.py", "create",
                                "--root=TMPDIR/root",
                                "--layout=nnnn-flat-quoted-storage-layout",
                                "-v"])
@@ -54,7 +54,7 @@ class TestAll(DemoTestCase):
     def test03_errors(self):
         """Test error cases."""
         out = self.run_script("Create new store",
-                              ["python", "ocfl.py", "init",
+                              ["python", "ocfl.py", "create",
                                "--root=TMPDIR/root",
                                "--layout=0002-flat-direct-storage-layout",
                                "-v"])
@@ -69,7 +69,7 @@ class TestAll(DemoTestCase):
         """Build examples from storage root extension 0003."""
         # Example 2
         out = self.run_script("Create new store",
-                              ["python", "ocfl.py", "init",
+                              ["python", "ocfl.py", "create",
                                "--root=TMPDIR/ex2",
                                "--spec-version=1.0",
                                "--layout=0003-hash-and-id-n-tuple-storage-layout",
@@ -88,6 +88,22 @@ class TestAll(DemoTestCase):
                                "--src=extra_fixtures/1.0/good-objects/root_ext0003_horrible-obj"])
         self.assertIn("Added object ..hor/rib:le-$id", out)
         self.assertIn("08/31/97/66/fb/6c/29/35/dd/17/5b/94/26/77/17/%2e%2ehor%2frib%3ale-%24id", out)
+
+    def test99_errors(self):
+        """Test error conditions."""
+        out = self.run_script("No valid command argument",
+                              ["python", "ocfl.py"],
+                              text="With no argument and error and suggections are shown.")
+        self.assertIn("No command, nothing to do ", out)
+        out = self.run_script("No source directory (--srcdir)",
+                              ["python", "ocfl.py", "create"],
+                              text="The `create` command requires a root to be specifed.")
+        self.assertIn("The storage root must be set", out)
+        out = self.run_script("No identifier",
+                              ["python", "ocfl.py", "show",
+                               "--root", "tmp"],
+                              text="The `show` command requires an identifier.")
+        self.assertIn("Must specify id", out)
 
 
 if __name__ == "__main__":

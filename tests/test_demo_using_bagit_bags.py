@@ -14,8 +14,7 @@ class TestAll(DemoTestCase):
                "make a new OCFL object `/tmp/obj` with that content as the " \
                "`v1` state:"
         out = self.run_script("Building from a set of bags",
-                              ["python", "ocfl-object.py",
-                               "--create",
+                              ["python", "ocfl-object.py", "create",
                                "--objdir", "TMPDIR/obj",
                                "--srcbag", "tests/testdata/bags/uaa_v1",
                                "-v"],
@@ -27,8 +26,7 @@ class TestAll(DemoTestCase):
                               text="Now that we have the object it is of course valid.")
         self.assertIn("/obj is VALID", out)
         out = self.run_script("Look inside",
-                              ["python", "ocfl-object.py",
-                               "--show",
+                              ["python", "ocfl-object.py", "show",
                                "--objdir", "TMPDIR/obj"],
                               text="Looking inside the object we see `v1` with the expected 2 content files.")
         self.assertIn("├── content (2 files)", out)
@@ -36,8 +34,7 @@ class TestAll(DemoTestCase):
                "[`tests/testdata/bags/uaa_v2`](https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v2) " \
                "with updated content we can `--update` the object to create `v2`."
         out = self.run_script("Update with v2",
-                              ["python", "ocfl-object.py",
-                               "--update",
+                              ["python", "ocfl-object.py", "update",
                                "--objdir", "TMPDIR/obj",
                                "--srcbag", "tests/testdata/bags/uaa_v2",
                                "-v"],
@@ -45,8 +42,7 @@ class TestAll(DemoTestCase):
         self.assertIn("Will update info:bb123cd4567 v1 -> v2", out)
         self.assertIn("/obj by adding v2", out)
         out = self.run_script("Look inside again",
-                              ["python", "ocfl-object.py",
-                               "--show",
+                              ["python", "ocfl-object.py", "show",
                                "--objdir", "TMPDIR/obj"],
                               text="Looking inside the object we now see `v1` and `v2`. There are no content files inside `v2` because although this update added two files they have identical content (and hence digest) as one of the files in `v1`")
         self.assertIn("└── v2 \n    ├── inventory.json \n    └── inventory.json.sha512", out)
@@ -54,8 +50,7 @@ class TestAll(DemoTestCase):
                "[`tests/testdata/bags/uaa_v3`](https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v3) " \
                "to create `v3`."
         out = self.run_script("Update with v3",
-                              ["python", "ocfl-object.py",
-                               "--update",
+                              ["python", "ocfl-object.py", "update",
                                "--objdir", "TMPDIR/obj",
                                "--srcbag", "tests/testdata/bags/uaa_v3",
                                "-v"],
@@ -63,8 +58,7 @@ class TestAll(DemoTestCase):
         self.assertIn("Will update info:bb123cd4567 v2 -> v3", out)
         self.assertIn("/obj by adding v3", out)
         out = self.run_script("Look inside again",
-                              ["python", "ocfl-object.py",
-                               "--show",
+                              ["python", "ocfl-object.py", "show",
                                "--objdir", "TMPDIR/obj"],
                               text="Looking inside again we see that `v3` does add another content file.")
         self.assertIn("└── v3 \n    ├── content (1 files)\n    ├── inventory.json \n    └── inventory.json.sha512", out)
@@ -72,8 +66,7 @@ class TestAll(DemoTestCase):
                "[`tests/testdata/bags/uaa_v4`](https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v4) " \
                "to create `v4`."
         out = self.run_script("Update with v4",
-                              ["python", "ocfl-object.py",
-                               "--update",
+                              ["python", "ocfl-object.py", "update",
                                "--objdir", "TMPDIR/obj",
                                "--srcbag", "tests/testdata/bags/uaa_v4",
                                "-v"],
@@ -82,8 +75,8 @@ class TestAll(DemoTestCase):
         self.assertIn("/obj by adding v4", out)
         text = "Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` content as a Bagit bag."
         out = self.run_script("Update with v4",
-                              ["python", "ocfl-object.py",
-                               "--extract", "v4",
+                              ["python", "ocfl-object.py", "extract",
+                               "--objver", "v4",
                                "--objdir", "TMPDIR/obj",
                                "--dstbag", "TMPDIR/extracted_v4",
                                "-v"],

@@ -6,7 +6,7 @@ import os.path
 import sys
 
 import ocfl
-from ocfl.command_line_utils import add_version_arg, check_version_arg, check_shared_args, get_storage_root
+from ocfl.command_line_utils import add_version_arg, add_verbosity_args, check_version_arg, check_verbosity_args, get_storage_root
 
 
 def add_common_args(parser):
@@ -17,28 +17,27 @@ def add_common_args(parser):
                         help='Layout of objects under storage root')
     parser.add_argument('--lax-digests', action='store_true',
                         help='allow use of any known digest')
-    parser.add_argument('--verbose', '-v', action='store_true',
-                        help="be more verbose")
-    parser.add_argument('--quiet', '-q', action='store_true',
-                        help="be quiet, do not show warnings")
+    add_verbosity_args(parser)
 
 
 def parse_arguments():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description='Manpulate or validate an OCFL Storage Root.',
+    parser = argparse.ArgumentParser(description='Manpulate or validate an OCFL Storage Root and Objects within.',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    # The only options at the top level are --help and --version
     add_version_arg(parser)
+
     subparsers = parser.add_subparsers(dest='cmd',
                                        help='Show sub-command help with command -h')
 
     # Separate sub-parsers for each command
-    init_parser = subparsers.add_parser('init',
-                                        help='Initialize/create storage root')
-    init_parser.add_argument('--spec-version', '--spec', action='store', default='1.1',
-                             help='OCFL specification version to adhere to')
-    init_parser.add_argument('--layout-params', action='store', default=None,
-                             help='Specify parameters for the selected storage layout as a JSON string (including the extensionName is optional)')
-    add_common_args(init_parser)
+    create_parser = subparsers.add_parser('create',
+                                          help='Create and initialize storage root')
+    add_common_args(create_parser)
+    create_parser.add_argument('--spec-version', '--spec', action='store', default='1.1',
+                               help='OCFL specification version to adhere to')
+    create_parser.add_argument('--layout-params', action='store', default=None,
+                               help='Specify parameters for the selected storage layout as a JSON string (including the extensionName is optional)')
 
     list_parser = subparsers.add_parser('list', help='List contents of storage root')
     add_common_args(list_parser)
@@ -78,7 +77,9 @@ def parse_arguments():
 
     args = parser.parse_args()
     check_version_arg(args)
-    check_shared_args(args)
+    if args.cmd is None:
+        raise ocfl.StorageRootException("No command, nothing to do (use -h to show help)")
+    check_verbosity_args(args)
     return args
 
 
@@ -120,7 +121,7 @@ def do_store_operation(args):
     store = ocfl.StorageRoot(root=get_storage_root(args),
                              layout_name=args.layout,
                              lax_digests=args.lax_digests)
-    if args.cmd == 'init':
+    if args.cmd == 'create':
         store.initialize(spec_version=args.spec_version, layout_params=args.layout_params)
         print("Created OCFL storage root %s" % (store.root))
     elif args.cmd == 'list':
@@ -145,7 +146,7 @@ def do_store_operation(args):
                 # Just print the full path
                 print(os.path.join(store.root, objdir))
             else:
-                print("Path to %s insite root %s is %s" % (args.id, store.root, objdir))
+                print("Path to %s inside root %s is %s" % (args.id, store.root, objdir))
         else:
             obj = ocfl.Object(identifier=args.id)
             if args.cmd == 'show':
@@ -153,7 +154,7 @@ def do_store_operation(args):
             else:
                 logging.error("validate not implemented")
     else:
-        logging.warning("No command, nothing to do.")
+        logging.error("Unrecognized command!")
 
 
 if __name__ == "__main__":

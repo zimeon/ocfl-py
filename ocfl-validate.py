@@ -10,7 +10,7 @@ import logging
 import sys
 
 import ocfl
-from ocfl.command_line_utils import add_shared_args, check_shared_args
+from ocfl.command_line_utils import add_version_arg, check_version_arg, add_verbosity_args, check_verbosity_args
 
 parser = argparse.ArgumentParser(
     description='Validate one or more OCFL objects, storage roots or standalone '
@@ -19,8 +19,6 @@ parser = argparse.ArgumentParser(
     'status. HAS NO OPTIONS TO MAKE ANY CHANGES.')
 parser.add_argument('path', type=str, nargs='*',
                     help='OCFL storage root, object or inventory path(s) to validate')
-parser.add_argument('--quiet', '-q', action='store_true',
-                    help="Be quiet, do not show warnings")
 parser.add_argument('--very-quiet', '-Q', action='store_true',
                     help="Be very quiet, show only validation status (implies -q)")
 parser.add_argument('--lax-digests', action='store_true',
@@ -28,9 +26,11 @@ parser.add_argument('--lax-digests', action='store_true',
 parser.add_argument('--no-check-digests', action='store_true',
                     help='Do not check digest values')
 
-add_shared_args(parser)
+add_version_arg(parser)
+add_verbosity_args(parser)
 args = parser.parse_args()
-check_shared_args(args)
+check_version_arg(args)
+check_verbosity_args(args)
 
 log = logging.getLogger(name="ocfl-validate")
 log.setLevel(level=logging.INFO if args.verbose else logging.WARN)
