@@ -5,7 +5,7 @@ import logging
 import os.path
 import sys
 
-import ocfl
+import ocfl  # pylint: disable=import-self; this isn't actually self import
 from ocfl.command_line_utils import add_version_arg, add_verbosity_args, check_version_arg, check_verbosity_args, get_storage_root
 
 
