@@ -10,8 +10,8 @@ FOR VERSION 2.0 SPECIFICATION WORK. THE LATEST STABLE VERSION IS `v1.3.0
 `ocfl-py` is a Python reference implementation of the Oxford Common File Layout
 (OCFL). It also provides a number of command-line tools that may be useful for
 validating and manipulating OCFL Objects and OCFL Storage Roots. The code
-attempts to follow the current `Draft OCFL specification v1.1
-<https://ocfl.io/draft/spec/>`_ while retaining support for `v1.0
+implements the current `OCFL specification v1.1
+<https://ocfl.io/1.1/spec/>`_ while retaining support for `v1.0
 <https://ocfl.io/1.0/spec/>`_. See `implementation status for errors and warnings
 <https://github.com/zimeon/ocfl-py/blob/main/docs/validation_status.md>`_ for
 details of validator support.
@@ -26,12 +26,12 @@ Installing
 
 This code requires Python 3.
 
-This code attempts to support the OCFL specifications v1.1 draft and v1.0. To get
-the most up to date version check out the ``main`` branch from github.
+This supports the OCFL specifications v1.1 and v1.0. To get the most
+up to date version check out the ``main`` branch from github.
 
 I hope to keep a fairly current version on `PyPI
-<https://pypi.org/project/ocfl-py/>`_, which can be installed or upgraded
-with:
+<https://pypi.org/project/ocfl-py/>`_, which can be installed or
+upgraded with:
 
     pip install --upgrade ocfl-py
 
@@ -43,9 +43,9 @@ Use
 
 There should then be four command-line scripts available:
 
-- ``ocfl-validate.py`` - validate OCFL objects, OCFL storage roots or standalone OCFL inventory files
-- ``ocfl-object.py`` - build, manipulate, extract from or validate an OCFL object
 - ``ocfl.py`` - add or access OCFL objects under an OCFL storage root
+- ``ocfl-validate.py`` - validate OCFL objects, OCFL storage roots or standalone OCFL inventory files
+- ``ocfl-object.py`` - build, manipulate, extract from or validate a stand-alonde OCFL object 
 - ``ocfl-sidecar.py`` - update OCFL inventory sidecar file (useful for manually building examples and test cases)
 
 Each script takes ``-h`` for help.
