@@ -4,7 +4,7 @@ import sys
 
 import fs
 
-from ocfl.digest import file_digest, digest_regex, normalized_digest
+from ocfl.digest import file_digest, string_digest, digest_regex, normalized_digest
 
 
 class TestAll(unittest.TestCase):
@@ -12,13 +12,15 @@ class TestAll(unittest.TestCase):
 
     def test_file_digest__empty(self):
         """Test file_digest method with empty file."""
-        self.assertEqual(file_digest('tests/testdata/files/empty', 'md5'),
+        self.assertEqual(file_digest(filename='tests/testdata/files/empty', digest_type='md5'),
                          'd41d8cd98f00b204e9800998ecf8427e')
         self.assertEqual(file_digest('tests/testdata/files/empty', 'sha1'),
                          'da39a3ee5e6b4b0d3255bfef95601890afd80709')
         self.assertEqual(file_digest('tests/testdata/files/empty', 'sha256'),
                          'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
         self.assertEqual(file_digest('tests/testdata/files/empty', 'sha512'),
+                         'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e')
+        self.assertEqual(file_digest('tests/testdata/files/empty'),
                          'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e')
         if sys.version_info > (3, 4):  # Old hashlib doesn't have blake2b
             self.assertEqual(file_digest('tests/testdata/files/empty', 'blake2b-512'),
@@ -45,6 +47,20 @@ class TestAll(unittest.TestCase):
         td_fs = fs.open_fs('tests/testdata')
         self.assertEqual(file_digest('files/hello_out_there.txt', 'md5', pyfs=td_fs),
                          '9c7ec1389a61f1e15185bd976672bc63')
+
+    def test_string_digest(self):
+        """Test string_digest method."""
+        self.assertEqual(string_digest(txt='Sunny San Rafael\n', digest_type='md5'),
+                         '0fa187d02e87902418af02e9a91c7603')
+        self.assertEqual(string_digest('Sunny San Rafael\n', 'sha1'),
+                         '14ca9011850fe349fb29e056a1fcfe018e035b44')
+        self.assertEqual(string_digest('Sunny San Rafael\n', 'sha256'),
+                         '50e8300695614f1298ceeac4a6a456ef875c4fac12dfd873736d8247dd4354b4')
+        self.assertEqual(string_digest('Sunny San Rafael\n', 'sha512'),
+                         '660473b7045af0ede6955236567893aef0dc5907252cc1c2d93b2a419545ea2ca599847995af50162f5f66f1b5231552b64b0a976b3b7d9433153539605093db')
+        self.assertEqual(string_digest('Sunny San Rafael\n'),
+                         '660473b7045af0ede6955236567893aef0dc5907252cc1c2d93b2a419545ea2ca599847995af50162f5f66f1b5231552b64b0a976b3b7d9433153539605093db')
+        self.assertRaises(ValueError, string_digest, 'Any string', 'unknown_digest')
 
     def test_digest_regex(self):
         """Test digest regex."""
