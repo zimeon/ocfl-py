@@ -31,7 +31,7 @@ class DemoTestCase(unittest.TestCase):
             shutil.rmtree(self.tmpdir)
 
     def run_script(self, desc, options, text=None):
-        """Run the ocfl-store.py script."""
+        """Run the ocfl.py script."""
         self.m += 1
         if self.demo:
             print("\n### %d.%d %s\n" % (self.n, self.m, desc))

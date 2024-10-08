@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tests/demo of ocfl-store.py client."""
+"""Tests/demo of ocfl.py client."""
 from testlib import DemoTestCase
 
 
@@ -9,33 +9,33 @@ class TestAll(DemoTestCase):
     def test00_version(self):
         """Test showing version number."""
         out = self.run_script("Show version number",
-                              ["python", "ocfl-store.py",
+                              ["python", "ocfl.py",
                                "--version"],
                               text="The `--version` argument will show version number and exit (but we still tave to specify a root and an action)")
-        self.assertIn("ocfl-store.py is part of ocfl-py version", out)
+        self.assertIn("ocfl.py is part of ocfl-py version", out)
 
     def test01_create_add(self):
         """Test store initialization and object addition."""
         out = self.run_script("Create new store",
-                              ["python", "ocfl-store.py", "init",
+                              ["python", "ocfl.py", "init",
                                "--root=TMPDIR/root",
                                "--layout=nnnn-flat-quoted-storage-layout",
                                "-v"])
         self.assertIn("Created OCFL storage root", out)
         out = self.run_script("List empty store",
-                              ["python", "ocfl-store.py", "list",
+                              ["python", "ocfl.py", "list",
                                "--root=TMPDIR/root",
                                "-v"])
         self.assertIn("Found 0 OCFL Objects under root", out)
         out = self.run_script("Add object",
-                              ["python", "ocfl-store.py", "add",
+                              ["python", "ocfl.py", "add",
                                "--root=TMPDIR/root",
                                "--src", "fixtures/1.0/good-objects/minimal_one_version_one_file",
                                "-v"])
         self.assertIn("Added object ark:123/abc", out)
         self.assertIn("path ark%3A123%2Fabc", out)
         out = self.run_script("Error if we try to add the same object again",
-                              ["python", "ocfl-store.py", "add",
+                              ["python", "ocfl.py", "add",
                                "--root=TMPDIR/root",
                                "--src", "fixtures/1.0/good-objects/minimal_one_version_one_file",
                                "-v"])
@@ -44,7 +44,7 @@ class TestAll(DemoTestCase):
     def test02_explore_simple_root(self):
         """Test exploration of a simple OCFL object root."""
         out = self.run_script("List objects",
-                              ["python", "ocfl-store.py", "list",
+                              ["python", "ocfl.py", "list",
                                "--root=extra_fixtures/good-storage-roots/simple-root"])
         self.assertIn("ark%3A%2F12345%2Fbcd987 -- id=ark:/12345/bcd987", out)
         self.assertIn("ark%3A123%2Fabc -- id=ark:123/abc", out)
@@ -54,13 +54,13 @@ class TestAll(DemoTestCase):
     def test03_errors(self):
         """Test error cases."""
         out = self.run_script("Create new store",
-                              ["python", "ocfl-store.py", "init",
+                              ["python", "ocfl.py", "init",
                                "--root=TMPDIR/root",
                                "--layout=0002-flat-direct-storage-layout",
                                "-v"])
         self.assertIn("Created OCFL storage root", out)
         out = self.run_script("Add object",
-                              ["python", "ocfl-store.py", "add",
+                              ["python", "ocfl.py", "add",
                                "--root=TMPDIR/root",
                                "-v"])
         self.assertIn("Must specify object path with --src", out)
@@ -69,7 +69,7 @@ class TestAll(DemoTestCase):
         """Build examples from storage root extension 0003."""
         # Example 2
         out = self.run_script("Create new store",
-                              ["python", "ocfl-store.py", "init",
+                              ["python", "ocfl.py", "init",
                                "--root=TMPDIR/ex2",
                                "--spec-version=1.0",
                                "--layout=0003-hash-and-id-n-tuple-storage-layout",
@@ -77,13 +77,13 @@ class TestAll(DemoTestCase):
                                "-v"])
         self.assertIn("Created OCFL storage root", out)
         out = self.run_script("Create add object-01",
-                              ["python", "ocfl-store.py", "add",
+                              ["python", "ocfl.py", "add",
                                "--root=TMPDIR/ex2",
                                "--src=extra_fixtures/1.0/good-objects/root_ext0003_object-01"])
         self.assertIn("Added object object-01", out)
         self.assertIn("ff/75/53/44/92/48/5e/ab/b3/9f/86/35/67/28/88/object-01", out)
         out = self.run_script("Create add horrible-obj",
-                              ["python", "ocfl-store.py", "add",
+                              ["python", "ocfl.py", "add",
                                "--root=TMPDIR/ex2",
                                "--src=extra_fixtures/1.0/good-objects/root_ext0003_horrible-obj"])
         self.assertIn("Added object ..hor/rib:le-$id", out)
