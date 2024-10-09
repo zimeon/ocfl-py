@@ -42,23 +42,14 @@ class Layout:
         this __init__. Instead they will replace it and define PARAMS for the
         new class.
         """
-        # Config - overrride this in sub-class with a dictionary
-        self.PARAMS = None
-
-    @property
-    def name(self):
-        """Canonical name of this layout to go in ocfl_layout.json."""
-        raise LayoutException("No yet implemented")
-
-    @property
-    def description(self):
-        """Description of this layout to go in ocfl_layout.json."""
-        raise LayoutException("No yet implemented")
+        self.NAME = 'BASE'  # Override this in sub-class with real layout name
+        self.DESCRIPTION = 'BASE LAYOUT CLASS'  # Override with layout description
+        self.PARAMS = None  # Overrride this in sub-class with a dictionary
 
     @property
     def config_file(self):
         """Location of config.json configuration file for the layout extenstion."""
-        return os.path.join('extensions', self.name, 'config.json')
+        return os.path.join('extensions', self.NAME, 'config.json')
 
     @property
     def config(self):
@@ -118,8 +109,8 @@ class Layout:
         if not require_extension_name and 'extensionName' not in config:
             # Fine if we don't require the extension name
             pass
-        elif config.get('extensionName') != self.name:
-            raise LayoutException("Storage root extension config extensionName is %s, expected %s" % (config.get('extensionName'), self.name))
+        elif config.get('extensionName') != self.NAME:
+            raise LayoutException("Storage root extension config extensionName is %s, expected %s" % (config.get('extensionName'), self.NAME))
         # Read and check the parameters (ignore any extra params)
         for key, method in self.PARAMS.items():
             method(config.get(key))

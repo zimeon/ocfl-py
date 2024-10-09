@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Utility functions for OCFL command line tools."""
-import os
 import logging
 import sys
 

@@ -9,7 +9,7 @@ class TestAll(unittest.TestCase):
 
     def test_name(self):
         """Test canonical name."""
-        self.assertEqual(Layout_0002_Flat_Direct().name, '0002-flat-direct-storage-layout')
+        self.assertEqual(Layout_0002_Flat_Direct().NAME, '0002-flat-direct-storage-layout')
 
     def test_identifier_to_path(self):
         """Test identifier_to_path."""

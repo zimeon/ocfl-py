@@ -5,15 +5,12 @@ from .layout import Layout
 class Layout_NNNN_Flat_Quoted(Layout):
     """Class to support trivial identity layout."""
 
-    @property
-    def name(self):
-        """Canonical name of this layout extension."""
-        return "nnnn-flat-quoted-storage-layout"
-
-    @property
-    def description(self):
-        """Description of this layout to go in ocfl_layout.json."""
-        return "Local extension, flat layout with simple quoting of object ids"
+    def __init__(self):
+        """Initialize."""
+        super().__init__()
+        self.NAME = "nnnn-flat-quoted-storage-layout"
+        self.DESCRIPTION = "Local extension, flat layout with simple quoting of object ids"
+        self.PARAMS = None  # No parameters
 
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to root."""

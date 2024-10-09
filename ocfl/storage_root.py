@@ -158,8 +158,8 @@ class StorageRoot():
         # a storage root with no layout information
         if self.layout is not None:
             with self.root_fs.open(self.layout_file, 'w') as fh:
-                layout = {'extension': self.layout.name,
-                          'description': self.layout.description}
+                layout = {'extension': self.layout.NAME,
+                          'description': self.layout.DESCRIPTION}
                 json.dump(layout, fh, sort_keys=True, indent=2)
             # Do we need to qrite a extension description?
             self.layout.write_layout_params(root_fs=self.root_fs)
@@ -193,10 +193,10 @@ class StorageRoot():
         if self.root_fs.exists(self.layout_file):
             self.layout_name, self.layout_description = self.parse_layout_file()
             try:
-                if self.layout.name == self.layout_name:
+                if self.layout.NAME == self.layout_name:
                     logging.info("Storage root layout is %s", self.layout_name)
                 else:
-                    logging.warning("Non-canonical layout name %s, should be %s", self.layout_name, self.layout.name)
+                    logging.warning("Non-canonical layout name %s, should be %s", self.layout_name, self.layout.NAME)
             except StorageRootException as e:
                 raise StorageRootException("Storage root %s includes ocfl_layout.json with unknown layout %s (%s)" % (self.root, self.layout_name, str(e)))
             # Is there a corresponding extensions dir with params in config.json?

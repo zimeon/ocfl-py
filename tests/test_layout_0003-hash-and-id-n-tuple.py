@@ -40,7 +40,7 @@ class TestAll(unittest.TestCase):
 
     def test_name(self):
         """Test canonical name."""
-        self.assertEqual(Layout_0003_Hash_And_Id_N_Tuple().name, '0003-hash-and-id-n-tuple-storage-layout')
+        self.assertEqual(Layout_0003_Hash_And_Id_N_Tuple().NAME, '0003-hash-and-id-n-tuple-storage-layout')
 
     def test_identifier_to_path(self):
         """Test identifier_to_path."""

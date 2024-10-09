@@ -10,18 +10,15 @@ from .layout import Layout, LayoutException
 class Layout_0002_Flat_Direct(Layout):
     """Class to support trivial identity layout."""
 
-    @property
-    def name(self):
-        """Canonical name."""
-        return "0002-flat-direct-storage-layout"
-
-    @property
-    def description(self):
-        """Description of this layout to go in ocfl_layout.json."""
-        return "Extension 0002: Flat Direct Storage Layout"
+    def __init__(self):
+        """Initialize."""
+        super().__init__()
+        self.NAME = "0002-flat-direct-storage-layout"
+        self.DESCRIPTION = "Extension 0002: Flat Direct Storage Layout"
+        self.PARAMS = None  # No parameters
 
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to root."""
         if identifier in ('', '.', '..') or os.sep in identifier:
-            raise LayoutException("Identifier '%s' unsafe for %s layout" % (identifier, self.name))
+            raise LayoutException("Identifier '%s' unsafe for %s layout" % (identifier, self.NAME))
         return identifier

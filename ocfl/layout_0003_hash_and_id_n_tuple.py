@@ -56,6 +56,8 @@ class Layout_0003_Hash_And_Id_N_Tuple(Layout):
         self.tuple_size = 3
         self.number_of_tuples = 3
         # Config
+        self.NAME = '0003-hash-and-id-n-tuple-storage-layout'
+        self.DESCRIPTION = "Extension 0003: Hashed Truncated N-tuple Trees with Object ID Encapsulating Directory for OCFL Storage Hierarchies"
         self.PARAMS = {'digestAlgorithm': self.check_digest_algorithm,
                        'tupleSize': self.check_tuple_size,
                        'numberOfTuples': self.check_number_of_tuples}
@@ -113,19 +115,9 @@ class Layout_0003_Hash_And_Id_N_Tuple(Layout):
         self.number_of_tuples = value
 
     @property
-    def name(self):
-        """Canonical name."""
-        return '0003-hash-and-id-n-tuple-storage-layout'
-
-    @property
-    def description(self):
-        """Description of this layout to go in ocfl_layout.json."""
-        return "Extension 0003: Hashed Truncated N-tuple Trees with Object ID Encapsulating Directory for OCFL Storage Hierarchies"
-
-    @property
     def config(self):
         """Dictionary with config.json configuration for the layout extenstion."""
-        return {'extensionName': self.name,
+        return {'extensionName': self.NAME,
                 'digestAlgorithm': self.digest_algorithm,
                 'tupleSize': self.tuple_size,
                 'numberOfTuples': self.number_of_tuples}

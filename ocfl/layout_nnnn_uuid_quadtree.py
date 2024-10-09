@@ -6,7 +6,7 @@ import os
 import os.path
 import re
 
-from .layout import Layout
+from .layout import Layout, LayoutException
 
 
 class Layout_NNNN_UUID_Quadtree(Layout):
@@ -16,6 +16,26 @@ class Layout_NNNN_UUID_Quadtree(Layout):
         """Initialize Layout."""
         super().__init__()
         self.prefix = prefix
+        self.NAME = 'nnnn-uuid-quadtree'
+        self.DESCRIPTION = "Local extension to support UUID URIs with quadtree directory names"
+        self.PARAMS = {'prefix': self.check_prefix}
+
+    @property
+    def config(self):
+        """Dictionary with config.json configuration for the layout extenstion."""
+        return {'extensionName': self.NAME,
+                'prefix': self.prefix}
+
+    def check_prefix(self, value):
+        """Check prefix paremeter.
+
+        Any string is allowed.
+        """
+        if value is None:
+            raise LayoutException('prefix parameter must be specified')
+        if not isinstance(value, str):
+            raise LayoutException('prefix parameter must be a string')
+        self.prefix = value
 
     def encode(self, identifier):
         """NOOP encode identifier."""

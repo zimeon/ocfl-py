@@ -16,7 +16,7 @@ import os
 import os.path
 from pairtree import id_encode, id_decode
 
-from .layout import Layout
+from .layout import Layout, LayoutException
 
 
 class Layout_NNNN_Tuple_Tree(Layout):
@@ -26,6 +26,32 @@ class Layout_NNNN_Tuple_Tree(Layout):
         """Initialize Layout."""
         super().__init__()
         self.tuple_size = tuple_size
+        self.NAME = "nnnn-tuple-tree-layout"
+        self.DESCRIPTION = "Local extension, unhashed tuple-tree with configurable tuple size"
+        self.PARAMS = {'tupleSize': self.check_tuple_size}
+
+    @property
+    def config(self):
+        """Dictionary with config.json configuration for the layout extenstion."""
+        return {'extensionName': self.NAME,
+                'tupleSize': self.tuple_size}
+
+    def check_tuple_size(self, value):
+        """Check tuple size paremeter.
+
+        For config:
+            Name: `tupleSize`
+            Description: Indicates the size of the segments (in characters)
+              that the digest is split into
+            Type: number
+            Constraints: An integer between 0 and 32 inclusive
+            Default: 3
+        """
+        if value is None:
+            raise LayoutException('tupleSize parameter must be specified')
+        if not isinstance(value, int) or value < 2 or value > 6:
+            raise LayoutException('tupleSize parameter must be an integer between 2 and 6 inclusive')
+        self.tuple_size = value
 
     def encode(self, identifier):
         """Pairtree encode identifier."""
