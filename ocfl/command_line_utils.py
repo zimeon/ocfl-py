@@ -88,17 +88,3 @@ def check_verbosity_args(args):
     elif args.quiet:
         level = logging.ERROR
     logging.basicConfig(level=level)
-
-
-def get_storage_root(args):
-    """Get OCFL storage root from --root argument or from $OCFL_ROOT.
-
-    Returns path string. Will throw error if the root is not set.
-    """
-    if args.root:
-        return args.root
-    env_root = os.getenv('OCFL_ROOT')
-    if env_root is not None:
-        return env_root
-    logging.error("The storage root must be set either via --root or $OCFL_ROOT")
-    sys.exit(1)

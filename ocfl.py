@@ -6,7 +6,7 @@ import os.path
 import sys
 
 import ocfl  # pylint: disable=import-self; this isn't actually self import
-from ocfl.command_line_utils import add_version_arg, add_verbosity_args, check_version_arg, check_verbosity_args, get_storage_root
+from ocfl.command_line_utils import add_version_arg, add_verbosity_args, check_version_arg, check_verbosity_args
 
 
 def add_common_args(parser):
@@ -114,6 +114,20 @@ def validate(store, args):
         print("Storage root %s is VALID" % (store.root))
     else:
         print("Storage root %s is INVALID" % (store.root))
+
+
+def get_storage_root(args):
+    """Get OCFL storage root from --root argument or from $OCFL_ROOT.
+
+    Returns path string. Will throw error if the root is not set.
+    """
+    if args.root:
+        return args.root
+    env_root = os.getenv('OCFL_ROOT')
+    if env_root is not None:
+        return env_root
+    logging.error("The storage root must be set either via --root or $OCFL_ROOT")
+    sys.exit(1)
 
 
 def do_store_operation(args):
