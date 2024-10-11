@@ -11,13 +11,24 @@ INVENTORY_NAME = "inventory.json"
 
 
 def parse_arguments():
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Update OCFL inventory sidecar file",
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    """Parse command line arguments.
+
+    Will display message and exit if --help/-h or --version arguments are
+    supplied.
+
+    Returns Namespace object from argparse parsing of command line arguments.
+   """
+    parser = argparse.ArgumentParser(
+        description="Update OCFL inventory sidecar file for each inventory "
+        "path specified. Usually used without the --digest argument and the "
+        "digest algorithm is extracted from the inventory. However, if "
+        "given, the --digest parameter will force use of the specified "
+        "digest algorithm.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("path", type=str, nargs="*",
-                        help="OCFL inventory files or directories containing them")
+                        help="OCFL inventory file or directory containing one, repeatable")
     parser.add_argument("--digest", default=None,
-                        help="Digest algorithm to use overriding any in inventory")
+                        help="digest algorithm to use overriding any in inventory")
     add_version_arg(parser)
     add_verbosity_args(parser)
     args = parser.parse_args()
