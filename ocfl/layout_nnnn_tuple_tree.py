@@ -69,7 +69,7 @@ class Layout_NNNN_Tuple_Tree(Layout):
         while len(id_remains) > self.tuple_size:
             segments.append(id_remains[0:self.tuple_size])
             id_remains = id_remains[self.tuple_size:]
-        segments.append(id_remains)  # the statement means that segmets will always have at least one element
+        segments.append(id_remains)  # the statement means that segments will always have at least one element
         # Use full identifier to encapsulate
         segments.append(identifier)
         return os.path.join(*segments)  # pylint: disable=no-value-for-parameter
