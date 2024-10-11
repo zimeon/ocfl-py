@@ -306,18 +306,28 @@ class TestAll(unittest.TestCase):
     def test_validate(self):
         """Test validate method."""
         oo = Object(spec_version='1.0')
-        self.assertTrue(oo.validate(objdir='fixtures/1.0/good-objects/minimal_one_version_one_file'))
+        (passed, validator) = oo.validate(objdir='fixtures/1.0/good-objects/minimal_one_version_one_file')
+        self.assertTrue(passed)
+        self.assertEqual(validator.status_str(), "")
         # Error cases
-        self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/E001_E004_no_files'))
-        self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/E001_no_decl'))
-        self.assertFalse(oo.validate(objdir='fixtures/1.0/bad-objects/E036_no_id'))
+        (passed, validator) = oo.validate(objdir='fixtures/1.0/bad-objects/E001_E004_no_files')
+        self.assertFalse(passed)
+        self.assertIn("[E003e]", validator.status_str())
+        (passed, validator) = oo.validate(objdir='fixtures/1.0/bad-objects/E001_no_decl')
+        self.assertFalse(passed)
+        self.assertIn("[E003e]", validator.status_str())
+        (passed, validator) = oo.validate(objdir='fixtures/1.0/bad-objects/E036_no_id')
+        self.assertFalse(passed)
+        self.assertIn("[E036a]", validator.status_str())
         #
         oo = Object(spec_version='1.1')
-        self.assertTrue(oo.validate(objdir='fixtures/1.1/good-objects/minimal_one_version_one_file'))
+        (passed, validator) = oo.validate(objdir='fixtures/1.1/good-objects/minimal_one_version_one_file')
+        self.assertTrue(passed)
+        self.assertEqual(validator.status_str(), "")
         # Error cases
-        self.assertFalse(oo.validate(objdir='fixtures/1.1/bad-objects/E001_E004_no_files'))
-        self.assertFalse(oo.validate(objdir='fixtures/1.1/bad-objects/E001_no_decl'))
-        self.assertFalse(oo.validate(objdir='fixtures/1.1/bad-objects/E036_no_id'))
+        self.assertFalse(oo.validate(objdir='fixtures/1.1/bad-objects/E001_E004_no_files')[0])
+        self.assertFalse(oo.validate(objdir='fixtures/1.1/bad-objects/E001_no_decl')[0])
+        self.assertFalse(oo.validate(objdir='fixtures/1.1/bad-objects/E036_no_id')[0])
 
     def test_validate_inventory(self):
         """Test validate_inventory method."""

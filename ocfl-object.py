@@ -10,7 +10,7 @@ import logging
 import sys
 
 import ocfl
-from ocfl.command_line_utils import add_version_arg, check_version_arg, add_version_metadata_args, add_object_args, add_verbosity_args, check_verbosity_args
+from ocfl.command_line_utils import add_version_arg, check_version_arg, add_version_metadata_args, add_object_args, add_verbosity_args, check_verbosity_args, validate_object
 
 
 class FatalError(Exception):
@@ -144,7 +144,7 @@ def do_object_operation(args):
     elif args.cmd == 'show':
         logging.warning("Object tree\n%s", obj.tree(objdir=args.objdir))
     elif args.cmd == 'validate':
-        obj.validate(objdir=args.objdir)
+        validate_object(obj, objdir=args.objdir)
     elif args.cmd == 'extract':
         if args.dstdir and args.dstbag:
             args.dstdir = None  # Override dstdir if dstbag specified

@@ -27,10 +27,10 @@ def parse_version_directory(dirname):
     """Get version number from version directory name."""
     m = re.match(r'''v(\d{1,5})$''', dirname)
     if not m:
-        raise Exception("Bad version directory name: %s" % (dirname))
+        raise ObjectException("Bad version directory name: %s" % (dirname))
     v = int(m.group(1))
     if v == 0:
-        raise Exception("Bad version directory name: %s, v0 no allowed" % (dirname))
+        raise ObjectException("Bad version directory name: %s, v0 no allowed" % (dirname))
     return v
 
 
@@ -530,19 +530,19 @@ class Object():
         return tree
 
     def validate(self, objdir, show_warnings=True, show_errors=True, check_digests=True):
-        """Validate OCFL object at objdir."""
+        """Validate OCFL object at objdir.
+
+        Returns tuple (passed, validator) where:
+            passed: True is validation passed, False otherwise.
+            validator: Validator object used for validation. State records
+                validation history including validator.messages
+        """
         validator = Validator(show_warnings=show_warnings,
                               show_errors=show_errors,
                               check_digests=check_digests,
                               lax_digests=self.lax_digests)
         passed = validator.validate_object(objdir)
-        messages = str(validator)
-        if messages != '':
-            print(messages)
-        self.log.info("OCFL v%s Object at %s is %s",
-                      validator.spec_version, objdir,
-                      'VALID' if passed else 'INVALID')
-        return passed
+        return passed, validator
 
     def validate_inventory(self, path, show_warnings=True, show_errors=True, force_spec_version=None):
         """Validate just an OCFL Object inventory at path."""

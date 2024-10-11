@@ -10,11 +10,17 @@ import logging
 import sys
 
 import ocfl
-from ocfl.command_line_utils import add_version_arg, check_version_arg, add_verbosity_args, check_verbosity_args
+from ocfl.command_line_utils import add_version_arg, check_version_arg, add_verbosity_args, check_verbosity_args, validate_object
 
 
 def parse_arguments():
-    """Parse command line arguments."""
+    """Parse command line arguments.
+
+    Will display message and exit if --help/-h or --version arguments are
+    supplied.
+
+    Returns Namespace object from argparse parsing of command line arguments.
+    """
     parser = argparse.ArgumentParser(
         description='Validate one or more OCFL objects, storage roots or standalone '
         'inventory files. By default shows any errors or warnings, and final '
@@ -40,6 +46,9 @@ def parse_arguments():
 def do_validation(args):
     """Set up and do the validation.
 
+    Arguments:
+        args: Namespace object with command line arguments from argparse.
+
     Returns True if all OK, else False.
     """
     log = logging.getLogger(name="ocfl-validate")
@@ -58,10 +67,10 @@ def do_validation(args):
         if path_type == 'object':
             log.info("Validating OCFL Object at %s", path)
             obj = ocfl.Object(lax_digests=args.lax_digests)
-            if obj.validate(path,
-                            show_warnings=show_warnings,
-                            show_errors=not args.very_quiet,
-                            check_digests=not args.no_check_digests):
+            if validate_object(obj, path,
+                               show_warnings=show_warnings,
+                               show_errors=not args.very_quiet,
+                               check_digests=not args.no_check_digests):
                 num_good += 1
         elif path_type == 'root':
             log.info("Validating OCFL Storage Root at %s", path)

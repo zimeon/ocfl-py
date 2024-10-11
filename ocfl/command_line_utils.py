@@ -87,3 +87,22 @@ def check_verbosity_args(args):
     elif args.quiet:
         level = logging.ERROR
     logging.basicConfig(level=level)
+
+
+def validate_object(obj, objdir, show_warnings=True, show_errors=True, check_digests=True):
+    """Validate object with control of console output.
+
+    Parameters:
+        obj - Object() instance
+        path - Path to object
+
+    Returns True if passed, False if failed.
+    """
+    passed, validator = obj.validate(objdir=objdir, show_warnings=show_warnings, show_errors=show_errors, check_digests=check_digests)
+    messages = str(validator)
+    if messages != '':
+        print(messages)
+    obj.log.info("OCFL v%s Object at %s is %s",
+                 validator.spec_version, objdir,
+                 'VALID' if passed else 'INVALID')
+    return passed
