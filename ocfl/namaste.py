@@ -60,7 +60,7 @@ class Namaste():
     def __init__(self, d=0, content='', tvalue=None, tr_func=content_to_tvalue):
         """Initialize Namaste object.
 
-        Parameters:
+        Arguments:
             d - tag name, D in NAMASTE specification
             content - metadata content of NAMASTE file from which tvalue is derived
             tvalue - explicity set tvalue instead of deriving

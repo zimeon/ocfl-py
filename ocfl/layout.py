@@ -82,7 +82,7 @@ class Layout:
     def read_layout_params(self, root_fs=None, params_required=False):
         """Look for and read and layout configuration parameters.
 
-        Parameters:
+        Arguments:
           root_fs - the storage root fs object
           params_required - if True then throw exception for params file not present
 

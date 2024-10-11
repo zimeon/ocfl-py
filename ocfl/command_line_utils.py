@@ -16,20 +16,33 @@ class ObjectException(Exception):
 
 
 def add_version_arg(parser):
-    """Add --version argument."""
+    """Add --version argument.
+
+    Arguments:
+        parser: argparse.ArgumentParser() object.
+    """
     parser.add_argument('--version', action='store_true',
                         help='show version number and exit')
 
 
 def check_version_arg(args):
-    """Check for --version argument."""
+    """Check for --version argument.
+
+    Arguments:
+        args: Namespace oject with arguments from argparse, of which
+             the argument version is checked.
+    """
     if args.version:
         print("%s is part of ocfl-py version %s" % (fs.path.basename(sys.argv[0]), __version__))
         sys.exit(0)
 
 
 def add_version_metadata_args(parser):
-    """Add version metadata settings to argparse instance parser."""
+    """Add version metadata settings to argparse parser.
+
+    Arguments:
+        parser: argparse.ArgumentParser() object.
+    """
     parser.add_argument('--created', default=None,
                         help='creation time to be used with version(s) added, else '
                              'current time will be recorded')
@@ -42,7 +55,11 @@ def add_version_metadata_args(parser):
 
 
 def add_object_args(parser):
-    """Add Object settings to argparse or argument group instance parser."""
+    """Add Object settings to argparse or argument group instance parser.
+
+    Arguments:
+        parser: argparse.ArgumentParser() object.
+    """
     # Disk scanning
     parser.add_argument('--skip', action='append', default=['README.md', '.DS_Store'],
                         help='directories and files to ignore')
@@ -62,8 +79,8 @@ def add_object_args(parser):
 def add_verbosity_args(parser):
     """Add arguments controlling verbosity that are shared by many ocfl-py scripts.
 
-    Parameters:
-        parser - and argparse.Parser object
+    Arguments:
+        parser: argparse.ArgumentParser() object.
     """
     parser.add_argument('--verbose', '-v', action='store_true',
                         help="be more verbose")
@@ -76,8 +93,9 @@ def add_verbosity_args(parser):
 def check_verbosity_args(args):
     """Check verbosity arguments and set root logging level.
 
-    Parameters:
-        args - arguments from argparse
+    Arguments:
+        args: Namespace oject with arguments from argparse, of which
+             the arguments debug, verbose and quiet are examined.
     """
     level = logging.WARN
     if args.debug:
@@ -89,20 +107,59 @@ def check_verbosity_args(args):
     logging.basicConfig(level=level)
 
 
-def validate_object(obj, objdir, show_warnings=True, show_errors=True, check_digests=True):
+def validate_object(obj, objdir, show_warnings=True,
+                    show_errors=True, check_digests=True):
     """Validate object with control of console output.
 
-    Parameters:
-        obj - Object() instance
-        path - Path to object
+    Arguments:
+        obj: Object() instance
+        path: Path to object
 
-    Returns True if passed, False if failed.
+    Returns True if passed validation, False if failed.
+
+    Depending on the settings show_warnings and show_errors, will write
+    to stdout warning and error codes/messages encountered during
+    validation.
+
     """
-    passed, validator = obj.validate(objdir=objdir, show_warnings=show_warnings, show_errors=show_errors, check_digests=check_digests)
+    passed, validator = obj.validate(objdir=objdir,
+                                     show_warnings=show_warnings,
+                                     show_errors=show_errors,
+                                     check_digests=check_digests)
     messages = str(validator)
     if messages != '':
         print(messages)
-    obj.log.info("OCFL v%s Object at %s is %s",
-                 validator.spec_version, objdir,
-                 'VALID' if passed else 'INVALID')
+    print("OCFL v%s Object at %s is %s" %
+          (validator.spec_version, objdir, "VALID" if passed else "INVALID"))
+    return passed
+
+
+def validate_object_inventory(obj, path, show_warnings=True,
+                              show_errors=True, force_spec_version=None):
+    """Validate just an Object inventory at path with control of console output.
+
+    Arguments:
+        obj: Object() instance
+        path: path of inventory file
+        show_warnings: bool, True to log warnings
+        show_errors: bool, True to log errors
+        force_spec_version: None to read specification version from
+            inventory; or specific number to force validation against
+            that specification version
+
+    Returns True if passed validation, False if failed.
+
+    Depending on the settings show_warnings and show_errors, will write
+    to stdout warning and error codes/messages encountered during
+    validation.
+    """
+    passed, validator = obj.validate_inventory(path,
+                                               show_warnings=show_warnings,
+                                               show_errors=show_errors,
+                                               force_spec_version=force_spec_version)
+    messages = str(validator)
+    if messages != '':
+        print(messages)
+    print("Standalone OCFL v%s inventory at %s is %s" %
+          (validator.spec_version, path, "VALID" if passed else "INVALID"))
     return passed

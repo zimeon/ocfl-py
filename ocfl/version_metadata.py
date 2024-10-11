@@ -31,7 +31,7 @@ class VersionMetadata():
         Look for specific version directory version if specified, else
         return the head version.
 
-        Parameters:
+        Arguments:
             inventory - inventory object (dict)
             version - explicit version name, else taken from inventory head
         """

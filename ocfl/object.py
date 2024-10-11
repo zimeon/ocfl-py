@@ -108,7 +108,7 @@ class Object():
         The purpose of the mapping might be normalization, sanitization,
         content distribution, or something else.
 
-        Parameters:
+        Arguments:
           filepath - the source filepath
           vdir - the current version directory
           used - disctionary used to check whether a given vfilepath has
@@ -160,7 +160,7 @@ class Object():
     def add_version(self, inventory, src_fs, src_dir, vdir, metadata=None):
         """Add to inventory data for new version based on files in srcdir.
 
-        Parameters:
+        Arguments:
           inventory - the inventory up to (vdir-1) which must include blocks
             for ['manifest'] and ['versions']. It must also include
             a ['fixity'][algorithm] block for every algorithm in self.fixity
@@ -228,7 +228,7 @@ class Object():
     def build_inventory(self, src_fs, metadata=None):
         """Generate an OCFL inventory from a set of source files.
 
-        Parameters:
+        Arguments:
             src_fc - pyfs filesystem of source files
             metadata - metadata to apply to each version
 
@@ -294,7 +294,7 @@ class Object():
     def build(self, srcdir, metadata=None, objdir=None):
         """Build an OCFL object and write to objdir if set, else print inventories.
 
-        Parameters:
+        Arguments:
           srcdir - source directory with version sub-directories
           metadata - VersionMetadata object applied to all versions
           objdir - output directory for object (must not already exist), if not
@@ -328,7 +328,7 @@ class Object():
     def create(self, srcdir, metadata=None, objdir=None):
         """Create a new OCFL object with v1 content from srcdir.
 
-        Parameters:
+        Arguments:
           srcdir - source directory with content for v1
           metadata - VersionMetadata object for v1
           objdir - output directory for object (must not already exist), if not
@@ -362,7 +362,7 @@ class Object():
     def update(self, objdir, srcdir=None, metadata=None):
         """Update object creating a new version with content matching srcdir.
 
-        Parameters:
+        Arguments:
           objdir - directory for object to be update, must contain a valid object!
           srcdir - source directory with version sub-directories
           metadata - VersionMetadata object applied to all versions
@@ -544,8 +544,23 @@ class Object():
         passed = validator.validate_object(objdir)
         return passed, validator
 
-    def validate_inventory(self, path, show_warnings=True, show_errors=True, force_spec_version=None):
-        """Validate just an OCFL Object inventory at path."""
+    def validate_inventory(self, path, show_warnings=True,
+                           show_errors=True, force_spec_version=None):
+        """Validate just an OCFL Object inventory at path.
+
+        Arguments:
+            path: path of inventory file
+            show_warnings: bool, True to log warnings
+            show_errors: bool, True to log errors
+            force_spec_version: None to read specification version from
+                inventory; or specific number to force validation against
+                that specification version
+
+        Returns tuple (passed, validator) where:
+            passed: True if valid, False otherwise
+            validator: Validator object with state that records validation
+                log and results
+        """
         validator = Validator(show_warnings=show_warnings,
                               show_errors=show_errors)
         try:
@@ -556,19 +571,12 @@ class Object():
             validator.log.error('E033', where='standalone', explanation='failed to open directory')
         except ValidatorAbortException:
             pass
-        passed = (validator.log.num_errors == 0)
-        messages = str(validator)
-        if messages != '':
-            print(messages)
-        self.log.info("Standalone OCFL v%s inventory at %s is %s",
-                      validator.spec_version, path,
-                      'VALID' if passed else 'INVALID')
-        return passed
+        return (validator.log.num_errors == 0), validator
 
     def extract(self, objdir, version, dstdir):
         """Extract version from object at objdir into dstdir.
 
-        Parameters:
+        Arguments:
             objdir - directory for the object
             version - version to be extracted ('v1', etc.) or 'head' for latest
             dstdir - directory to create with extracted version

@@ -31,7 +31,7 @@ def bag_as_source(srcbag, metadata):
     filesystem. We thus don't need to test for that case, bagit.is_valid() is
     enough.
 
-    Parameters:
+    Arguments:
         srcbag - The directory of the bag on disk
         metadata - A VersionMetadata object that will be updated with metadata
             from the bag

@@ -332,18 +332,34 @@ class TestAll(unittest.TestCase):
     def test_validate_inventory(self):
         """Test validate_inventory method."""
         oo = Object(spec_version='1.0')
-        self.assertTrue(oo.validate_inventory(path='fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json'))
+        self.assertTrue(oo.validate_inventory(path='fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json')[0])
         # Error cases
-        self.assertFalse(oo.validate_inventory(path='tests/testdata/i_do_not_exist'))
-        self.assertFalse(oo.validate_inventory(path='fixtures/1.0/bad-objects/E036_no_id/inventory.json'))
-        self.assertFalse(oo.validate_inventory(path='tests/testdata//namaste/0=frog'))  # not JSON
+        self.assertFalse(oo.validate_inventory(path='tests/testdata/i_do_not_exist')[0])
+        self.assertFalse(oo.validate_inventory(path='fixtures/1.0/bad-objects/E036_no_id/inventory.json')[0])
+        self.assertFalse(oo.validate_inventory(path='tests/testdata/namaste/0=frog')[0])  # not JSON
         #
         oo = Object(spec_version='1.1')
-        self.assertTrue(oo.validate_inventory(path='fixtures/1.1/good-objects/minimal_one_version_one_file/inventory.json'))
-        # Error cases
-        self.assertFalse(oo.validate_inventory(path='tests/testdata/i_do_not_exist'))
-        self.assertFalse(oo.validate_inventory(path='fixtures/1.1/bad-objects/E036_no_id/inventory.json'))
-        self.assertFalse(oo.validate_inventory(path='tests/testdata//namaste/0=frog'))  # not JSON
+        (passed, validator) = oo.validate_inventory(path='fixtures/1.1/good-objects/minimal_one_version_one_file/inventory.json')
+        self.assertTrue(passed)
+        self.assertEqual(validator.status_str(), '')
+        # Error case, first with default show_errors=True, then with
+        # explcit show_errors=False
+        (passed, validator) = oo.validate_inventory(path='tests/testdata/i_do_not_exist')
+        self.assertFalse(passed)
+        self.assertIn("[E033]", validator.status_str())
+        (passed, validator) = oo.validate_inventory(path='tests/testdata/i_do_not_exist',
+                                                    show_errors=False)
+        self.assertFalse(passed)
+        self.assertNotIn("[E033]", validator.status_str())
+        # Warning case, first with default show_warnings=True, then with
+        # explicit show_warnings=False
+        (passed, validator) = oo.validate_inventory(path='fixtures/1.1/warn-objects/W001_zero_padded_versions/inventory.json')
+        self.assertTrue(passed)
+        self.assertIn("[W001]", validator.status_str())
+        (passed, validator) = oo.validate_inventory(path='fixtures/1.1/warn-objects/W001_zero_padded_versions/inventory.json',
+                                                    show_warnings=False)
+        self.assertTrue(passed)
+        self.assertNotIn("[W001]", validator.status_str())
 
     def test_parse_inventory(self):
         """Test parse_inventory method."""

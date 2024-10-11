@@ -435,7 +435,7 @@ class Validator():
         so that we don't recalculate digests that might appear multiple times. It is added to
         with any additional values calculated.
 
-        Parameters:
+        Arguments:
             filepath - path of file in object (`v1/content/something` etc.)
             known_digests - dict of algorithm->digest that we have calculated
             additional_digests - dict: filepath -> algorithm -> digest -> [versions appears in]
