@@ -2,14 +2,14 @@
 
 _Output from `tests/test_demo_build_spec_v1_1_examples.py`._
 
-## 1. Test for minumal example.
+## 1. Test for minimal example.
 
 ### 1.1 Minimal example
 
 The digest type sha512-spec-ex is sha512 with most of the content stripped out and replaced with an ellipsis. This is inventory should match the example in <https://ocfl.io/1.1/spec/#example-minimal-object>.
 
 ```
-> python ocfl-object.py --build --src fixtures/1.1/content/spec-ex-minimal --id http://example.org/minimal --spec-version 1.1 --digest sha512-spec-ex --created 2018-10-02T12:00:00Z --message One file --name Alice --address alice@example.org -v
+> python ocfl-object.py build --src fixtures/1.1/content/spec-ex-minimal --id http://example.org/minimal --spec-version 1.1 --digest sha512-spec-ex --created 2018-10-02T12:00:00Z --message One file --name Alice --address alice@example.org -v
 WARNING:ocfl.object:### Inventory for v1{
   "digestAlgorithm": "sha512-spec-ex",
   "head": "v1",
@@ -47,7 +47,7 @@ WARNING:ocfl.object:### Inventory for v1{
 This is inventory should match the example with 3 versions in <https://ocfl.io/1.1/spec/#example-versioned-object>.
 
 ```
-> python ocfl-object.py --build --src fixtures/1.1/content/spec-ex-full --spec-version 1.1 --id ark:/12345/bcd987 --fixity md5 --fixity sha1 --digest sha512-spec-ex -v
+> python ocfl-object.py build --src fixtures/1.1/content/spec-ex-full --spec-version 1.1 --id ark:/12345/bcd987 --fixity md5 --fixity sha1 --digest sha512-spec-ex -v
 WARNING:ocfl.object:### Inventory for v1{
   "digestAlgorithm": "sha512-spec-ex",
   "fixity": {
@@ -90,7 +90,7 @@ WARNING:ocfl.object:### Inventory for v1{
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-01T12:11:51.675916Z",
+      "created": "2024-10-11T07:04:27.845344Z",
       "state": {
         "7dcc352f96c56dc...c31": [
           "foo/bar.xml"
@@ -157,7 +157,7 @@ WARNING:ocfl.object:### Inventory for v2{
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-01T12:11:51.675916Z",
+      "created": "2024-10-11T07:04:27.845344Z",
       "state": {
         "7dcc352f96c56dc...c31": [
           "foo/bar.xml"
@@ -171,7 +171,7 @@ WARNING:ocfl.object:### Inventory for v2{
       }
     },
     "v2": {
-      "created": "2024-10-01T12:11:51.676579Z",
+      "created": "2024-10-11T07:04:27.846110Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"
@@ -236,7 +236,7 @@ WARNING:ocfl.object:### Inventory for v3{
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-01T12:11:51.675916Z",
+      "created": "2024-10-11T07:04:27.845344Z",
       "state": {
         "7dcc352f96c56dc...c31": [
           "foo/bar.xml"
@@ -250,7 +250,7 @@ WARNING:ocfl.object:### Inventory for v3{
       }
     },
     "v2": {
-      "created": "2024-10-01T12:11:51.676579Z",
+      "created": "2024-10-11T07:04:27.846110Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"
@@ -262,7 +262,7 @@ WARNING:ocfl.object:### Inventory for v3{
       }
     },
     "v3": {
-      "created": "2024-10-01T12:11:51.677024Z",
+      "created": "2024-10-11T07:04:27.846566Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"
@@ -288,7 +288,7 @@ WARNING:ocfl.object:### Inventory for v3{
 This is inventory should match the example showing how content paths may differ from logical paths in <https://ocfl.io/1.1/spec/#example-object-diff-paths>.
 
 ```
-> python ocfl-object.py --build --src fixtures/1.1/content/spec-ex-diff-paths --id http://example.org/diff-paths --spec-version 1.1 --digest sha512-spec-ex --normalization md5 --created 2019-03-14T20:31:00Z -v
+> python ocfl-object.py build --src fixtures/1.1/content/spec-ex-diff-paths --id http://example.org/diff-paths --spec-version 1.1 --digest sha512-spec-ex --normalization md5 --created 2019-03-14T20:31:00Z -v
 WARNING:ocfl.object:### Inventory for v1{
   "digestAlgorithm": "sha512-spec-ex",
   "head": "v1",

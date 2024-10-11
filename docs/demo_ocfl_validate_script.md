@@ -10,7 +10,7 @@ The `--version` argument will show version number and exit
 
 ```
 > python ocfl-validate.py --version
-ocfl-validate.py is part of ocfl-py version 0.0.7
+ocfl-validate.py is part of ocfl-py version 1.9.0
 ```
 
 
@@ -20,7 +20,7 @@ ocfl-validate.py is part of ocfl-py version 0.0.7
 
 ```
 > python ocfl-validate.py fixtures/1.0/good-objects/minimal_uppercase_digests
-INFO:ocfl.object:OCFL object at fixtures/1.0/good-objects/minimal_uppercase_digests is VALID
+OCFL v1.0 Object at fixtures/1.0/good-objects/minimal_uppercase_digests is VALID
 ```
 
 
@@ -30,7 +30,7 @@ INFO:ocfl.object:OCFL object at fixtures/1.0/good-objects/minimal_uppercase_dige
 
 ```
 > python ocfl-validate.py -q fixtures/1.0/warn-objects/W004_uses_sha256
-INFO:ocfl.object:OCFL object at fixtures/1.0/warn-objects/W004_uses_sha256 is VALID
+OCFL v1.0 Object at fixtures/1.0/warn-objects/W004_uses_sha256 is VALID
 ```
 
 
@@ -38,7 +38,7 @@ INFO:ocfl.object:OCFL object at fixtures/1.0/warn-objects/W004_uses_sha256 is VA
 
 ```
 > python ocfl-validate.py fixtures/1.0/warn-objects/W004_uses_sha256
-INFO:ocfl.object:OCFL object at fixtures/1.0/warn-objects/W004_uses_sha256 is VALID
-[W004] OCFL Object root inventory SHOULD use sha512 but uses sha256 as the DigestAlgorithm (see https://ocfl.io/draft/spec/#W004)
+[W004] OCFL Object root inventory SHOULD use sha512 but uses sha256 as the DigestAlgorithm (see https://ocfl.io/1.0/spec/#W004)
+OCFL v1.0 Object at fixtures/1.0/warn-objects/W004_uses_sha256 is VALID
 ```
 

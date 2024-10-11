@@ -7,7 +7,7 @@ class TestAll(DemoTestCase):
     """TestAll class to run tests."""
 
     def test00_minimal_example(self):
-        """Test for minumal example."""
+        """Test for minimal example."""
         text = "The digest type sha512-spec-ex is sha512 with most of the content " \
                "stripped out and replaced with an ellipsis. This is inventory should " \
                "match the example in <https://ocfl.io/1.1/spec/#example-minimal-object>."

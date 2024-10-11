@@ -21,7 +21,7 @@ ocfl-object.py is part of ocfl-py version 1.9.0
 Without an `--objdir` argument the script just writes out the inventory for the object that would have been created.
 
 ```
-> python ocfl-object.py --create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1
+> python ocfl-object.py create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1
 WARNING:ocfl.object:### Inventory for v1{
   "digestAlgorithm": "sha512",
   "head": "v1",
@@ -34,7 +34,7 @@ WARNING:ocfl.object:### Inventory for v1{
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-01T12:11:52.198398Z",
+      "created": "2024-10-11T07:04:22.583276Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -52,7 +52,7 @@ WARNING:ocfl.object:### Inventory for v1{
 Without an `--objdir` argument the script just writes out the inventory for each version in the object that would have been created.
 
 ```
-> python ocfl-object.py --build --id http://example.org/obj2 --src fixtures/1.0/content/cf3
+> python ocfl-object.py build --id http://example.org/obj2 --src fixtures/1.0/content/cf3
 WARNING:ocfl.object:### Inventory for v1{
   "digestAlgorithm": "sha512",
   "head": "v1",
@@ -65,7 +65,7 @@ WARNING:ocfl.object:### Inventory for v1{
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-01T12:11:52.343080Z",
+      "created": "2024-10-11T07:04:22.727134Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -90,7 +90,7 @@ WARNING:ocfl.object:### Inventory for v2{
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-01T12:11:52.343080Z",
+      "created": "2024-10-11T07:04:22.727134Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -98,7 +98,7 @@ WARNING:ocfl.object:### Inventory for v2{
       }
     },
     "v2": {
-      "created": "2024-10-01T12:11:52.343591Z",
+      "created": "2024-10-11T07:04:22.727775Z",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
           "a_file.txt"
@@ -123,7 +123,7 @@ WARNING:ocfl.object:### Inventory for v3{
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-01T12:11:52.343080Z",
+      "created": "2024-10-11T07:04:22.727134Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -131,7 +131,7 @@ WARNING:ocfl.object:### Inventory for v3{
       }
     },
     "v2": {
-      "created": "2024-10-01T12:11:52.343591Z",
+      "created": "2024-10-11T07:04:22.727775Z",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
           "a_file.txt"
@@ -139,7 +139,7 @@ WARNING:ocfl.object:### Inventory for v3{
       }
     },
     "v3": {
-      "created": "2024-10-01T12:11:52.343826Z",
+      "created": "2024-10-11T07:04:22.728036Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -157,7 +157,7 @@ WARNING:ocfl.object:### Inventory for v3{
 ### 3.1 New object with just v1
 
 ```
-> python ocfl-object.py --create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1 --objdir tmp/obj1 -v
+> python ocfl-object.py create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1 --objdir tmp/obj1 -v
 INFO:ocfl.object:Created OCFL object http://example.org/obj1 in tmp/obj1
 ```
 
@@ -167,7 +167,7 @@ INFO:ocfl.object:Created OCFL object http://example.org/obj1 in tmp/obj1
 ### 4.1 New object with three versions
 
 ```
-> python ocfl-object.py --build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 --objdir tmp/obj2 -v
+> python ocfl-object.py build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 --objdir tmp/obj2 -v
 INFO:ocfl.object:Built object http://example.org/obj2 with 3 versions
 ```
 
@@ -177,7 +177,7 @@ INFO:ocfl.object:Built object http://example.org/obj2 with 3 versions
 ### 5.1 Extract v1 of an OCFL v1.0 object
 
 ```
-> python ocfl-object.py --extract v1 --objdir fixtures/1.0/good-objects/spec-ex-full --dstdir tmp/v1 -v
+> python ocfl-object.py extract --objver v1 --objdir fixtures/1.0/good-objects/spec-ex-full --dstdir tmp/v1 -v
 INFO:ocfl.object:Extracted v1 into tmp/v1
 Extracted content for v1 in tmp/v1
 ```
@@ -186,9 +186,19 @@ Extracted content for v1 in tmp/v1
 ### 5.2 Extract v2 of content in the same OCFL v1.1 object
 
 ```
-> python ocfl-object.py --extract v2 --objdir fixtures/1.1/good-objects/spec-ex-full --dstdir tmp/v2 -v
+> python ocfl-object.py extract --objver v2 --objdir fixtures/1.1/good-objects/spec-ex-full --dstdir tmp/v2 -v
 INFO:ocfl.object:Extracted v2 into tmp/v2
 Extracted content for v2 in tmp/v2
+```
+
+
+### 5.3 Extract head version (v3) of content in the same OCFL v1.1 object
+
+```
+> python ocfl-object.py extract --objver head --objdir fixtures/1.1/good-objects/spec-ex-full --dstdir tmp/head -v
+INFO:ocfl.object:Object at fixtures/1.1/good-objects/spec-ex-full has head v3
+INFO:ocfl.object:Extracted v3 into tmp/head
+Extracted content for v3 in tmp/head
 ```
 
 
@@ -200,7 +210,7 @@ With no argument and error and suggections are shown.
 
 ```
 > python ocfl-object.py
-Error - Exactly one command (create, build, update, show, validate, extract) must be specified
+ERROR:root:No command, nothing to do (use -h to show help)
 ```
 
 (last command exited with return code 1)
@@ -208,11 +218,11 @@ Error - Exactly one command (create, build, update, show, validate, extract) mus
 
 ### 6.2 No source directory (--srcdir)
 
-The `--create` action requires a source.
+The `create` command requires a source.
 
 ```
-> python ocfl-object.py --create
-Error - Must specify either --srcdir or --srcbag containing v1 files when creating an OCFL object!
+> python ocfl-object.py create --objdir TMP/v1
+ERROR:root:Must specify either --srcdir or --srcbag containing v1 files when creating an OCFL object!
 ```
 
 (last command exited with return code 1)
@@ -220,12 +230,17 @@ Error - Must specify either --srcdir or --srcbag containing v1 files when creati
 
 ### 6.3 No identifier
 
-The `--create` action requires an identifier.
+The `show` command requires --objdir.
 
 ```
-> python ocfl-object.py --create --srcdir tmp
-Error - Identifier is not set!
+> python ocfl-object.py show --srcdir tmp
+usage: ocfl-object.py show [-h] [--verbose] [--debug] [--quiet] --objdir
+                           OBJDIR [--spec-version SPEC_VERSION]
+                           [--digest DIGEST] [--fixity FIXITY] [--id ID]
+                           [--skip SKIP] [--normalization NORMALIZATION]
+                           [--no-forward-delta] [--no-dedupe] [--lax-digests]
+ocfl-object.py show: error: the following arguments are required: --objdir/--obj
 ```
 
-(last command exited with return code 1)
+(last command exited with return code 2)
 

@@ -17,7 +17,7 @@ def parse_arguments():
     supplied.
 
     Returns Namespace object from argparse parsing of command line arguments.
-   """
+    """
     parser = argparse.ArgumentParser(
         description="Update OCFL inventory sidecar file for each inventory "
         "path specified. Usually used without the --digest argument and the "
@@ -52,7 +52,7 @@ def create_sidecar(args, directory):
             except ocfl.ObjectException as e:
                 logging.warning("Failed to read inventory in directory %s (%s)", directory, e)
         sidecar = obj.write_inventory_sidecar()
-        logging.info("Written sidecar file %s", sidecar)
+        print("Written sidecar file %s" % (os.path.join(directory, sidecar)))
 
 
 def main():
@@ -60,7 +60,7 @@ def main():
     args = parse_arguments()
     paths = ["."] if len(args.path) == 0 else args.path
     for path in paths:
-        logging.info("Looking at path %s", path)
+        logging.debug("Looking at path %s", path)
         if os.path.isdir(path):
             create_sidecar(args, path)
         else:
@@ -73,4 +73,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    print("Done.")

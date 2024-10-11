@@ -1,6 +1,6 @@
 # OCFL Object Root Store manipulation script
 
-_Output from `tests/test_demo_ocfl_store_script.py`._
+_Output from `tests/test_demo_ocfl_script.py`._
 
 ## 1. Test showing version number.
 
@@ -14,12 +14,12 @@ ocfl.py is part of ocfl-py version 1.9.0
 ```
 
 
-## 2. Test store initialization and object addition.
+## 2. Test store creation and object addition.
 
 ### 2.1 Create new store
 
 ```
-> python ocfl.py init --root=tmp/root --layout=nnnn-flat-quoted-storage-layout -v
+> python ocfl.py create --root=tmp/root --layout=nnnn-flat-quoted-storage-layout -v
 Created OCFL storage root tmp/root
 ```
 
@@ -71,7 +71,7 @@ Found 3 OCFL Objects under root extra_fixtures/good-storage-roots/simple-root
 ### 4.1 Create new store
 
 ```
-> python ocfl.py init --root=tmp/root --layout=0002-flat-direct-storage-layout -v
+> python ocfl.py create --root=tmp/root --layout=0002-flat-direct-storage-layout -v
 Created OCFL storage root tmp/root
 ```
 
@@ -91,7 +91,7 @@ ERROR:root:Must specify object path with --src
 ### 5.1 Create new store
 
 ```
-> python ocfl.py init --root=tmp/ex2 --spec-version=1.0 --layout=0003-hash-and-id-n-tuple-storage-layout --layout-params={"digestAlgorithm":"md5", "tupleSize":2, "numberOfTuples":15} -v
+> python ocfl.py create --root=tmp/ex2 --spec-version=1.0 --layout=0003-hash-and-id-n-tuple-storage-layout --layout-params={"digestAlgorithm":"md5", "tupleSize":2, "numberOfTuples":15} -v
 Created OCFL storage root tmp/ex2
 ```
 
@@ -112,4 +112,42 @@ Added object object-01 at path ff/75/53/44/92/48/5e/ab/b3/9f/86/35/67/28/88/obje
 INFO:root:Storage root layout is 0003-hash-and-id-n-tuple-storage-layout
 Added object ..hor/rib:le-$id at path 08/31/97/66/fb/6c/29/35/dd/17/5b/94/26/77/17/%2e%2ehor%2frib%3ale-%24id
 ```
+
+
+## 6. Test error conditions.
+
+### 6.1 No valid command argument
+
+With no argument and error and suggections are shown.
+
+```
+> python ocfl.py
+ERROR:root:No command, nothing to do (use -h to show help)
+```
+
+(last command exited with return code 1)
+
+
+### 6.2 No source directory (--srcdir)
+
+The `create` command requires a root to be specifed.
+
+```
+> python ocfl.py create
+ERROR:root:The storage root must be set either via --root or $OCFL_ROOT
+```
+
+(last command exited with return code 1)
+
+
+### 6.3 No identifier
+
+The `show` command requires an identifier.
+
+```
+> python ocfl.py show --root tmp
+ERROR:root:Must specify id to act on an object in the store
+```
+
+(last command exited with return code 1)
 

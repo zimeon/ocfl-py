@@ -9,7 +9,7 @@ _Output from `tests/test_demo_using_bagit_bags.py`._
 Imagine that we have a Bagit bag [`tests/testdata/bags/uaa_v1`](https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v1) that represents the initial state of an object. We can use `--create` to make a new OCFL object `/tmp/obj` with that content as the `v1` state:
 
 ```
-> python ocfl-object.py --create --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v1 -v
+> python ocfl-object.py create --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v1 -v
 INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v1/data/my_content/dracula.txt
 INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v1/data/my_content/poe.txt
 INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v1/bagit.txt
@@ -25,7 +25,7 @@ Now that we have the object it is of course valid.
 
 ```
 > python ocfl-validate.py tmp/obj
-INFO:ocfl.object:OCFL v1.1 Object at tmp/obj is VALID
+OCFL v1.1 Object at tmp/obj is VALID
 ```
 
 
@@ -34,7 +34,7 @@ INFO:ocfl.object:OCFL v1.1 Object at tmp/obj is VALID
 Looking inside the object we see `v1` with the expected 2 content files.
 
 ```
-> python ocfl-object.py --show --objdir tmp/obj
+> python ocfl-object.py show --objdir tmp/obj
 WARNING:ocfl.object:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
 WARNING:root:Object tree
 [tmp/obj]
@@ -54,7 +54,7 @@ WARNING:root:Object tree
 If we have a bag [`tests/testdata/bags/uaa_v2`](https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v2) with updated content we can `--update` the object to create `v2`.
 
 ```
-> python ocfl-object.py --update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v2 -v
+> python ocfl-object.py update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v2 -v
 INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v2/data/my_content/a_second_copy_of_dracula.txt
 INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v2/data/my_content/dracula.txt
 INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v2/data/my_content/poe-nevermore.txt
@@ -72,7 +72,7 @@ INFO:ocfl.object:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v2
 Looking inside the object we now see `v1` and `v2`. There are no content files inside `v2` because although this update added two files they have identical content (and hence digest) as one of the files in `v1`
 
 ```
-> python ocfl-object.py --show --objdir tmp/obj
+> python ocfl-object.py show --objdir tmp/obj
 WARNING:ocfl.object:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
 WARNING:root:Object tree
 [tmp/obj]
@@ -95,7 +95,7 @@ WARNING:root:Object tree
 Similarly we can `--update` with [`tests/testdata/bags/uaa_v3`](https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v3) to create `v3`.
 
 ```
-> python ocfl-object.py --update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v3 -v
+> python ocfl-object.py update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v3 -v
 INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v3/data/my_content/dracula.txt
 INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v3/data/my_content/poe-nevermore.txt
 INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v3/data/my_content/another_directory/a_third_copy_of_dracula.txt
@@ -112,7 +112,7 @@ INFO:ocfl.object:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v3
 Looking inside again we see that `v3` does add another content file.
 
 ```
-> python ocfl-object.py --show --objdir tmp/obj
+> python ocfl-object.py show --objdir tmp/obj
 WARNING:ocfl.object:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
 WARNING:root:Object tree
 [tmp/obj]
@@ -139,7 +139,7 @@ WARNING:root:Object tree
 Finally, we can `--update` again with [`tests/testdata/bags/uaa_v4`](https://github.com/zimeon/ocfl-py/tree/main/tests/testdata/bags/uaa_v4) to create `v4`.
 
 ```
-> python ocfl-object.py --update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v4 -v
+> python ocfl-object.py update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v4 -v
 INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v4/data/my_content/dracula.txt
 INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v4/data/my_content/dunwich.txt
 INFO:bagit:Verifying checksum for file /Users/sw272/src/ocfl-py/tests/testdata/bags/uaa_v4/data/my_content/poe-nevermore.txt
@@ -157,12 +157,12 @@ INFO:ocfl.object:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v4
 Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` content as a Bagit bag.
 
 ```
-> python ocfl-object.py --extract v4 --objdir tmp/obj --dstbag tmp/extracted_v4 -v
+> python ocfl-object.py extract --objver v4 --objdir tmp/obj --dstbag tmp/extracted_v4 -v
 INFO:ocfl.object:Extracted v4 into tmp/extracted_v4
 INFO:bagit:Creating bag for directory tmp/extracted_v4
 INFO:bagit:Creating data directory
-INFO:bagit:Moving my_content to /privatetmp/extracted_v4/tmpjxsrp64j/my_content
-INFO:bagit:Moving /privatetmp/extracted_v4/tmpjxsrp64j to data
+INFO:bagit:Moving my_content to /privatetmp/extracted_v4/tmpkvg4v621/my_content
+INFO:bagit:Moving /privatetmp/extracted_v4/tmpkvg4v621 to data
 INFO:bagit:Using 1 processes to generate manifests: sha512
 INFO:bagit:Generating manifest lines for file data/my_content/dracula.txt
 INFO:bagit:Generating manifest lines for file data/my_content/dunwich.txt
@@ -184,12 +184,12 @@ We note that the OCFL object had only one `content` file in `v4` but the extract
 diff -r tmp/extracted_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
 1,2c1
 < Bag-Software-Agent: bagit.py v1.8.1 <https://github.com/LibraryOfCongress/bagit-python>
-< Bagging-Date: 2024-10-01
+< Bagging-Date: 2024-10-11
 ---
 > Bagging-Date: 2020-01-04
 diff -r tmp/extracted_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagmanifest-sha512.txt
 2c2
-< b6c3b7a9d2f840cc177626d596b1a3fe425c4607ad93c01cd113bf9c2241bf9b9242546f1c0512a17c1213f605e0df4e1911a43a49eee5a7507878329872ffd7 bag-info.txt
+< d20b7a443b7721ed884e48c83c6487b7f7c59ed01868339f448700ffc3ed9926f552a5892cb3be3966e92940486de749859445ccbe10db9be23c255c6017b500 bag-info.txt
 ---
 > 10624e6d45462def7af66d1a0d977606c7b073b01809c1d42258cfab5c34a275480943cbe78044416aee1f23822cc3762f92247b8f39b5c6ddc5ae32a8f94ce5 bag-info.txt
 ```
