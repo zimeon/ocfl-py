@@ -7,7 +7,7 @@ BUFSIZE = 64 * 1024  # 64kB for want of better info...
 
 
 def _fs_digest(pyfs, filename, digester):
-    """Update digester reading from fh."""
+    """Update digester reading from filename."""
     with pyfs.openbin(filename, 'r') as fh:
         for b in iter(lambda: fh.read(BUFSIZE), b''):
             digester.update(b)
@@ -38,7 +38,15 @@ def file_digest(filename, digest_type='sha512', pyfs=None):
     and a truncated sha512 and sha256 useful for examples
         'sha512-spec-ex',  'sha256-spec-ex'
 
-    Raises an exception if the digest_type is not supported.
+    Arguments:
+        filename: string with name of file to calculate digest for
+        digest_type: string of digest type
+        pyfs: None for local file, else a PyFilesystem2() object within
+            which filename exists
+
+    Returns digest string.
+
+    Raises a ValueError exception if the digest_type is not supported.
     """
     # From spec
     if digest_type == 'sha512':
@@ -71,7 +79,16 @@ def file_digest(filename, digest_type='sha512', pyfs=None):
 
 
 def string_digest(txt, digest_type='sha512'):
-    """Digest of txt string with given digest in normalized form."""
+    """Digest of txt string with given digest in normalized form.
+
+    Argument:
+        txt: string value for which digest is calculated
+        digest_type: string of digest type
+
+    Returns digest string of the txt input using specified digest type.
+
+    Raises ValueError if the digest type is not supported.
+    """
     txt_enc = txt.encode('utf8')
     if digest_type == 'sha512':
         return hashlib.sha512(txt_enc).hexdigest()
@@ -99,7 +116,15 @@ DIGEST_REGEXES = {
 
 
 def digest_regex(digest_type='sha512'):
-    """Regex to be used to check the un-normalized form of a digest string."""
+    """Regex to be used to check the un-normalized form of a digest string.
+
+    Argument:
+        digest_type: string of digest type
+
+    Returns regex if the digest type is recognized.
+
+    Raises a ValueError otherwise.
+    """
     try:
         return DIGEST_REGEXES[digest_type]
     except KeyError:
@@ -109,8 +134,12 @@ def digest_regex(digest_type='sha512'):
 def normalized_digest(digest, digest_type='sha512'):
     """Normalize the digest to return version that enables string comparison.
 
-    All forms (except the spec example forms) are case insensitive. We
-    use lowercase as the normalized form.
+    Arguments:
+        digest: digest string
+        digest_type: string with digest type
+
+    At present, digest types supported (except the spec example forms) are case
+    insensitive. We use lowercase as the normalized form.
     """
     if digest_type in ('sha512-spec-ex', 'sha256-spec-ex'):
         return digest
