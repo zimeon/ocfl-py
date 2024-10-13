@@ -33,6 +33,13 @@ class Layout:
     This base class includes some common implementations where that makes
     sense for certain methods, other methods must be replace and will
     throw an exception if called.
+
+    Attributes:
+        NAME: string for name of the extension
+        DESCRIPTION: sting with longer description of extension
+        PARAMS: None if the extension has no parameters, otherwise a dict
+            with keys that are the parameter names, and values that are
+            the methods used to parse/check the paremeter.
     """
 
     def __init__(self):
@@ -53,8 +60,13 @@ class Layout:
 
     @property
     def config(self):
-        """Dictionary with config.json configuration for the layout extenstion."""
-        raise LayoutException("No yet implemented")
+        """Dictionary with config.json configuration for the layout extenstion.
+
+        Returns a dict with values based on the current attributes (to be
+        serialized with json.dump()), else None indicates that there is no
+        config.json this layout.
+        """
+        return None
 
     def strip_root(self, path, root):
         """Remove root from path, throw exception on failure."""
@@ -83,11 +95,10 @@ class Layout:
         """Look for and read and layout configuration parameters.
 
         Arguments:
-          root_fs - the storage root fs object
-          params_required - if True then throw exception for params file not present
+          root_fs: the storage root fs object
+          params_required: if True then throw exception for params file not present
 
-        Returns:
-          params - dict of params read
+        Returns None
         """
         config = None
         if root_fs.exists(self.config_file):
@@ -101,14 +112,23 @@ class Layout:
         elif params_required:
             raise LayoutException("Storage root extension config %s expected but not present" % (self.config_file))
         if config is not None:
-            self.check_and_set_layout_params(config, require_extension_name=True)
+            self.check_and_set_layout_params(config)
 
-    def check_and_set_layout_params(self, config, require_extension_name=False):
-        """Check the layout extension params and set for this layout object."""
-        # Check the extensionName
-        if not require_extension_name and 'extensionName' not in config:
-            # Fine if we don't require the extension name
-            pass
+    def check_and_set_layout_params(self, config, require_extension_name=True):
+        """Check the layout extension params and set for this layout object.
+
+        Arguments:
+            config: dict representing the parse JSON config.json file
+            require_extension_name: boolean, True by default. If set False then
+                the extensionName paramater is not required
+
+        For each parameter that is recognizedm, the appropriate check and set
+        method in self.PARAMS is called. The methods set instance attributes.
+        """
+        # Check the extensionName if required and/or specified
+        if 'extensionName' not in config:
+            if require_extension_name:
+                raise LayoutException("Storage root extension config missing extensionName")
         elif config.get('extensionName') != self.NAME:
             raise LayoutException("Storage root extension config extensionName is %s, expected %s" % (config.get('extensionName'), self.NAME))
         # Read and check the parameters (ignore any extra params)
@@ -118,16 +138,17 @@ class Layout:
     def write_layout_params(self, root_fs=None):
         """Write the config.json file with layout parameters if need for this layout.
 
-        Does nothing if there is no config.json required for this payout.
+        Does nothing if there is no config.json content defined for this layout.
         """
-        if self.PARAMS is None:
-            # Nothing to write if there are no params
+        config = self.config
+        if config is None:
+            # Nothing to write if there is no config defined
             return
         if root_fs.exists(self.config_file):
             raise LayoutException("Storage root extension layout config %s already exists" % (self.config_file))
         try:
             root_fs.makedirs(os.path.dirname(self.config_file))
             with root_fs.open(self.config_file, 'w') as fh:
-                json.dump(self.config, fh, indent=2)
+                json.dump(config, fh, indent=2)
         except Exception as e:
-            raise LayoutException("Storage root extension config file %s exists but can't be read/parsed (%s)" % (self.config_file, str(e)))
+            raise LayoutException("Storage root extension config file %s couldn't be written (%s)" % (self.config_file, str(e)))

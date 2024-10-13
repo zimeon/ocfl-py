@@ -143,7 +143,7 @@ class StorageRoot():
                 config = json.loads(layout_params)
             except Exception as e:
                 raise StorageRootException("Bad layout params supplied: %s" % (str(e)))
-            self.layout.check_and_set_layout_params(config=config)
+            self.layout.check_and_set_layout_params(config=config, require_extension_name=False)
         self.check_spec_version(spec_version=spec_version)
         # Now create the storage root
         (parent, root_dir) = fs.path.split(self.root)
