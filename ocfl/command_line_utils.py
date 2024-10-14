@@ -107,8 +107,8 @@ def check_verbosity_args(args):
     logging.basicConfig(level=level)
 
 
-def validate_object(obj, objdir, show_warnings=True,
-                    show_errors=True, check_digests=True):
+def validate_object(obj, objdir, log_warnings=True,
+                    log_errors=True, check_digests=True):
     """Validate object with control of console output.
 
     Arguments:
@@ -117,14 +117,14 @@ def validate_object(obj, objdir, show_warnings=True,
 
     Returns True if passed validation, False if failed.
 
-    Depending on the settings show_warnings and show_errors, will write
+    Depending on the settings log_warnings and log_errors, will write
     to stdout warning and error codes/messages encountered during
     validation.
 
     """
     passed, validator = obj.validate(objdir=objdir,
-                                     show_warnings=show_warnings,
-                                     show_errors=show_errors,
+                                     log_warnings=log_warnings,
+                                     log_errors=log_errors,
                                      check_digests=check_digests)
     messages = str(validator)
     if messages != '':
@@ -134,28 +134,28 @@ def validate_object(obj, objdir, show_warnings=True,
     return passed
 
 
-def validate_object_inventory(obj, path, show_warnings=True,
-                              show_errors=True, force_spec_version=None):
+def validate_object_inventory(obj, path, log_warnings=True,
+                              log_errors=True, force_spec_version=None):
     """Validate just an Object inventory at path with control of console output.
 
     Arguments:
         obj: Object() instance
         path: path of inventory file
-        show_warnings: bool, True to log warnings
-        show_errors: bool, True to log errors
+        log_warnings: bool, True to log warnings
+        log_errors: bool, True to log errors
         force_spec_version: None to read specification version from
             inventory; or specific number to force validation against
             that specification version
 
     Returns True if passed validation, False if failed.
 
-    Depending on the settings show_warnings and show_errors, will write
+    Depending on the settings log_warnings and log_errors, will write
     to stdout warning and error codes/messages encountered during
     validation.
     """
     passed, validator = obj.validate_inventory(path,
-                                               show_warnings=show_warnings,
-                                               show_errors=show_errors,
+                                               log_warnings=log_warnings,
+                                               log_errors=log_errors,
                                                force_spec_version=force_spec_version)
     messages = str(validator)
     if messages != '':

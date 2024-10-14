@@ -27,16 +27,16 @@ class ValidatorAbortException(Exception):
 class Validator():
     """Class for OCFL Object Validator."""
 
-    def __init__(self, show_warnings=False, show_errors=True,
+    def __init__(self, log_warnings=False, log_errors=True,
                  check_digests=True, lax_digests=False,
                  force_spec_version=None, default_spec_version='1.1',
                  log=None, lang='en'):
         """Initialize OCFL Object validator object.
 
         Arguments:
-            show_warnings: True to record warnings during validation
+            log_warnings: True to record warnings during validation
                 (default: False)
-            show_errors: True to record errors during validation
+            log_errors: True to record errors during validation
                 (default: True)
             check_digests: True to check digests of files within the objects
             lax_digests: default is False. Set True to allow digests beyond
@@ -60,8 +60,8 @@ class Validator():
         self.default_spec_version = default_spec_version
         self.log = log
         if self.log is None:
-            self.log = ValidationLogger(show_warnings=show_warnings,
-                                        show_errors=show_errors,
+            self.log = ValidationLogger(log_warnings=log_warnings,
+                                        log_errors=log_errors,
                                         lang=lang)
         self.registered_extensions = [
             '0001-digest-algorithms', '0002-flat-direct-storage-layout',

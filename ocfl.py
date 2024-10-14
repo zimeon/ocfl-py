@@ -92,7 +92,7 @@ def validate(store, args):
       check_digests - True to check all digests for each object
       max_error - Maximum number of error to show
     """
-    valid = store.validate(show_warnings=not args.quiet,
+    valid = store.validate(log_warnings=not args.quiet,
                            validate_objects=args.validate_objects,
                            check_digests=args.check_digests,
                            max_errors=args.max_errors)

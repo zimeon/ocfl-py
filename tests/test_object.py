@@ -342,22 +342,22 @@ class TestAll(unittest.TestCase):
         (passed, validator) = oo.validate_inventory(path='fixtures/1.1/good-objects/minimal_one_version_one_file/inventory.json')
         self.assertTrue(passed)
         self.assertEqual(validator.status_str(), '')
-        # Error case, first with default show_errors=True, then with
-        # explcit show_errors=False
+        # Error case, first with default log_errors=True, then with
+        # explcit log_errors=False
         (passed, validator) = oo.validate_inventory(path='tests/testdata/i_do_not_exist')
         self.assertFalse(passed)
         self.assertIn("[E033]", validator.status_str())
         (passed, validator) = oo.validate_inventory(path='tests/testdata/i_do_not_exist',
-                                                    show_errors=False)
+                                                    log_errors=False)
         self.assertFalse(passed)
         self.assertNotIn("[E033]", validator.status_str())
-        # Warning case, first with default show_warnings=True, then with
-        # explicit show_warnings=False
+        # Warning case, first with default log_warnings=True, then with
+        # explicit log_warnings=False
         (passed, validator) = oo.validate_inventory(path='fixtures/1.1/warn-objects/W001_zero_padded_versions/inventory.json')
         self.assertTrue(passed)
         self.assertIn("[W001]", validator.status_str())
         (passed, validator) = oo.validate_inventory(path='fixtures/1.1/warn-objects/W001_zero_padded_versions/inventory.json',
-                                                    show_warnings=False)
+                                                    log_warnings=False)
         self.assertTrue(passed)
         self.assertNotIn("[W001]", validator.status_str())
 

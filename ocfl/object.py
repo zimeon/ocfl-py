@@ -496,8 +496,8 @@ class Object():
                 return tree_last if last else tree_next
             return (tree_indent if last else tree_pass) + (tree_last if last_v else tree_next)
 
-        validator = Validator(show_warnings=False,
-                              show_errors=True,
+        validator = Validator(log_warnings=False,
+                              log_errors=True,
                               check_digests=False,
                               lax_digests=self.lax_digests)
         passed = validator.validate_object(objdir)
@@ -550,7 +550,7 @@ class Object():
                 tree += _show_indent(1, last, (nn == len(v_notes))) + v_note + "\n"
         return tree
 
-    def validate(self, objdir=None, show_warnings=True, show_errors=True, check_digests=True):
+    def validate(self, objdir=None, log_warnings=True, log_errors=True, check_digests=True):
         """Validate OCFL object at objdir.
 
         Returns tuple (passed, validator) where:
@@ -558,8 +558,8 @@ class Object():
             validator: Validator object used for validation. State records
                 validation history including validator.messages
         """
-        validator = Validator(show_warnings=show_warnings,
-                              show_errors=show_errors,
+        validator = Validator(log_warnings=log_warnings,
+                              log_errors=log_errors,
                               check_digests=check_digests,
                               lax_digests=self.lax_digests)
         if objdir is None:
@@ -567,14 +567,14 @@ class Object():
         passed = validator.validate_object(objdir)
         return passed, validator
 
-    def validate_inventory(self, path, show_warnings=True,
-                           show_errors=True, force_spec_version=None):
+    def validate_inventory(self, path, log_warnings=True,
+                           log_errors=True, force_spec_version=None):
         """Validate just an OCFL Object inventory at path.
 
         Arguments:
             path: path of inventory file
-            show_warnings: bool, True to log warnings
-            show_errors: bool, True to log errors
+            log_warnings: bool, True to log warnings
+            log_errors: bool, True to log errors
             force_spec_version: None to read specification version from
                 inventory; or specific number to force validation against
                 that specification version
@@ -584,8 +584,8 @@ class Object():
             validator: Validator object with state that records validation
                 log and results
         """
-        validator = Validator(show_warnings=show_warnings,
-                              show_errors=show_errors)
+        validator = Validator(log_warnings=log_warnings,
+                              log_errors=log_errors)
         try:
             (inv_dir, inv_file) = fs.path.split(path)
             validator.obj_fs = open_fs(inv_dir, create=False)

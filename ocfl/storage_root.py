@@ -296,7 +296,7 @@ class StorageRoot():
                 # FIXME - maybe do some more stuff in here
 
     def validate_hierarchy(self, validate_objects=True, check_digests=True,
-                           show_warnings=False, max_errors=100):
+                           log_warnings=False, max_errors=100):
         """Validate storage root hierarchy and, optionally, all objects.
 
         Returns:
@@ -311,7 +311,7 @@ class StorageRoot():
             if validate_objects:
                 validator = Validator(check_digests=check_digests,
                                       lax_digests=self.lax_digests,
-                                      show_warnings=show_warnings)
+                                      log_warnings=log_warnings)
                 # FIXME - Should check that all objest are not higher spec
                 # version that storage root https://ocfl.io/1.1/spec/#E081
                 if validator.validate_object(ocfl_opendir(self.root_fs, dirpath)):
@@ -319,7 +319,7 @@ class StorageRoot():
                 else:
                     logging.debug("Object at %s in INVALID", dirpath)
                 if len(errors) < max_errors:
-                    # Record detail of errors (and warnings if show_warnings)
+                    # Record detail of errors (and warnings if log_warnings)
                     messages = validator.status_str(prefix='[[' + dirpath + ']]')
                     if messages != '':
                         errors.append([dirpath, messages])
@@ -327,7 +327,7 @@ class StorageRoot():
         return num_objects, good_objects, errors
 
     def validate(self, validate_objects=True, check_digests=True,
-                 show_warnings=False, show_errors=True, max_errors=100,
+                 log_warnings=False, log_errors=True, max_errors=100,
                  lang='en'):
         """Validate OCFL storage root, structure, and optionally all objects.
 
@@ -343,7 +343,7 @@ class StorageRoot():
         """
         valid = True
         self.structure_error = None
-        self.log = ValidationLogger(show_warnings=show_warnings, show_errors=show_errors, lang=lang)
+        self.log = ValidationLogger(log_warnings=log_warnings, log_errors=log_errors, lang=lang)
         self.open_root_fs()
         try:
             self.check_root_structure()
@@ -351,7 +351,7 @@ class StorageRoot():
             valid = False
             self.structure_error = str(e)
             logging.debug("Storage root structure is INVALID (%s)", str(e))
-        self.num_objects, self.good_objects, self.errors = self.validate_hierarchy(validate_objects=validate_objects, check_digests=check_digests, show_warnings=show_warnings, max_errors=max_errors)
+        self.num_objects, self.good_objects, self.errors = self.validate_hierarchy(validate_objects=validate_objects, check_digests=check_digests, log_warnings=log_warnings, max_errors=max_errors)
         if self.num_traversal_errors > 0:
             valid = False
         return valid

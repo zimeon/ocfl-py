@@ -57,8 +57,8 @@ def do_validation(args):
     num = 0
     num_good = 0
     num_paths = len(args.path)
-    show_warnings = not args.quiet and not args.very_quiet
-    show_errors = not args.very_quiet
+    log_warnings = not args.quiet and not args.very_quiet
+    log_errors = not args.very_quiet
     for path in args.path:
         num += 1
         path_type = ocfl.find_path_type(path)
@@ -66,24 +66,24 @@ def do_validation(args):
             logging.debug("Validating OCFL Object at %s", path)
             obj = ocfl.Object(lax_digests=args.lax_digests)
             if validate_object(obj, path,
-                               show_warnings=show_warnings,
-                               show_errors=show_errors,
+                               log_warnings=log_warnings,
+                               log_errors=log_errors,
                                check_digests=not args.no_check_digests):
                 num_good += 1
         elif path_type == 'root':
             logging.debug("Validating OCFL Storage Root at %s", path)
             store = ocfl.StorageRoot(root=path,
                                      lax_digests=args.lax_digests)
-            if store.validate(show_warnings=show_warnings,
-                              show_errors=show_errors,
+            if store.validate(log_warnings=log_warnings,
+                              log_errors=log_errors,
                               check_digests=not args.no_check_digests):
                 num_good += 1
         elif path_type == 'file':
             logging.debug("Validating separate OCFL Inventory at %s", path)
             obj = ocfl.Object(lax_digests=args.lax_digests)
             if validate_object_inventory(obj, path,
-                                         show_warnings=show_warnings,
-                                         show_errors=show_errors):
+                                         log_warnings=log_warnings,
+                                         log_errors=log_errors):
                 num_good += 1
         else:
             print("Bad path %s (%s)", path, path_type)

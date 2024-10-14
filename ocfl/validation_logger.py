@@ -30,15 +30,20 @@ import re
 
 
 class ValidationLogger():
-    """Class for OCFL ValidationLogger."""
+    """Class for OCFL ValidationLogger.
+
+    All validation issues to be recorded are either errors (corresponding with
+    MUST etc. in the specification) or warnings (corresponding with SHOULD etc.
+    in the specification).
+    """
 
     validation_codes = None
 
-    def __init__(self, show_warnings=False, show_errors=True,
+    def __init__(self, log_warnings=False, log_errors=True,
                  lang='en', validation_codes=None):
         """Initialize OCFL validation logger."""
-        self.show_warnings = show_warnings
-        self.show_errors = show_errors
+        self.log_warnings = log_warnings
+        self.log_errors = log_errors
         self.lang = lang
         self.codes = {}
         self.messages = []
@@ -51,21 +56,23 @@ class ValidationLogger():
             with open(os.path.join(os.path.dirname(__file__), 'data/validation-errors.json'), 'r', encoding="utf-8") as fh:
                 self.validation_codes = json.load(fh)
 
-    def error_or_warning(self, code, severity='error', **args):
-        """Add error or warning to self.codes.
+    def log(self, code, is_error, **args):
+        """Log either an error or a warning.
 
         Arguments:
             code: string for the error code (starts with `E` or `W`).
-            severity: string for severity, `error` (default) or `warning`.
+            is_error: boolean, True for an error, False for a wanring.
             **args: additional arguments that correspond with named arguments
                 in the error messages.
 
         Adds or updates the `codes` attribute with the last message for the given
         code.
 
-        Adds to the log of all messages in the `messages` atttibute depending on
-        severity and the values of the `show_warnings` and `show_errors` attributes.
+        Adds to the log of all messages in the `messages` atttibute depending
+        whether we are dealing with an error or a warning, and the values of
+        the `log_warnings` and `log_errors` attributes.
         """
+        severity = "error" if is_error else "warning"
         if code in self.validation_codes and 'description' in self.validation_codes[code]:
             desc = self.validation_codes[code]['description']
             lang_desc = None
@@ -96,17 +103,17 @@ class ValidationLogger():
             message += ' (see ' + self.spec + '#' + m.group(1) + ')'
         # Store set of codes with last message for that code, and _full_ list of messages
         self.codes[code] = message
-        if (severity == 'error' and self.show_errors) or (severity != 'error' and self.show_warnings):
+        if (is_error and self.log_errors) or (not is_error and self.log_warnings):
             self.messages.append(message)
 
     def error(self, code, **args):
         """Log an error."""
-        self.error_or_warning(code, severity='error', **args)
+        self.log(code, is_error=True, **args)
         self.num_errors += 1
 
     def warning(self, code, **args):
         """Log a warning."""
-        self.error_or_warning(code, severity='warning', **args)
+        self.log(code, is_error=False, **args)
         self.num_warnings += 1
 
     def status_str(self, prefix=''):
