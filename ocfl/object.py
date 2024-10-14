@@ -35,7 +35,17 @@ def parse_version_directory(dirname):
 
 
 class Object():
-    """Class for handling OCFL Object data and operations."""
+    """Class for handling OCFL Object data and operations.
+
+    Example use:
+    >>> import ocfl
+    >>> object = ocfl.Object(path="fixtures/1.1/good-objects/spec-ex-full")
+    >>> passed, validator = object.validate()
+    >>> passed
+    True
+    >>> validator.spec_version
+    '1.1'
+    """
 
     def __init__(self, identifier=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
@@ -44,7 +54,7 @@ class Object():
                  obj_fs=None, path=None, create=False):
         """Initialize OCFL object.
 
-        Parameters relevant to building an object:
+        Arguments relevant to building an object:
           identifier - id for this object
           content_directory - allow override of the default 'content'
           digest_algorithm - allow override of the default 'sha512'
@@ -85,7 +95,18 @@ class Object():
             self.open_fs(path, create=create)
 
     def open_fs(self, objdir, create=False):
-        """Open an fs filesystem for this object."""
+        """Open an fs filesystem for this object.
+
+        Arguments:
+            objdir: path string to either regular filesystem directory or else
+                to a fs filesystem string (e.g. may be "zip://.../zipfile.zip"
+                or "mem://")
+            create: True to create path/filesystem as needed, defaults to False.
+
+        Sets obj_fs attribute.
+
+        Raises ObjectException on failure to open filesystem.
+        """
         try:
             self.obj_fs = open_fs(fs_url=objdir, create=create)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
@@ -529,7 +550,7 @@ class Object():
                 tree += _show_indent(1, last, (nn == len(v_notes))) + v_note + "\n"
         return tree
 
-    def validate(self, objdir, show_warnings=True, show_errors=True, check_digests=True):
+    def validate(self, objdir=None, show_warnings=True, show_errors=True, check_digests=True):
         """Validate OCFL object at objdir.
 
         Returns tuple (passed, validator) where:
@@ -541,6 +562,8 @@ class Object():
                               show_errors=show_errors,
                               check_digests=check_digests,
                               lax_digests=self.lax_digests)
+        if objdir is None:
+            objdir = self.obj_fs
         passed = validator.validate_object(objdir)
         return passed, validator
 

@@ -1,6 +1,27 @@
 """OCFL Validation Logger.
 
-Handle logging of validation errors and warnings.
+Handle logging of validation errors and warnings. All the error and
+warning messages are stored in a separate JSON file that is keyed
+by the anchors ("E001", "W001") that are used in the specification.
+
+The format of the `validation-codes.json` files is as follows:
+```
+{
+  "E001a": {
+    "params": ["file"],
+    "description": {
+       "en": "OCFL Object root contains unexpected file: %s"
+    }
+  },
+  "E001b": {
+    "params": ["dir"],
+    "description": {
+       "en": "OCFL Object root contains unexpected directory: %s"
+    }
+  },
+  ...
+}
+```
 """
 import json
 import os
@@ -23,7 +44,6 @@ class ValidationLogger():
         self.messages = []
         self.num_errors = 0
         self.num_warnings = 0
-        self.info = 0
         self.spec = 'https://ocfl.io/1.0/spec/'
         if validation_codes is not None:
             self.validation_codes = validation_codes
@@ -32,7 +52,20 @@ class ValidationLogger():
                 self.validation_codes = json.load(fh)
 
     def error_or_warning(self, code, severity='error', **args):
-        """Add error or warning to self.codes."""
+        """Add error or warning to self.codes.
+
+        Arguments:
+            code: string for the error code (starts with `E` or `W`).
+            severity: string for severity, `error` (default) or `warning`.
+            **args: additional arguments that correspond with named arguments
+                in the error messages.
+
+        Adds or updates the `codes` attribute with the last message for the given
+        code.
+
+        Adds to the log of all messages in the `messages` atttibute depending on
+        severity and the values of the `show_warnings` and `show_errors` attributes.
+        """
         if code in self.validation_codes and 'description' in self.validation_codes[code]:
             desc = self.validation_codes[code]['description']
             lang_desc = None
@@ -67,12 +100,12 @@ class ValidationLogger():
             self.messages.append(message)
 
     def error(self, code, **args):
-        """Add error code to self.codes."""
+        """Log an error."""
         self.error_or_warning(code, severity='error', **args)
         self.num_errors += 1
 
     def warning(self, code, **args):
-        """Add warning code to self.codes."""
+        """Log a warning."""
         self.error_or_warning(code, severity='warning', **args)
         self.num_warnings += 1
 

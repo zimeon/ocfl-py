@@ -27,17 +27,42 @@ class ValidatorAbortException(Exception):
 class Validator():
     """Class for OCFL Object Validator."""
 
-    def __init__(self, log=None, show_warnings=False, show_errors=True,
+    def __init__(self, show_warnings=False, show_errors=True,
                  check_digests=True, lax_digests=False,
-                 force_spec_version=None, default_spec_version='1.1', lang='en'):
-        """Initialize OCFL validator."""
-        self.log = log
+                 force_spec_version=None, default_spec_version='1.1',
+                 log=None, lang='en'):
+        """Initialize OCFL Object validator object.
+
+        Arguments:
+            show_warnings: True to record warnings during validation
+                (default: False)
+            show_errors: True to record errors during validation
+                (default: True)
+            check_digests: True to check digests of files within the objects
+            lax_digests: default is False. Set True to allow digests beyond
+                those included in the specification for fixity and to allow
+                non-preferred digest algorithms for content references in the
+                object.
+            force_spec_version: string of specification version to force
+                validation at, else None (default) to not force a specific
+                version. If force_spec_version is set then a declaration within
+                the object that doesn't match will be reported as an error.
+            default_spec_version: string of default specification version to
+                assume where not specified (default '1.1')
+            log: None (default) to create new ValidationLogger instance, or
+                else an instance to use.
+            lang: language string (default 'en') to pass to the validation
+                logger.
+        """
         self.check_digests = check_digests
         self.lax_digests = lax_digests
         self.force_spec_version = force_spec_version
         self.default_spec_version = default_spec_version
+        self.log = log
         if self.log is None:
-            self.log = ValidationLogger(show_warnings=show_warnings, show_errors=show_errors, lang=lang)
+            self.log = ValidationLogger(show_warnings=show_warnings,
+                                        show_errors=show_errors,
+                                        lang=lang)
         self.registered_extensions = [
             '0001-digest-algorithms', '0002-flat-direct-storage-layout',
             '0003-hash-and-id-n-tuple-storage-layout', '0004-hashed-n-tuple-storage-layout',
@@ -152,11 +177,14 @@ class Validator():
         of object content. Does not look at anything else in the
         object itself.
 
-        where - used for reporting messages of where inventory is in object, will
-            be either 'root' or the version directory
-
-        force_spec_version - if set None will attempt to take spec_version from the
-            inventory itself instead of using the spec version provided
+        Arguments:
+            inv_file: file name of inventory within self.obj_fs
+            where: string (default 'root') used for reporting messages of
+                where inventory is in object, will be either 'root' or the
+                version directory
+            force_spec_version: if None (default) will attempt to take
+                spec_version from the inventory itself instead of using the
+                spec version provided
         """
         try:
             with self.obj_fs.openbin(inv_file, 'r') as fh:
