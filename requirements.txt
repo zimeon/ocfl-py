@@ -6,3 +6,4 @@ fs_s3fs >= 1.1.1
 pairtree >= 0.8.1
 # Required for extras
 requests >= 2.20.0
+mock >= 5.1.0

@@ -1,0 +1,4 @@
+[
+    "This is not a JSON object",
+    "(it is an array, which is not legal for extension config.json)"
+]

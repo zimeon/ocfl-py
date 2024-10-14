@@ -1,8 +1,10 @@
 """Handle different storage layouts.
 
-OCFL Storage roots require a deterministic mapping from the object identifiers
-to the path within the storage root. This layout must be consistent across all
-objects in the storage root. It often includes two components:
+OCFL Storage Roots require a deterministic mapping from the object identifiers
+to the path within the storage root. (It is not required that one can deduce the
+object id from the path, as is the case with a hashed layout for example). The
+layout must be consistent across all objects in the storage root. It often
+includes two components:
 
 1) A mapping from the identifier to a set of directory names to create a path
 where objects are somewhatevenly distributed and will not end up with too many
@@ -12,7 +14,7 @@ storage root, does not use a path.
 
 2) A final directory name that may be a more complete representation of the
 object id, by typically with at least some cleaning for safety. Some layouts
-use just the remainder of a hash however. Obviously algorithms but avoid
+use just the remainder of a hash however. Obviously algorithms must avoid
 collision in this part within a given path.
 
 See: https://ocfl.io/1.1/spec/#root-hierarchies
@@ -98,13 +100,19 @@ class Layout:
           root_fs: the storage root fs object
           params_required: if True then throw exception for params file not present
 
-        Returns None
+        Returns None, sets instance data in accord with the configuration using
+        the methods in self.PARAMS to parse for each key.
+
+        Raises LayoutException if the config can't be read or if required by
+        params_required but not present.
         """
         config = None
+        print("Reading extension config file %s" % (self.config_file))
         if root_fs.exists(self.config_file):
             try:
                 with root_fs.open(self.config_file) as fh:
                     config = json.load(fh)
+                    print("#### " + str(config))
             except Exception as e:
                 raise LayoutException("Storage root extension config file %s exists but can't be read/parsed (%s)" % (self.config_file, str(e)))
             if not isinstance(config, dict):
@@ -122,7 +130,7 @@ class Layout:
             require_extension_name: boolean, True by default. If set False then
                 the extensionName paramater is not required
 
-        For each parameter that is recognizedm, the appropriate check and set
+        For each parameter that is recognized, the appropriate check and set
         method in self.PARAMS is called. The methods set instance attributes.
         """
         # Check the extensionName if required and/or specified
@@ -139,6 +147,9 @@ class Layout:
         """Write the config.json file with layout parameters if need for this layout.
 
         Does nothing if there is no config.json content defined for this layout.
+
+        Raises a LayoutException if there is an error trying to write the config.json
+        file, including if one already exists.
         """
         config = self.config
         if config is None:

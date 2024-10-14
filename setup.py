@@ -70,6 +70,9 @@ setup(
         'fs_s3fs>=1.1.1',
         'pairtree>=0.8.1'
     ],
+    tests_require=[
+        'mock>=5.1'
+    ],
     test_suite="tests",
     cmdclass={
         'coverage': Coverage

@@ -44,7 +44,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(layout.decode('http%3a%2f%2Fa.b.c'), 'http://a.b.c')
         self.assertRaises(LayoutException, layout.identifier_to_path, 'id')
 
-    def text_read_layout_params(self):
+    def test_read_layout_params(self):
         """Test read_layout_params."""
         root_fs = open_fs("extra_fixtures/extension_configs")
         layout = Layout()
@@ -54,13 +54,19 @@ class TestAll(unittest.TestCase):
         def parse_param(value):
             layout.param = value
         layout.PARAMS = {"param": parse_param}
-        layout.read_layout_params(root_fs=root_fs)
+        layout.read_layout_params(root_fs=root_fs, params_required=True)
         self.assertEqual(layout.param, "yay!")
+        # No config file but none required
+        # Idoesn't do anything, nothing to check)
+        layout.NAME = "no_config"
+        layout.read_layout_params(root_fs=root_fs, params_required=False)
         # Error cases
         # No config file
         layout.NAME = "no_config"
-        self.assertRaises(LayoutException, layout.read_layout_params, root_fs=root_fs)
+        self.assertRaises(LayoutException, layout.read_layout_params, root_fs=root_fs, params_required=True)
         layout.NAME = "not_json"
+        self.assertRaises(LayoutException, layout.read_layout_params, root_fs=root_fs)
+        layout.NAME = "not_json_object"
         self.assertRaises(LayoutException, layout.read_layout_params, root_fs=root_fs)
 
     def test_check_and_set_layout_params(self):
