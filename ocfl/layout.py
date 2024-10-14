@@ -20,6 +20,7 @@ collision in this part within a given path.
 See: https://ocfl.io/1.1/spec/#root-hierarchies
 """
 import json
+import logging
 import os
 import os.path
 from urllib.parse import quote_plus, unquote_plus
@@ -107,12 +108,11 @@ class Layout:
         params_required but not present.
         """
         config = None
-        print("Reading extension config file %s" % (self.config_file))
+        logging.debug("Reading extension config file %s", self.config_file)
         if root_fs.exists(self.config_file):
             try:
                 with root_fs.open(self.config_file) as fh:
                     config = json.load(fh)
-                    print("#### " + str(config))
             except Exception as e:
                 raise LayoutException("Storage root extension config file %s exists but can't be read/parsed (%s)" % (self.config_file, str(e)))
             if not isinstance(config, dict):
@@ -155,6 +155,7 @@ class Layout:
         if config is None:
             # Nothing to write if there is no config defined
             return
+        logging.debug("Writing extension config file %s", self.config_file)
         if root_fs.exists(self.config_file):
             raise LayoutException("Storage root extension layout config %s already exists" % (self.config_file))
         try:
