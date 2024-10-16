@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
-"""Core of OCFL Object library."""
+"""OCFL Object library.
+
+Provides Object class for handling OCFL Object data and operations, including
+building, updating and inspecting. Also provides support for generating and
+updating OCFL inventories, though these are represented simply as a dict rather
+than as a new Python object type.
+
+This code uses PyFilesystem (import fs) exclusively for access to files. This
+should enable application beyond the operating system filesystem.
+"""
 import copy
 import hashlib
 import json
