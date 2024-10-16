@@ -30,8 +30,6 @@ class TestAll(DemoTestCase):
                                "--src", "fixtures/1.0/content/cf3"],
                               text="Without an `--objdir` argument the script just writes out the inventory for each version in the object that would have been created.")
         self.assertIn('"id": "http://example.org/obj2"', out)
-        self.assertIn("### Inventory for v1", out)
-        self.assertIn("### Inventory for v2", out)
         self.assertIn("### Inventory for v3", out)
 
     def test02_create_v1(self):
@@ -52,7 +50,8 @@ class TestAll(DemoTestCase):
                                "--src", "fixtures/1.0/content/cf3",
                                "--objdir", "TMPDIR/obj2",
                                "-v"])
-        self.assertIn("Built object http://example.org/obj2 with 3 versions", out)
+        self.assertIn("Built object http://example.org/obj2", out)
+        self.assertIn("with 3 versions", out)
 
     def test04_extract(self):
         """Test extract of version."""

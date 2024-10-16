@@ -1,7 +1,5 @@
 """Object tests."""
-import io
 import json
-import logging
 import os
 import tempfile
 import unittest
@@ -245,17 +243,12 @@ class TestAll(unittest.TestCase):
                          set(['0=ocfl_object_1.0',
                               'inventory.json', 'inventory.json.sha512',
                               'v1', 'v2', 'v3']))
-        # If objdir is None the output is just a log saying what would have been written
-        log_io = io.StringIO()
-        oo.log.addHandler(logging.StreamHandler(log_io))
-        oo.build(srcdir='fixtures/1.0/content/spec-ex-full',
-                 metadata=VersionMetadata(),
-                 objdir=None)
-        log_out = log_io.getvalue()
-        self.assertIn('### Inventory for v1', log_out)
-        self.assertIn('"id": "uri:firkin",', log_out)
-        self.assertIn('### Inventory for v2', log_out)
-        self.assertIn('### Inventory for v3', log_out)
+        # If objdir is None, nothing is written but the inventory is returned
+        inventory = oo.build(srcdir='fixtures/1.0/content/spec-ex-full',
+                             metadata=VersionMetadata(),
+                             objdir=None)
+        self.assertEqual(inventory["head"], "v3")
+        self.assertEqual(inventory["id"], "uri:firkin")
 
     def test10_create(self):
         """Test create method."""

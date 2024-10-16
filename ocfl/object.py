@@ -130,14 +130,13 @@ class Object():
         content distribution, or something else.
 
         Arguments:
-          filepath - the source filepath
-          vdir - the current version directory
-          used - disctionary used to check whether a given vfilepath has
-            been used already
+            filepath: the source filepath
+            vdir: the current version directory
+            used: disctionary used to check whether a given vfilepath has
+                been used already
 
-        Returns:
-          vfilepath - the version filepath for this content that starts
-            with vdir/content_directory/
+        Returns vfilepath, the version filepath for this content that starts
+            with "vdir/content_directory/"."
         """
         if self.filepath_normalization == 'uri':
             filepath = urlquote(filepath)
@@ -158,14 +157,18 @@ class Object():
         return vfilepath
 
     def start_inventory(self):
-        """Create inventory start with metadata from self."""
-        inventory = {
+        """Create inventory start with metadata from self.
+
+        Returns the start of an inventory dict based on the instance data
+        in this object.
+        """
+        inventory = dict({
             'id': self.id,
             'type': 'https://ocfl.io/' + self.spec_version + '/spec/#inventory',
             'digestAlgorithm': self.digest_algorithm,
             'versions': {},
             'manifest': {}
-        }
+        })
         # Add contentDirectory if not 'content'
         if self.content_directory != 'content':
             inventory['contentDirectory'] = self.content_directory
@@ -313,17 +316,19 @@ class Object():
         return self.write_inventory_and_sidecar(None, write_inventory=False)
 
     def build(self, srcdir, metadata=None, objdir=None):
-        """Build an OCFL object and write to objdir if set, else print inventories.
+        """Build an OCFL object and write to objdir if set, else just build inventory.
 
         Arguments:
-          srcdir - source directory with version sub-directories
-          metadata - VersionMetadata object applied to all versions
-          objdir - output directory for object (must not already exist), if not
-              set then will just write out inventories that would have been
-              created
+          srcdir: source directory with version sub-directories.
+          metadata: VersionMetadata object applied to all versions.
+          objdir: output directory for object (must not already exist), if not
+              set then will just return head inventory that would have been
+              created.
+
+        Returns the last version inventory.
         """
         if self.id is None:
-            raise ObjectException("Identifier is not set!")
+            raise ObjectException("Can't build object, identifier is not set!")
         if objdir is not None:
             self.open_fs(objdir, create=True)
         num_versions = 0
@@ -331,30 +336,28 @@ class Object():
         inventory = None
         for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(src_fs, metadata):
             num_versions += 1
-            if objdir is None:
-                self.log.warning("### Inventory for %s\n",
-                                 vdir + json.dumps(inventory, sort_keys=True, indent=2))
-            else:
+            if objdir is not None:
                 self.write_inventory_and_sidecar(inventory, vdir)
                 # Copy files into this version
                 for (path, srcfile) in manifest_to_srcfile.items():
                     self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
-        if objdir is None:
-            return
-        # Write object declaration, inventory and sidecar
-        self.write_object_declaration()
-        self.write_inventory_and_sidecar(inventory)
-        self.log.info("Built object %s with %s versions", self.id, num_versions)
+        if objdir is not None:
+            # Write object declaration, inventory and sidecar
+            self.write_object_declaration()
+            self.write_inventory_and_sidecar(inventory)
+            self.log.info("Built object %s at %s with %s versions", self.id, objdir, num_versions)
+        # Whether object written or not, return the set of inventories
+        return inventory
 
     def create(self, srcdir, metadata=None, objdir=None):
         """Create a new OCFL object with v1 content from srcdir.
 
         Arguments:
-          srcdir - source directory with content for v1
-          metadata - VersionMetadata object for v1
-          objdir - output directory for object (must not already exist), if not
-              set then will just write out inventories that would have been
-              created
+            srcdir - source directory with content for v1.
+            metadata - VersionMetadata object for v1.
+            objdir - output directory for object (must not already exist), if not
+                set then will just return inventory for object that would have been
+                created.
         """
         if self.id is None:
             raise ObjectException("Identifier is not set!")
@@ -365,9 +368,7 @@ class Object():
         vdir = 'v1'
         manifest_to_srcfile = self.add_version(inventory, src_fs, '', vdir, metadata=metadata)
         if objdir is None:
-            self.log.warning("### Inventory for %s\n",
-                             vdir + json.dumps(inventory, sort_keys=True, indent=2))
-            return
+            return inventory
         # Else write out object
         self.write_inventory_and_sidecar(inventory, vdir)
         # Write object declaration, inventory and sidecar
@@ -379,14 +380,15 @@ class Object():
                 srcfile = manifest_to_srcfile[path]
                 self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
         self.log.info("Created OCFL object %s in %s", self.id, objdir)
+        return inventory
 
     def update(self, objdir, srcdir=None, metadata=None):
         """Update object creating a new version with content matching srcdir.
 
         Arguments:
-          objdir - directory for object to be update, must contain a valid object!
-          srcdir - source directory with version sub-directories
-          metadata - VersionMetadata object applied to all versions
+            objdir: directory for object to be update, must contain a valid object!
+            srcdir: source directory with version sub-directories
+            metadata: VersionMetadata object applied to all versions
 
         If srcdir is None then the update will be just of metadata and any settings
         (such as using a new digest). There will be no content change between
@@ -482,7 +484,8 @@ class Object():
     def tree(self, objdir):
         """Build human readable tree showing OCFL object at objdir.
 
-        objdir - object directory to examine
+        Arguments:
+            objdir - object directory to examine.
 
         Returns human readable string with tree of object structure.
         """
@@ -503,9 +506,12 @@ class Object():
         passed = validator.validate_object(objdir)
         self.spec_version = validator.spec_version
         self.content_directory = validator.content_directory
-        self.log.warning("OCFL v%s Object at %s %s",
-                         validator.spec_version, objdir,
-                         'has VALID STRUCTURE (DIGESTS NOT CHECKED)' if passed else 'is INVALID')
+        if passed:
+            self.log.info("OCFL v%s Object at %s has VALID STRUCTURE (DIGESTS NOT CHECKED)",
+                          validator.spec_version, objdir)
+        else:
+            self.log.warning("OCFL v%s Object at %s is INVALID",
+                             validator.spec_version, objdir)
         tree = '[' + objdir + ']\n'
         self.open_fs(objdir)
         entries = sorted(self.obj_fs.listdir(''))

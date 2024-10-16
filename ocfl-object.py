@@ -6,6 +6,7 @@ and requirements around them. It is designed to manipulate
 OCFL Objects or just Inventory files alone.
 """
 import argparse
+import json
 import logging
 import sys
 
@@ -98,6 +99,13 @@ def parse_arguments():
     return args
 
 
+def print_inventory(inventory):
+    """Print out the inventory."""
+    vdir = inventory["head"]
+    print("### Inventory for %s" % (vdir))
+    print(json.dumps(inventory, sort_keys=True, indent=2))
+
+
 def do_object_operation(args):
     """Implement object operations in a way that can be reused by ocfl.py."""
     obj = ocfl.Object(identifier=args.id,
@@ -121,16 +129,20 @@ def do_object_operation(args):
                     obj.id = metadata.id
         elif args.srcdir is None:
             raise FatalError("Must specify either --srcdir or --srcbag containing v1 files when creating an OCFL object!")
-        obj.create(srcdir=srcdir,
-                   metadata=metadata,
-                   objdir=args.objdir)
+        inventory = obj.create(srcdir=srcdir,
+                               metadata=metadata,
+                               objdir=args.objdir)
+        if args.objdir is None:
+            print_inventory(inventory)
     elif args.cmd == 'build':
         if args.srcdir is None:
             raise FatalError("Must specify --srcdir containing version directories when building an OCFL object!")
         metadata = ocfl.VersionMetadata(args=args)
-        obj.build(srcdir=args.srcdir,
-                  metadata=metadata,
-                  objdir=args.objdir)
+        inventory = obj.build(srcdir=args.srcdir,
+                              metadata=metadata,
+                              objdir=args.objdir)
+        if args.objdir is None:
+            print_inventory(inventory)
     elif args.cmd == 'update':
         srcdir = args.srcdir
         metadata = ocfl.VersionMetadata(args=args)
@@ -142,7 +154,7 @@ def do_object_operation(args):
                    srcdir=srcdir,
                    metadata=metadata)
     elif args.cmd == 'show':
-        logging.warning("Object tree\n%s", obj.tree(objdir=args.objdir))
+        print("Object tree for %s\n%s" % (obj.id, obj.tree(objdir=args.objdir)))
     elif args.cmd == 'validate':
         validate_object(obj, objdir=args.objdir)
     elif args.cmd == 'extract':
