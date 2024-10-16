@@ -50,33 +50,32 @@ class Object():
     def __init__(self, identifier=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
                  spec_version='1.1', forward_delta=True, dedupe=True,
-                 lax_digests=False, fixity=None, verbose=True,
+                 lax_digests=False, fixity=None,
                  obj_fs=None, path=None, create=False):
         """Initialize OCFL object.
 
         Arguments relevant to building an object:
-          identifier - id for this object
-          content_directory - allow override of the default 'content'
-          digest_algorithm - allow override of the default 'sha512'
-          filepath_normalization - allow override of default 'uri'
-          spec_version - OCFL specification version
-          forward_delta - set False to turn off foward delta. With forward delta
-            turned off, the same content will be repeated in a new version
-            rather than simply being included by reference through the
-            digest linking to the copy in the previous version
-          dedupe - set False to turn off dedupe within versions. With dedupe
-            turned off, the same content will be repeated within a given version
-            rather than one copy being included and then a reference being used
-            from the multiple logical files
-          lax_digests - set True to allow digests beyond those included in the
-            specification for fixity and to allow non-preferred digest algorithms
-            for content references in the object
-          fixity - list of fixity types to add as fixity section
-          verbose - set logging level to INFO rather than WARN
+            identifier: id for this object
+            content_directory: allow override of the default 'content'
+            digest_algorithm: allow override of the default 'sha512'
+            filepath_normalization: allow override of default 'uri'
+            spec_version: OCFL specification version
+            forward_delta: set False to turn off foward delta. With forward delta
+                turned off, the same content will be repeated in a new version
+                rather than simply being included by reference through the
+                digest linking to the copy in the previous version
+            dedupe: set False to turn off dedupe within versions. With dedupe
+                turned off, the same content will be repeated within a given version
+                rather than one copy being included and then a reference being used
+                from the multiple logical files
+            lax_digests: set True to allow digests beyond those included in the
+                specification for fixity and to allow non-preferred digest algorithms
+                for content references in the object
+            fixity: list of fixity types to add as fixity section
 
-          obj_fs - a pyfs filesystem reference for the root of this object
-          path - if set then open a pyfs filesystem at path (alternative to obj_fs)
-          create - set True to allow opening filesystem at path to create a directory
+            obj_fs: a pyfs filesystem reference for the root of this object
+            path: if set then open a pyfs filesystem at path (alternative to obj_fs)
+            create: set True to allow opening filesystem at path to create a directory
         """
         self.id = identifier
         self.content_directory = content_directory
@@ -88,8 +87,6 @@ class Object():
         self.fixity = fixity
         self.lax_digests = lax_digests
         self.src_files = {}
-        self.log = logging.getLogger(name="ocfl.object")
-        self.log.setLevel(level=logging.INFO if verbose else logging.WARN)
         self.obj_fs = obj_fs  # fs filesystem (or sub-filesystem) for object
         if path is not None:
             self.open_fs(path, create=create)
@@ -345,7 +342,7 @@ class Object():
             # Write object declaration, inventory and sidecar
             self.write_object_declaration()
             self.write_inventory_and_sidecar(inventory)
-            self.log.info("Built object %s at %s with %s versions", self.id, objdir, num_versions)
+            logging.info("Built object %s at %s with %s versions", self.id, objdir, num_versions)
         # Whether object written or not, return the set of inventories
         return inventory
 
@@ -379,7 +376,7 @@ class Object():
             for path in paths:
                 srcfile = manifest_to_srcfile[path]
                 self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
-        self.log.info("Created OCFL object %s in %s", self.id, objdir)
+        logging.info("Created OCFL object %s in %s", self.id, objdir)
         return inventory
 
     def update(self, objdir, srcdir=None, metadata=None):
@@ -402,7 +399,7 @@ class Object():
         self.id = inventory['id']
         old_head = inventory['head']
         head = next_version(old_head)
-        self.log.info("Will update %s %s -> %s", self.id, old_head, head)
+        logging.info("Will update %s %s -> %s", self.id, old_head, head)
         self.obj_fs.makedir(head)
         # Is this a request to change the digest algorithm?
         old_digest_algorithm = inventory['digestAlgorithm']
@@ -410,8 +407,8 @@ class Object():
         if digest_algorithm is None:
             digest_algorithm = old_digest_algorithm
         elif digest_algorithm != old_digest_algorithm:
-            self.log.info("New version with use %s instead of %s digestAlgorithm",
-                          digest_algorithm, old_digest_algorithm)
+            logging.info("New version with use %s instead of %s digestAlgorithm",
+                         digest_algorithm, old_digest_algorithm)
             inventory['digestAlgorithm'] = digest_algorithm
         # Is this a request to change the set of fixity information?
         fixity = self.fixity
@@ -433,10 +430,10 @@ class Object():
                 for digest in old_fixity.difference(fixity):
                     inventory['fixity'].pop(digest)
                 for digest in fixity.difference(old_fixity):
-                    self.log.info("FIXME - need to add fixity with digest %s", digest)
+                    logging.info("FIXME - need to add fixity with digest %s", digest)
         if fixity != old_fixity:
-            self.log.info("New version will have %s instead of %s fixity",
-                          ','.join(sorted(fixity)), ','.join(sorted(old_fixity)))
+            logging.info("New version will have %s instead of %s fixity",
+                         ','.join(sorted(fixity)), ','.join(sorted(old_fixity)))
         # Now look at contents, manifest and state
         manifest = copy.deepcopy(inventory['manifest'])
         if digest_algorithm != old_digest_algorithm:
@@ -479,7 +476,7 @@ class Object():
         # Delete old root inventory sidecar if we changed digest algorithm
         if digest_algorithm != old_digest_algorithm:
             self.obj_fs.remove(INVENTORY_FILENAME + '.' + old_digest_algorithm)
-        self.log.info("Updated OCFL object %s in %s by adding %s", self.id, objdir, head)
+        logging.info("Updated OCFL object %s in %s by adding %s", self.id, objdir, head)
 
     def tree(self, objdir):
         """Build human readable tree showing OCFL object at objdir.
@@ -507,11 +504,11 @@ class Object():
         self.spec_version = validator.spec_version
         self.content_directory = validator.content_directory
         if passed:
-            self.log.info("OCFL v%s Object at %s has VALID STRUCTURE (DIGESTS NOT CHECKED)",
-                          validator.spec_version, objdir)
+            logging.info("OCFL v%s Object at %s has VALID STRUCTURE (DIGESTS NOT CHECKED)",
+                         validator.spec_version, objdir)
         else:
-            self.log.warning("OCFL v%s Object at %s is INVALID",
-                             validator.spec_version, objdir)
+            logging.warning("OCFL v%s Object at %s is INVALID",
+                            validator.spec_version, objdir)
         tree = '[' + objdir + ']\n'
         self.open_fs(objdir)
         entries = sorted(self.obj_fs.listdir(''))
@@ -619,7 +616,7 @@ class Object():
         inv = self.parse_inventory()
         if version == 'head':
             version = inv['head']
-            self.log.info("Object at %s has head %s", objdir, version)
+            logging.debug("Object at %s has head %s", objdir, version)
         elif version not in inv['versions']:
             raise ObjectException("Object at %s does not include a version '%s'" % (objdir, version))
         # Sanity check on destination
@@ -639,10 +636,10 @@ class Object():
         for (digest, logical_files) in state.items():
             existing_file = manifest[digest][0]  # FIXME - pick "best" (closest version?) not first?
             for logical_file in logical_files:
-                self.log.debug("Copying %s -> %s", digest, logical_file)
+                logging.debug("Copying %s -> %s", digest, logical_file)
                 dst_fs.makedirs(fs.path.dirname(logical_file), recreate=True)
                 fs.copy.copy_file(self.obj_fs, existing_file, dst_fs, logical_file)
-        self.log.info("Extracted %s into %s", version, dstdir)
+        logging.info("Extracted %s into %s", version, dstdir)
         return VersionMetadata(inventory=inv, version=version)
 
     def parse_inventory(self):
