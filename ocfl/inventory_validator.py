@@ -115,7 +115,8 @@ class InventoryValidator():
             self.warning("W004")
             self.digest_algorithm = inventory['digestAlgorithm']
         else:
-            self.error("E039", digest_algorithm=inventory['digestAlgorithm'])
+            self.error("E025a", digest_algorithm=inventory['digestAlgorithm'])
+            return
         if 'contentDirectory' in inventory:
             # Careful only to set self.content_directory if value is safe
             cd = inventory['contentDirectory']
@@ -180,7 +181,7 @@ class InventoryValidator():
             for digest in manifest:
                 m = re.match(self.digest_regex(), digest)
                 if not m:
-                    self.error('E025a', digest=digest, algorithm=self.digest_algorithm)  # wrong form of digest
+                    self.error('E025b', digest=digest, algorithm=self.digest_algorithm)  # wrong form of digest
                 elif not isinstance(manifest[digest], list):
                     self.error('E092', digest=digest)  # must have path list value
                 else:
