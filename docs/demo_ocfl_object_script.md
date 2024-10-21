@@ -35,7 +35,7 @@ Without an `--objdir` argument the script just writes out the inventory for the 
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-21T17:25:35.531888Z",
+      "created": "2024-10-21T17:56:53.127967Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -69,7 +69,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-21T17:25:35.679587Z",
+      "created": "2024-10-21T17:56:53.371204Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -77,7 +77,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
       }
     },
     "v2": {
-      "created": "2024-10-21T17:25:35.679921Z",
+      "created": "2024-10-21T17:56:53.371363Z",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
           "a_file.txt"
@@ -85,7 +85,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
       }
     },
     "v3": {
-      "created": "2024-10-21T17:25:35.680048Z",
+      "created": "2024-10-21T17:56:53.371494Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -134,8 +134,8 @@ and the extracted files are:
 ```
 > find tmp/v1 -print
 tmp/v1
-tmp/v1/empty.txt
 tmp/v1/image.tiff
+tmp/v1/empty.txt
 tmp/v1/foo
 tmp/v1/foo/bar.xml
 ```
@@ -154,8 +154,8 @@ and the extracted files are:
 ```
 > find tmp/v2 -print
 tmp/v2
-tmp/v2/empty.txt
 tmp/v2/empty2.txt
+tmp/v2/empty.txt
 tmp/v2/foo
 tmp/v2/foo/bar.xml
 ```
@@ -173,7 +173,7 @@ and the extracted files are:
 
 ```
 > find tmp/v3 -print
-find: tmp/v3: No such file or directory
+find: ‘tmp/v3’: No such file or directory
 ```
 
 (last command exited with return code 1)
