@@ -117,9 +117,8 @@ class TestAll(DemoTestCase):
                               text="and the extracted file is:")
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "files/bar.xml")), 272)
         # Extract individual file into dir that exists
-        out = self.run_script("Extract image.tiff of v3 into the same directory",
+        out = self.run_script("Extract image.tiff of v3 (default) into the same directory",
                               ["python", "ocfl-object.py", "extract",
-                               "--objver", "v3",
                                "--objdir", "fixtures/1.1/good-objects/spec-ex-full",
                                "--logical-path", "image.tiff",
                                "--dstdir", "TMPDIR/files",
@@ -127,7 +126,7 @@ class TestAll(DemoTestCase):
         self.assertIn('Extracted image.tiff in v3', out)
         out = self.run_script(None,
                               ["find", "TMPDIR/files", "-print"],
-                              text="and the directort now contains two extracted files:")
+                              text="and the directory now contains two extracted files:")
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "files/image.tiff")), 2021)
 
     def test20_errors(self):
