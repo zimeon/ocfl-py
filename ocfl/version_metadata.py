@@ -9,7 +9,7 @@ class VersionMetadataException(Exception):
 class VersionMetadata():
     """Class for metadata for a specific version of an OCFL Object."""
 
-    def __init__(self, args=None, inventory=None, version=None,
+    def __init__(self, *, args=None, inventory=None, version=None,
                  identifier=None, created=None, message=None, name=None, address=None):
         """Initialize by various means, including command line arguments from argparse."""
         self.id = identifier

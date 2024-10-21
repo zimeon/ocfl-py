@@ -326,20 +326,31 @@ class StorageRoot():
                 num_objects += 1
         return num_objects, good_objects, errors
 
-    def validate(self, validate_objects=True, check_digests=True,
+    def validate(self, *, validate_objects=True, check_digests=True,
                  log_warnings=False, log_errors=True, max_errors=100,
                  lang='en'):
         """Validate OCFL storage root, structure, and optionally all objects.
 
-        Returns:
-        - True if everything checked is valid, false otherwise
+        Arguments (keyword only):
+           validate_objects (bool): True (default) to validate each object on
+               the storage root, otherwise will not validate the objects
+           check_digests (bool): True (default) to check the digests of each
+               file while validating objects
+           log_warnings (bool): True if warnings should be logged, default False
+           log_errors (bool): True (default) if errors should be logged
+           max_errors (int): Number of errors and warnings to log, default
+               is 100
+           lang (str): Language of error and warning descriptions to look for,
+               default is "en"
+
+        Returns True if everything checked is valid, False otherwise.
 
         Side effects:
-        - self.num_objects - number of objects examined
-        - self.good_objects - number of valid objects
-        - self.errors - list of [dirpath, message] pairs for up to max_errors errors
-        - self.structure_error - Error in storage root structure
-        - self.log - ValidationLogger object with any traversal errors
+            self.num_objects - number of objects examined
+            self.good_objects - number of valid objects
+            self.errors - list of [dirpath, message] pairs for up to max_errors errors
+            self.structure_error - Error in storage root structure
+            self.log - ValidationLogger object with any traversal errors
         """
         valid = True
         self.structure_error = None

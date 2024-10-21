@@ -27,7 +27,7 @@ class ValidatorAbortException(Exception):
 class Validator():
     """Class for OCFL Object Validator."""
 
-    def __init__(self, log_warnings=False, log_errors=True,
+    def __init__(self, *, log_warnings=False, log_errors=True,
                  check_digests=True, lax_digests=False,
                  force_spec_version=None, default_spec_version='1.1',
                  log=None, lang='en'):

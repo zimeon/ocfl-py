@@ -56,7 +56,7 @@ class Object():  # pylint: disable=too-many-public-methods
     '1.1'
     """
 
-    def __init__(self, identifier=None, content_directory='content',
+    def __init__(self, *, identifier=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
                  spec_version='1.1', forward_delta=True, dedupe=True,
                  lax_digests=False, fixity=None,
@@ -187,7 +187,7 @@ class Object():  # pylint: disable=too-many-public-methods
             self.fixity = None
         return inventory
 
-    def add_version(self, inventory, src_fs, src_dir, vdir, metadata=None):
+    def add_version(self, *, inventory, src_fs, src_dir, vdir, metadata=None):
         """Add to inventory data for new version based on files in srcdir.
 
         Arguments:
@@ -278,7 +278,8 @@ class Object():  # pylint: disable=too-many-public-methods
         # Go through versions in order building versions array, deduping if selected
         for vn in sorted(versions.keys()):
             vdir = versions[vn]
-            manifest_to_srcfile = self.add_version(inventory, src_fs, vdir, vdir,
+            manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
+                                                   src_dir=vdir, vdir=vdir,
                                                    metadata=metadata)
             yield (vdir, inventory, manifest_to_srcfile)
 
@@ -372,7 +373,9 @@ class Object():  # pylint: disable=too-many-public-methods
             self.open_fs(objdir, create=True)
         inventory = self.start_inventory()
         vdir = 'v1'
-        manifest_to_srcfile = self.add_version(inventory, src_fs, '', vdir, metadata=metadata)
+        manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
+                                               src_dir='', vdir=vdir,
+                                               metadata=metadata)
         if objdir is None:
             return inventory
         # Else write out object
@@ -475,7 +478,9 @@ class Object():  # pylint: disable=too-many-public-methods
             inventory['versions'][head] = metadata.as_dict(state=state)
         else:
             src_fs = open_fs(srcdir)
-            manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs, src_dir='', vdir=head, metadata=metadata)
+            manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
+                                                   src_dir='', vdir=head,
+                                                   metadata=metadata)
             # Copy files into this version
             for (path, srcfile) in manifest_to_srcfile.items():
                 self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
