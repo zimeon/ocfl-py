@@ -100,7 +100,7 @@ This is inventory should match the example with 3 versions in <https://ocfl.io/1
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-21T17:57:01.757332Z",
+      "created": "2024-10-21T18:43:40.843206Z",
       "state": {
         "7dcc352f96c56dc...c31": [
           "foo/bar.xml"
@@ -114,7 +114,7 @@ This is inventory should match the example with 3 versions in <https://ocfl.io/1
       }
     },
     "v2": {
-      "created": "2024-10-21T17:57:01.757764Z",
+      "created": "2024-10-21T18:43:40.843685Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"
@@ -126,7 +126,7 @@ This is inventory should match the example with 3 versions in <https://ocfl.io/1
       }
     },
     "v3": {
-      "created": "2024-10-21T17:57:01.758072Z",
+      "created": "2024-10-21T18:43:40.844004Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"

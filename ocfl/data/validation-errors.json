@@ -136,16 +136,22 @@
        "en": "OCFL Object %s manifest does not include files listed in previous version manifests (%s)"
     }
   },
-  "E025a": {
-    "params": ["where", "digest", "algorithm"],
-    "description": {
-       "en": "OCFL Object %s inventory manifest block includes a digest (%s) that doesn't have the correct form for the %s algorithm"
-    }
-  },
   "E024": {
     "params": ["where", "path"],
     "description": {
        "en": "OCFL Object version %s content directory includes empty path %s"
+    }
+  },
+  "E025a": {
+    "params": ["where", "digest_algorithm"],
+    "description": {
+       "en": "OCFL Object %s inventory `digestAlgorithm` attribute not an allowed digest type (got '%s')"
+    }
+  },
+  "E025b": {
+    "params": ["where", "digest", "algorithm"],
+    "description": {
+       "en": "OCFL Object %s inventory manifest block includes a digest (%s) that doesn't have the correct form for the %s algorithm"
     }
   },
   "E026a": {
@@ -212,12 +218,6 @@
     "params": ["where", "got", "assumed_spec_version"],
     "description": {
        "en": "OCFL Object %s inventory `type` attribute has an unsupported specification version number (%s), will proceed as if using version %s"
-    }
-  },
-  "E039": {
-    "params": ["where", "digest_algorithm"],
-    "description": {
-       "en": "OCFL Object %s inventory `digestAlgorithm` attribute not an allowed value (got '%s')"
     }
   },
   "E040": {
