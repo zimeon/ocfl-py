@@ -407,9 +407,14 @@ class TestAll(unittest.TestCase):
         dstdir = os.path.join(tempdir, 'vvv2')
         oo.extract('fixtures/1.1/good-objects/spec-ex-full', 'head', dstdir)
         self.assertEqual(set(os.listdir(dstdir)), set(["foo", "empty2.txt", "image.tiff"]))
+        # Destination directory exists but it empty (OK)
+        dstdir = os.path.join(tempdir, 'vvv3')
+        os.mkdir(dstdir)
+        oo.extract(objdir='fixtures/1.1/good-objects/spec-ex-full', version='head', dstdir=dstdir)
+        self.assertEqual(set(os.listdir(dstdir)), set(["foo", "empty2.txt", "image.tiff"]))
         # Error, no v4
         self.assertRaises(ObjectException, oo.extract, 'fixtures/1.1/good-objects/spec-ex-full', 'v4', dstdir)
-        # Error, dstdir already exists
+        # Error, dstdir already exists and is not empty
         self.assertRaises(ObjectException, oo.extract, 'fixtures/1.1/good-objects/spec-ex-full', 'head', tempdir)
         # Error, parent dir does not exist
         dstdir = os.path.join(tempdir, 'intermediate/vvv3')

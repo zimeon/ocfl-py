@@ -89,6 +89,8 @@ def parse_arguments():
                                 help='destination directory path')
     extract_parser.add_argument('--dstbag', action='store',
                                 help='destination Bagit bag path (alternative to --dstdir)')
+    extract_parser.add_argument('--logical-path', '--path', action='store', default=None,
+                                help='if specified, extract just the file at the specified logical path into --dstdir')
 
     args = parser.parse_args()
     check_version_arg(args)
@@ -158,17 +160,26 @@ def do_object_operation(args):
     elif args.cmd == 'validate':
         validate_object(obj, objdir=args.objdir)
     elif args.cmd == 'extract':
-        if args.dstdir and args.dstbag:
-            args.dstdir = None  # Override dstdir if dstbag specified
-        dst = args.dstdir or args.dstbag
-        metadata = obj.extract(objdir=args.objdir,
-                               version=args.objver,
-                               dstdir=dst)
-        if args.dstdir:
-            print("Extracted content for %s in %s" % (metadata.version, dst))
-        else:  # args.dstbag
-            ocfl.bag_extracted_version(dst, metadata)
-            print("Extracted content for %s saved as Bagit bag in %s" % (metadata.version, dst))
+        if args.logical_path:
+            if args.dstbag:
+                raise FatalError("Cannot extract a single file to a Bagit bag.")
+            metadata = obj.extract_file(objdir=args.objdir,
+                                        version=args.objver,
+                                        logical_path=args.logical_path,
+                                        dstdir=args.dstdir)
+            print("Extracted %s in %s to %s" % (args.logical_path, metadata.version, args.dstdir))
+        else:
+            if args.dstdir and args.dstbag:
+                args.dstdir = None  # Override dstdir if dstbag specified
+            dst = args.dstdir or args.dstbag
+            metadata = obj.extract(objdir=args.objdir,
+                                   version=args.objver,
+                                   dstdir=dst)
+            if args.dstdir:
+                print("Extracted content for %s in %s" % (metadata.version, dst))
+            else:  # args.dstbag
+                ocfl.bag_extracted_version(dst, metadata)
+                print("Extracted content for %s saved as Bagit bag in %s" % (metadata.version, dst))
     else:
         logging.error("Unrecognized command!")
 
