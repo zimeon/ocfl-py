@@ -35,7 +35,7 @@ Without an `--objdir` argument the script just writes out the inventory for the 
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-21T14:03:55.460006Z",
+      "created": "2024-10-21T17:56:53.127967Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -69,7 +69,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-21T14:03:55.607383Z",
+      "created": "2024-10-21T17:56:53.371204Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -77,7 +77,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
       }
     },
     "v2": {
-      "created": "2024-10-21T14:03:55.607784Z",
+      "created": "2024-10-21T17:56:53.371363Z",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
           "a_file.txt"
@@ -85,7 +85,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
       }
     },
     "v3": {
-      "created": "2024-10-21T14:03:55.607960Z",
+      "created": "2024-10-21T17:56:53.371494Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -119,7 +119,7 @@ INFO:root:Built object http://example.org/obj2 at tmp/obj2 with 3 versions
 
 ## 5. Test extract of version.
 
-### 5.1 Extract v1 of an OCFL v1.0 object
+### 5.1 Extract v1 of content in an OCFL v1.0 object
 
 Version 1 object with location specified in `--objdir` and the first version specified in `--objver`, extract into tmp/v1:
 
@@ -134,19 +134,30 @@ and the extracted files are:
 ```
 > find tmp/v1 -print
 tmp/v1
-tmp/v1/empty.txt
 tmp/v1/image.tiff
+tmp/v1/empty.txt
 tmp/v1/foo
 tmp/v1/foo/bar.xml
 ```
 
 
-### 5.2 Extract v2 of content in the same OCFL v1.1 object
+### 5.2 Extract v2 of content in an OCFL v1.1 object
 
 ```
 > python ocfl-object.py extract --objver v2 --objdir fixtures/1.1/good-objects/spec-ex-full --dstdir tmp/v2 -v
 INFO:root:Extracted v2 into tmp/v2
 Extracted content for v2 in tmp/v2
+```
+
+and the extracted files are:
+
+```
+> find tmp/v2 -print
+tmp/v2
+tmp/v2/empty2.txt
+tmp/v2/empty.txt
+tmp/v2/foo
+tmp/v2/foo/bar.xml
 ```
 
 
@@ -156,6 +167,48 @@ Extracted content for v2 in tmp/v2
 > python ocfl-object.py extract --objver head --objdir fixtures/1.1/good-objects/spec-ex-full --dstdir tmp/head -v
 INFO:root:Extracted v3 into tmp/head
 Extracted content for v3 in tmp/head
+```
+
+and the extracted files are:
+
+```
+> find tmp/v3 -print
+find: ‘tmp/v3’: No such file or directory
+```
+
+(last command exited with return code 1)
+
+
+### 5.4 Extract foo/bar.xml of v3 into a new directory
+
+```
+> python ocfl-object.py extract --objver v3 --objdir fixtures/1.1/good-objects/spec-ex-full --logical-path foo/bar.xml --dstdir tmp/files -v
+Extracted foo/bar.xml in v3 to tmp/files
+```
+
+and the extracted file is:
+
+```
+> find tmp/files -print
+tmp/files
+tmp/files/bar.xml
+```
+
+
+### 5.5 Extract image.tiff of v3 (default) into the same directory
+
+```
+> python ocfl-object.py extract --objdir fixtures/1.1/good-objects/spec-ex-full --logical-path image.tiff --dstdir tmp/files -v
+Extracted image.tiff in v3 to tmp/files
+```
+
+and the directory now contains two extracted files:
+
+```
+> find tmp/files -print
+tmp/files
+tmp/files/image.tiff
+tmp/files/bar.xml
 ```
 
 

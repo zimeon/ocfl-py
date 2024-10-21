@@ -43,7 +43,7 @@ def parse_version_directory(dirname):
     return v
 
 
-class Object():
+class Object():  # pylint: disable=too-many-public-methods
     """Class for handling OCFL Object data and operations.
 
     Example use:
@@ -56,7 +56,7 @@ class Object():
     '1.1'
     """
 
-    def __init__(self, identifier=None, content_directory='content',
+    def __init__(self, *, identifier=None, content_directory='content',
                  digest_algorithm='sha512', filepath_normalization='uri',
                  spec_version='1.1', forward_delta=True, dedupe=True,
                  lax_digests=False, fixity=None,
@@ -187,7 +187,7 @@ class Object():
             self.fixity = None
         return inventory
 
-    def add_version(self, inventory, src_fs, src_dir, vdir, metadata=None):
+    def add_version(self, *, inventory, src_fs, src_dir, vdir, metadata=None):
         """Add to inventory data for new version based on files in srcdir.
 
         Arguments:
@@ -278,7 +278,8 @@ class Object():
         # Go through versions in order building versions array, deduping if selected
         for vn in sorted(versions.keys()):
             vdir = versions[vn]
-            manifest_to_srcfile = self.add_version(inventory, src_fs, vdir, vdir,
+            manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
+                                                   src_dir=vdir, vdir=vdir,
                                                    metadata=metadata)
             yield (vdir, inventory, manifest_to_srcfile)
 
@@ -372,7 +373,9 @@ class Object():
             self.open_fs(objdir, create=True)
         inventory = self.start_inventory()
         vdir = 'v1'
-        manifest_to_srcfile = self.add_version(inventory, src_fs, '', vdir, metadata=metadata)
+        manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
+                                               src_dir='', vdir=vdir,
+                                               metadata=metadata)
         if objdir is None:
             return inventory
         # Else write out object
@@ -475,7 +478,9 @@ class Object():
             inventory['versions'][head] = metadata.as_dict(state=state)
         else:
             src_fs = open_fs(srcdir)
-            manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs, src_dir='', vdir=head, metadata=metadata)
+            manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
+                                                   src_dir='', vdir=head,
+                                                   metadata=metadata)
             # Copy files into this version
             for (path, srcfile) in manifest_to_srcfile.items():
                 self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
@@ -608,17 +613,18 @@ class Object():
             pass
         return (validator.log.num_errors == 0), validator
 
-    def extract(self, objdir, version, dstdir):
-        """Extract version from object at objdir into dstdir.
+    def _extract_setup(self, objdir, version):
+        """Check object and version for extract() and extract_file().
 
         Arguments:
             objdir - directory for the object
             version - version to be extracted ('v1', etc.) or 'head' for latest
-            dstdir - directory to create with extracted version
 
-        The dstdir itself must not exist but the parent directory must.
+        Returns tuple of (inv, version) where inv is the parsed inventory and
+        version if the checked object version.
 
-        Returns a VersionMetadata object for the version extracted.
+        Raises an ObjectException is the inventory can't be parsed or if the
+        version doesn't exist.
         """
         self.open_fs(objdir)
         # Read inventory, set up version
@@ -628,27 +634,98 @@ class Object():
             logging.debug("Object at %s has head %s", objdir, version)
         elif version not in inv['versions']:
             raise ObjectException("Object at %s does not include a version '%s'" % (objdir, version))
-        # Sanity check on destination
-        if os.path.isdir(dstdir):
-            raise ObjectException("Target directory %s already exists, aborting!" % (dstdir))
+        return inv, version
 
+    def extract(self, objdir, version, dstdir):
+        """Extract version from object at objdir into dstdir.
+
+        Arguments:
+            objdir - directory for the object
+            version - version to be extracted ('v1', etc.) or 'head' for latest
+            dstdir - directory to create with extracted version
+
+        The dstdir itself may exist bit if it is then it must be empty. The
+        parent directory of dstdir must exist.
+
+        Returns a VersionMetadata object for the version extracted.
+        """
+        inv, version = self._extract_setup(objdir, version)
+        # Check the destination
         (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
         try:
             parent_fs = open_fs(parentdir)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
             raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
-        parent_fs.makedir(dir)
+        if parent_fs.isdir(dir):
+            if not parent_fs.isempty(dir):
+                raise ObjectException("Target directory %s already exists and is not empty, aborting!" % (dstdir))
+        else:  # Make dstdir
+            parent_fs.makedir(dir)
         dst_fs = parent_fs.opendir(dir)  # Open a sub-filesystem as our destination
         # Now extract...
         manifest = inv['manifest']
         state = inv['versions'][version]['state']
+        # Extract all files for this version
         for (digest, logical_files) in state.items():
-            existing_file = manifest[digest][0]  # FIXME - pick "best" (closest version?) not first?
+            existing_file = manifest[digest][0]  # First entry with the digest, there could be > 1
             for logical_file in logical_files:
                 logging.debug("Copying %s -> %s", digest, logical_file)
                 dst_fs.makedirs(fs.path.dirname(logical_file), recreate=True)
                 fs.copy.copy_file(self.obj_fs, existing_file, dst_fs, logical_file)
         logging.info("Extracted %s into %s", version, dstdir)
+        return VersionMetadata(inventory=inv, version=version)
+
+    def extract_file(self, objdir, version, dstdir, logical_path):
+        """Extract one file from version from object at objdir into dstdir.
+
+        Arguments:
+            objdir - directory for the object
+            version - version to be extracted ('v1', etc.) or 'head' for latest
+            dstdir - directory to create with extracted version
+            logical_path - extract just one logical path into dstdir, without
+                any path segments below dstdir
+
+        If dstdir doesn't exists then create it. The parent directory of dstdir
+        must exist. If dstdir exists, then a file of the same name must not
+        exist.
+
+        Returns a VersionMetadata object for the version extracted.
+        """
+        inv, version = self._extract_setup(objdir, version)
+        # Check the destination
+        try:
+            dst_fs = open_fs(dstdir)
+        except (fs.opener.errors.OpenerError, fs.errors.CreateFailed):
+            # Doesn't exist, can we create it?
+            (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
+            if parentdir == "":
+                parentdir = "."
+            try:
+                parent_fs = open_fs(parentdir)
+            except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
+                raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
+            dst_fs = parent_fs.makedir(dir)
+        # Does the destination file already exist?
+        basename = os.path.basename(logical_path)
+        if dst_fs.exists(basename):
+            raise ObjectException("Destination file %s in %s already exists" % (basename, dstdir))
+        # Now extract...
+        manifest = inv['manifest']
+        state = inv['versions'][version]['state']
+        # Extract the specified file
+        copied = False
+        for (digest, logical_files) in state.items():
+            existing_file = manifest[digest][0]  # First entry with the digest, there could be > 1
+            for logical_file in logical_files:
+                if logical_file == logical_path:
+                    logging.debug("Copying %s -> %s", digest, basename)
+                    fs.copy.copy_file(self.obj_fs, existing_file, dst_fs, basename)
+                    copied = True
+                    break
+            if copied:
+                break
+        else:
+            raise ObjectException("Logical path %s not found in %s" % (logical_path, version))
         return VersionMetadata(inventory=inv, version=version)
 
     def parse_inventory(self):

@@ -88,7 +88,8 @@ class TestAll(unittest.TestCase):
             v_inventory = json.load(fh)
         metadata = VersionMetadata(inventory=v_inventory, version='v1')
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
-        oo.add_version(inventory, src_fs, src_dir='v1', vdir='v1', metadata=metadata)
+        oo.add_version(inventory=inventory, src_fs=src_fs,
+                       src_dir='v1', vdir='v1', metadata=metadata)
         self.assertEqual(inventory['head'], 'v1')
         self.assertEqual(inventory['manifest'],
                          {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],
@@ -109,7 +110,8 @@ class TestAll(unittest.TestCase):
             v_inventory = json.load(fh)
         metadata = VersionMetadata(inventory=v_inventory, version='v2')
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full/v2')
-        oo.add_version(inventory, src_fs, src_dir='', vdir='v2', metadata=metadata)
+        oo.add_version(inventory=inventory, src_fs=src_fs,
+                       src_dir='', vdir='v2', metadata=metadata)
         self.assertEqual(inventory['head'], 'v2')
         self.assertEqual(inventory['manifest'],
                          {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],
@@ -131,7 +133,8 @@ class TestAll(unittest.TestCase):
             v_inventory = json.load(fh)
         md1 = VersionMetadata(inventory=v_inventory, version='v1')
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full/v1')
-        manifest_to_srcfile = oo.add_version(inventory, src_fs, src_dir='', vdir='v1', metadata=md1)
+        manifest_to_srcfile = oo.add_version(inventory=inventory, src_fs=src_fs,
+                                             src_dir='', vdir='v1', metadata=md1)
         self.assertEqual(manifest_to_srcfile, {
             'v1/content/image.tiff': 'image.tiff',
             'v1/content/empty.txt': 'empty.txt',
@@ -154,7 +157,8 @@ class TestAll(unittest.TestCase):
                 }
             }}, version='v1')
         src_fs = fs.open_fs('extra_fixtures/content/dedupe_content')
-        manifest_to_srcfile = oo.add_version(inventory, src_fs, src_dir='v1', vdir='v1', metadata=md1)
+        manifest_to_srcfile = oo.add_version(inventory=inventory, src_fs=src_fs,
+                                             src_dir='v1', vdir='v1', metadata=md1)
         # Because of dedupe=False we will have multiple copies of empty files
         self.assertEqual(manifest_to_srcfile, {
             'v1/content/empty1.txt': 'v1/empty1.txt',
@@ -175,7 +179,8 @@ class TestAll(unittest.TestCase):
                     }
                 }
             }}, version='v2')
-        manifest_to_srcfile = oo.add_version(inventory, src_fs, src_dir='v2', vdir='v2', metadata=md2)
+        manifest_to_srcfile = oo.add_version(inventory=inventory, src_fs=src_fs,
+                                             src_dir='v2', vdir='v2', metadata=md2)
         # Because of forward_delta=False we will have an additional copy of the empty file
         self.assertEqual(manifest_to_srcfile, {
             'v2/content/empty4.txt': 'v2/empty4.txt'})
@@ -407,9 +412,14 @@ class TestAll(unittest.TestCase):
         dstdir = os.path.join(tempdir, 'vvv2')
         oo.extract('fixtures/1.1/good-objects/spec-ex-full', 'head', dstdir)
         self.assertEqual(set(os.listdir(dstdir)), set(["foo", "empty2.txt", "image.tiff"]))
+        # Destination directory exists but it empty (OK)
+        dstdir = os.path.join(tempdir, 'vvv3')
+        os.mkdir(dstdir)
+        oo.extract(objdir='fixtures/1.1/good-objects/spec-ex-full', version='head', dstdir=dstdir)
+        self.assertEqual(set(os.listdir(dstdir)), set(["foo", "empty2.txt", "image.tiff"]))
         # Error, no v4
         self.assertRaises(ObjectException, oo.extract, 'fixtures/1.1/good-objects/spec-ex-full', 'v4', dstdir)
-        # Error, dstdir already exists
+        # Error, dstdir already exists and is not empty
         self.assertRaises(ObjectException, oo.extract, 'fixtures/1.1/good-objects/spec-ex-full', 'head', tempdir)
         # Error, parent dir does not exist
         dstdir = os.path.join(tempdir, 'intermediate/vvv3')
