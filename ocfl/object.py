@@ -54,6 +54,17 @@ class Object():  # pylint: disable=too-many-public-methods
     True
     >>> validator.spec_version
     '1.1'
+
+    >>> inv = object.parse_inventory()  # parsed JSON as dict
+    >>> inv['digestAlgorithm']
+    'sha512'
+    >>> inv['versions']['v1']
+    {'created': '2018-01-01T01:01:01Z',
+    'message': 'Initial import', 'state':
+    {'7dcc352...7785947ac31': ['foo/bar.xml'],
+    'cf83e135...27af927da3e': ['empty.txt'],
+    'ffccf6ba...336cbfb862e': ['image.tiff']},
+    'user': {'address': 'mailto:alice@example.com', 'name': 'Alice'}}
     """
 
     def __init__(self, *, identifier=None, content_directory='content',
