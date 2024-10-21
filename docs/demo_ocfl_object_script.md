@@ -22,7 +22,8 @@ Without an `--objdir` argument the script just writes out the inventory for the 
 
 ```
 > python ocfl-object.py create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1
-WARNING:ocfl.object:### Inventory for v1{
+### Inventory for v1
+{
   "digestAlgorithm": "sha512",
   "head": "v1",
   "id": "http://example.org/obj1",
@@ -34,7 +35,7 @@ WARNING:ocfl.object:### Inventory for v1{
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-11T07:04:22.583276Z",
+      "created": "2024-10-21T14:03:55.460006Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -43,7 +44,6 @@ WARNING:ocfl.object:### Inventory for v1{
     }
   }
 }
-
 ```
 
 
@@ -53,62 +53,8 @@ Without an `--objdir` argument the script just writes out the inventory for each
 
 ```
 > python ocfl-object.py build --id http://example.org/obj2 --src fixtures/1.0/content/cf3
-WARNING:ocfl.object:### Inventory for v1{
-  "digestAlgorithm": "sha512",
-  "head": "v1",
-  "id": "http://example.org/obj2",
-  "manifest": {
-    "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
-      "v1/content/a_file.txt"
-    ]
-  },
-  "type": "https://ocfl.io/1.1/spec/#inventory",
-  "versions": {
-    "v1": {
-      "created": "2024-10-11T07:04:22.727134Z",
-      "state": {
-        "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
-          "a_file.txt"
-        ]
-      }
-    }
-  }
-}
-
-WARNING:ocfl.object:### Inventory for v2{
-  "digestAlgorithm": "sha512",
-  "head": "v2",
-  "id": "http://example.org/obj2",
-  "manifest": {
-    "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
-      "v2/content/a_file.txt"
-    ],
-    "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
-      "v1/content/a_file.txt"
-    ]
-  },
-  "type": "https://ocfl.io/1.1/spec/#inventory",
-  "versions": {
-    "v1": {
-      "created": "2024-10-11T07:04:22.727134Z",
-      "state": {
-        "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
-          "a_file.txt"
-        ]
-      }
-    },
-    "v2": {
-      "created": "2024-10-11T07:04:22.727775Z",
-      "state": {
-        "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
-          "a_file.txt"
-        ]
-      }
-    }
-  }
-}
-
-WARNING:ocfl.object:### Inventory for v3{
+### Inventory for v3
+{
   "digestAlgorithm": "sha512",
   "head": "v3",
   "id": "http://example.org/obj2",
@@ -123,7 +69,7 @@ WARNING:ocfl.object:### Inventory for v3{
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-11T07:04:22.727134Z",
+      "created": "2024-10-21T14:03:55.607383Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -131,7 +77,7 @@ WARNING:ocfl.object:### Inventory for v3{
       }
     },
     "v2": {
-      "created": "2024-10-11T07:04:22.727775Z",
+      "created": "2024-10-21T14:03:55.607784Z",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
           "a_file.txt"
@@ -139,7 +85,7 @@ WARNING:ocfl.object:### Inventory for v3{
       }
     },
     "v3": {
-      "created": "2024-10-11T07:04:22.728036Z",
+      "created": "2024-10-21T14:03:55.607960Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -148,7 +94,6 @@ WARNING:ocfl.object:### Inventory for v3{
     }
   }
 }
-
 ```
 
 
@@ -158,7 +103,7 @@ WARNING:ocfl.object:### Inventory for v3{
 
 ```
 > python ocfl-object.py create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1 --objdir tmp/obj1 -v
-INFO:ocfl.object:Created OCFL object http://example.org/obj1 in tmp/obj1
+INFO:root:Created OCFL object http://example.org/obj1 in tmp/obj1
 ```
 
 
@@ -168,7 +113,7 @@ INFO:ocfl.object:Created OCFL object http://example.org/obj1 in tmp/obj1
 
 ```
 > python ocfl-object.py build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 --objdir tmp/obj2 -v
-INFO:ocfl.object:Built object http://example.org/obj2 with 3 versions
+INFO:root:Built object http://example.org/obj2 at tmp/obj2 with 3 versions
 ```
 
 
@@ -176,10 +121,23 @@ INFO:ocfl.object:Built object http://example.org/obj2 with 3 versions
 
 ### 5.1 Extract v1 of an OCFL v1.0 object
 
+Version 1 object with location specified in `--objdir` and the first version specified in `--objver`, extract into tmp/v1:
+
 ```
-> python ocfl-object.py extract --objver v1 --objdir fixtures/1.0/good-objects/spec-ex-full --dstdir tmp/v1 -v
-INFO:ocfl.object:Extracted v1 into tmp/v1
+> python ocfl-object.py extract --objdir fixtures/1.0/good-objects/spec-ex-full --objver v1 --dstdir tmp/v1 -v
+INFO:root:Extracted v1 into tmp/v1
 Extracted content for v1 in tmp/v1
+```
+
+and the extracted files are:
+
+```
+> find tmp/v1 -print
+tmp/v1
+tmp/v1/empty.txt
+tmp/v1/image.tiff
+tmp/v1/foo
+tmp/v1/foo/bar.xml
 ```
 
 
@@ -187,7 +145,7 @@ Extracted content for v1 in tmp/v1
 
 ```
 > python ocfl-object.py extract --objver v2 --objdir fixtures/1.1/good-objects/spec-ex-full --dstdir tmp/v2 -v
-INFO:ocfl.object:Extracted v2 into tmp/v2
+INFO:root:Extracted v2 into tmp/v2
 Extracted content for v2 in tmp/v2
 ```
 
@@ -196,8 +154,7 @@ Extracted content for v2 in tmp/v2
 
 ```
 > python ocfl-object.py extract --objver head --objdir fixtures/1.1/good-objects/spec-ex-full --dstdir tmp/head -v
-INFO:ocfl.object:Object at fixtures/1.1/good-objects/spec-ex-full has head v3
-INFO:ocfl.object:Extracted v3 into tmp/head
+INFO:root:Extracted v3 into tmp/head
 Extracted content for v3 in tmp/head
 ```
 

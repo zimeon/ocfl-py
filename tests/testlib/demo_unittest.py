@@ -31,11 +31,18 @@ class DemoTestCase(unittest.TestCase):
             shutil.rmtree(self.tmpdir)
 
     def run_script(self, desc, options, text=None):
-        """Run the ocfl.py script."""
-        self.m += 1
-        if self.demo:
-            print("\n### %d.%d %s\n" % (self.n, self.m, desc))
+        """Run the ocfl.py script.
+
+        Usually desc will be a section heading for this test. However, if desc
+        is None then we do note create a new section. This is useful for follow
+        ons to a test such as showing a directory.
+        """
+        if desc:
+            self.m += 1
+            if self.demo:
+                print("\n### %d.%d %s\n" % (self.n, self.m, desc))
         if text:
+            text = re.sub('TMPDIR', 'tmp', text)
             print(text + '\n')
         cmd = []
         for option in options:

@@ -55,36 +55,33 @@ class TestAll(DemoTestCase):
 
     def test04_extract(self):
         """Test extract of version."""
-        out = self.run_script("Extract v1 of an OCFL v1.0 object",
+        out = self.run_script("Extract v1 of content in an OCFL v1.0 object",
                               ["python", "ocfl-object.py", "extract",
-                               "--objver", "v1",
                                "--objdir", "fixtures/1.0/good-objects/spec-ex-full",
+                               "--objver", "v1",
                                "--dstdir", "TMPDIR/v1",
-                               "-v"])
-        # Expect:
-        # v1
-        # ├── [          0]  empty.txt
-        # ├── [        102]  foo
-        # │   └── [        272]  bar.xml
-        # └── [       2021]  image.tiff
+                               "-v"],
+                              text="Version 1 object with location specified in `--objdir` and the first version specified in `--objver`, extract into TMPDIR/v1:")
         self.assertIn('Extracted content for v1 in', out)
+        out = self.run_script(None,
+                              ["find", "TMPDIR/v1", "-print"],
+                              text="and the extracted files are:")
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v1/empty.txt")), 0)
         self.assertFalse(os.path.exists(os.path.join(self.tmpdir, "v1/empty2.txt")))
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v1/foo/bar.xml")), 272)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v1/image.tiff")), 2021)
-        out = self.run_script("Extract v2 of content in the same OCFL v1.1 object",
+        #
+        # Now in v1.1 object
+        out = self.run_script("Extract v2 of content in an OCFL v1.1 object",
                               ["python", "ocfl-object.py", "extract",
                                "--objver", "v2",
                                "--objdir", "fixtures/1.1/good-objects/spec-ex-full",
                                "--dstdir", "TMPDIR/v2",
                                "-v"])
-        # Expect:
-        # v2
-        # ├── [          0]  empty.txt
-        # ├── [          0]  empty2.txt
-        # └── [        102]  foo
-        #    └── [        272]  bar.xml
         self.assertIn('Extracted content for v2 in', out)
+        out = self.run_script(None,
+                              ["find", "TMPDIR/v2", "-print"],
+                              text="and the extracted files are:")
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v2/empty.txt")), 0)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v2/empty2.txt")), 0)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v2/foo/bar.xml")), 272)
@@ -97,13 +94,10 @@ class TestAll(DemoTestCase):
                                "--objdir", "fixtures/1.1/good-objects/spec-ex-full",
                                "--dstdir", "TMPDIR/head",
                                "-v"])
-        # Expect:
-        # v2
-        # ├── [          0]  empty.txt
-        # ├── [          0]  empty2.txt
-        # └── [        102]  foo
-        #    └── [        272]  bar.xml
         self.assertIn('Extracted content for v3 in', out)
+        out = self.run_script(None,
+                              ["find", "TMPDIR/v3", "-print"],
+                              text="and the extracted files are:")
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v2/empty.txt")), 0)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v2/empty2.txt")), 0)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v2/foo/bar.xml")), 272)
