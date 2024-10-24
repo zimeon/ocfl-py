@@ -39,11 +39,11 @@ class ValidationLogger():
 
     validation_codes = None
 
-    def __init__(self, log_warnings=False, log_errors=True,
+    def __init__(self, *, log_warnings=False, log_errors=True,
                  spec_version="1.1", lang="en", validation_codes=None):
         """Initialize OCFL validation logger.
 
-        Arguments:
+        Keyword arguments:
             log_warnings (bool): True to log warnings via the
                 warning() method. Default False.
             log_errors (bool): True to logs errors via the error()
