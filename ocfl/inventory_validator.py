@@ -77,6 +77,7 @@ class InventoryValidator():
         # Basic structure
         self.inventory = inventory
         self.spec_version = self.default_spec_version if force_spec_version is None else force_spec_version
+        self.log.spec_version = self.spec_version
         if 'id' in inventory:
             iid = inventory['id']
             if not isinstance(iid, str) or iid == '':
@@ -103,6 +104,7 @@ class InventoryValidator():
                 self.error('E038b', got=inventory['type'], assumed_spec_version=self.spec_version)
             elif m.group(1) in self.spec_versions_supported:
                 self.spec_version = m.group(1)
+                self.log.spec_version = self.spec_version
             else:
                 self.error("E038c", got=m.group(1), assumed_spec_version=self.spec_version)
         if 'digestAlgorithm' not in inventory:
