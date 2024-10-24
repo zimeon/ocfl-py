@@ -50,7 +50,8 @@ class Validator():
             default_spec_version: string of default specification version to
                 assume where not specified (default '1.1')
             log: None (default) to create new ValidationLogger instance, or
-                else an instance to use.
+                else use the specified instance which is the appropriate case
+                for validation of multiple objects within a storage root.
             lang: language string (default 'en') to pass to the validation
                 logger.
         """
@@ -86,6 +87,7 @@ class Validator():
         """
         self.id = None
         self.spec_version = self.default_spec_version
+        self.log.spec_version = self.spec_version
         self.digest_algorithm = 'sha512'
         self.content_directory = 'content'
         self.inventory_digest_files = {}  # index by version_dir, algorithms may differ
@@ -142,6 +144,7 @@ class Validator():
                 self.log.error('E003c', assumed_version=self.spec_version)
             else:
                 self.spec_version = spec_version
+                self.log.spec_version = self.spec_version
                 if len(namastes) > 1:
                     self.log.error('E003b', files=len(namastes), using_version=self.spec_version)
         # Object root inventory file

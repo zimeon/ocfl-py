@@ -35,7 +35,7 @@ Without an `--objdir` argument the script just writes out the inventory for the 
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-21T18:43:31.514390Z",
+      "created": "2024-10-24T18:30:25.012110Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -69,7 +69,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-21T18:43:31.779165Z",
+      "created": "2024-10-24T18:30:25.254643Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
@@ -77,7 +77,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
       }
     },
     "v2": {
-      "created": "2024-10-21T18:43:31.779385Z",
+      "created": "2024-10-24T18:30:25.254794Z",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
           "a_file.txt"
@@ -85,7 +85,7 @@ Without an `--objdir` argument the script just writes out the inventory for each
       }
     },
     "v3": {
-      "created": "2024-10-21T18:43:31.779535Z",
+      "created": "2024-10-24T18:30:25.254921Z",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"

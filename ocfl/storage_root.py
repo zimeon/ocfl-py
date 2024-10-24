@@ -362,6 +362,7 @@ class StorageRoot():
             valid = False
             self.structure_error = str(e)
             logging.debug("Storage root structure is INVALID (%s)", str(e))
+        self.log.spec_version = self.spec_version
         self.num_objects, self.good_objects, self.errors = self.validate_hierarchy(validate_objects=validate_objects, check_digests=check_digests, log_warnings=log_warnings, max_errors=max_errors)
         if self.num_traversal_errors > 0:
             valid = False
