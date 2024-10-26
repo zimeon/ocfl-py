@@ -29,6 +29,11 @@ class Inventory():  # pylint: disable=too-many-public-methods
     the value if it is. In the cases that the normal return value would
     be an array or a dict, then and empty array or empty dict are returned
     if not present in the underlying data.
+
+    Instance attributes:
+        data: dict that is the top level JSON object of the parsed JSON
+            representation of the inventory file. This is the only place
+            that an Inventory instance stores information.
     """
 
     def __init__(self, data=None, filepath=None):
@@ -44,32 +49,22 @@ class Inventory():  # pylint: disable=too-many-public-methods
         """
         if data is None:
             if filepath is None:
-                self._data = {}
+                self.data = {}
             else:
                 # FIXME - Use pyfs and add error handling
                 with open(filepath, 'r', encoding="utf-8") as fh:
-                    self._data = json.load(fh)
+                    self.data = json.load(fh)
         elif isinstance(data, Inventory):
-            self._data = copy.deepcopy(data.data)
+            self.data = copy.deepcopy(data.data)
         elif isinstance(data, dict):
-            self._data = copy.deepcopy(data)
+            self.data = copy.deepcopy(data)
         else:
             raise InventoryException("Bad data type supplied to Inventory() creator, " + str(type(data)))
 
     @property
-    def data(self):
-        """Access internal data."""
-        return self._data
-
-    @data.setter
-    def data(self, value):
-        """Set internal data to supplied value."""
-        self._data = value
-
-    @property
     def spec_version(self):
         """Get specification version from the conformance declaration."""
-        decl = self._data.get("type")
+        decl = self.data.get("type")
         m = re.match(r'''https://ocfl.io/(\d+.\d)/spec/#inventory''', decl)
         if m:
             return m.group(1)
@@ -78,52 +73,52 @@ class Inventory():  # pylint: disable=too-many-public-methods
     @spec_version.setter
     def spec_version(self, value):
         """Set specification version in the conformance declaration."""
-        self._data["type"] = "https://ocfl.io/" + value + "/spec/#inventory"
+        self.data["type"] = "https://ocfl.io/" + value + "/spec/#inventory"
 
     @property
     def digest_algorithm(self):
         """Get digest algorithm."""
-        return self._data.get("digestAlgorithm")
+        return self.data.get("digestAlgorithm")
 
     @digest_algorithm.setter
     def digest_algorithm(self, value):
         """Set digest algorithm."""
-        self._data["digestAlgorithm"] = value
+        self.data["digestAlgorithm"] = value
 
     @property
     def identifier(self):
         """Get object identifier."""
-        return self._data.get("id")
+        return self.data.get("id")
 
     @identifier.setter
     def identifier(self, value):
         """Set object identifier."""
-        self._data["id"] = value
+        self.data["id"] = value
 
     @property
     def head(self):
         """Get head version directory."""
-        return self._data.get("head")
+        return self.data.get("head")
 
     @head.setter
     def head(self, value):
         """Set head version directory."""
-        self._data["head"] = value
+        self.data["head"] = value
 
     @property
     def content_directory(self):
         """Get contentDirectory."""
-        return self._data.get("contentDirectory")
+        return self.data.get("contentDirectory")
 
     @property
     def content_directory_to_use(self):
         """Get contentDirectory to use, default 'content' is not specified."""
-        return self._data.get("contentDirectory", "content")
+        return self.data.get("contentDirectory", "content")
 
     @content_directory.setter
     def content_directory(self, value):
         """Set the contentDirectory."""
-        self._data["contentDirectory"] = value
+        self.data["contentDirectory"] = value
 
     @property
     def manifest(self):
@@ -132,7 +127,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
         Returns dict of digest -> [file paths], an empty dict is there
         is no manifest.
         """
-        return self._data.get("manifest", {})
+        return self.data.get("manifest", {})
 
     @property
     def manifest_add_if_not_present(self):
@@ -142,9 +137,9 @@ class Inventory():  # pylint: disable=too-many-public-methods
         an empty dict in the data structure if none was present, so that new
         data can be added.
         """
-        if "manifest" not in self._data:
-            self._data["manifest"] = {}
-        return self._data["manifest"]
+        if "manifest" not in self.data:
+            self.data["manifest"] = {}
+        return self.data["manifest"]
 
     @property
     def content(self):
@@ -178,7 +173,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
         Returns a dict whether or not there is a versions block in the
         underlying data.
         """
-        return self._data.get("versions", {})
+        return self.data.get("versions", {})
 
     @property
     def version_directories(self):
@@ -211,7 +206,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
                 return digest
         return None
 
-    def version_data(self, vdir):
+    def versiondata(self, vdir):
         """Return data for the version in vdir.
 
         Returns a dict whether or not any data exists.
@@ -259,10 +254,10 @@ class Inventory():  # pylint: disable=too-many-public-methods
                                   version_number_from_directory(vvdir))
         # FIXME - Need to deal with zero padding
         vdir = "v" + str(highest_version + 1)
-        if "versions" not in self._data:
-            self._data["versions"] = {}
-        self._data["versions"][vdir] = {}
-        self._data["head"] = vdir
+        if "versions" not in self.data:
+            self.data["versions"] = {}
+        self.data["versions"][vdir] = {}
+        self.data["head"] = vdir
         return self.version(vdir)
 
     def add_file(self, *, digest, content_path):
@@ -288,7 +283,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
 
     def as_json(self):
         """Serlialize JSON representation."""
-        return json.dumps(self._data, sort_keys=True, indent=2)
+        return json.dumps(self.data, sort_keys=True, indent=2)
 
 
 class Version():
@@ -312,22 +307,22 @@ class Version():
     @property
     def created(self):
         """Created string for this version."""
-        return self.inv.version_data(self.vdir).get("created")
+        return self.inv.versiondata(self.vdir).get("created")
 
     @created.setter
     def created(self, value):
         """Set created string for this version."""
-        self.inv.version_data(self.vdir)["created"] = value
+        self.inv.versiondata(self.vdir)["created"] = value
 
     @property
     def message(self):
         """Message string for this verion."""
-        return self.inv.version_data(self.vdir).get("message")
+        return self.inv.versiondata(self.vdir).get("message")
 
     @message.setter
     def message(self, value):
         """Set message string for this version."""
-        self.inv.version_data(self.vdir)["message"] = value
+        self.inv.versiondata(self.vdir)["message"] = value
 
     @property
     def state(self):
@@ -336,7 +331,7 @@ class Version():
         Returns a dict for the state block or and empty dict if
         there is no state block.
         """
-        return self.inv.version_data(self.vdir).get("state", {})
+        return self.inv.versiondata(self.vdir).get("state", {})
 
     @property
     def state_add_if_not_present(self):
@@ -346,21 +341,21 @@ class Version():
         an empty dict in the data structure if none was present, so that new
         data can be added.
         """
-        if "state" not in self.inv.version_data(self.vdir):
-            self.inv.version_data(self.vdir)["state"] = {}
-        return self.inv.version_data(self.vdir)["state"]
+        if "state" not in self.inv.versiondata(self.vdir):
+            self.inv.versiondata(self.vdir)["state"] = {}
+        return self.inv.versiondata(self.vdir)["state"]
 
     @property
     def user(self):
         """User block for this version."""
-        return self.inv.version_data(self.vdir).get("user", {})
+        return self.inv.versiondata(self.vdir).get("user", {})
 
     @property
     def user_add_if_not_present(self):
         """User block for this version, add if not present."""
-        if "user" not in self.inv.version_data(self.vdir):
-            self.inv.version_data(self.vdir)["user"] = {}
-        return self.inv.version_data(self.vdir)["user"]
+        if "user" not in self.inv.versiondata(self.vdir):
+            self.inv.versiondata(self.vdir)["user"] = {}
+        return self.inv.versiondata(self.vdir)["user"]
 
     @property
     def user_address(self):
