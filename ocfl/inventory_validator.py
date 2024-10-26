@@ -33,12 +33,28 @@ def get_logical_path_map(inventory, version):
 class InventoryValidator():
     """Class for OCFL Inventory Validator."""
 
-    def __init__(self, log=None, where='???',
+    def __init__(self, *, log=None, where='???',
                  lax_digests=False, default_spec_version='1.1'):
-        """Initialize OCFL Inventory Validator."""
+        """Initialize OCFL Inventory Validator.
+
+        Keyword arguments:
+            log: a ValidationLogger instance to log errors and
+                warnings encountered during validation. If not
+                set (None, the default) then a new instance with
+                logging defaults is created.
+            where: a string used in log messages to indicate where
+                the issues occurs. Is it the root inventory or a
+                specific version? Defaults to "???".
+            lax_digests: True to allow any digest to be used for
+                content addressing, as opposed to only those allowed
+                by the specification.
+            default_spec_version: string (default "1.1") indicating
+               the specification version to assume if it is not set.
+        """
         self.log = ValidationLogger() if log is None else log
         self.where = where
         self.default_spec_version = default_spec_version
+        self.lax_digests = lax_digests
         # Object state
         self.inventory = None
         self.id = None
@@ -50,9 +66,7 @@ class InventoryValidator():
         self.manifest_files = None
         self.unnormalized_digests = None
         self.head = 'UNKNOWN'
-        # Validation control
-        self.lax_digests = lax_digests
-        # Configuration
+        # Configuration data
         self.spec_versions_supported = ('1.0', '1.1')
 
     def error(self, code, **args):
