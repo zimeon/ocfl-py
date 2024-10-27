@@ -47,7 +47,7 @@ The digest type sha512-spec-ex is sha512 with most of the content stripped out a
 This is inventory should match the example with 3 versions in <https://ocfl.io/1.0/spec/#example-versioned-object>.
 
 ```
-> python ocfl-object.py build --src fixtures/1.0/content/spec-ex-full --spec-version 1.0 --id ark:/12345/bcd987 --fixity md5 --fixity sha1 --digest sha512-spec-ex -v
+> python ocfl-object.py build --src fixtures/1.0/content/spec-ex-full --spec-version 1.0 --id ark:/12345/bcd987 --fixity md5 --fixity sha1 --digest sha512-spec-ex --created 2018-01-01T01:01:01Z -v
 ### Inventory for v3
 {
   "digestAlgorithm": "sha512-spec-ex",
@@ -100,7 +100,7 @@ This is inventory should match the example with 3 versions in <https://ocfl.io/1
   "type": "https://ocfl.io/1.0/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-24T18:30:33.138005Z",
+      "created": "2018-01-01T01:01:01Z",
       "state": {
         "7dcc352f96c56dc...c31": [
           "foo/bar.xml"
@@ -114,7 +114,7 @@ This is inventory should match the example with 3 versions in <https://ocfl.io/1
       }
     },
     "v2": {
-      "created": "2024-10-24T18:30:33.138439Z",
+      "created": "2018-01-01T01:01:01Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"
@@ -126,7 +126,7 @@ This is inventory should match the example with 3 versions in <https://ocfl.io/1
       }
     },
     "v3": {
-      "created": "2024-10-24T18:30:33.138771Z",
+      "created": "2018-01-01T01:01:01Z",
       "state": {
         "4d27c86b026ff70...b53": [
           "foo/bar.xml"

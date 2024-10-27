@@ -104,3 +104,20 @@ def find_path_type(path):
         if m:
             return 'root' if m.group(1) is None else 'object'
     return "unrecognized 0= declaration file or files (first is %s)" % (namastes[0].tvalue)
+
+
+def parse_version_directory(dirname):
+    """Get version number from version directory name.
+
+    Arguments:
+        dirname (str): the directory name to parse.
+
+    Returns the integer version number from this version directory name.
+    """
+    m = re.match(r'''v(\d{1,5})$''', dirname)
+    if not m:
+        raise ObjectException("Bad version directory name: %s" % (dirname))
+    v = int(m.group(1))
+    if v == 0:
+        raise ObjectException("Bad version directory name: %s, v0 no allowed" % (dirname))
+    return v

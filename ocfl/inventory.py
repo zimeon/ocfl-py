@@ -11,10 +11,7 @@ import json
 import os.path
 import re
 
-
-def version_number_from_directory(vdir):
-    """Get the version number from the version directory name."""
-    return int(vdir.lstrip('v'))
+from .object_utils import parse_version_directory
 
 
 class InventoryException(Exception):
@@ -192,7 +189,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
         """List of all version numbers as integers."""
         vnums = []
         for vdir in self.version_directories:
-            vnums.append(version_number_from_directory(vdir))
+            vnums.append(parse_version_directory(vdir))
         return vnums
 
     def digest_for_content_path(self, path):
@@ -216,6 +213,15 @@ class Inventory():  # pylint: disable=too-many-public-methods
     def version(self, vdir):
         """Version object for the specified version directory."""
         return Version(self, vdir)
+
+    def versions_gen(self):
+        """Generate Version objects for each version.
+
+        Yields a Version() object for each version in this Inventiry in
+        numeric order.
+        """
+        for vdir in sorted(self.version_directories, key=parse_version_directory):
+            yield Version(self, vdir)
 
     def content_paths_for_digest(self, digest):
         """Content paths for the given digest.
@@ -251,7 +257,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
         highest_version = 0
         for vvdir in self.version_directories:
             highest_version = max(highest_version,
-                                  version_number_from_directory(vvdir))
+                                  parse_version_directory(vvdir))
         # FIXME - Need to deal with zero padding
         vdir = "v" + str(highest_version + 1)
         if "versions" not in self.data:
@@ -393,6 +399,14 @@ class Version():
         for files in self.state.values():
             paths += files
         return paths
+
+    @property
+    def number(self):
+        """Version number for this version.
+
+        See also vdir attribute for version directory name.
+        """
+        return parse_version_directory(self.vdir)
 
     def digest_for_logical_path(self, path):
         """Digest for the given logical path in this version.

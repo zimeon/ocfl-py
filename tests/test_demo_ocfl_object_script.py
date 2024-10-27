@@ -20,14 +20,16 @@ class TestAll(DemoTestCase):
         out = self.run_script("Inventory for new object with just v1",
                               ["python", "ocfl-object.py", "create",
                                "--id", "http://example.org/obj1",
-                               "--src", "fixtures/1.0/content/cf1/v1"],
+                               "--src", "fixtures/1.0/content/cf1/v1",
+                               "--created", "2024-10-24T18:30:01Z"],
                               text="Without an `--objdir` argument the script just writes out the inventory for the object that would have been created.")
         self.assertIn('"id": "http://example.org/obj1"', out)
         self.assertIn("### Inventory for v1", out)
         out = self.run_script("Inventory for new object with three versions",
                               ["python", "ocfl-object.py", "build",
                                "--id", "http://example.org/obj2",
-                               "--src", "fixtures/1.0/content/cf3"],
+                               "--src", "fixtures/1.0/content/cf3",
+                               "--metadata", "extra_fixtures/1.0/content/spec-ex-full-metadata.json"],
                               text="Without an `--objdir` argument the script just writes out the inventory for each version in the object that would have been created.")
         self.assertIn('"id": "http://example.org/obj2"', out)
         self.assertIn("### Inventory for v3", out)
@@ -39,6 +41,7 @@ class TestAll(DemoTestCase):
                                "--id", "http://example.org/obj1",
                                "--src", "fixtures/1.0/content/cf1/v1",
                                "--objdir", "TMPDIR/obj1",
+                               "--created", "2024-10-24T18:30:03Z",
                                "-v"])
         self.assertIn("Created OCFL object http://example.org/obj1", out)
 
@@ -64,7 +67,7 @@ class TestAll(DemoTestCase):
                               text="Version 1 object with location specified in `--objdir` and the first version specified in `--objver`, extract into TMPDIR/v1:")
         self.assertIn('Extracted content for v1 in', out)
         out = self.run_script(None,
-                              ["find", "TMPDIR/v1", "-print"],
+                              ["find", "-s", "TMPDIR/v1", "-print"],
                               text="and the extracted files are:")
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v1/empty.txt")), 0)
         self.assertFalse(os.path.exists(os.path.join(self.tmpdir, "v1/empty2.txt")))
@@ -80,7 +83,7 @@ class TestAll(DemoTestCase):
                                "-v"])
         self.assertIn('Extracted content for v2 in', out)
         out = self.run_script(None,
-                              ["find", "TMPDIR/v2", "-print"],
+                              ["find", "-s", "TMPDIR/v2", "-print"],
                               text="and the extracted files are:")
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v2/empty.txt")), 0)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v2/empty2.txt")), 0)
@@ -96,7 +99,7 @@ class TestAll(DemoTestCase):
                                "-v"])
         self.assertIn('Extracted content for v3 in', out)
         out = self.run_script(None,
-                              ["find", "TMPDIR/v3", "-print"],
+                              ["find", "-s", "TMPDIR/v3", "-print"],
                               text="and the extracted files are:")
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v2/empty.txt")), 0)
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v2/empty2.txt")), 0)
@@ -113,7 +116,7 @@ class TestAll(DemoTestCase):
                                "-v"])
         self.assertIn('Extracted foo/bar.xml in v3', out)
         out = self.run_script(None,
-                              ["find", "TMPDIR/files", "-print"],
+                              ["find", "-s", "TMPDIR/files", "-print"],
                               text="and the extracted file is:")
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "files/bar.xml")), 272)
         # Extract individual file into dir that exists
@@ -125,7 +128,7 @@ class TestAll(DemoTestCase):
                                "-v"])
         self.assertIn('Extracted image.tiff in v3', out)
         out = self.run_script(None,
-                              ["find", "TMPDIR/files", "-print"],
+                              ["find", "-s", "TMPDIR/files", "-print"],
                               text="and the directory now contains two extracted files:")
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "files/image.tiff")), 2021)
 

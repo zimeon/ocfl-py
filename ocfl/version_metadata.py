@@ -1,6 +1,8 @@
 """Metadata for a specific version of OCFL Object's content."""
 from .w3c_datetime import datetime_to_str
 
+from .inventory import Inventory
+
 
 class VersionMetadataException(Exception):
     """Exception class for OCFL Object."""
@@ -26,26 +28,30 @@ class VersionMetadata():
             self.from_inventory(inventory, version)
 
     def from_inventory(self, inventory, version=None):
-        """Initialize from an inventory object.
+        """Initialize from an inventory dict or object.
 
         Look for specific version directory version if specified, else
-        return the head version.
+        return the head version if none specified.
 
         Arguments:
-            inventory - inventory object (dict)
-            version - explicit version name, else taken from inventory head
+            inventory - Inventory object or data dict.
+            version - explicit version name to extract metadata from, else
+                extract from the inventory head version.
         """
-        self.id = inventory.get('id', None)
-        if 'versions' not in inventory:
+        inv = inventory
+        if isinstance(inventory, Inventory):
+            inv = inventory.data
+        self.id = inv.get('id', None)
+        if 'versions' not in inv:
             raise VersionMetadataException("No versions object in inventory")
         if version is None:
-            if 'head' not in inventory:
+            if 'head' not in inv:
                 raise VersionMetadataException("No head version specified in inventory")
-            version = inventory['head']
+            version = inv['head']
         # Now find version metadata
-        if version not in inventory['versions']:
+        if version not in inv['versions']:
             raise VersionMetadataException("No version block for %s in inventory")
-        inv_version = inventory['versions'][version]
+        inv_version = inv['versions'][version]
         self.version = version
         if 'created' in inv_version:
             self.created = inv_version['created']

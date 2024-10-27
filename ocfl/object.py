@@ -23,24 +23,14 @@ import fs.copy
 
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
-from .object_utils import make_unused_filepath, next_version, ObjectException
+from .object_utils import make_unused_filepath, next_version, \
+    parse_version_directory, ObjectException
 from .pyfs import open_fs
 from .namaste import Namaste
 from .validator import Validator, ValidatorAbortException
 from .version_metadata import VersionMetadata
 
 INVENTORY_FILENAME = 'inventory.json'
-
-
-def parse_version_directory(dirname):
-    """Get version number from version directory name."""
-    m = re.match(r'''v(\d{1,5})$''', dirname)
-    if not m:
-        raise ObjectException("Bad version directory name: %s" % (dirname))
-    v = int(m.group(1))
-    if v == 0:
-        raise ObjectException("Bad version directory name: %s, v0 no allowed" % (dirname))
-    return v
 
 
 class Object():  # pylint: disable=too-many-public-methods
@@ -144,16 +134,19 @@ class Object():  # pylint: disable=too-many-public-methods
         """Map source filepath to a content path within the object.
 
         The purpose of the mapping might be normalization, sanitization,
-        content distribution, or something else.
+        content distribution, or something else. The mapping is set by the
+        filepath_normalization attribute where None indicates no mapping, the
+        source file name and path are preserved.
 
         Arguments:
-            filepath: the source filepath
-            vdir: the current version directory
-            used: disctionary used to check whether a given vfilepath has
-                been used already
+            filepath: the source filepath (possibly including directories) that
+                will be mapped into the object content path.
+            vdir: the current version directory name.
+            used: discionary used to check whether a given vfilepath has
+                been used already.
 
         Returns vfilepath, the version filepath for this content that starts
-            with "vdir/content_directory/"."
+        with `vdir/content_directory/`.
         """
         if self.filepath_normalization == 'uri':
             filepath = urlquote(filepath)
@@ -161,14 +154,15 @@ class Object():  # pylint: disable=too-many-public-methods
             if filepath[0] == '.':
                 filepath = '%2E' + filepath[1:]
         elif self.filepath_normalization == 'md5':
-            # Truncated MD5 hash of the _filepath_ as an illustration of diff paths for spec,
-            # not sure there could be any real application of this
+            # Truncated MD5 hash of the _filepath_ as an illustration of diff
+            # paths for the specification. Not sure whether there should be any
+            # real application of this
             filepath = hashlib.md5(filepath.encode('utf-8')).hexdigest()[0:16]
         elif self.filepath_normalization is not None:
             raise Exception("Unknown filepath normalization '%s' requested" % (self.filepath_normalization))
         vfilepath = fs.path.join(vdir, self.content_directory, filepath)  # path relative to root, inc v#/content
-        # Check we don't already have this vfilepath from many to one normalization,
-        # add suffix to distinguish if necessary
+        # Check we don't already have this vfilepath from many to one
+        # normalization, add suffix to distinguish if necessary
         if vfilepath in used:
             vfilepath = make_unused_filepath(vfilepath, used)
         return vfilepath
@@ -202,20 +196,19 @@ class Object():  # pylint: disable=too-many-public-methods
         """Add to inventory data for new version based on files in srcdir.
 
         Arguments:
-          inventory - the inventory up to (vdir-1) which must include blocks
-            for ['manifest'] and ['versions']. It must also include
-            a ['fixity'][algorithm] block for every algorithm in self.fixity
-          src_fs - pyfs filesystem where this new version exist
-          src_dir - the version directory in src_fs that files are being added
-            from
-          vdir - the version name of the version being created
-          metadata - a VersionMetadata object with any metadata for this
-            version
+            inventory: the inventory up to (vdir-1) which must include blocks
+                for ['manifest'] and ['versions']. It must also include
+                a ['fixity'][algorithm] block for every algorithm in self.fixity
+            src_fs: pyfs filesystem where this new version exist
+            src_dir: the version directory in src_fs that files are being added
+               from
+            vdir: the version name of the version being created
+            metadata: a VersionMetadata object with any metadata for this
+              version
 
-        Returns:
-          manifest_to_srcfile - dict mapping from paths in manifest to the path
-            of the source file in src_fs that should be include in the content
-            for this new version
+        Returns manifest_to_srcfile, a dict mapping from paths in manifest to
+        the path of the source file in src_fs that should be include in the
+        content for this new version.
         """
         state = {}  # state for this new version
         manifest = inventory['manifest']
@@ -266,31 +259,44 @@ class Object():  # pylint: disable=too-many-public-methods
         inventory['versions'][vdir] = metadata.as_dict(state=state)
         return manifest_to_srcfile
 
-    def build_inventory(self, src_fs, metadata=None):
+    def build_inventory(self, src_fs, versions_metadata=None):
         """Generate an OCFL inventory from a set of source files.
 
         Arguments:
-            src_fc - pyfs filesystem of source files
-            metadata - metadata to apply to each version
+            src_fc - pyfs filesystem of source files.
+            versions_metadata - dict of VersionMetadata objects for each
+                version, key is the integer version number. Default is None
+                in which case no metadata is added.
 
         Yields (vdir, inventory, manifest_to_srcfile) for each version in sequence,
         where vdir is the version directory name, inventory is the inventory for that
         version, and manifest_to_srcfile is a dictionary that maps filepaths in the
         manifest to actual source filepaths.
         """
+        if versions_metadata is None:
+            versions_metadata = {}
         inventory = self.start_inventory()
         # Find the versions
         versions = {}
         for vdir in src_fs.listdir('/'):
             if not src_fs.isdir(vdir):
                 continue
-            vn = parse_version_directory(vdir)
-            versions[vn] = vdir
-        # Go through versions in order building versions array, deduping if selected
+            try:
+                vn = parse_version_directory(vdir)
+                versions[vn] = vdir
+            except ObjectException:
+                # Ignore directories that are not valid version dirs
+                pass
+        # Go through versions in order building versions array, deduping
+        # files to include if selected
         for vn in sorted(versions.keys()):
             vdir = versions[vn]
-            manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
-                                                   src_dir=vdir, vdir=vdir,
+            # Do we have metadata for this version? Else empty.
+            metadata = versions_metadata.get(vn, VersionMetadata())
+            manifest_to_srcfile = self.add_version(inventory=inventory,
+                                                   src_fs=src_fs,
+                                                   src_dir=vdir,
+                                                   vdir=vdir,
                                                    metadata=metadata)
             yield (vdir, inventory, manifest_to_srcfile)
 
@@ -333,17 +339,23 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         return self.write_inventory_and_sidecar(None, write_inventory=False)
 
-    def build(self, srcdir, metadata=None, objdir=None):
-        """Build an OCFL object and write to objdir if set, else just build inventory.
+    def build(self, srcdir, versions_metadata=None, objdir=None):
+        """Build an OCFL object with multiple versions.
+
+        Will write the object to objdir if set, else just build inventory.
 
         Arguments:
           srcdir: source directory with version sub-directories.
-          metadata: VersionMetadata object applied to all versions.
+          versions_metadata: dict of VersionMetadata objects for each
+              version, key is the integer version number. Default is None
+              in which case no metadata is added.
           objdir: output directory for object (must not already exist), if not
               set then will just return head inventory that would have been
-              created.
+              created as a dry-run.
 
-        Returns the last version inventory.
+        Returns the inventory for the last version.
+
+        See also create(...) for creating a new object with one version.
         """
         if self.id is None:
             raise ObjectException("Can't build object, identifier is not set!")
@@ -352,19 +364,21 @@ class Object():  # pylint: disable=too-many-public-methods
         num_versions = 0
         src_fs = open_fs(srcdir)
         inventory = None
-        for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(src_fs, metadata):
+        # Create each version of the object
+        for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(src_fs, versions_metadata):
             num_versions += 1
             if objdir is not None:
                 self.write_inventory_and_sidecar(inventory, vdir)
                 # Copy files into this version
                 for (path, srcfile) in manifest_to_srcfile.items():
                     self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
+        # Finally populate the object root
         if objdir is not None:
             # Write object declaration, inventory and sidecar
             self.write_object_declaration()
             self.write_inventory_and_sidecar(inventory)
             logging.info("Built object %s at %s with %s versions", self.id, objdir, num_versions)
-        # Whether object written or not, return the set of inventories
+        # Whether object written or not, return the last inventory
         return inventory
 
     def create(self, srcdir, metadata=None, objdir=None):

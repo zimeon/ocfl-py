@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Object tests."""
 import unittest
-from ocfl.object_utils import remove_first_directory, make_unused_filepath, next_version, find_path_type
+from ocfl.object_utils import remove_first_directory, make_unused_filepath, next_version, find_path_type, parse_version_directory
 
 
 class TestAll(unittest.TestCase):
@@ -50,3 +50,18 @@ class TestAll(unittest.TestCase):
         self.assertEqual(find_path_type("ocfl"), "no 0= declaration file")
         self.assertEqual(find_path_type("extra_fixtures/misc/multiple_declarations"), 'root')
         self.assertIn("unrecognized", find_path_type("extra_fixtures/misc/unknown_declaration"))
+
+    def test_parse_version_directory(self):
+        """Test parse_version_directory function."""
+        self.assertEqual(parse_version_directory('v1'), 1)
+        self.assertEqual(parse_version_directory('v00001'), 1)
+        self.assertEqual(parse_version_directory('v99999'), 99999)
+        # Bad
+        self.assertRaises(Exception, parse_version_directory, None)
+        self.assertRaises(Exception, parse_version_directory, '')
+        self.assertRaises(Exception, parse_version_directory, '1')
+        self.assertRaises(Exception, parse_version_directory, 'v0')
+        self.assertRaises(Exception, parse_version_directory, 'v-1')
+        self.assertRaises(Exception, parse_version_directory, 'v0000')
+        self.assertRaises(Exception, parse_version_directory, 'vv')
+        self.assertRaises(Exception, parse_version_directory, 'v000001')

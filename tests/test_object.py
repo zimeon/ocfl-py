@@ -7,27 +7,12 @@ import unittest
 import fs
 import fs.tempfs
 
-from ocfl.object import Object, ObjectException, parse_version_directory
+from ocfl.object import Object, ObjectException
 from ocfl.version_metadata import VersionMetadata
 
 
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
-
-    def test02_parse_version_directory(self):
-        """Test parse_version_directory function."""
-        self.assertEqual(parse_version_directory('v1'), 1)
-        self.assertEqual(parse_version_directory('v00001'), 1)
-        self.assertEqual(parse_version_directory('v99999'), 99999)
-        # Bad
-        self.assertRaises(Exception, parse_version_directory, None)
-        self.assertRaises(Exception, parse_version_directory, '')
-        self.assertRaises(Exception, parse_version_directory, '1')
-        self.assertRaises(Exception, parse_version_directory, 'v0')
-        self.assertRaises(Exception, parse_version_directory, 'v-1')
-        self.assertRaises(Exception, parse_version_directory, 'v0000')
-        self.assertRaises(Exception, parse_version_directory, 'vv')
-        self.assertRaises(Exception, parse_version_directory, 'v000001')
 
     def test00_init(self):
         """Test Object init."""
@@ -193,8 +178,7 @@ class TestAll(unittest.TestCase):
         oo = Object(digest_algorithm="md5", spec_version='1.0')
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
         inventory = None
-        for (dummy_vdir, inventory, dummy_manifest_to_srcfile) in oo.build_inventory(src_fs,
-                                                                                     metadata=VersionMetadata()):
+        for (dummy_vdir, inventory, dummy_manifest_to_srcfile) in oo.build_inventory(src_fs):
             pass
         self.assertEqual(inventory['type'], 'https://ocfl.io/1.0/spec/#inventory')
         self.assertEqual(inventory['head'], 'v3')
@@ -241,19 +225,23 @@ class TestAll(unittest.TestCase):
         self.assertRaises(ObjectException, oo.build, srcdir='fixtures/1.0/content/spec-ex-full')
         oo.id = 'uri:firkin'
         objdir = os.path.join(tempdir, '1')
-        oo.build(srcdir='fixtures/1.0/content/spec-ex-full',
-                 metadata=VersionMetadata(),
-                 objdir=objdir)
+        inv = oo.build(srcdir='fixtures/1.0/content/spec-ex-full',
+                       versions_metadata={1: VersionMetadata(message="Version 1"),
+                                          2: VersionMetadata(message="Version 2"),
+                                          3: VersionMetadata(message="Version 3")},
+                       objdir=objdir)
         self.assertEqual(set(os.listdir(objdir)),
                          set(['0=ocfl_object_1.0',
                               'inventory.json', 'inventory.json.sha512',
                               'v1', 'v2', 'v3']))
-        # If objdir is None, nothing is written but the inventory is returned
-        inventory = oo.build(srcdir='fixtures/1.0/content/spec-ex-full',
-                             metadata=VersionMetadata(),
-                             objdir=None)
-        self.assertEqual(inventory["head"], "v3")
-        self.assertEqual(inventory["id"], "uri:firkin")
+        self.assertEqual(set(os.listdir(objdir + "/v1/content")),
+                         set(['foo', 'image.tiff', 'empty.txt']))
+        self.assertEqual(inv["versions"]["v1"]["message"], "Version 1")
+        # If objdir is None, nothing is written but the inventory is still returned
+        inv = oo.build(srcdir='fixtures/1.0/content/spec-ex-full',
+                       objdir=None)
+        self.assertEqual(inv["head"], "v3")
+        self.assertEqual(inv["id"], "uri:firkin")
 
     def test10_create(self):
         """Test create method."""
