@@ -164,7 +164,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
         return paths
 
     @property
-    def versions(self):
+    def versions_block(self):
         """Dict of the versions block.
 
         Returns a dict whether or not there is a versions block in the
@@ -182,7 +182,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
 
         See also: inv.version_numbers for just the numbers: [1, 2, 3].
         """
-        return list(self.versions.keys())
+        return list(self.versions_block.keys())
 
     @property
     def version_numbers(self):
@@ -208,13 +208,13 @@ class Inventory():  # pylint: disable=too-many-public-methods
 
         Returns a dict whether or not any data exists.
         """
-        return self.versions.get(vdir, {})
+        return self.versions_block.get(vdir, {})
 
     def version(self, vdir):
         """Version object for the specified version directory."""
         return Version(self, vdir)
 
-    def versions_gen(self):
+    def versions(self):
         """Generate Version objects for each version.
 
         Yields a Version() object for each version in this Inventiry in

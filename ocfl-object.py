@@ -159,7 +159,7 @@ def do_object_operation(args):
         versions_metadata = {}
         if args.metadata is not None:
             inv = ocfl.Inventory(filepath=args.metadata)
-            for version in inv.versions_gen():
+            for version in inv.versions():
                 versions_metadata[version.number] = ocfl.VersionMetadata(inventory=inv, version=version.vdir)
         # Build the object
         inventory = obj.build(srcdir=args.srcdir,
