@@ -2,7 +2,8 @@
 
 ## 2024-XX-XX v2.0.0
 
-  * SIGNIFICANT REWORKING to align better with specification language and approach. Includes refactoring, command line tool changes, and API changes.
+  * SIGNIFICANTLY REWRITTEN AND REFACTORED to align better with the specification language and approach. Includes refactoring, command line tool changes, and many API changes. The InventoryValidator class is relatively unchanged, however
+  * Improved docstrings in many places
   * Change from "1.0" to "1.1" as default specification version
   * Adjust for removed `E023_missing_file` fixture (https://github.com/OCFL/fixtures/pull/99)
   * Add note of specification version number in validation output
