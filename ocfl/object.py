@@ -22,6 +22,7 @@ import fs.path
 import fs.copy
 
 from .digest import file_digest, normalized_digest
+from .inventory import Inventory
 from .inventory_validator import InventoryValidator
 from .object_utils import make_unused_filepath, next_version, \
     parse_version_directory, ObjectException
@@ -170,25 +171,23 @@ class Object():  # pylint: disable=too-many-public-methods
     def start_inventory(self):
         """Create inventory start with metadata from self.
 
-        Returns the start of an inventory dict based on the instance data
+        Returns the start of an Inventory object based on the instance data
         in this object.
         """
-        inventory = dict({
-            'id': self.id,
-            'type': 'https://ocfl.io/' + self.spec_version + '/spec/#inventory',
-            'digestAlgorithm': self.digest_algorithm,
-            'versions': {},
-            'manifest': {}
-        })
+        inventory = Inventory()
+        inventory.id = self.id
+        inventory.spec_version = self.spec_version
+        inventory.digest_algorithm = self.digest_algorithm
+        inventory.init_manifest_and_versions()
         # Add contentDirectory if not 'content'
         if self.content_directory != 'content':
-            inventory['contentDirectory'] = self.content_directory
+            inventory.content_directory = self.content_directory
         # Add fixity section if requested
         if self.fixity is not None and len(self.fixity) > 0:
-            inventory['fixity'] = {}
             for fixity_type in self.fixity:
-                inventory['fixity'][fixity_type] = {}
+                inventory.add_fixity_type(fixity_type)
         else:
+            # Make sure None rather than just zero length
             self.fixity = None
         return inventory
 
@@ -275,7 +274,7 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         if versions_metadata is None:
             versions_metadata = {}
-        inventory = self.start_inventory()
+        inventory = self.start_inventory().data
         # Find the versions
         versions = {}
         for vdir in src_fs.listdir('/'):
@@ -398,23 +397,22 @@ class Object():  # pylint: disable=too-many-public-methods
             self.open_fs(objdir, create=True)
         inventory = self.start_inventory()
         vdir = 'v1'
-        manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
+        manifest_to_srcfile = self.add_version(inventory=inventory.data, src_fs=src_fs,
                                                src_dir='', vdir=vdir,
                                                metadata=metadata)
         if objdir is None:
-            return inventory
-        # Else write out object
-        self.write_inventory_and_sidecar(inventory, vdir)
-        # Write object declaration, inventory and sidecar
+            return inventory.data
+        # Write out v1 object
+        self.write_inventory_and_sidecar(inventory.data, vdir)
+        # Write object root with object declaration, inventory and sidecar
         self.write_object_declaration()
-        self.write_inventory_and_sidecar(inventory)
+        self.write_inventory_and_sidecar(inventory.data)
         # Write version files
-        for paths in inventory['manifest'].values():
-            for path in paths:
-                srcfile = manifest_to_srcfile[path]
-                self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
+        for path in inventory.content_paths:
+            srcfile = manifest_to_srcfile[path]
+            self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
         logging.info("Created OCFL object %s in %s", self.id, objdir)
-        return inventory
+        return inventory.data
 
     def update(self, objdir, srcdir=None, metadata=None):
         """Update object creating a new version with content matching srcdir.

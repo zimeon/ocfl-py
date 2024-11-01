@@ -83,13 +83,13 @@ class Inventory():  # pylint: disable=too-many-public-methods
         self.data["digestAlgorithm"] = value
 
     @property
-    def identifier(self):
-        """Get object identifier."""
+    def id(self):
+        """Get object id."""
         return self.data.get("id")
 
-    @identifier.setter
-    def identifier(self, value):
-        """Set object identifier."""
+    @id.setter
+    def id(self, value):
+        """Set object id."""
         self.data["id"] = value
 
     @property
@@ -126,6 +126,11 @@ class Inventory():  # pylint: disable=too-many-public-methods
         """
         return self.data.get("manifest", {})
 
+    @manifest.setter
+    def manifest(self, value):
+        """Set the manifest to the supplied dict()."""
+        self.data["manifest"] = value
+
     @property
     def manifest_add_if_not_present(self):
         """Get the manifest of digests and corresponding content paths.
@@ -137,6 +142,16 @@ class Inventory():  # pylint: disable=too-many-public-methods
         if "manifest" not in self.data:
             self.data["manifest"] = {}
         return self.data["manifest"]
+
+    @property
+    def fixity(self):
+        """Get fixity block as dict()."""
+        return self.data["fixity"]
+
+    @fixity.setter
+    def fixity(self, value):
+        """Set the fixity to the supplied dict()."""
+        self.data["fixity"] = value
 
     @property
     def content(self):
@@ -171,6 +186,11 @@ class Inventory():  # pylint: disable=too-many-public-methods
         underlying data.
         """
         return self.data.get("versions", {})
+
+    @versions_block.setter
+    def versions_block(self, value):
+        """Set dict of the versions block."""
+        self.data["versions"] = value
 
     @property
     def version_directories(self):
@@ -290,6 +310,24 @@ class Inventory():  # pylint: disable=too-many-public-methods
     def as_json(self):
         """Serlialize JSON representation."""
         return json.dumps(self.data, sort_keys=True, indent=2)
+
+    def init_manifest_and_versions(self):
+        """Initialize manifest and versions blocks for building new inventory."""
+        self.manifest = {}
+        self.versions_block = {}
+
+    def add_fixity_type(self, digest_algorithm):
+        """Add fixity type with no file data.
+
+        Arguments:
+            digest_algorithm: string of the digest algorithm specifying this
+                fixity type
+
+        If there is no fixity data then will start a fixity block.
+        """
+        if "fixity" not in self.data:
+            self.data["fixity"] = {}
+        self.data["fixity"][digest_algorithm] = {}
 
 
 class Version():

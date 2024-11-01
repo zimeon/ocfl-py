@@ -47,22 +47,23 @@ class TestAll(unittest.TestCase):
         """Test start_inventory mehthod stub."""
         oo = Object(identifier="info:a", digest_algorithm="sha256")
         inventory = oo.start_inventory()
-        self.assertEqual(inventory['id'], "info:a")
-        self.assertEqual(inventory['digestAlgorithm'], "sha256")
-        self.assertEqual(inventory['versions'], {})
-        self.assertEqual(inventory['manifest'], {})
-        self.assertNotIn('contentDirectory', inventory)
-        self.assertNotIn('fixity', inventory)
+        self.assertEqual(inventory.id, "info:a")
+        self.assertEqual(inventory.digest_algorithm, "sha256")
+        self.assertEqual(inventory.versions_block, {})
+        self.assertEqual(inventory.manifest, {})
+        self.assertNotIn('contentDirectory', inventory.data)
+        self.assertNotIn('fixity', inventory.data)
+        #
         oo = Object(identifier="info:b", digest_algorithm="sha256",
                     fixity=['md5', 'sha1'])
         inventory = oo.start_inventory()
-        self.assertEqual(inventory['fixity'], {'md5': {}, 'sha1': {}})
+        self.assertEqual(inventory.fixity, {'md5': {}, 'sha1': {}})
         #
         oo = Object(identifier="info:b", content_directory="stuff")
         inventory = oo.start_inventory()
-        self.assertEqual(inventory['id'], "info:b")
-        self.assertEqual(inventory['contentDirectory'], "stuff")
-        self.assertEqual(inventory['digestAlgorithm'], "sha512")
+        self.assertEqual(inventory.id, "info:b")
+        self.assertEqual(inventory.content_directory, "stuff")
+        self.assertEqual(inventory.digest_algorithm, "sha512")
 
     def test05_add_version(self):
         """Test add_version method."""
