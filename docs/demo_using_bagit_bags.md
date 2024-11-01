@@ -161,8 +161,8 @@ Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` cont
 INFO:root:Extracted v4 into tmp/extracted_v4
 INFO:bagit:Creating bag for directory tmp/extracted_v4
 INFO:bagit:Creating data directory
-INFO:bagit:Moving my_content to tmp/extracted_v4/tmpyn3c5dyc/my_content
-INFO:bagit:Moving tmp/extracted_v4/tmpyn3c5dyc to data
+INFO:bagit:Moving my_content to tmp/extracted_v4/tmpchemcesk/my_content
+INFO:bagit:Moving tmp/extracted_v4/tmpchemcesk to data
 INFO:bagit:Using 1 processes to generate manifests: sha512
 INFO:bagit:Generating manifest lines for file data/my_content/dracula.txt
 INFO:bagit:Generating manifest lines for file data/my_content/dunwich.txt
@@ -184,12 +184,12 @@ We note that the OCFL object had only one `content` file in `v4` but the extract
 diff -r tmp/extracted_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
 1,2c1
 < Bag-Software-Agent: bagit.py v1.8.1 <https://github.com/LibraryOfCongress/bagit-python>
-< Bagging-Date: 2024-10-27
+< Bagging-Date: 2024-11-01
 ---
 > Bagging-Date: 2020-01-04
 diff -r tmp/extracted_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagmanifest-sha512.txt
 2c2
-< 7faa56f134a38276a02a4c6d368b3d87ce171a8997b6a3b23059682953f5be045f1479dea2dfacce8a830d16f6fd735cb9538ce4a3bb308df9db60590c95eb5d bag-info.txt
+< fcbf7c9f9b586aafb25f40f0d86e603645a2a0bfea1cc487d41baa7d3faaad62905285ec200fb9772c79e9cb3c8943398fedb660cef71901cd823d558922f70e bag-info.txt
 ---
 > 10624e6d45462def7af66d1a0d977606c7b073b01809c1d42258cfab5c34a275480943cbe78044416aee1f23822cc3762f92247b8f39b5c6ddc5ae32a8f94ce5 bag-info.txt
 ```
