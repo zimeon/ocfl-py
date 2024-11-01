@@ -195,9 +195,9 @@ class Object():  # pylint: disable=too-many-public-methods
         """Add to inventory data for new version based on files in srcdir.
 
         Arguments:
-            inventory: the inventory up to (vdir-1) which must include blocks
-                for ['manifest'] and ['versions']. It must also include
-                a ['fixity'][algorithm] block for every algorithm in self.fixity
+            inventory: an Invenory object with data up to versio (vdir-1) which
+                must include blocks for the manifest and versions. It must also
+                include a fixity block for every algorithm in self.fixity
             src_fs: pyfs filesystem where this new version exist
             src_dir: the version directory in src_fs that files are being added
                from
@@ -210,7 +210,7 @@ class Object():  # pylint: disable=too-many-public-methods
         content for this new version.
         """
         state = {}  # state for this new version
-        manifest = inventory['manifest']
+        manifest = inventory.manifest
         digests_in_version = {}
         manifest_to_srcfile = {}
         # Go through all files to find new files in manifest and state for this version
@@ -245,17 +245,14 @@ class Object():  # pylint: disable=too-many-public-methods
         # Add extra fixity entries if required
         if self.fixity is not None:
             for fixity_type in self.fixity:
-                fixities = inventory['fixity'][fixity_type]
                 for digest, vfilepaths in digests_in_version.items():
                     for vfilepath in vfilepaths:
                         fixity_digest = file_digest(manifest_to_srcfile[vfilepath], fixity_type, pyfs=src_fs)
-                        if fixity_digest not in fixities:
-                            fixities[fixity_digest] = [vfilepath]
-                        else:
-                            fixities[fixity_digest].append(vfilepath)
-        # Set head to this latest version, and add this version to inventory
-        inventory['head'] = vdir
-        inventory['versions'][vdir] = metadata.as_dict(state=state)
+                        inventory.add_fixity_data(digest_algorithm=fixity_type,
+                                                  digest=fixity_digest,
+                                                  filepath=vfilepath)
+        # Add this new version to inventory (also updates head)
+        inventory.add_version(vdir=vdir, metadata=metadata.as_dict(state=state))
         return manifest_to_srcfile
 
     def build_inventory(self, src_fs, versions_metadata=None):
@@ -274,7 +271,7 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         if versions_metadata is None:
             versions_metadata = {}
-        inventory = self.start_inventory().data
+        inventory = self.start_inventory()
         # Find the versions
         versions = {}
         for vdir in src_fs.listdir('/'):
@@ -297,7 +294,7 @@ class Object():  # pylint: disable=too-many-public-methods
                                                    src_dir=vdir,
                                                    vdir=vdir,
                                                    metadata=metadata)
-            yield (vdir, inventory, manifest_to_srcfile)
+            yield (vdir, inventory.data, manifest_to_srcfile)
 
     def object_declaration_object(self):
         """NAMASTE object declaration Namaste object."""
@@ -310,21 +307,27 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         self.object_declaration_object().write(pyfs=self.obj_fs)
 
-    def write_inventory_and_sidecar(self, inventory, vdir='', write_inventory=True):
+    def write_inventory_and_sidecar(self, inventory=None, vdir=''):
         """Write inventory and sidecar to vdir in the current object.
+
+        Arguments:
+            inventory: an Inventory object to write the inventory, else None
+                if only the sidecar should be written (default)
+            vdir: string of the directory name within self.obj_fs that the
+                inventory and sidecar should be written to. Default is ''
 
         Assumes self.obj_fs is open for this object. Will create vdir if that
         does not exist. If vdir is not specified then will write to root of
-        the object.
+        the object filesystem.
 
         Returns the inventory sidecar filename.
         """
         if not self.obj_fs.exists(vdir):
             self.obj_fs.makedir(vdir)
         invfile = fs.path.join(vdir, INVENTORY_FILENAME)
-        if write_inventory:
+        if inventory is not None:
             with self.obj_fs.open(invfile, 'w') as fh:
-                json.dump(inventory, fh, sort_keys=True, indent=2)
+                inventory.write_json(fh)
         digest = file_digest(invfile, self.digest_algorithm, pyfs=self.obj_fs)
         sidecar = fs.path.join(vdir, INVENTORY_FILENAME + '.' + self.digest_algorithm)
         with self.obj_fs.open(sidecar, 'w') as fh:
@@ -336,7 +339,7 @@ class Object():  # pylint: disable=too-many-public-methods
 
         Returns the inventory sidecar filename.
         """
-        return self.write_inventory_and_sidecar(None, write_inventory=False)
+        return self.write_inventory_and_sidecar(inventory=None)
 
     def build(self, srcdir, versions_metadata=None, objdir=None):
         """Build an OCFL object with multiple versions.
@@ -367,7 +370,7 @@ class Object():  # pylint: disable=too-many-public-methods
         for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(src_fs, versions_metadata):
             num_versions += 1
             if objdir is not None:
-                self.write_inventory_and_sidecar(inventory, vdir)
+                self.write_inventory_and_sidecar(Inventory(inventory), vdir)
                 # Copy files into this version
                 for (path, srcfile) in manifest_to_srcfile.items():
                     self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
@@ -375,7 +378,7 @@ class Object():  # pylint: disable=too-many-public-methods
         if objdir is not None:
             # Write object declaration, inventory and sidecar
             self.write_object_declaration()
-            self.write_inventory_and_sidecar(inventory)
+            self.write_inventory_and_sidecar(Inventory(inventory))
             logging.info("Built object %s at %s with %s versions", self.id, objdir, num_versions)
         # Whether object written or not, return the last inventory
         return inventory
@@ -397,16 +400,16 @@ class Object():  # pylint: disable=too-many-public-methods
             self.open_fs(objdir, create=True)
         inventory = self.start_inventory()
         vdir = 'v1'
-        manifest_to_srcfile = self.add_version(inventory=inventory.data, src_fs=src_fs,
+        manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
                                                src_dir='', vdir=vdir,
                                                metadata=metadata)
         if objdir is None:
             return inventory.data
         # Write out v1 object
-        self.write_inventory_and_sidecar(inventory.data, vdir)
+        self.write_inventory_and_sidecar(inventory, vdir)
         # Write object root with object declaration, inventory and sidecar
         self.write_object_declaration()
-        self.write_inventory_and_sidecar(inventory.data)
+        self.write_inventory_and_sidecar(inventory)
         # Write version files
         for path in inventory.content_paths:
             srcfile = manifest_to_srcfile[path]
@@ -501,15 +504,15 @@ class Object():  # pylint: disable=too-many-public-methods
             inventory['versions'][head] = metadata.as_dict(state=state)
         else:
             src_fs = open_fs(srcdir)
-            manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
+            manifest_to_srcfile = self.add_version(inventory=Inventory(inventory), src_fs=src_fs,
                                                    src_dir='', vdir=head,
                                                    metadata=metadata)
             # Copy files into this version
             for (path, srcfile) in manifest_to_srcfile.items():
                 self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
         # Write inventory in both root and head version
-        self.write_inventory_and_sidecar(inventory, head)
-        self.write_inventory_and_sidecar(inventory)
+        self.write_inventory_and_sidecar(Inventory(inventory), head)
+        self.write_inventory_and_sidecar(Inventory(inventory))
         # Delete old root inventory sidecar if we changed digest algorithm
         if digest_algorithm != old_digest_algorithm:
             self.obj_fs.remove(INVENTORY_FILENAME + '.' + old_digest_algorithm)

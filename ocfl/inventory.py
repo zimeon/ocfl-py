@@ -54,7 +54,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
         elif isinstance(data, Inventory):
             self.data = copy.deepcopy(data.data)
         elif isinstance(data, dict):
-            self.data = copy.deepcopy(data)
+            self.data = data
         else:
             raise InventoryException("Bad data type supplied to Inventory() creator, " + str(type(data)))
 
@@ -161,8 +161,8 @@ class Inventory():  # pylint: disable=too-many-public-methods
         digests for each file. Essentially an inversion of the manifest.
         """
         files = {}
-        for digest in self.manifest:
-            for file in self.manifest[digest]:
+        for digest, files_for_digest in self.manifest.items():
+            for file in files_for_digest:
                 files[file] = digest
         return files
 
@@ -265,24 +265,27 @@ class Inventory():  # pylint: disable=too-many-public-methods
             return paths[0]
         return None
 
-    def add_version(self, vdir=None):
+    def add_version(self, vdir=None, metadata=None):
         """Add new version object to the versions block.
 
         Arguments:
             vdir: string with the version directory name (e.g. "v1"). If None
                 then will create the next version in sequence
+            metadata: dict to initialize version metadata with, else None to
+                create empty
 
         Returns a Version object to access version properties.
         """
-        highest_version = 0
-        for vvdir in self.version_directories:
-            highest_version = max(highest_version,
-                                  parse_version_directory(vvdir))
-        # FIXME - Need to deal with zero padding
-        vdir = "v" + str(highest_version + 1)
+        if vdir is None:
+            highest_version = 0
+            for vvdir in self.version_directories:
+                highest_version = max(highest_version,
+                                      parse_version_directory(vvdir))
+            # FIXME - Need to deal with zero padding
+            vdir = "v" + str(highest_version + 1)
         if "versions" not in self.data:
             self.data["versions"] = {}
-        self.data["versions"][vdir] = {}
+        self.data["versions"][vdir] = {} if metadata is None else metadata
         self.data["head"] = vdir
         return self.version(vdir)
 
@@ -311,6 +314,14 @@ class Inventory():  # pylint: disable=too-many-public-methods
         """Serlialize JSON representation."""
         return json.dumps(self.data, sort_keys=True, indent=2)
 
+    def write_json(self, fh):
+        """Serialise JSON representation to file.
+
+        Arguments:
+            fh - filehandle to write to
+        """
+        json.dump(self.data, fh, sort_keys=True, indent=2)
+
     def init_manifest_and_versions(self):
         """Initialize manifest and versions blocks for building new inventory."""
         self.manifest = {}
@@ -328,6 +339,22 @@ class Inventory():  # pylint: disable=too-many-public-methods
         if "fixity" not in self.data:
             self.data["fixity"] = {}
         self.data["fixity"][digest_algorithm] = {}
+
+    def add_fixity_data(self, digest_algorithm, digest, filepath):
+        """Add fixity information for a file.
+
+        Arguments:
+            digest_algorithm: string of the digest algorithm specifying this
+                fixity type
+
+        Assumes that there is already fixity block and within that a block for
+        the specific digest_algorithm.
+        """
+        fixities = self.fixity[digest_algorithm]
+        if digest not in fixities:
+            fixities[digest] = [filepath]
+        else:
+            fixities[digest].append(filepath)
 
 
 class Version():

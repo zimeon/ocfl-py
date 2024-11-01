@@ -7,6 +7,7 @@ import unittest
 import fs
 import fs.tempfs
 
+from ocfl.inventory import Inventory
 from ocfl.object import Object, ObjectException
 from ocfl.version_metadata import VersionMetadata
 
@@ -69,28 +70,27 @@ class TestAll(unittest.TestCase):
         """Test add_version method."""
         self.maxDiff = None
         oo = Object(digest_algorithm="md5")
-        inventory = {'manifest': {}, 'versions': {}}
+        inventory = Inventory({'manifest': {}, 'versions': {}})
         with open('fixtures/1.0/content/spec-ex-full/v1_inventory.json', 'r', encoding="utf-8") as fh:
             v_inventory = json.load(fh)
         metadata = VersionMetadata(inventory=v_inventory, version='v1')
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
         oo.add_version(inventory=inventory, src_fs=src_fs,
                        src_dir='v1', vdir='v1', metadata=metadata)
-        self.assertEqual(inventory['head'], 'v1')
-        self.assertEqual(inventory['manifest'],
+        self.assertEqual(inventory.head, 'v1')
+        self.assertEqual(inventory.manifest,
                          {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],
                           'c289c8ccd4bab6e385f5afdd89b5bda2': ['v1/content/image.tiff'],
                           'd41d8cd98f00b204e9800998ecf8427e': ['v1/content/empty.txt']})
-        self.assertEqual(inventory['versions'],
-                         {"v1":
-                          {'created': '2018-01-01T01:01:01Z',
-                           'message': 'Initial import',
-                           'state': {
-                               '184f84e28cbe75e050e9c25ea7f2e939': ['foo/bar.xml'],
-                               'c289c8ccd4bab6e385f5afdd89b5bda2': ['image.tiff'],
-                               'd41d8cd98f00b204e9800998ecf8427e': ['empty.txt']},
-                           'user': {'address': 'alice@example.com', 'name': 'Alice'}}})
-        self.assertNotIn('fixity', inventory)
+        self.assertEqual(inventory.versiondata("v1"),
+                         {'created': '2018-01-01T01:01:01Z',
+                          'message': 'Initial import',
+                          'state': {
+                              '184f84e28cbe75e050e9c25ea7f2e939': ['foo/bar.xml'],
+                              'c289c8ccd4bab6e385f5afdd89b5bda2': ['image.tiff'],
+                              'd41d8cd98f00b204e9800998ecf8427e': ['empty.txt']},
+                          'user': {'address': 'alice@example.com', 'name': 'Alice'}})
+        self.assertNotIn('fixity', inventory.data)
         # Now add second version to check forward delta
         with open('fixtures/1.0/content/spec-ex-full/v2_inventory.json', 'r', encoding="utf-8") as fh:
             v_inventory = json.load(fh)
@@ -98,13 +98,13 @@ class TestAll(unittest.TestCase):
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full/v2')
         oo.add_version(inventory=inventory, src_fs=src_fs,
                        src_dir='', vdir='v2', metadata=metadata)
-        self.assertEqual(inventory['head'], 'v2')
-        self.assertEqual(inventory['manifest'],
+        self.assertEqual(inventory.head, 'v2')
+        self.assertEqual(inventory.manifest,
                          {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],
                           '2673a7b11a70bc7ff960ad8127b4adeb': ['v2/content/foo/bar.xml'],
                           'c289c8ccd4bab6e385f5afdd89b5bda2': ['v1/content/image.tiff'],
                           'd41d8cd98f00b204e9800998ecf8427e': ['v1/content/empty.txt']})
-        self.assertEqual(inventory['versions']['v2'],
+        self.assertEqual(inventory.versiondata('v2'),
                          {'created': '2018-02-02T02:02:02Z',
                           'message': 'Fix bar.xml, remove image.tiff, add empty2.txt',
                           'state': {
@@ -113,7 +113,7 @@ class TestAll(unittest.TestCase):
                           'user': {'address': 'bob@example.com', 'name': 'Bob'}})
         # Now with fixity
         oo = Object(digest_algorithm="md5", fixity=['sha1'])
-        inventory = {'manifest': {}, 'versions': {}, 'fixity': {'sha1': {}}}
+        inventory = Inventory({'manifest': {}, 'versions': {}, 'fixity': {'sha1': {}}})
         md1 = VersionMetadata()
         with open('fixtures/1.0/content/spec-ex-full/v1_inventory.json', 'r', encoding="utf-8") as fh:
             v_inventory = json.load(fh)
@@ -126,10 +126,10 @@ class TestAll(unittest.TestCase):
             'v1/content/empty.txt': 'empty.txt',
             'v1/content/foo/bar.xml': 'foo/bar.xml'
         })
-        self.assertEqual(len(inventory['fixity']['sha1']), 3)
+        self.assertEqual(len(inventory.fixity['sha1']), 3)
         # Test dedupe=False and forward_delta=False settings
         oo = Object(dedupe=False, forward_delta=False, fixity=['md5'])
-        inventory = {'manifest': {}, 'versions': {}, 'fixity': {'md5': {}}}
+        inventory = Inventory({'manifest': {}, 'versions': {}, 'fixity': {'md5': {}}})
         md1 = VersionMetadata(inventory={
             "id": "http://example.org/dedupe_content",
             "versions": {
@@ -150,7 +150,7 @@ class TestAll(unittest.TestCase):
             'v1/content/empty1.txt': 'v1/empty1.txt',
             'v1/content/empty2.txt': 'v1/empty2.txt',
             'v1/content/empty3.txt': 'v1/empty3.txt'})
-        self.assertEqual(inventory['fixity']['md5'], {"d41d8cd98f00b204e9800998ecf8427e": [
+        self.assertEqual(inventory.fixity['md5'], {"d41d8cd98f00b204e9800998ecf8427e": [
             "v1/content/empty1.txt", "v1/content/empty2.txt", "v1/content/empty3.txt"]})
         # Add a second version which will test for forward_delta=False
         md2 = VersionMetadata(inventory={
@@ -170,7 +170,7 @@ class TestAll(unittest.TestCase):
         # Because of forward_delta=False we will have an additional copy of the empty file
         self.assertEqual(manifest_to_srcfile, {
             'v2/content/empty4.txt': 'v2/empty4.txt'})
-        self.assertEqual(inventory['fixity']['md5'], {"d41d8cd98f00b204e9800998ecf8427e": [
+        self.assertEqual(inventory.fixity['md5'], {"d41d8cd98f00b204e9800998ecf8427e": [
             "v1/content/empty1.txt", "v1/content/empty2.txt",
             "v1/content/empty3.txt", "v2/content/empty4.txt"]})
 
@@ -201,7 +201,7 @@ class TestAll(unittest.TestCase):
         """Test write_object_and_sidecar."""
         tmpfs = fs.tempfs.TempFS(identifier='test_write_inventory_and_sidecar')
         oo = Object(obj_fs=tmpfs)
-        oo.write_inventory_and_sidecar({'abc': 'def'})
+        oo.write_inventory_and_sidecar(Inventory({'abc': 'def'}))
         self.assertEqual(set(tmpfs.listdir('')),
                          set(['inventory.json', 'inventory.json.sha512']))
         with tmpfs.open('inventory.json') as fh:
@@ -212,7 +212,7 @@ class TestAll(unittest.TestCase):
         # and now making directory
         oo = Object(obj_fs=tmpfs)
         invdir = 'xxx'
-        oo.write_inventory_and_sidecar({'gh': 'ik'}, invdir)
+        oo.write_inventory_and_sidecar(Inventory({'gh': 'ik'}), invdir)
         self.assertEqual(set(tmpfs.listdir(invdir)),
                          set(['inventory.json', 'inventory.json.sha512']))
         with tmpfs.open(fs.path.join(invdir, 'inventory.json')) as fh:
