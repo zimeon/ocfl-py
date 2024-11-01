@@ -137,11 +137,10 @@ def do_object_operation(args):
         if args.srcbag is not None:
             srcdir = ocfl.bag_as_source(args.srcbag, metadata)
             if metadata.id is not None:
-                if obj.id:
-                    if obj.id != metadata.id:
-                        raise FatalError("Identifier specified (%s) and identifier from Bagit bag (%s) do not match!" % (obj.id, metadata.id))
-                else:
+                if obj.id is None:
                     obj.id = metadata.id
+                elif obj.id != metadata.id:
+                    raise FatalError("Identifier specified (%s) and identifier from Bagit bag (%s) do not match!" % (obj.id, metadata.id))
         elif args.srcdir is None:
             raise FatalError("Must specify either --srcdir or --srcbag containing v1 files when creating an OCFL object!")
         inventory = obj.create(srcdir=srcdir,

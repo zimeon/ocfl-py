@@ -12,9 +12,9 @@ class VersionMetadata():
     """Class for metadata for a specific version of an OCFL Object."""
 
     def __init__(self, *, args=None, inventory=None, version=None,
-                 identifier=None, created=None, message=None, name=None, address=None):
+                 created=None, message=None, name=None, address=None):
         """Initialize by various means, including command line arguments from argparse."""
-        self.id = identifier
+        self.id = None
         self.created = created
         self.message = message
         self.name = name
@@ -64,13 +64,18 @@ class VersionMetadata():
                 self.address = inv_version['user']['address']
 
     def as_dict(self, **kwargs):
-        """Return dictionary object with version metedata."""
-        m = {}
-        self.add_to_dict(m, **kwargs)
-        return m
+        """Return dictionary object with version metedata.
 
-    def add_to_dict(self, m, **kwargs):
-        """Add metadata to dictionary m."""
+        Arguments:
+            **kwargs: keyword=value pairs that are used to add the corresponding
+                key and value to the dictionary. If none are specified then
+                no additional data will be added.
+
+        Returns dict() created according to the inventory structure for
+        information about a single version. Adds data from this object and
+        then any additional data in **kwargs.
+        """
+        m = {}
         m['created'] = self.created if self.created else datetime_to_str()
         if self.message is not None:
             m['message'] = self.message
@@ -79,5 +84,6 @@ class VersionMetadata():
             if self.address is not None:
                 m['user']['address'] = self.address
         # Add any extra values, and they will override instance variables
-        for (key, value) in kwargs.items():
+        for key, value in kwargs.items():
             m[key] = value
+        return m
