@@ -383,7 +383,7 @@ class StorageRoot():
         o = Object()
         o.open_fs(object_path)
         inventory = o.parse_inventory()
-        identifier = inventory['id']
+        identifier = inventory.id
         # Now copy
         path = self.object_path(identifier)
         if self.root_fs.exists(path):

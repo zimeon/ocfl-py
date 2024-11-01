@@ -12,6 +12,7 @@ import os.path
 import re
 
 from .object_utils import parse_version_directory
+from .digest import normalized_digest
 
 
 class InventoryException(Exception):
@@ -145,8 +146,11 @@ class Inventory():  # pylint: disable=too-many-public-methods
 
     @property
     def fixity(self):
-        """Get fixity block as dict()."""
-        return self.data["fixity"]
+        """Get fixity block as dict().
+
+        Returns an empty dict() if there is no fixity block.
+        """
+        return self.data.get("fixity", {})
 
     @fixity.setter
     def fixity(self, value):
@@ -327,18 +331,21 @@ class Inventory():  # pylint: disable=too-many-public-methods
         self.manifest = {}
         self.versions_block = {}
 
-    def add_fixity_type(self, digest_algorithm):
+    def add_fixity_type(self, digest_algorithm, map=None):
         """Add fixity type with no file data.
 
         Arguments:
             digest_algorithm: string of the digest algorithm specifying this
                 fixity type
+            map: None (default) to create an empty entry for the specified
+                digest algorithm, else a dict() with mapping from digest
+                to array of files according to the specified digest algorithm
 
         If there is no fixity data then will start a fixity block.
         """
         if "fixity" not in self.data:
             self.data["fixity"] = {}
-        self.data["fixity"][digest_algorithm] = {}
+        self.data["fixity"][digest_algorithm] = {} if map is None else map
 
     def add_fixity_data(self, digest_algorithm, digest, filepath):
         """Add fixity information for a file.
@@ -355,6 +362,35 @@ class Inventory():  # pylint: disable=too-many-public-methods
             fixities[digest] = [filepath]
         else:
             fixities[digest].append(filepath)
+
+    def normalize_digests(self, digest_algorithm=None):
+        """Normalize the digests used in manifest and state.
+
+        Arguments:
+            digest_algorithm: string with the name of the digest algorithm
+                used
+
+        No arguments and no return value. Operates on the current object
+        in-place, normalizing the digest values use in the manifest and
+        state blocks. Does not change any separate fixity information.
+        """
+        from_to = {}
+        manifest = self.manifest
+        for digest in manifest:
+            norm_digest = normalized_digest(digest, digest_algorithm)
+            if digest != norm_digest:
+                from_to[digest] = norm_digest
+        for (digest, norm_digest) in from_to.items():
+            manifest[norm_digest] = manifest.pop(digest)
+        for v in self.versions():
+            state = v.state
+            from_to = {}
+            for digest in state:
+                norm_digest = normalized_digest(digest, digest_algorithm)
+                if digest != norm_digest:
+                    from_to[digest] = norm_digest
+            for (digest, norm_digest) in from_to.items():
+                state[norm_digest] = state.pop(digest)
 
 
 class Version():
@@ -403,6 +439,11 @@ class Version():
         there is no state block.
         """
         return self.inv.versiondata(self.vdir).get("state", {})
+
+    @state.setter
+    def state(self, value):
+        """Set state block for this version."""
+        self.inv.versiondata(self.vdir)["state"] = value
 
     @property
     def state_add_if_not_present(self):

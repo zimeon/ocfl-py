@@ -21,7 +21,7 @@ import fs
 import fs.path
 import fs.copy
 
-from .digest import file_digest, normalized_digest
+from .digest import file_digest
 from .inventory import Inventory
 from .inventory_validator import InventoryValidator
 from .object_utils import make_unused_filepath, next_version, \
@@ -304,7 +304,8 @@ class Object():  # pylint: disable=too-many-public-methods
     def write_object_declaration(self):
         """Write NAMASTE object declaration.
 
-        Assumes self.obj_fs is open for this object.
+        Assumes self.obj_fs is open for this object and writes into the
+        root directory of that filesystem.
         """
         self.object_declaration_object().write(pyfs=self.obj_fs)
 
@@ -356,7 +357,7 @@ class Object():  # pylint: disable=too-many-public-methods
               set then will just return head inventory that would have been
               created as a dry-run.
 
-        Returns the inventory for the last version.
+        Returns the Inventory object for the last version.
 
         See also create(...) for creating a new object with one version.
         """
@@ -382,7 +383,7 @@ class Object():  # pylint: disable=too-many-public-methods
             self.write_inventory_and_sidecar(inventory)
             logging.info("Built object %s at %s with %s versions", self.id, objdir, num_versions)
         # Whether object written or not, return the last inventory
-        return inventory.data
+        return inventory
 
     def create(self, srcdir, metadata=None, objdir=None):
         """Create a new OCFL object with v1 content from srcdir.
@@ -393,6 +394,10 @@ class Object():  # pylint: disable=too-many-public-methods
             objdir - output directory for object (must not already exist), if not
                 set then will just return inventory for object that would have been
                 created.
+
+        Returns the Inventory object for the last version.
+
+        See also build(...) for building a new object with multiple versions.
         """
         if self.id is None:
             raise ObjectException("Identifier is not set!")
@@ -405,7 +410,7 @@ class Object():  # pylint: disable=too-many-public-methods
                                                src_dir='', vdir=vdir,
                                                metadata=metadata)
         if objdir is None:
-            return inventory.data
+            return inventory
         # Write out v1 object
         self.write_inventory_and_sidecar(inventory, vdir)
         # Write object root with object declaration, inventory and sidecar
@@ -416,7 +421,7 @@ class Object():  # pylint: disable=too-many-public-methods
             srcfile = manifest_to_srcfile[path]
             self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
         logging.info("Created OCFL object %s in %s", self.id, objdir)
-        return inventory.data
+        return inventory
 
     def update(self, objdir, srcdir=None, metadata=None):
         """Update object creating a new version with content matching srcdir.
@@ -435,46 +440,45 @@ class Object():  # pylint: disable=too-many-public-methods
         if not validator.validate_object(objdir):
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
         inventory = self.parse_inventory()
-        self.id = inventory['id']
-        old_head = inventory['head']
+        self.id = inventory.id
+        old_head = inventory.head
         head = next_version(old_head)
         logging.info("Will update %s %s -> %s", self.id, old_head, head)
         self.obj_fs.makedir(head)
         # Is this a request to change the digest algorithm?
-        old_digest_algorithm = inventory['digestAlgorithm']
+        old_digest_algorithm = inventory.digest_algorithm
         digest_algorithm = self.digest_algorithm
         if digest_algorithm is None:
             digest_algorithm = old_digest_algorithm
         elif digest_algorithm != old_digest_algorithm:
             logging.info("New version with use %s instead of %s digestAlgorithm",
                          digest_algorithm, old_digest_algorithm)
-            inventory['digestAlgorithm'] = digest_algorithm
+            inventory.digest_algorithm = digest_algorithm
         # Is this a request to change the set of fixity information?
         fixity = self.fixity
-        old_fixity = set(inventory['fixity'].keys()) if 'fixity' in inventory else set()
+        old_fixity = set(inventory.fixity.keys())
         if fixity is None:
             # Not explicit, carry forward from previous version. Only change will
             # be adding old digest information if we are changing digestAlgorithm
             fixity = old_fixity.copy()
             if digest_algorithm != old_digest_algorithm and old_digest_algorithm not in old_fixity:
                 # Add old manifest digests to fixity block
-                if 'fixity' not in inventory:
-                    inventory['fixity'] = {}
-                inventory['fixity'][old_digest_algorithm] = inventory['manifest'].copy()
+                inventory.add_fixity_type(digest_algorithm=old_digest_algorithm,
+                                          map=inventory.manifest.copy())
                 fixity.add(old_digest_algorithm)
         else:
             # Fixity to be stored is explicit, may be a change
             fixity = set(fixity)
             if fixity != old_fixity:
                 for digest in old_fixity.difference(fixity):
-                    inventory['fixity'].pop(digest)
+                    inventory.fixity.pop(digest)
                 for digest in fixity.difference(old_fixity):
                     logging.info("FIXME - need to add fixity with digest %s", digest)
         if fixity != old_fixity:
             logging.info("New version will have %s instead of %s fixity",
                          ','.join(sorted(fixity)), ','.join(sorted(old_fixity)))
         # Now look at contents, manifest and state
-        manifest = copy.deepcopy(inventory['manifest'])
+        manifest = copy.deepcopy(inventory.manifest)
         if digest_algorithm != old_digest_algorithm:
             old_to_new_digest = {}
             new_manifest = {}
@@ -490,30 +494,32 @@ class Object():  # pylint: disable=too-many-public-methods
                 new_manifest[digest] = manifest[old_digest]
             manifest = new_manifest
             # Now update all state blocks
-            for vdir in inventory['versions']:
-                old_state = inventory['versions'][vdir]['state']
+            for vdir in inventory.version_directories:
+                old_state = inventory.version(vdir).state
                 state = {}
                 for old_digest, files in old_state.items():
                     state[old_to_new_digest[old_digest]] = old_state[old_digest]
-                inventory['versions'][vdir]['state'] = state
-        inventory['manifest'] = manifest
+                inventory.version(vdir).state = state
+        inventory.manifest = manifest
         # Add and remove any contents by comparing srcdir with existing state and manifest
         if srcdir is None:
             # No content Update
-            inventory['head'] = head
-            state = copy.deepcopy(inventory['versions'][old_head]['state'])
-            inventory['versions'][head] = metadata.as_dict(state=state)
+            inventory.head = head
+            state = copy.deepcopy(inventory.version(old_head).state)
+            inventory.versions_block[head] = metadata.as_dict(state=state)
         else:
             src_fs = open_fs(srcdir)
-            manifest_to_srcfile = self.add_version(inventory=Inventory(inventory), src_fs=src_fs,
-                                                   src_dir='', vdir=head,
+            manifest_to_srcfile = self.add_version(inventory=inventory,
+                                                   src_fs=src_fs,
+                                                   src_dir='',
+                                                   vdir=head,
                                                    metadata=metadata)
             # Copy files into this version
             for (path, srcfile) in manifest_to_srcfile.items():
                 self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
         # Write inventory in both root and head version
-        self.write_inventory_and_sidecar(Inventory(inventory), head)
-        self.write_inventory_and_sidecar(Inventory(inventory))
+        self.write_inventory_and_sidecar(inventory, head)
+        self.write_inventory_and_sidecar(inventory)
         # Delete old root inventory sidecar if we changed digest algorithm
         if digest_algorithm != old_digest_algorithm:
             self.obj_fs.remove(INVENTORY_FILENAME + '.' + old_digest_algorithm)
@@ -657,9 +663,9 @@ class Object():  # pylint: disable=too-many-public-methods
         # Read inventory, set up version
         inv = self.parse_inventory()
         if version == 'head':
-            version = inv['head']
+            version = inv.head
             logging.debug("Object at %s has head %s", objdir, version)
-        elif version not in inv['versions']:
+        elif version not in inv.version_directories:
             raise ObjectException("Object at %s does not include a version '%s'" % (objdir, version))
         return inv, version
 
@@ -690,8 +696,8 @@ class Object():  # pylint: disable=too-many-public-methods
             parent_fs.makedir(dir)
         dst_fs = parent_fs.opendir(dir)  # Open a sub-filesystem as our destination
         # Now extract...
-        manifest = inv['manifest']
-        state = inv['versions'][version]['state']
+        manifest = inv.manifest
+        state = inv.version(version).state
         # Extract all files for this version
         for (digest, logical_files) in state.items():
             existing_file = manifest[digest][0]  # First entry with the digest, there could be > 1
@@ -700,7 +706,7 @@ class Object():  # pylint: disable=too-many-public-methods
                 dst_fs.makedirs(fs.path.dirname(logical_file), recreate=True)
                 fs.copy.copy_file(self.obj_fs, existing_file, dst_fs, logical_file)
         logging.info("Extracted %s into %s", version, dstdir)
-        return VersionMetadata(inventory=inv, version=version)
+        return VersionMetadata(inventory=inv.data, version=version)
 
     def extract_file(self, objdir, version, dstdir, logical_path):
         """Extract one file from version from object at objdir into dstdir.
@@ -737,8 +743,8 @@ class Object():  # pylint: disable=too-many-public-methods
         if dst_fs.exists(basename):
             raise ObjectException("Destination file %s in %s already exists" % (basename, dstdir))
         # Now extract...
-        manifest = inv['manifest']
-        state = inv['versions'][version]['state']
+        manifest = inv.manifest
+        state = inv.version(version).state
         # Extract the specified file
         copied = False
         for (digest, logical_files) in state.items():
@@ -761,34 +767,19 @@ class Object():  # pylint: disable=too-many-public-methods
         Will validate the inventory and normalize the digests so that the rest
         of the Object methods can assume correctness and matching string digests
         between state and manifest blocks.
+
+        Returns and Inventory object for the parsed inventory.
         """
         with self.obj_fs.open(INVENTORY_FILENAME) as fh:
-            inventory = json.load(fh)
+            inventory = Inventory(json.load(fh))
         # Validate
         iv = InventoryValidator()
-        iv.validate(inventory=inventory)
+        iv.validate(inventory=inventory.data)
         if iv.log.num_errors > 0:
             raise ObjectException("Root inventory is not valid (%d errors)" % iv.log.num_errors)
         self.spec_version = iv.spec_version
-        digest_algorithm = iv.digest_algorithm
         # Normalize digests in place
-        manifest = inventory['manifest']
-        from_to = {}
-        for digest in manifest:
-            norm_digest = normalized_digest(digest, digest_algorithm)
-            if digest != norm_digest:
-                from_to[digest] = norm_digest
-        for (digest, norm_digest) in from_to.items():
-            manifest[norm_digest] = manifest.pop(digest)
-        for v in inventory['versions']:
-            state = inventory['versions'][v]['state']
-            from_to = {}
-            for digest in state:
-                norm_digest = normalized_digest(digest, digest_algorithm)
-                if digest != norm_digest:
-                    from_to[digest] = norm_digest
-            for (digest, norm_digest) in from_to.items():
-                state[norm_digest] = state.pop(digest)
+        inventory.normalize_digests(iv.digest_algorithm)
         return inventory
 
     def id_from_inventory(self, failure_value='UNKNOWN-ID'):
@@ -799,6 +790,6 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         try:
             inventory = self.parse_inventory()
-            return inventory['id']
+            return inventory.id
         except ObjectException:
             return failure_value

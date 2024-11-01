@@ -237,12 +237,12 @@ class TestAll(unittest.TestCase):
                               'v1', 'v2', 'v3']))
         self.assertEqual(set(os.listdir(objdir + "/v1/content")),
                          set(['foo', 'image.tiff', 'empty.txt']))
-        self.assertEqual(inv["versions"]["v1"]["message"], "Version 1")
+        self.assertEqual(inv.version("v1").message, "Version 1")
         # If objdir is None, nothing is written but the inventory is still returned
         inv = oo.build(srcdir='fixtures/1.0/content/spec-ex-full',
                        objdir=None)
-        self.assertEqual(inv["head"], "v3")
-        self.assertEqual(inv["id"], "uri:firkin")
+        self.assertEqual(inv.head, "v3")
+        self.assertEqual(inv.id, "uri:firkin")
 
     def test10_create(self):
         """Test create method."""
@@ -251,13 +251,15 @@ class TestAll(unittest.TestCase):
         self.assertRaises(ObjectException, oo.create, srcdir='fixtures/1.0/content/spec-ex-full/v1')
         oo.id = 'uri:kliderkin'
         objdir = os.path.join(tempdir, '1')
-        oo.create(srcdir='fixtures/1.0/content/spec-ex-full/v1',
-                  metadata=VersionMetadata(),
-                  objdir=objdir)
+        inv = oo.create(srcdir='fixtures/1.0/content/spec-ex-full/v1',
+                        metadata=VersionMetadata(),
+                        objdir=objdir)
         self.assertEqual(set(os.listdir(objdir)),
                          set(['0=ocfl_object_1.0',
                               'inventory.json', 'inventory.json.sha512',
                               'v1']))
+        self.assertEqual(inv.head, "v1")
+        self.assertEqual(len(inv.version("v1").state), 3)
 
     def test11_update(self):
         """Test update method."""
@@ -353,19 +355,19 @@ class TestAll(unittest.TestCase):
         oo = Object()
         oo.open_fs('fixtures/1.1/good-objects/minimal_one_version_one_file')
         inv = oo.parse_inventory()
-        self.assertEqual(inv['id'], "ark:123/abc")
+        self.assertEqual(inv.id, "ark:123/abc")
         digest = "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f"
-        self.assertEqual(inv['manifest'][digest],
+        self.assertEqual(inv.manifest[digest],
                          ["v1/content/a_file.txt"])
-        self.assertEqual(inv['versions']['v1']['state'][digest],
+        self.assertEqual(inv.version('v1').state[digest],
                          ["a_file.txt"])
         # Digest normalization on read -- file has mixed case but result should be same
         oo.open_fs('fixtures/1.1/good-objects/minimal_mixed_digests')
         inv = oo.parse_inventory()
-        self.assertEqual(inv['id'], "http://example.org/minimal_mixed_digests")
-        self.assertEqual(inv['manifest'][digest],
+        self.assertEqual(inv.id, "http://example.org/minimal_mixed_digests")
+        self.assertEqual(inv.manifest[digest],
                          ["v1/content/a_file.txt"])
-        self.assertEqual(inv['versions']['v1']['state'][digest],
+        self.assertEqual(inv.version('v1').state[digest],
                          ["a_file.txt"])
         # Error cases
         oo.open_fs('fixtures/1.0/bad-objects/E036_no_id')

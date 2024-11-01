@@ -6,7 +6,6 @@ and requirements around them. It is designed to manipulate
 OCFL Objects or just Inventory files alone.
 """
 import argparse
-import json
 import logging
 import sys
 
@@ -118,9 +117,8 @@ def parse_arguments():
 
 def print_inventory(inventory):
     """Print out the inventory."""
-    vdir = inventory["head"]
-    print("### Inventory for %s" % (vdir))
-    print(json.dumps(inventory, sort_keys=True, indent=2))
+    print("### Inventory for %s" % (inventory.head))
+    print(inventory.as_json())
 
 
 def do_object_operation(args):
