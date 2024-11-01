@@ -264,10 +264,11 @@ class Object():  # pylint: disable=too-many-public-methods
                 version, key is the integer version number. Default is None
                 in which case no metadata is added.
 
-        Yields (vdir, inventory, manifest_to_srcfile) for each version in sequence,
-        where vdir is the version directory name, inventory is the inventory for that
-        version, and manifest_to_srcfile is a dictionary that maps filepaths in the
-        manifest to actual source filepaths.
+        Yields (vdir, inventory, manifest_to_srcfile) for each version in
+        sequence, where vdir is the version directory name, inventory is the
+        Inventory object for that version, and manifest_to_srcfile is a
+        dictionary that maps filepaths in the manifest to actual source
+        filepaths.
         """
         if versions_metadata is None:
             versions_metadata = {}
@@ -294,7 +295,7 @@ class Object():  # pylint: disable=too-many-public-methods
                                                    src_dir=vdir,
                                                    vdir=vdir,
                                                    metadata=metadata)
-            yield (vdir, inventory.data, manifest_to_srcfile)
+            yield (vdir, inventory, manifest_to_srcfile)
 
     def object_declaration_object(self):
         """NAMASTE object declaration Namaste object."""
@@ -370,7 +371,7 @@ class Object():  # pylint: disable=too-many-public-methods
         for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(src_fs, versions_metadata):
             num_versions += 1
             if objdir is not None:
-                self.write_inventory_and_sidecar(Inventory(inventory), vdir)
+                self.write_inventory_and_sidecar(inventory, vdir)
                 # Copy files into this version
                 for (path, srcfile) in manifest_to_srcfile.items():
                     self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
@@ -378,10 +379,10 @@ class Object():  # pylint: disable=too-many-public-methods
         if objdir is not None:
             # Write object declaration, inventory and sidecar
             self.write_object_declaration()
-            self.write_inventory_and_sidecar(Inventory(inventory))
+            self.write_inventory_and_sidecar(inventory)
             logging.info("Built object %s at %s with %s versions", self.id, objdir, num_versions)
         # Whether object written or not, return the last inventory
-        return inventory
+        return inventory.data
 
     def create(self, srcdir, metadata=None, objdir=None):
         """Create a new OCFL object with v1 content from srcdir.
