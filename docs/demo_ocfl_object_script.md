@@ -52,7 +52,7 @@ Without an `--objdir` argument the script just writes out the inventory for the 
 Without an `--objdir` argument the script just writes out the inventory for each version in the object that would have been created.
 
 ```
-> python ocfl-object.py build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 --created 2024-10-24T18:30:02Z
+> python ocfl-object.py build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 --metadata extra_fixtures/1.0/content/spec-ex-full-metadata.json
 ### Inventory for v3
 {
   "digestAlgorithm": "sha512",
@@ -69,27 +69,42 @@ Without an `--objdir` argument the script just writes out the inventory for each
   "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
-      "created": "2024-10-24T18:30:02Z",
+      "created": "2018-01-01T01:01:01Z",
+      "message": "Initial import",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
         ]
+      },
+      "user": {
+        "address": "alice@example.com",
+        "name": "Alice"
       }
     },
     "v2": {
-      "created": "2024-10-24T18:30:02Z",
+      "created": "2018-02-02T02:02:02Z",
+      "message": "Fix bar.xml, remove image.tiff, add empty2.txt",
       "state": {
         "296e72b8fd5f7f0ac1473993600ae34953d5dab646f17e7b182b8648aff830d7bf01b56490777cb3e72b33fcc1ae520506badea1032252d1a55fd7362e269975": [
           "a_file.txt"
         ]
+      },
+      "user": {
+        "address": "bob@example.com",
+        "name": "Bob"
       }
     },
     "v3": {
-      "created": "2024-10-24T18:30:02Z",
+      "created": "2018-03-03T03:03:03Z",
+      "message": "Reinstate image.tiff, delete empty.txt",
       "state": {
         "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f": [
           "a_file.txt"
         ]
+      },
+      "user": {
+        "address": "cecilia@example.com",
+        "name": "Cecilia"
       }
     }
   }
@@ -112,7 +127,7 @@ INFO:root:Created OCFL object http://example.org/obj1 in tmp/obj1
 ### 4.1 New object with three versions
 
 ```
-> python ocfl-object.py build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 --objdir tmp/obj2 --created 2024-10-24T18:30:04Z,-v
+> python ocfl-object.py build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 --objdir tmp/obj2 -v
 INFO:root:Built object http://example.org/obj2 at tmp/obj2 with 3 versions
 ```
 
@@ -133,12 +148,10 @@ and the extracted files are:
 
 ```
 > find -s tmp/v1 -print
-tmp/v1
-tmp/v1/empty.txt
-tmp/v1/foo
-tmp/v1/foo/bar.xml
-tmp/v1/image.tiff
+find: unknown predicate `-s'
 ```
+
+(last command exited with return code 1)
 
 
 ### 5.2 Extract v2 of content in an OCFL v1.1 object
@@ -153,12 +166,10 @@ and the extracted files are:
 
 ```
 > find -s tmp/v2 -print
-tmp/v2
-tmp/v2/empty.txt
-tmp/v2/empty2.txt
-tmp/v2/foo
-tmp/v2/foo/bar.xml
+find: unknown predicate `-s'
 ```
+
+(last command exited with return code 1)
 
 
 ### 5.3 Extract head version (v3) of content in the same OCFL v1.1 object
@@ -173,7 +184,7 @@ and the extracted files are:
 
 ```
 > find -s tmp/v3 -print
-find: tmp/v3: No such file or directory
+find: unknown predicate `-s'
 ```
 
 (last command exited with return code 1)
@@ -190,9 +201,10 @@ and the extracted file is:
 
 ```
 > find -s tmp/files -print
-tmp/files
-tmp/files/bar.xml
+find: unknown predicate `-s'
 ```
+
+(last command exited with return code 1)
 
 
 ### 5.5 Extract image.tiff of v3 (default) into the same directory
@@ -206,10 +218,10 @@ and the directory now contains two extracted files:
 
 ```
 > find -s tmp/files -print
-tmp/files
-tmp/files/bar.xml
-tmp/files/image.tiff
+find: unknown predicate `-s'
 ```
+
+(last command exited with return code 1)
 
 
 ## 6. Test error conditions.
