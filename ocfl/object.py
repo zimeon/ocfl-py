@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-"""OCFL Object library.
+"""OCFL Object Implementation.
 
 Provides Object class for handling OCFL Object data and operations, including
 building, updating and inspecting. Also provides support for generating and
-updating OCFL inventories, though these are represented simply as a dict rather
-than as a new Python object type.
+updating OCFL inventories implemented via the Inventory class.
 
-This code uses PyFilesystem (import fs) exclusively for access to files. This
-should enable application beyond the operating system filesystem.
+This code uses PyFilesystem2 (import fs) exclusively for access to files, with
+some convenience functions in ocfl.pyfs. This enables application beyond the
+operating system filesystem to include 'mem://', 'zip://' and 's3://' filesystems.
 """
 import copy
 import hashlib
@@ -38,6 +38,7 @@ class Object():  # pylint: disable=too-many-public-methods
     """Class for handling OCFL Object data and operations.
 
     Example use:
+
     >>> import ocfl
     >>> object = ocfl.Object(path="fixtures/1.1/good-objects/spec-ex-full")
     >>> passed, validator = object.validate()
@@ -45,17 +46,17 @@ class Object():  # pylint: disable=too-many-public-methods
     True
     >>> validator.spec_version
     "1.1"
-
-    >>> inv = object.parse_inventory()  # parsed JSON as dict
-    >>> inv["digestAlgorithm"]
-    "sha512"
-    >>> inv["versions"]["v1"]
-    {"created": "2018-01-01T01:01:01Z",
-    "message": "Initial import", "state":
-    {"7dcc352...7785947ac31": ["foo/bar.xml"],
-    "cf83e135...27af927da3e": ["empty.txt"],
-    "ffccf6ba...336cbfb862e": ["image.tiff"]},
-    "user": {"address": "mailto:alice@example.com", "name": "Alice"}}
+    >>> inv = object.parse_inventory()
+    >>> inv.digest_algorithm
+    'sha512'
+    >>> inv.version_directories
+    ['v1', 'v2', 'v3']
+    >>> inv.version("v1").created
+    '2018-01-01T01:01:01Z'
+    >>> inv.version("v1").message
+    'Initial import'
+    >>> inv.version("v1").user_name
+    'Alice'
     """
 
     def __init__(self, *, identifier=None, content_directory="content",
@@ -200,10 +201,10 @@ class Object():  # pylint: disable=too-many-public-methods
                 include a fixity block for every algorithm in self.fixity
             src_fs: pyfs filesystem where this new version exist
             src_dir: the version directory in src_fs that files are being added
-               from
+                from
             vdir: the version name of the version being created
             metadata: a VersionMetadata object with any metadata for this
-              version
+                version
 
         Returns manifest_to_srcfile, a dict mapping from paths in manifest to
         the path of the source file in src_fs that should be include in the
@@ -259,8 +260,8 @@ class Object():  # pylint: disable=too-many-public-methods
         """Generate an OCFL inventory from a set of source files.
 
         Arguments:
-            src_fc - pyfs filesystem of source files.
-            versions_metadata - dict of VersionMetadata objects for each
+            src_fc: pyfs filesystem of source files.
+            versions_metadata: dict of VersionMetadata objects for each
                 version, key is the integer version number. Default is None
                 in which case no metadata is added.
 

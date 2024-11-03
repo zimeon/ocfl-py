@@ -1,4 +1,4 @@
-"""Wrapper for PyFilesystem2 to deal with ocfl-py needs.
+"""Wrapper functions for PyFilesystem2 to support ocfl-py.
 
 S3FS documentation: https://fs-s3fs.readthedocs.io/en/latest/
 
@@ -19,7 +19,7 @@ from fs_s3fs import S3FS
 
 
 def _pyfs_or_local(pyfs):
-    """Open local filesytem is pyfs not set.
+    """Open local filesytem if pyfs not set.
 
     Arguments:
         pyfs: an fs filesystem else None
