@@ -21,26 +21,17 @@ import fs
 import fs.path
 import fs.copy
 
-from .digest import file_digest, normalized_digest
+from .digest import file_digest
+from .inventory import Inventory
 from .inventory_validator import InventoryValidator
-from .object_utils import make_unused_filepath, next_version, ObjectException
-from .pyfs import open_fs
+from .object_utils import make_unused_filepath, next_version_directory, \
+    parse_version_directory, ObjectException
+from .pyfs import pyfs_openfs
 from .namaste import Namaste
 from .validator import Validator, ValidatorAbortException
 from .version_metadata import VersionMetadata
 
-INVENTORY_FILENAME = 'inventory.json'
-
-
-def parse_version_directory(dirname):
-    """Get version number from version directory name."""
-    m = re.match(r'''v(\d{1,5})$''', dirname)
-    if not m:
-        raise ObjectException("Bad version directory name: %s" % (dirname))
-    v = int(m.group(1))
-    if v == 0:
-        raise ObjectException("Bad version directory name: %s, v0 no allowed" % (dirname))
-    return v
+INVENTORY_FILENAME = "inventory.json"
 
 
 class Object():  # pylint: disable=too-many-public-methods
@@ -53,32 +44,32 @@ class Object():  # pylint: disable=too-many-public-methods
     >>> passed
     True
     >>> validator.spec_version
-    '1.1'
+    "1.1"
 
     >>> inv = object.parse_inventory()  # parsed JSON as dict
-    >>> inv['digestAlgorithm']
-    'sha512'
-    >>> inv['versions']['v1']
-    {'created': '2018-01-01T01:01:01Z',
-    'message': 'Initial import', 'state':
-    {'7dcc352...7785947ac31': ['foo/bar.xml'],
-    'cf83e135...27af927da3e': ['empty.txt'],
-    'ffccf6ba...336cbfb862e': ['image.tiff']},
-    'user': {'address': 'mailto:alice@example.com', 'name': 'Alice'}}
+    >>> inv["digestAlgorithm"]
+    "sha512"
+    >>> inv["versions"]["v1"]
+    {"created": "2018-01-01T01:01:01Z",
+    "message": "Initial import", "state":
+    {"7dcc352...7785947ac31": ["foo/bar.xml"],
+    "cf83e135...27af927da3e": ["empty.txt"],
+    "ffccf6ba...336cbfb862e": ["image.tiff"]},
+    "user": {"address": "mailto:alice@example.com", "name": "Alice"}}
     """
 
-    def __init__(self, *, identifier=None, content_directory='content',
-                 digest_algorithm='sha512', filepath_normalization='uri',
-                 spec_version='1.1', forward_delta=True, dedupe=True,
+    def __init__(self, *, identifier=None, content_directory="content",
+                 digest_algorithm="sha512", filepath_normalization="uri",
+                 spec_version="1.1", forward_delta=True, dedupe=True,
                  lax_digests=False, fixity=None,
                  obj_fs=None, path=None, create=False):
         """Initialize OCFL object.
 
         Arguments relevant to building an object:
             identifier: id for this object
-            content_directory: allow override of the default 'content'
-            digest_algorithm: allow override of the default 'sha512'
-            filepath_normalization: allow override of default 'uri'
+            content_directory: allow override of the default "content"
+            digest_algorithm: allow override of the default "sha512"
+            filepath_normalization: allow override of default "uri"
             spec_version: OCFL specification version
             forward_delta: set False to turn off foward delta. With forward delta
                 turned off, the same content will be repeated in a new version
@@ -109,9 +100,9 @@ class Object():  # pylint: disable=too-many-public-methods
         self.src_files = {}
         self.obj_fs = obj_fs  # fs filesystem (or sub-filesystem) for object
         if path is not None:
-            self.open_fs(path, create=create)
+            self.open_obj_fs(path, create=create)
 
-    def open_fs(self, objdir, create=False):
+    def open_obj_fs(self, objdir, create=False):
         """Open an fs filesystem for this object.
 
         Arguments:
@@ -120,12 +111,12 @@ class Object():  # pylint: disable=too-many-public-methods
                 or "mem://")
             create: True to create path/filesystem as needed, defaults to False.
 
-        Sets obj_fs attribute.
+        Sets obj_fs attribute with the filesystem instance.
 
         Raises ObjectException on failure to open filesystem.
         """
         try:
-            self.obj_fs = open_fs(fs_url=objdir, create=create)
+            self.obj_fs = pyfs_openfs(fs_url=objdir, create=create)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
             raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, e))
 
@@ -144,31 +135,35 @@ class Object():  # pylint: disable=too-many-public-methods
         """Map source filepath to a content path within the object.
 
         The purpose of the mapping might be normalization, sanitization,
-        content distribution, or something else.
+        content distribution, or something else. The mapping is set by the
+        filepath_normalization attribute where None indicates no mapping, the
+        source file name and path are preserved.
 
         Arguments:
-            filepath: the source filepath
-            vdir: the current version directory
-            used: disctionary used to check whether a given vfilepath has
-                been used already
+            filepath: the source filepath (possibly including directories) that
+                will be mapped into the object content path.
+            vdir: the current version directory name.
+            used: discionary used to check whether a given vfilepath has
+                been used already.
 
         Returns vfilepath, the version filepath for this content that starts
-            with "vdir/content_directory/"."
+        with `vdir/content_directory/`.
         """
-        if self.filepath_normalization == 'uri':
+        if self.filepath_normalization == "uri":
             filepath = urlquote(filepath)
             # also encode any leading period to unhide files
-            if filepath[0] == '.':
-                filepath = '%2E' + filepath[1:]
-        elif self.filepath_normalization == 'md5':
-            # Truncated MD5 hash of the _filepath_ as an illustration of diff paths for spec,
-            # not sure there could be any real application of this
-            filepath = hashlib.md5(filepath.encode('utf-8')).hexdigest()[0:16]
+            if filepath[0] == ".":
+                filepath = "%2E" + filepath[1:]
+        elif self.filepath_normalization == "md5":
+            # Truncated MD5 hash of the _filepath_ as an illustration of diff
+            # paths for the specification. Not sure whether there should be any
+            # real application of this
+            filepath = hashlib.md5(filepath.encode("utf-8")).hexdigest()[0:16]
         elif self.filepath_normalization is not None:
             raise Exception("Unknown filepath normalization '%s' requested" % (self.filepath_normalization))
         vfilepath = fs.path.join(vdir, self.content_directory, filepath)  # path relative to root, inc v#/content
-        # Check we don't already have this vfilepath from many to one normalization,
-        # add suffix to distinguish if necessary
+        # Check we don"t already have this vfilepath from many to one
+        # normalization, add suffix to distinguish if necessary
         if vfilepath in used:
             vfilepath = make_unused_filepath(vfilepath, used)
         return vfilepath
@@ -176,25 +171,23 @@ class Object():  # pylint: disable=too-many-public-methods
     def start_inventory(self):
         """Create inventory start with metadata from self.
 
-        Returns the start of an inventory dict based on the instance data
+        Returns the start of an Inventory object based on the instance data
         in this object.
         """
-        inventory = dict({
-            'id': self.id,
-            'type': 'https://ocfl.io/' + self.spec_version + '/spec/#inventory',
-            'digestAlgorithm': self.digest_algorithm,
-            'versions': {},
-            'manifest': {}
-        })
-        # Add contentDirectory if not 'content'
-        if self.content_directory != 'content':
-            inventory['contentDirectory'] = self.content_directory
+        inventory = Inventory()
+        inventory.id = self.id
+        inventory.spec_version = self.spec_version
+        inventory.digest_algorithm = self.digest_algorithm
+        inventory.init_manifest_and_versions()
+        # Add contentDirectory if not "content"
+        if self.content_directory != "content":
+            inventory.content_directory = self.content_directory
         # Add fixity section if requested
         if self.fixity is not None and len(self.fixity) > 0:
-            inventory['fixity'] = {}
             for fixity_type in self.fixity:
-                inventory['fixity'][fixity_type] = {}
+                inventory.add_fixity_type(fixity_type)
         else:
+            # Make sure None rather than just zero length
             self.fixity = None
         return inventory
 
@@ -202,23 +195,22 @@ class Object():  # pylint: disable=too-many-public-methods
         """Add to inventory data for new version based on files in srcdir.
 
         Arguments:
-          inventory - the inventory up to (vdir-1) which must include blocks
-            for ['manifest'] and ['versions']. It must also include
-            a ['fixity'][algorithm] block for every algorithm in self.fixity
-          src_fs - pyfs filesystem where this new version exist
-          src_dir - the version directory in src_fs that files are being added
-            from
-          vdir - the version name of the version being created
-          metadata - a VersionMetadata object with any metadata for this
-            version
+            inventory: an Invenory object with data up to versio (vdir-1) which
+                must include blocks for the manifest and versions. It must also
+                include a fixity block for every algorithm in self.fixity
+            src_fs: pyfs filesystem where this new version exist
+            src_dir: the version directory in src_fs that files are being added
+               from
+            vdir: the version name of the version being created
+            metadata: a VersionMetadata object with any metadata for this
+              version
 
-        Returns:
-          manifest_to_srcfile - dict mapping from paths in manifest to the path
-            of the source file in src_fs that should be include in the content
-            for this new version
+        Returns manifest_to_srcfile, a dict mapping from paths in manifest to
+        the path of the source file in src_fs that should be include in the
+        content for this new version.
         """
         state = {}  # state for this new version
-        manifest = inventory['manifest']
+        manifest = inventory.manifest
         digests_in_version = {}
         manifest_to_srcfile = {}
         # Go through all files to find new files in manifest and state for this version
@@ -253,118 +245,144 @@ class Object():  # pylint: disable=too-many-public-methods
         # Add extra fixity entries if required
         if self.fixity is not None:
             for fixity_type in self.fixity:
-                fixities = inventory['fixity'][fixity_type]
                 for digest, vfilepaths in digests_in_version.items():
                     for vfilepath in vfilepaths:
                         fixity_digest = file_digest(manifest_to_srcfile[vfilepath], fixity_type, pyfs=src_fs)
-                        if fixity_digest not in fixities:
-                            fixities[fixity_digest] = [vfilepath]
-                        else:
-                            fixities[fixity_digest].append(vfilepath)
-        # Set head to this latest version, and add this version to inventory
-        inventory['head'] = vdir
-        inventory['versions'][vdir] = metadata.as_dict(state=state)
+                        inventory.add_fixity_data(digest_algorithm=fixity_type,
+                                                  digest=fixity_digest,
+                                                  filepath=vfilepath)
+        # Add this new version to inventory (also updates head)
+        inventory.add_version(vdir=vdir, metadata=metadata, state=state)
         return manifest_to_srcfile
 
-    def build_inventory(self, src_fs, metadata=None):
+    def build_inventory(self, src_fs, versions_metadata=None):
         """Generate an OCFL inventory from a set of source files.
 
         Arguments:
-            src_fc - pyfs filesystem of source files
-            metadata - metadata to apply to each version
+            src_fc - pyfs filesystem of source files.
+            versions_metadata - dict of VersionMetadata objects for each
+                version, key is the integer version number. Default is None
+                in which case no metadata is added.
 
-        Yields (vdir, inventory, manifest_to_srcfile) for each version in sequence,
-        where vdir is the version directory name, inventory is the inventory for that
-        version, and manifest_to_srcfile is a dictionary that maps filepaths in the
-        manifest to actual source filepaths.
+        Yields (vdir, inventory, manifest_to_srcfile) for each version in
+        sequence, where vdir is the version directory name, inventory is the
+        Inventory object for that version, and manifest_to_srcfile is a
+        dictionary that maps filepaths in the manifest to actual source
+        filepaths.
         """
+        if versions_metadata is None:
+            versions_metadata = {}
         inventory = self.start_inventory()
         # Find the versions
         versions = {}
-        for vdir in src_fs.listdir('/'):
+        for vdir in src_fs.listdir("/"):
             if not src_fs.isdir(vdir):
                 continue
-            vn = parse_version_directory(vdir)
-            versions[vn] = vdir
-        # Go through versions in order building versions array, deduping if selected
+            try:
+                vn = parse_version_directory(vdir)
+                versions[vn] = vdir
+            except ObjectException:
+                # Ignore directories that are not valid version dirs
+                pass
+        # Go through versions in order building versions array, deduping
+        # files to include if selected
         for vn in sorted(versions.keys()):
             vdir = versions[vn]
-            manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
-                                                   src_dir=vdir, vdir=vdir,
+            # Do we have metadata for this version? Else empty.
+            metadata = versions_metadata.get(vn, VersionMetadata())
+            manifest_to_srcfile = self.add_version(inventory=inventory,
+                                                   src_fs=src_fs,
+                                                   src_dir=vdir,
+                                                   vdir=vdir,
                                                    metadata=metadata)
             yield (vdir, inventory, manifest_to_srcfile)
 
     def object_declaration_object(self):
         """NAMASTE object declaration Namaste object."""
-        return Namaste(0, 'ocfl_object_' + self.spec_version)
+        return Namaste(0, "ocfl_object_" + self.spec_version)
 
     def write_object_declaration(self):
         """Write NAMASTE object declaration.
 
-        Assumes self.obj_fs is open for this object.
+        Assumes self.obj_fs is open for this object and writes into the
+        root directory of that filesystem.
         """
         self.object_declaration_object().write(pyfs=self.obj_fs)
 
-    def write_inventory_and_sidecar(self, inventory, vdir='', write_inventory=True):
+    def write_inventory_and_sidecar(self, inventory=None, vdir=""):
         """Write inventory and sidecar to vdir in the current object.
+
+        Arguments:
+            inventory: an Inventory object to write the inventory, else None
+                if only the sidecar should be written (default)
+            vdir: string of the directory name within self.obj_fs that the
+                inventory and sidecar should be written to. Default is ""
 
         Assumes self.obj_fs is open for this object. Will create vdir if that
         does not exist. If vdir is not specified then will write to root of
-        the object.
+        the object filesystem.
 
         Returns the inventory sidecar filename.
         """
         if not self.obj_fs.exists(vdir):
             self.obj_fs.makedir(vdir)
         invfile = fs.path.join(vdir, INVENTORY_FILENAME)
-        if write_inventory:
-            with self.obj_fs.open(invfile, 'w') as fh:
-                json.dump(inventory, fh, sort_keys=True, indent=2)
+        if inventory is not None:
+            with self.obj_fs.open(invfile, "w") as fh:
+                inventory.write_json(fh)
         digest = file_digest(invfile, self.digest_algorithm, pyfs=self.obj_fs)
-        sidecar = fs.path.join(vdir, INVENTORY_FILENAME + '.' + self.digest_algorithm)
-        with self.obj_fs.open(sidecar, 'w') as fh:
-            fh.write(digest + ' ' + INVENTORY_FILENAME + '\n')
+        sidecar = fs.path.join(vdir, INVENTORY_FILENAME + "." + self.digest_algorithm)
+        with self.obj_fs.open(sidecar, "w") as fh:
+            fh.write(digest + " " + INVENTORY_FILENAME + "\n")
         return sidecar
 
     def write_inventory_sidecar(self):
-        """Write just sidecare for this object's already existing root inventory file.
+        """Write just sidecare for this object"s already existing root inventory file.
 
         Returns the inventory sidecar filename.
         """
-        return self.write_inventory_and_sidecar(None, write_inventory=False)
+        return self.write_inventory_and_sidecar(inventory=None)
 
-    def build(self, srcdir, metadata=None, objdir=None):
-        """Build an OCFL object and write to objdir if set, else just build inventory.
+    def build(self, srcdir, versions_metadata=None, objdir=None):
+        """Build an OCFL object with multiple versions.
+
+        Will write the object to objdir if set, else just build inventory.
 
         Arguments:
           srcdir: source directory with version sub-directories.
-          metadata: VersionMetadata object applied to all versions.
+          versions_metadata: dict of VersionMetadata objects for each
+              version, key is the integer version number. Default is None
+              in which case no metadata is added.
           objdir: output directory for object (must not already exist), if not
               set then will just return head inventory that would have been
-              created.
+              created as a dry-run.
 
-        Returns the last version inventory.
+        Returns the Inventory object for the last version.
+
+        See also create(...) for creating a new object with one version.
         """
         if self.id is None:
             raise ObjectException("Can't build object, identifier is not set!")
         if objdir is not None:
-            self.open_fs(objdir, create=True)
+            self.open_obj_fs(objdir, create=True)
         num_versions = 0
-        src_fs = open_fs(srcdir)
+        src_fs = pyfs_openfs(srcdir)
         inventory = None
-        for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(src_fs, metadata):
+        # Create each version of the object
+        for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(src_fs, versions_metadata):
             num_versions += 1
             if objdir is not None:
                 self.write_inventory_and_sidecar(inventory, vdir)
                 # Copy files into this version
                 for (path, srcfile) in manifest_to_srcfile.items():
                     self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
+        # Finally populate the object root
         if objdir is not None:
             # Write object declaration, inventory and sidecar
             self.write_object_declaration()
             self.write_inventory_and_sidecar(inventory)
             logging.info("Built object %s at %s with %s versions", self.id, objdir, num_versions)
-        # Whether object written or not, return the set of inventories
+        # Whether object written or not, return the last inventory
         return inventory
 
     def create(self, srcdir, metadata=None, objdir=None):
@@ -376,29 +394,32 @@ class Object():  # pylint: disable=too-many-public-methods
             objdir - output directory for object (must not already exist), if not
                 set then will just return inventory for object that would have been
                 created.
+
+        Returns the Inventory object for the last version.
+
+        See also build(...) for building a new object with multiple versions.
         """
         if self.id is None:
             raise ObjectException("Identifier is not set!")
-        src_fs = open_fs(srcdir)
+        src_fs = pyfs_openfs(srcdir)
         if objdir is not None:
-            self.open_fs(objdir, create=True)
+            self.open_obj_fs(objdir, create=True)
         inventory = self.start_inventory()
-        vdir = 'v1'
+        vdir = "v1"
         manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
-                                               src_dir='', vdir=vdir,
+                                               src_dir="", vdir=vdir,
                                                metadata=metadata)
         if objdir is None:
             return inventory
-        # Else write out object
+        # Write out v1 object
         self.write_inventory_and_sidecar(inventory, vdir)
-        # Write object declaration, inventory and sidecar
+        # Write object root with object declaration, inventory and sidecar
         self.write_object_declaration()
         self.write_inventory_and_sidecar(inventory)
         # Write version files
-        for paths in inventory['manifest'].values():
-            for path in paths:
-                srcfile = manifest_to_srcfile[path]
-                self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
+        for path in inventory.content_paths:
+            srcfile = manifest_to_srcfile[path]
+            self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
         logging.info("Created OCFL object %s in %s", self.id, objdir)
         return inventory
 
@@ -414,51 +435,50 @@ class Object():  # pylint: disable=too-many-public-methods
         (such as using a new digest). There will be no content change between
         versions.
         """
-        self.open_fs(objdir)
+        self.open_obj_fs(objdir)
         validator = Validator(check_digests=False, lax_digests=self.lax_digests)
         if not validator.validate_object(objdir):
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
         inventory = self.parse_inventory()
-        self.id = inventory['id']
-        old_head = inventory['head']
-        head = next_version(old_head)
+        self.id = inventory.id
+        old_head = inventory.head
+        head = next_version_directory(old_head)
         logging.info("Will update %s %s -> %s", self.id, old_head, head)
         self.obj_fs.makedir(head)
         # Is this a request to change the digest algorithm?
-        old_digest_algorithm = inventory['digestAlgorithm']
+        old_digest_algorithm = inventory.digest_algorithm
         digest_algorithm = self.digest_algorithm
         if digest_algorithm is None:
             digest_algorithm = old_digest_algorithm
         elif digest_algorithm != old_digest_algorithm:
             logging.info("New version with use %s instead of %s digestAlgorithm",
                          digest_algorithm, old_digest_algorithm)
-            inventory['digestAlgorithm'] = digest_algorithm
+            inventory.digest_algorithm = digest_algorithm
         # Is this a request to change the set of fixity information?
         fixity = self.fixity
-        old_fixity = set(inventory['fixity'].keys()) if 'fixity' in inventory else set()
+        old_fixity = set(inventory.fixity.keys())
         if fixity is None:
             # Not explicit, carry forward from previous version. Only change will
             # be adding old digest information if we are changing digestAlgorithm
             fixity = old_fixity.copy()
             if digest_algorithm != old_digest_algorithm and old_digest_algorithm not in old_fixity:
                 # Add old manifest digests to fixity block
-                if 'fixity' not in inventory:
-                    inventory['fixity'] = {}
-                inventory['fixity'][old_digest_algorithm] = inventory['manifest'].copy()
+                inventory.add_fixity_type(digest_algorithm=old_digest_algorithm,
+                                          map=inventory.manifest.copy())
                 fixity.add(old_digest_algorithm)
         else:
             # Fixity to be stored is explicit, may be a change
             fixity = set(fixity)
             if fixity != old_fixity:
                 for digest in old_fixity.difference(fixity):
-                    inventory['fixity'].pop(digest)
+                    inventory.fixity.pop(digest)
                 for digest in fixity.difference(old_fixity):
                     logging.info("FIXME - need to add fixity with digest %s", digest)
         if fixity != old_fixity:
             logging.info("New version will have %s instead of %s fixity",
-                         ','.join(sorted(fixity)), ','.join(sorted(old_fixity)))
+                         ",".join(sorted(fixity)), ",".join(sorted(old_fixity)))
         # Now look at contents, manifest and state
-        manifest = copy.deepcopy(inventory['manifest'])
+        manifest = copy.deepcopy(inventory.manifest)
         if digest_algorithm != old_digest_algorithm:
             old_to_new_digest = {}
             new_manifest = {}
@@ -474,23 +494,26 @@ class Object():  # pylint: disable=too-many-public-methods
                 new_manifest[digest] = manifest[old_digest]
             manifest = new_manifest
             # Now update all state blocks
-            for vdir in inventory['versions']:
-                old_state = inventory['versions'][vdir]['state']
+            for vdir in inventory.version_directories:
+                old_state = inventory.version(vdir).state
                 state = {}
                 for old_digest, files in old_state.items():
                     state[old_to_new_digest[old_digest]] = old_state[old_digest]
-                inventory['versions'][vdir]['state'] = state
-        inventory['manifest'] = manifest
+                inventory.version(vdir).state = state
+        inventory.manifest = manifest
         # Add and remove any contents by comparing srcdir with existing state and manifest
         if srcdir is None:
             # No content Update
-            inventory['head'] = head
-            state = copy.deepcopy(inventory['versions'][old_head]['state'])
-            inventory['versions'][head] = metadata.as_dict(state=state)
+            inventory.head = head
+            state = copy.deepcopy(inventory.version(old_head).state)
+            inventory.versions_block[head] = metadata.as_dict()
+            inventory.versions_block[head]["state"] = state
         else:
-            src_fs = open_fs(srcdir)
-            manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
-                                                   src_dir='', vdir=head,
+            src_fs = pyfs_openfs(srcdir)
+            manifest_to_srcfile = self.add_version(inventory=inventory,
+                                                   src_fs=src_fs,
+                                                   src_dir="",
+                                                   vdir=head,
                                                    metadata=metadata)
             # Copy files into this version
             for (path, srcfile) in manifest_to_srcfile.items():
@@ -500,7 +523,7 @@ class Object():  # pylint: disable=too-many-public-methods
         self.write_inventory_and_sidecar(inventory)
         # Delete old root inventory sidecar if we changed digest algorithm
         if digest_algorithm != old_digest_algorithm:
-            self.obj_fs.remove(INVENTORY_FILENAME + '.' + old_digest_algorithm)
+            self.obj_fs.remove(INVENTORY_FILENAME + "." + old_digest_algorithm)
         logging.info("Updated OCFL object %s in %s by adding %s", self.id, objdir, head)
 
     def tree(self, objdir):
@@ -513,10 +536,10 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         def _show_indent(level, last=False, last_v=False):
             """Indent string for tree view at level for intermediate or last."""
-            tree_next = '├── '
-            tree_last = '└── '
-            tree_pass = '│   '
-            tree_indent = '    '
+            tree_next = "├── "
+            tree_last = "└── "
+            tree_pass = "│   "
+            tree_indent = "    "
             if level == 0:
                 return tree_last if last else tree_next
             return (tree_indent if last else tree_pass) + (tree_last if last_v else tree_next)
@@ -534,42 +557,42 @@ class Object():  # pylint: disable=too-many-public-methods
         else:
             logging.warning("OCFL v%s Object at %s is INVALID",
                             validator.spec_version, objdir)
-        tree = '[' + objdir + ']\n'
-        self.open_fs(objdir)
-        entries = sorted(self.obj_fs.listdir(''))
+        tree = "[" + objdir + "]\n"
+        self.open_obj_fs(objdir)
+        entries = sorted(self.obj_fs.listdir(""))
         n = 0
         seen_sidecar = False
         object_declaration_filename = self.object_declaration_object().filename
         for entry in entries:
             n += 1
-            note = entry + ' '
+            note = entry + " "
             v_notes = []
-            if re.match(r'''v\d+$''', entry):
+            if re.match(r"""v\d+$""", entry):
                 seen_v_sidecar = False
                 for v_entry in sorted(self.obj_fs.listdir(entry)):
-                    v_note = v_entry + ' '
+                    v_note = v_entry + " "
                     if v_entry == INVENTORY_FILENAME:
                         pass
-                    elif v_entry.startswith(INVENTORY_FILENAME + '.'):
+                    elif v_entry.startswith(INVENTORY_FILENAME + "."):
                         if seen_v_sidecar:
-                            v_note += '<--- multiple inventory digests?'
+                            v_note += "<--- multiple inventory digests?"
                             seen_v_sidecar = True
                     elif v_entry == self.content_directory:
                         num_files = 0
                         for (v_dirpath, v_dirs, v_files) in self.obj_fs.walk(fs.path.join(entry, v_entry)):  # pylint: disable=unused-variable
                             num_files += len(v_files)
-                        v_note += '(%d files)' % num_files
+                        v_note += "(%d files)" % num_files
                     else:
-                        v_note += '<--- ???'
+                        v_note += "<--- ???"
                     v_notes.append(v_note)
             elif entry in (object_declaration_filename, INVENTORY_FILENAME):
                 pass
-            elif entry.startswith(INVENTORY_FILENAME + '.'):
+            elif entry.startswith(INVENTORY_FILENAME + "."):
                 if seen_sidecar:
-                    note += '<--- multiple inventory digests?'
+                    note += "<--- multiple inventory digests?"
                 seen_sidecar = True
             else:
-                note += '<--- ???'
+                note += "<--- ???"
             last = (n == len(entries))
             tree += _show_indent(0, last) + note + "\n"
             nn = 0
@@ -616,10 +639,10 @@ class Object():  # pylint: disable=too-many-public-methods
                               log_errors=log_errors)
         try:
             (inv_dir, inv_file) = fs.path.split(path)
-            validator.obj_fs = open_fs(inv_dir, create=False)
-            validator.validate_inventory(inv_file, where='standalone', force_spec_version=force_spec_version)
+            validator.obj_fs = pyfs_openfs(inv_dir, create=False)
+            validator.validate_inventory(inv_file, where="standalone", force_spec_version=force_spec_version)
         except fs.errors.ResourceNotFound:
-            validator.log.error('E033', where='standalone', explanation='failed to open directory')
+            validator.log.error("E033", where="standalone", explanation="failed to open directory")
         except ValidatorAbortException:
             pass
         return (validator.log.num_errors == 0), validator
@@ -629,21 +652,21 @@ class Object():  # pylint: disable=too-many-public-methods
 
         Arguments:
             objdir - directory for the object
-            version - version to be extracted ('v1', etc.) or 'head' for latest
+            version - version to be extracted ("v1", etc.) or "head" for latest
 
         Returns tuple of (inv, version) where inv is the parsed inventory and
         version if the checked object version.
 
-        Raises an ObjectException is the inventory can't be parsed or if the
-        version doesn't exist.
+        Raises an ObjectException is the inventory Can't be parsed or if the
+        version doesn"t exist.
         """
-        self.open_fs(objdir)
+        self.open_obj_fs(objdir)
         # Read inventory, set up version
         inv = self.parse_inventory()
-        if version == 'head':
-            version = inv['head']
+        if version == "head":
+            version = inv.head
             logging.debug("Object at %s has head %s", objdir, version)
-        elif version not in inv['versions']:
+        elif version not in inv.version_directories:
             raise ObjectException("Object at %s does not include a version '%s'" % (objdir, version))
         return inv, version
 
@@ -652,7 +675,7 @@ class Object():  # pylint: disable=too-many-public-methods
 
         Arguments:
             objdir - directory for the object
-            version - version to be extracted ('v1', etc.) or 'head' for latest
+            version - version to be extracted ("v1", etc.) or "head" for latest
             dstdir - directory to create with extracted version
 
         The dstdir itself may exist bit if it is then it must be empty. The
@@ -664,7 +687,7 @@ class Object():  # pylint: disable=too-many-public-methods
         # Check the destination
         (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
         try:
-            parent_fs = open_fs(parentdir)
+            parent_fs = pyfs_openfs(parentdir)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
             raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
         if parent_fs.isdir(dir):
@@ -674,8 +697,8 @@ class Object():  # pylint: disable=too-many-public-methods
             parent_fs.makedir(dir)
         dst_fs = parent_fs.opendir(dir)  # Open a sub-filesystem as our destination
         # Now extract...
-        manifest = inv['manifest']
-        state = inv['versions'][version]['state']
+        manifest = inv.manifest
+        state = inv.version(version).state
         # Extract all files for this version
         for (digest, logical_files) in state.items():
             existing_file = manifest[digest][0]  # First entry with the digest, there could be > 1
@@ -684,19 +707,19 @@ class Object():  # pylint: disable=too-many-public-methods
                 dst_fs.makedirs(fs.path.dirname(logical_file), recreate=True)
                 fs.copy.copy_file(self.obj_fs, existing_file, dst_fs, logical_file)
         logging.info("Extracted %s into %s", version, dstdir)
-        return VersionMetadata(inventory=inv, version=version)
+        return VersionMetadata(inventory=inv.data, version=version)
 
     def extract_file(self, objdir, version, dstdir, logical_path):
         """Extract one file from version from object at objdir into dstdir.
 
         Arguments:
             objdir - directory for the object
-            version - version to be extracted ('v1', etc.) or 'head' for latest
+            version - version to be extracted ("v1", etc.) or "head" for latest
             dstdir - directory to create with extracted version
             logical_path - extract just one logical path into dstdir, without
                 any path segments below dstdir
 
-        If dstdir doesn't exists then create it. The parent directory of dstdir
+        If dstdir doesn"t exists then create it. The parent directory of dstdir
         must exist. If dstdir exists, then a file of the same name must not
         exist.
 
@@ -705,14 +728,14 @@ class Object():  # pylint: disable=too-many-public-methods
         inv, version = self._extract_setup(objdir, version)
         # Check the destination
         try:
-            dst_fs = open_fs(dstdir)
+            dst_fs = pyfs_openfs(dstdir)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed):
-            # Doesn't exist, can we create it?
+            # Doesn"t exist, can we create it?
             (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
             if parentdir == "":
                 parentdir = "."
             try:
-                parent_fs = open_fs(parentdir)
+                parent_fs = pyfs_openfs(parentdir)
             except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
                 raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
             dst_fs = parent_fs.makedir(dir)
@@ -721,8 +744,8 @@ class Object():  # pylint: disable=too-many-public-methods
         if dst_fs.exists(basename):
             raise ObjectException("Destination file %s in %s already exists" % (basename, dstdir))
         # Now extract...
-        manifest = inv['manifest']
-        state = inv['versions'][version]['state']
+        manifest = inv.manifest
+        state = inv.version(version).state
         # Extract the specified file
         copied = False
         for (digest, logical_files) in state.items():
@@ -745,37 +768,22 @@ class Object():  # pylint: disable=too-many-public-methods
         Will validate the inventory and normalize the digests so that the rest
         of the Object methods can assume correctness and matching string digests
         between state and manifest blocks.
+
+        Returns and Inventory object for the parsed inventory.
         """
         with self.obj_fs.open(INVENTORY_FILENAME) as fh:
-            inventory = json.load(fh)
+            inventory = Inventory(json.load(fh))
         # Validate
         iv = InventoryValidator()
-        iv.validate(inventory=inventory)
+        iv.validate(inventory=inventory.data)
         if iv.log.num_errors > 0:
             raise ObjectException("Root inventory is not valid (%d errors)" % iv.log.num_errors)
         self.spec_version = iv.spec_version
-        digest_algorithm = iv.digest_algorithm
         # Normalize digests in place
-        manifest = inventory['manifest']
-        from_to = {}
-        for digest in manifest:
-            norm_digest = normalized_digest(digest, digest_algorithm)
-            if digest != norm_digest:
-                from_to[digest] = norm_digest
-        for (digest, norm_digest) in from_to.items():
-            manifest[norm_digest] = manifest.pop(digest)
-        for v in inventory['versions']:
-            state = inventory['versions'][v]['state']
-            from_to = {}
-            for digest in state:
-                norm_digest = normalized_digest(digest, digest_algorithm)
-                if digest != norm_digest:
-                    from_to[digest] = norm_digest
-            for (digest, norm_digest) in from_to.items():
-                state[norm_digest] = state.pop(digest)
+        inventory.normalize_digests(iv.digest_algorithm)
         return inventory
 
-    def id_from_inventory(self, failure_value='UNKNOWN-ID'):
+    def id_from_inventory(self, failure_value="UNKNOWN-ID"):
         """Read JSON root inventory file for this object and extract id.
 
         Returns the id from the inventory or failure_value is none can
@@ -783,6 +791,6 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         try:
             inventory = self.parse_inventory()
-            return inventory['id']
+            return inventory.id
         except ObjectException:
             return failure_value

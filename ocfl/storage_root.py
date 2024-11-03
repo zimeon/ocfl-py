@@ -12,7 +12,7 @@ from fs.copy import copy_dir
 
 from .namaste import find_namastes, Namaste
 from .object import Object
-from .pyfs import open_fs, ocfl_walk, ocfl_opendir
+from .pyfs import pyfs_openfs, pyfs_walk, pyfs_opendir
 from .validator import Validator
 from .validation_logger import ValidationLogger
 
@@ -30,15 +30,15 @@ def get_layout(layout_name=None):
     Returns a layout object for the appropriate layour if the layour_name
     is recognized, otherwise throws a StorageRootException.
     """
-    if layout_name in ('0002-flat-direct-storage-layout', '0002', 'flat-direct'):
+    if layout_name in ("0002-flat-direct-storage-layout", "0002", "flat-direct"):
         return Layout_0002_Flat_Direct()
-    if layout_name in ('0003-hash-and-id-n-tuple-storage-layout', '0003'):
+    if layout_name in ("0003-hash-and-id-n-tuple-storage-layout", "0003"):
         return Layout_0003_Hash_And_Id_N_Tuple()
-    if layout_name in ('nnnn-flat-quoted-storage-layout', 'flat-quoted'):
+    if layout_name in ("nnnn-flat-quoted-storage-layout", "flat-quoted"):
         return Layout_NNNN_Flat_Quoted()
-    if layout_name == 'nnnn-tuple-tree':
+    if layout_name == "nnnn-tuple-tree":
         return Layout_NNNN_Tuple_Tree()
-    if layout_name == 'nnnn-uuid-quadtree':
+    if layout_name == "nnnn-uuid-quadtree":
         return Layout_NNNN_UUID_Quadtree()
     raise StorageRootException("Unsupported layout_name %s, aborting!" % (layout_name))
 
@@ -61,17 +61,17 @@ class StorageRoot():
         self.spec_version = None
         if spec_version is not None:
             self.check_spec_version(spec_version)
-        self.layout_file = 'ocfl_layout.json'
+        self.layout_file = "ocfl_layout.json"
         self.registered_extensions = [
-            '0002-flat-direct-storage-layout',
-            '0003-hash-and-id-n-tuple-storage-layout'
+            "0002-flat-direct-storage-layout",
+            "0003-hash-and-id-n-tuple-storage-layout"
         ]
         self.supported_layouts = [
-            '0002-flat-direct-storage-layout',
-            '0003-hash-and-id-n-tuple-storage-layout',
-            'nnnn-flat-quoted-storage-layout',
-            'nnnn-tuple-tree',
-            'nnnn-uuid-quadtree'
+            "0002-flat-direct-storage-layout",
+            "0003-hash-and-id-n-tuple-storage-layout",
+            "nnnn-flat-quoted-storage-layout",
+            "nnnn-tuple-tree",
+            "nnnn-uuid-quadtree"
         ]
         #
         self.root_fs = None
@@ -84,24 +84,24 @@ class StorageRoot():
         self.structure_error = None
         self.traversal_errors = None
 
-    def check_spec_version(self, spec_version, default='1.1'):
+    def check_spec_version(self, spec_version, default="1.1"):
         """Check the OCFL specification version is supported."""
         if spec_version is None and self.spec_version is None:
             spec_version = default
-        if spec_version not in ('1.0', '1.1'):
+        if spec_version not in ("1.0", "1.1"):
             raise StorageRootException("Unsupported OCFL specification version %s requested" % (spec_version))
         self.spec_version = spec_version
 
     def open_root_fs(self, create=False):
         """Open pyfs filesystem for this OCFL storage root."""
         try:
-            self.root_fs = open_fs(self.root, create=create)
+            self.root_fs = pyfs_openfs(self.root, create=create)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
             raise StorageRootException("Failed to open OCFL storage root filesystem '%s' (%s)" % (self.root, str(e)))
 
     def root_declaration_object(self):
         """NAMASTE object declaration Namaste object."""
-        return Namaste(0, 'ocfl_' + self.spec_version)
+        return Namaste(0, "ocfl_" + self.spec_version)
 
     def write_root_declaration(self, root_fs):
         """Write NAMASTE object declaration.
@@ -125,7 +125,7 @@ class StorageRoot():
         """Record error traversing OCFL storage root."""
         self.num_traversal_errors += 1
         if self.log is None:  # FIXME - What to do in non-validator context?
-            args = ', '.join('{0}={1!r}'.format(k, v) for k, v in kwargs.items())
+            args = ", ".join("{0}={1!r}".format(k, v) for k, v in kwargs.items())
             logging.error("Traversal error %s - %s", code, args)
         else:
             self.log.error(code, **kwargs)
@@ -147,7 +147,7 @@ class StorageRoot():
         self.check_spec_version(spec_version=spec_version)
         # Now create the storage root
         (parent, root_dir) = fs.path.split(self.root)
-        parent_fs = open_fs(parent)
+        parent_fs = pyfs_openfs(parent)
         if parent_fs.exists(root_dir):
             raise StorageRootException("OCFL storage root %s already exists, aborting!" % (self.root))
         self.root_fs = parent_fs.makedir(root_dir)
@@ -157,9 +157,9 @@ class StorageRoot():
         # Create a layout declaration if the layout ise set, it is valid to have
         # a storage root with no layout information
         if self.layout is not None:
-            with self.root_fs.open(self.layout_file, 'w') as fh:
-                layout = {'extension': self.layout.NAME,
-                          'description': self.layout.DESCRIPTION}
+            with self.root_fs.open(self.layout_file, "w") as fh:
+                layout = {"extension": self.layout.NAME,
+                          "description": self.layout.DESCRIPTION}
                 json.dump(layout, fh, sort_keys=True, indent=2)
             # Do we need to qrite a extension description?
             self.layout.write_layout_params(root_fs=self.root_fs)
@@ -179,8 +179,8 @@ class StorageRoot():
         if len(namastes) > 1:
             raise StorageRootException("E069b Storage root %s has more than one 0= style declaration file" % (self.root))
         spec_version = None
-        for version in ('1.1', '1.0'):
-            if namastes[0].filename == '0=ocfl_' + version:
+        for version in ("1.1", "1.0"):
+            if namastes[0].filename == "0=ocfl_" + version:
                 spec_version = version
                 break
         else:
@@ -215,13 +215,13 @@ class StorageRoot():
             with self.root_fs.open(self.layout_file) as fh:
                 layout = json.load(fh)
         except Exception as e:
-            raise StorageRootException("OCFL storage root %s has layout file that can't be read/parsed (%s)" % (self.root, str(e)))
+            raise StorageRootException("OCFL storage root %s has layout file that cant be read/parsed (%s)" % (self.root, str(e)))
         if not isinstance(layout, dict):
             raise StorageRootException("Storage root %s has layout file that isn't a JSON object" % (self.root))
-        if ('extension' not in layout or not isinstance(layout['extension'], str)
-                or 'description' not in layout or not isinstance(layout['description'], str)):
+        if ("extension" not in layout or not isinstance(layout["extension"], str)
+                or "description" not in layout or not isinstance(layout["description"], str)):
             raise StorageRootException("Storage root %s has layout file doesn't have required extension and description string entries" % (self.root))
-        return layout['extension'], layout['description']
+        return layout["extension"], layout["description"]
 
     def object_paths(self):
         """Generate object paths for every obect in the OCFL storage root.
@@ -232,11 +232,11 @@ class StorageRoot():
         Will log any errors seen while traversing the directory tree under the
         storage root.
         """
-        for (dirpath, dirs, files) in ocfl_walk(self.root_fs, is_storage_root=True):
-            if dirpath == '/':
-                if 'extensions' in dirs:
+        for (dirpath, dirs, files) in pyfs_walk(self.root_fs, is_storage_root=True):
+            if dirpath == "/":
+                if "extensions" in dirs:
                     self.validate_extensions_dir()
-                    dirs.remove('extensions')
+                    dirs.remove("extensions")
                 # Ignore any other files in storage root
             elif (len(dirs) + len(files)) == 0:
                 self.traversal_error("E073", path=dirpath)
@@ -244,14 +244,14 @@ class StorageRoot():
                 pass  # Just an intermediate directory
             else:
                 # Is this directory an OCFL object? Look for any 0= file.
-                zero_eqs = [file for file in files if file.startswith('0=')]
+                zero_eqs = [file for file in files if file.startswith("0=")]
                 if len(zero_eqs) > 1:
                     self.traversal_error("E003d", path=dirpath)
                 elif len(zero_eqs) == 1:
                     declaration = zero_eqs[0]
-                    match = re.match(r'''0=ocfl_object_(\d+\.\d+)''', declaration)
-                    if match and match.group(1) in ('1.0', '1.1'):  # FIXME - look up supported versions
-                        yield dirpath.lstrip('/')
+                    match = re.match(r"""0=ocfl_object_(\d+\.\d+)""", declaration)
+                    if match and match.group(1) in ("1.0", "1.1"):  # FIXME - look up supported versions
+                        yield dirpath.lstrip("/")
                     elif match:
                         self.traversal_error("E004a", path=dirpath, version=match.group(1))
                     else:
@@ -268,12 +268,12 @@ class StorageRoot():
         this code relies up the registered_extensions property to list known
         storage root extensions.
         """
-        for entry in self.root_fs.scandir('extensions'):
+        for entry in self.root_fs.scandir("extensions"):
             if entry.is_dir:
                 if entry.name not in self.registered_extensions:
-                    self.log.warning('W901', entry=entry.name)  # FIXME - No good warning code in spec
+                    self.log.warning("W901", entry=entry.name)  # FIXME - No good warning code in spec
             else:
-                self.traversal_error('E086', entry=entry.name)
+                self.traversal_error("E086", entry=entry.name)
 
     def list_objects(self):
         """List contents of this OCFL storage root.
@@ -288,7 +288,7 @@ class StorageRoot():
         self.check_root_structure()
         self.num_objects = 0
         for dirpath in self.object_paths():
-            with ocfl_opendir(self.root_fs, dirpath) as obj_fs:
+            with pyfs_opendir(pyfs=self.root_fs, dir=dirpath) as obj_fs:
                 # Parse inventory to extract id
                 identifier = Object(obj_fs=obj_fs).id_from_inventory()
                 self.num_objects += 1
@@ -314,21 +314,21 @@ class StorageRoot():
                                       log_warnings=log_warnings)
                 # FIXME - Should check that all objest are not higher spec
                 # version that storage root https://ocfl.io/1.1/spec/#E081
-                if validator.validate_object(ocfl_opendir(self.root_fs, dirpath)):
+                if validator.validate_object(pyfs_opendir(pyfs=self.root_fs, dir=dirpath)):
                     good_objects += 1
                 else:
                     logging.debug("Object at %s in INVALID", dirpath)
                 if len(errors) < max_errors:
                     # Record detail of errors (and warnings if log_warnings)
-                    messages = validator.status_str(prefix='[[' + dirpath + ']]')
-                    if messages != '':
+                    messages = validator.status_str(prefix="[[" + dirpath + "]]")
+                    if messages != "":
                         errors.append([dirpath, messages])
                 num_objects += 1
         return num_objects, good_objects, errors
 
     def validate(self, *, validate_objects=True, check_digests=True,
                  log_warnings=False, log_errors=True, max_errors=100,
-                 lang='en'):
+                 lang="en"):
         """Validate OCFL storage root, structure, and optionally all objects.
 
         Arguments (keyword only):
@@ -380,17 +380,16 @@ class StorageRoot():
         self.open_root_fs()
         self.check_root_structure()
         # Sanity check
-        o = Object()
-        o.open_fs(object_path)
+        o = Object(path=object_path)
         inventory = o.parse_inventory()
-        identifier = inventory['id']
+        identifier = inventory.id
         # Now copy
         path = self.object_path(identifier)
         if self.root_fs.exists(path):
             raise StorageRootException("Add object failed because path %s exists" % (path))
         logging.debug("Copying from %s to %s", object_path, fs.path.join(self.root, path))
         try:
-            copy_dir(o.obj_fs, '/', self.root_fs, path)
+            copy_dir(o.obj_fs, "/", self.root_fs, path)
         except Exception as e:
             raise StorageRootException("Add object at path %s failed! (%s)" % (path, str(e)))
         return (identifier, path)

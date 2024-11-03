@@ -1,0 +1,28 @@
+{
+  "versions": {
+    "v1": {
+      "created": "2018-01-01T01:01:01Z",
+      "message": "Initial import",
+      "user": {
+        "address": "alice@example.com",
+        "name": "Alice"
+      }
+    },
+    "v2": {
+      "created": "2018-02-02T02:02:02Z",
+      "message": "Fix bar.xml, remove image.tiff, add empty2.txt",
+      "user": {
+        "address": "bob@example.com",
+        "name": "Bob"
+      }
+    },
+    "v3": {
+      "created": "2018-03-03T03:03:03Z",
+      "message": "Reinstate image.tiff, delete empty.txt",
+      "user": {
+        "address": "cecilia@example.com",
+        "name": "Cecilia"
+      }
+    }
+  }
+}

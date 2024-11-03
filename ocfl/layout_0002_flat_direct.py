@@ -19,6 +19,6 @@ class Layout_0002_Flat_Direct(Layout):
 
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to root."""
-        if identifier in ('', '.', '..') or os.sep in identifier:
+        if identifier in ("", ".", "..") or os.sep in identifier:
             raise LayoutException("Identifier '%s' unsafe for %s layout" % (identifier, self.NAME))
         return identifier

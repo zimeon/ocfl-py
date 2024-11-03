@@ -52,14 +52,14 @@ class Layout:
         this __init__. Instead they will replace it and define PARAMS for the
         new class.
         """
-        self.NAME = 'BASE'  # Override this in sub-class with real layout name
-        self.DESCRIPTION = 'BASE LAYOUT CLASS'  # Override with layout description
+        self.NAME = "BASE"  # Override this in sub-class with real layout name
+        self.DESCRIPTION = "BASE LAYOUT CLASS"  # Override with layout description
         self.PARAMS = None  # Overrride this in sub-class with a dictionary
 
     @property
     def config_file(self):
         """Location of config.json configuration file for the layout extenstion."""
-        return os.path.join('extensions', self.NAME, 'config.json')
+        return os.path.join("extensions", self.NAME, "config.json")
 
     @property
     def config(self):
@@ -134,11 +134,11 @@ class Layout:
         method in self.PARAMS is called. The methods set instance attributes.
         """
         # Check the extensionName if required and/or specified
-        if 'extensionName' not in config:
+        if "extensionName" not in config:
             if require_extension_name:
                 raise LayoutException("Storage root extension config missing extensionName")
-        elif config.get('extensionName') != self.NAME:
-            raise LayoutException("Storage root extension config extensionName is %s, expected %s" % (config.get('extensionName'), self.NAME))
+        elif config.get("extensionName") != self.NAME:
+            raise LayoutException("Storage root extension config extensionName is %s, expected %s" % (config.get("extensionName"), self.NAME))
         # Read and check the parameters (ignore any extra params)
         for key, method in self.PARAMS.items():
             method(config.get(key))
@@ -160,7 +160,7 @@ class Layout:
             raise LayoutException("Storage root extension layout config %s already exists" % (self.config_file))
         try:
             root_fs.makedirs(os.path.dirname(self.config_file))
-            with root_fs.open(self.config_file, 'w') as fh:
+            with root_fs.open(self.config_file, "w") as fh:
                 json.dump(config, fh, indent=2)
         except Exception as e:
             raise LayoutException("Storage root extension config file %s couldn't be written (%s)" % (self.config_file, str(e)))
