@@ -65,7 +65,7 @@ class TestAll(DemoTestCase):
                                "--dstdir", "TMPDIR/v1",
                                "-v"],
                               text="Version 1 object with location specified in `--objdir` and the first version specified in `--objver`, extract into TMPDIR/v1:")
-        self.assertIn('Extracted content for v1 in', out)
+        self.assertIn("Extracted content for v1 in", out)
         out = self.run_script(None,
                               ["find", "-s", "TMPDIR/v1", "-print"],
                               text="and the extracted files are:")
@@ -81,7 +81,7 @@ class TestAll(DemoTestCase):
                                "--objdir", "fixtures/1.1/good-objects/spec-ex-full",
                                "--dstdir", "TMPDIR/v2",
                                "-v"])
-        self.assertIn('Extracted content for v2 in', out)
+        self.assertIn("Extracted content for v2 in", out)
         out = self.run_script(None,
                               ["find", "-s", "TMPDIR/v2", "-print"],
                               text="and the extracted files are:")
@@ -90,14 +90,14 @@ class TestAll(DemoTestCase):
         self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, "v2/foo/bar.xml")), 272)
         self.assertFalse(os.path.exists(os.path.join(self.tmpdir, "v2/image.tiff")))
         #
-        # And 'head' should extract v3
+        # And "head" should extract v3
         out = self.run_script("Extract head version (v3) of content in the same OCFL v1.1 object",
                               ["python", "ocfl-object.py", "extract",
                                "--objver", "head",
                                "--objdir", "fixtures/1.1/good-objects/spec-ex-full",
                                "--dstdir", "TMPDIR/head",
                                "-v"])
-        self.assertIn('Extracted content for v3 in', out)
+        self.assertIn("Extracted content for v3 in", out)
         out = self.run_script(None,
                               ["find", "-s", "TMPDIR/v3", "-print"],
                               text="and the extracted files are:")
@@ -114,7 +114,7 @@ class TestAll(DemoTestCase):
                                "--logical-path", "foo/bar.xml",
                                "--dstdir", "TMPDIR/files",
                                "-v"])
-        self.assertIn('Extracted foo/bar.xml in v3', out)
+        self.assertIn("Extracted foo/bar.xml in v3", out)
         out = self.run_script(None,
                               ["find", "-s", "TMPDIR/files", "-print"],
                               text="and the extracted file is:")
@@ -126,7 +126,7 @@ class TestAll(DemoTestCase):
                                "--logical-path", "image.tiff",
                                "--dstdir", "TMPDIR/files",
                                "-v"])
-        self.assertIn('Extracted image.tiff in v3', out)
+        self.assertIn("Extracted image.tiff in v3", out)
         out = self.run_script(None,
                               ["find", "-s", "TMPDIR/files", "-print"],
                               text="and the directory now contains two extracted files:")

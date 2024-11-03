@@ -21,7 +21,7 @@ class DemoTestCase(unittest.TestCase):
         """Do setup for each test."""
         type(self).n += 1  # access class variable not copy
         self.m = 0
-        self.tmpdir = tempfile.mkdtemp(prefix='test' + str(self.n) + '_')
+        self.tmpdir = tempfile.mkdtemp(prefix="test" + str(self.n) + "_")
         if self.demo:
             print("\n## %d. %s" % (self.n, self.shortDescription()))
 
@@ -42,20 +42,20 @@ class DemoTestCase(unittest.TestCase):
             if self.demo:
                 print("\n### %d.%d %s\n" % (self.n, self.m, desc))
         if text:
-            text = re.sub('TMPDIR', 'tmp', text)
-            print(text + '\n')
+            text = re.sub("TMPDIR", "tmp", text)
+            print(text + "\n")
         cmd = []
         for option in options:
-            cmd.append(option.replace('TMPDIR', self.tmpdir))
+            cmd.append(option.replace("TMPDIR", self.tmpdir))
         code = 0
         try:
-            out = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8')
+            out = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode("utf-8")
         except subprocess.CalledProcessError as e:
-            out = e.output.decode('utf-8')
+            out = e.output.decode("utf-8")
             code = e.returncode
-        out = "```\n> " + ' '.join(cmd) + "\n" + out + "```\n"
+        out = "```\n> " + " ".join(cmd) + "\n" + out + "```\n"
         if self.demo:
-            out = re.sub(self.tmpdir, 'tmp', out)
+            out = re.sub(self.tmpdir, "tmp", out)
             print(out)
             if code != 0:
                 print("(last command exited with return code %d)\n" % (code))
@@ -66,9 +66,9 @@ class DemoTestCase(unittest.TestCase):
         if self.demo:
             if text is not None:
                 print(text + "\n")
-            tree = subprocess.check_output('cd %s; tree -a %s' % (self.tmpdir, treedir),
+            tree = subprocess.check_output("cd %s; tree -a %s" % (self.tmpdir, treedir),
                                            stderr=subprocess.STDOUT,
-                                           shell=True).decode('utf-8')
+                                           shell=True).decode("utf-8")
             print("```\n" + tree + "```\n")
 
     def demo_text(self, text=None):
@@ -82,6 +82,6 @@ class DemoTestCase(unittest.TestCase):
         """Run tests in demo mode."""
         cls.demo = True
         print("# " + title + "\n")
-        script_name = re.sub(r'''^.*/tests/''', 'tests/', main.__file__)
+        script_name = re.sub(r"""^.*/tests/""", "tests/", main.__file__)
         print("_Output from `" + script_name + "`._")
         unittest.main(verbosity=0)  # No dots added while running

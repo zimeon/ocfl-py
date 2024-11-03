@@ -10,6 +10,7 @@
   * Ignore `logs` directory if present in object root (extra fixture https://github.com/OCFL/fixtures/issues/108)
   * Changed Object.show() method to Object.tree() that returns string
   * Change validator to use `force_spec_version` to validate against a specific version and remove old `extract_spec_version` with that becoming the default behavior unless force is specified
+  * Code style change to use double quotes for strings unless there is a good reason to use single quotes
   * Drop Python 3.6 and 3.7 from testing, add 3.11
 
 ## 2022-04-26 v1.3.0

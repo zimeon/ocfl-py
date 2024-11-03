@@ -60,8 +60,8 @@ class TestW3cDatetime(unittest.TestCase):
 
         # Special cases
         self.assertEqual(datetime_to_str(None), None)
-        nt = datetime_to_str('now', no_fractions=True)
-        self.assertTrue(re.match(r'''\d\d\d\d\-\d\d\-\d\dT\d\d:\d\d:\d\dZ''', nt))
+        nt = datetime_to_str("now", no_fractions=True)
+        self.assertTrue(re.match(r"""\d\d\d\d\-\d\d\-\d\dT\d\d:\d\d:\d\dZ""", nt))
 
     def test02_str_to_datetime(self):
         """Reading."""
@@ -79,23 +79,23 @@ class TestW3cDatetime(unittest.TestCase):
 
     def test03_same(self):
         """Datetime values that are the same."""
-        astr = '2012-01-01T00:00:00Z'
+        astr = "2012-01-01T00:00:00Z"
         a = str_to_datetime(astr)
-        for bstr in ('2012',
-                     '2012-01',
-                     '2012-01-01',
-                     '2012-01-01T00:00Z',
-                     '2012-01-01T00:00:00Z',
-                     '2012-01-01T00:00:00.000000Z',
-                     '2012-01-01T00:00:00.000000000000Z',
-                     '2012-01-01T00:00:00.000000000001Z',  # below resolution
-                     '2012-01-01T00:00:00.00+00:00',
-                     '2012-01-01T00:00:00.00-00:00',
-                     '2012-01-01T02:00:00.00-02:00',
-                     '2011-12-31T23:00:00.00+01:00'
+        for bstr in ("2012",
+                     "2012-01",
+                     "2012-01-01",
+                     "2012-01-01T00:00Z",
+                     "2012-01-01T00:00:00Z",
+                     "2012-01-01T00:00:00.000000Z",
+                     "2012-01-01T00:00:00.000000000000Z",
+                     "2012-01-01T00:00:00.000000000001Z",  # below resolution
+                     "2012-01-01T00:00:00.00+00:00",
+                     "2012-01-01T00:00:00.00-00:00",
+                     "2012-01-01T02:00:00.00-02:00",
+                     "2011-12-31T23:00:00.00+01:00"
                      ):
             b = str_to_datetime(bstr)
-            self.assertEqual(a, b, ('%s (%f) == %s (%f)' % (astr, a, bstr, b)))
+            self.assertEqual(a, b, ("%s (%f) == %s (%f)" % (astr, a, bstr, b)))
 
     def test04_bad_str(self):
         """Bad formats."""
@@ -123,15 +123,15 @@ class TestW3cDatetime(unittest.TestCase):
 
     def test05_roundtrips(self):
         """Round trips."""
-        self.assertEqual(rt('2012-03-14T00:00:00+00:00'),
-                         '2012-03-14T00:00:00Z')
-        self.assertEqual(rt('2012-03-14T00:00:00-00:00'),
-                         '2012-03-14T00:00:00Z')
-        self.assertEqual(rt('2012-03-14T11:00:00-11:00'),
-                         '2012-03-14T00:00:00Z')
-        self.assertEqual(rt('2012-03-14T18:37:36Z'),
-                         '2012-03-14T18:37:36Z')
-        self.assertEqual(rt('2012-03-14T18:37:36+00:10'),
-                         '2012-03-14T18:47:36Z')
-        self.assertEqual(rt('2012-03-14T18:37:36-01:01'),
-                         '2012-03-14T17:36:36Z')
+        self.assertEqual(rt("2012-03-14T00:00:00+00:00"),
+                         "2012-03-14T00:00:00Z")
+        self.assertEqual(rt("2012-03-14T00:00:00-00:00"),
+                         "2012-03-14T00:00:00Z")
+        self.assertEqual(rt("2012-03-14T11:00:00-11:00"),
+                         "2012-03-14T00:00:00Z")
+        self.assertEqual(rt("2012-03-14T18:37:36Z"),
+                         "2012-03-14T18:37:36Z")
+        self.assertEqual(rt("2012-03-14T18:37:36+00:10"),
+                         "2012-03-14T18:47:36Z")
+        self.assertEqual(rt("2012-03-14T18:37:36-01:01"),
+                         "2012-03-14T17:36:36Z")

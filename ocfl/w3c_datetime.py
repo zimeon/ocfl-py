@@ -14,7 +14,7 @@ from datetime import datetime
 from dateutil import parser as dateutil_parser
 
 
-def datetime_to_str(dt='now', no_fractions=False):
+def datetime_to_str(dt="now", no_fractions=False):
     """Return Last-Modified data in ISO8601 syntax, Z notation.
 
     The lastmod is stored as unix timestamp which is already
@@ -29,16 +29,16 @@ def datetime_to_str(dt='now', no_fractions=False):
     """
     if dt is None:
         return None
-    if dt == 'now':
+    if dt == "now":
         dt = time.time()
     if no_fractions:
         dt = int(dt)
     else:
         dt += 0.0000001  # improve rounding to microseconds
-    return datetime.utcfromtimestamp(dt).isoformat() + 'Z'
+    return datetime.utcfromtimestamp(dt).isoformat() + "Z"
 
 
-def str_to_datetime(s, context='datetime'):
+def str_to_datetime(s, context="datetime"):
     """Set timestamp from an W3C Datetime Last-Modified value.
 
     The sitemaps.org specification says that <lastmod> values
@@ -77,16 +77,16 @@ def str_to_datetime(s, context='datetime'):
     t = None
     if s is None:
         return t
-    if s == '':
-        raise ValueError('Attempt to set empty %s' % (context))
+    if s == "":
+        raise ValueError("Attempt to set empty %s" % (context))
     # Make a date into a full datetime
     m = re.match(r"\d\d\d\d(\-\d\d(\-\d\d)?)?$", s)
     if m is not None:
         if m.group(1) is None:
-            s += '-01-01'
+            s += "-01-01"
         elif m.group(2) is None:
-            s += '-01'
-        s += 'T00:00:00Z'
+            s += "-01"
+        s += "T00:00:00Z"
     # Now have datetime with timezone info
     m = re.match(r"(.*\d{2}:\d{2}:\d{2})(\.\d+)([^\d].*)?$", s)
     # Chop out fractional seconds if present
@@ -107,15 +107,15 @@ def str_to_datetime(s, context='datetime'):
                  r"(\d\d):(\d\d))?$", s)
     if m is None:
         raise ValueError("Bad datetime format (%s)" % s)
-    dt = dateutil_parser.parse(m.group(1) + 'Z')
+    dt = dateutil_parser.parse(m.group(1) + "Z")
     offset_seconds = 0
-    if m.group(3) and m.group(3) != 'Z':
+    if m.group(3) and m.group(3) != "Z":
         hh = int(m.group(5))
         mm = int(m.group(6))
         if hh > 23 or mm > 59:
             raise ValueError("Bad timezone offset (%s)" % s)
         offset_seconds = hh * 3600 + mm * 60
-        if m.group(4) == '-':
+        if m.group(4) == "-":
             offset_seconds = -offset_seconds
     # timetuple() ignores timezone information so we have to add in
     # the offset here, and any fractional component of the seconds

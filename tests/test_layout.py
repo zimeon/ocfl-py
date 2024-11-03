@@ -18,31 +18,31 @@ class TestAll(unittest.TestCase):
     def test_strip_root(self):
         """Test strip_root."""
         layout = Layout()
-        self.assertEqual(layout.strip_root('a/b', 'a'), 'b')
-        self.assertEqual(layout.strip_root('a/b', ''), 'a/b')
-        self.assertEqual(layout.strip_root('a/b/c', 'a/b/c'), '.')
-        self.assertEqual(layout.strip_root('a/b/c', 'a/b/'), 'c')
-        self.assertEqual(layout.strip_root('a/b/c/', 'a/b'), 'c')
-        self.assertRaises(LayoutException, layout.strip_root, 'a', 'b')
-        self.assertRaises(LayoutException, layout.strip_root, 'a', 'a/b')
-        self.assertRaises(LayoutException, layout.strip_root, '', 'a/b')
+        self.assertEqual(layout.strip_root("a/b", "a"), "b")
+        self.assertEqual(layout.strip_root("a/b", ""), "a/b")
+        self.assertEqual(layout.strip_root("a/b/c", "a/b/c"), ".")
+        self.assertEqual(layout.strip_root("a/b/c", "a/b/"), "c")
+        self.assertEqual(layout.strip_root("a/b/c/", "a/b"), "c")
+        self.assertRaises(LayoutException, layout.strip_root, "a", "b")
+        self.assertRaises(LayoutException, layout.strip_root, "a", "a/b")
+        self.assertRaises(LayoutException, layout.strip_root, "", "a/b")
 
     def test_is_valid(self):
         """Test is_valid method."""
         layout = Layout()
-        self.assertTrue(layout.is_valid(''))
-        self.assertTrue(layout.is_valid('anything'))
+        self.assertTrue(layout.is_valid(""))
+        self.assertTrue(layout.is_valid("anything"))
 
     def test_encodea_and_decode(self):
         """Test encode and decode methods."""
         layout = Layout()
-        self.assertEqual(layout.encode(''), '')
-        self.assertEqual(layout.encode('something'), 'something')
-        self.assertEqual(layout.encode('http://a.b.c'), 'http%3A%2F%2Fa.b.c')
-        self.assertEqual(layout.decode(''), '')
-        self.assertEqual(layout.decode('something-else'), 'something-else')
-        self.assertEqual(layout.decode('http%3a%2f%2Fa.b.c'), 'http://a.b.c')
-        self.assertRaises(LayoutException, layout.identifier_to_path, 'id')
+        self.assertEqual(layout.encode(""), "")
+        self.assertEqual(layout.encode("something"), "something")
+        self.assertEqual(layout.encode("http://a.b.c"), "http%3A%2F%2Fa.b.c")
+        self.assertEqual(layout.decode(""), "")
+        self.assertEqual(layout.decode("something-else"), "something-else")
+        self.assertEqual(layout.decode("http%3a%2f%2Fa.b.c"), "http://a.b.c")
+        self.assertRaises(LayoutException, layout.identifier_to_path, "id")
 
     def test_read_layout_params(self):
         """Test read_layout_params."""
@@ -57,7 +57,7 @@ class TestAll(unittest.TestCase):
         layout.read_layout_params(root_fs=root_fs, params_required=True)
         self.assertEqual(layout.param, "yay!")
         # No config file but none required
-        # Idoesn't do anything, nothing to check)
+        # (doesn't do anything, nothing to check)
         layout.NAME = "no_config"
         layout.read_layout_params(root_fs=root_fs, params_required=False)
         # Error cases
