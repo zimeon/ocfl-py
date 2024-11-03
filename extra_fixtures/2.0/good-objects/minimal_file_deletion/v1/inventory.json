@@ -1,14 +1,13 @@
 {
   "digestAlgorithm": "sha512",
-  "head": "v2",
+  "head": "v1",
   "id": "http://example.org/minimal_file_deletion",
-  "manifest": { },
-  "tombstones": {
+  "manifest": {
     "94032b0c6e7d7a274d92fb4bf4e3c65f58664e4b30a938b02762e8004e7f70874200dd51fb3bcb3f18680481501b96bfcc9baf9fef92c83541477576a57993f6": [
       "v1/content/file.txt"
     ]
   },
-  "type": "https://ocfl.io/2.0/spec/#inventory",
+  "type": "https://ocfl.io/1.1/spec/#inventory",
   "versions": {
     "v1": {
       "created": "2020-10-12T01:00:00Z",
@@ -18,15 +17,6 @@
           "file.txt"
         ]
       },
-      "user": {
-        "address": "mailto:alice@example.org",
-        "name": "Alice"
-      }
-    },
-    "v2": {
-      "created": "2024-10-03T19:30:00Z",
-      "message": "The one file had to be deleted entirely for legal reasons",
-      "state": { },
       "user": {
         "address": "mailto:alice@example.org",
         "name": "Alice"
