@@ -35,9 +35,9 @@
     }
   },
   "E003c": {
-    "params": ["path", "assumed_version"],
+    "params": ["assumed_version"],
     "description": {
-       "en": "OCFL Object includes one or move object declaration files (starting 0=) but no valid version number could be extracted from any of them (assuming version %s)"
+       "en": "OCFL Object includes one or more object declaration files (starting 0=) but no valid version number could be extracted from any of them (assuming version %s)"
     }
   },
   "E003d": {
