@@ -7,25 +7,24 @@ from ocfl.version_metadata import VersionMetadata, VersionMetadataException
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
-    def test02_init(self):
+    def test01_init(self):
         """Test VersionMetadata init method."""
-        m = VersionMetadata(created='a',
-                            message='b',
-                            name='c',
-                            address='d')
-        d = m.as_dict(extra='x')
-        self.assertEqual(d['created'], 'a')
-        self.assertEqual(d['message'], 'b')
-        self.assertEqual(d['user'], {'name': 'c', 'address': 'd'})
-        self.assertEqual(d['extra'], 'x')
+        m = VersionMetadata(created="a",
+                            message="b",
+                            name="c",
+                            address="d")
+        d = m.as_dict()
+        self.assertEqual(d["created"], "a")
+        self.assertEqual(d["message"], "b")
+        self.assertEqual(d["user"], {"name": "c", "address": "d"})
         # with load from file
-        with open('tests/testdata/inventories/inv_1_good.json', 'r', encoding="utf-8") as fh:
+        with open("tests/testdata/inventories/inv_1_good.json", "r", encoding="utf-8") as fh:
             inventory = json.load(fh)
-        m = VersionMetadata(inventory=inventory, version='v1')
-        self.assertEqual(m.version, 'v1')
-        self.assertEqual(m.created, '2018-10-02T12:00:00Z')
+        m = VersionMetadata(inventory=inventory, version="v1")
+        self.assertEqual(m.version, "v1")
+        self.assertEqual(m.created, "2018-10-02T12:00:00Z")
 
-    def test03_from_inventory(self):
+    def test02_from_inventory(self):
         """Test from_inventory method."""
         m = VersionMetadata()
         m.from_inventory(inventory={

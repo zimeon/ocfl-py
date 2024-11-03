@@ -31,7 +31,7 @@ from .namaste import Namaste
 from .validator import Validator, ValidatorAbortException
 from .version_metadata import VersionMetadata
 
-INVENTORY_FILENAME = 'inventory.json'
+INVENTORY_FILENAME = "inventory.json"
 
 
 class Object():  # pylint: disable=too-many-public-methods
@@ -44,32 +44,32 @@ class Object():  # pylint: disable=too-many-public-methods
     >>> passed
     True
     >>> validator.spec_version
-    '1.1'
+    "1.1"
 
     >>> inv = object.parse_inventory()  # parsed JSON as dict
-    >>> inv['digestAlgorithm']
-    'sha512'
-    >>> inv['versions']['v1']
-    {'created': '2018-01-01T01:01:01Z',
-    'message': 'Initial import', 'state':
-    {'7dcc352...7785947ac31': ['foo/bar.xml'],
-    'cf83e135...27af927da3e': ['empty.txt'],
-    'ffccf6ba...336cbfb862e': ['image.tiff']},
-    'user': {'address': 'mailto:alice@example.com', 'name': 'Alice'}}
+    >>> inv["digestAlgorithm"]
+    "sha512"
+    >>> inv["versions"]["v1"]
+    {"created": "2018-01-01T01:01:01Z",
+    "message": "Initial import", "state":
+    {"7dcc352...7785947ac31": ["foo/bar.xml"],
+    "cf83e135...27af927da3e": ["empty.txt"],
+    "ffccf6ba...336cbfb862e": ["image.tiff"]},
+    "user": {"address": "mailto:alice@example.com", "name": "Alice"}}
     """
 
-    def __init__(self, *, identifier=None, content_directory='content',
-                 digest_algorithm='sha512', filepath_normalization='uri',
-                 spec_version='1.1', forward_delta=True, dedupe=True,
+    def __init__(self, *, identifier=None, content_directory="content",
+                 digest_algorithm="sha512", filepath_normalization="uri",
+                 spec_version="1.1", forward_delta=True, dedupe=True,
                  lax_digests=False, fixity=None,
                  obj_fs=None, path=None, create=False):
         """Initialize OCFL object.
 
         Arguments relevant to building an object:
             identifier: id for this object
-            content_directory: allow override of the default 'content'
-            digest_algorithm: allow override of the default 'sha512'
-            filepath_normalization: allow override of default 'uri'
+            content_directory: allow override of the default "content"
+            digest_algorithm: allow override of the default "sha512"
+            filepath_normalization: allow override of default "uri"
             spec_version: OCFL specification version
             forward_delta: set False to turn off foward delta. With forward delta
                 turned off, the same content will be repeated in a new version
@@ -149,20 +149,20 @@ class Object():  # pylint: disable=too-many-public-methods
         Returns vfilepath, the version filepath for this content that starts
         with `vdir/content_directory/`.
         """
-        if self.filepath_normalization == 'uri':
+        if self.filepath_normalization == "uri":
             filepath = urlquote(filepath)
             # also encode any leading period to unhide files
-            if filepath[0] == '.':
-                filepath = '%2E' + filepath[1:]
-        elif self.filepath_normalization == 'md5':
+            if filepath[0] == ".":
+                filepath = "%2E" + filepath[1:]
+        elif self.filepath_normalization == "md5":
             # Truncated MD5 hash of the _filepath_ as an illustration of diff
             # paths for the specification. Not sure whether there should be any
             # real application of this
-            filepath = hashlib.md5(filepath.encode('utf-8')).hexdigest()[0:16]
+            filepath = hashlib.md5(filepath.encode("utf-8")).hexdigest()[0:16]
         elif self.filepath_normalization is not None:
             raise Exception("Unknown filepath normalization '%s' requested" % (self.filepath_normalization))
         vfilepath = fs.path.join(vdir, self.content_directory, filepath)  # path relative to root, inc v#/content
-        # Check we don't already have this vfilepath from many to one
+        # Check we don"t already have this vfilepath from many to one
         # normalization, add suffix to distinguish if necessary
         if vfilepath in used:
             vfilepath = make_unused_filepath(vfilepath, used)
@@ -179,8 +179,8 @@ class Object():  # pylint: disable=too-many-public-methods
         inventory.spec_version = self.spec_version
         inventory.digest_algorithm = self.digest_algorithm
         inventory.init_manifest_and_versions()
-        # Add contentDirectory if not 'content'
-        if self.content_directory != 'content':
+        # Add contentDirectory if not "content"
+        if self.content_directory != "content":
             inventory.content_directory = self.content_directory
         # Add fixity section if requested
         if self.fixity is not None and len(self.fixity) > 0:
@@ -252,7 +252,7 @@ class Object():  # pylint: disable=too-many-public-methods
                                                   digest=fixity_digest,
                                                   filepath=vfilepath)
         # Add this new version to inventory (also updates head)
-        inventory.add_version(vdir=vdir, metadata=metadata.as_dict(state=state))
+        inventory.add_version(vdir=vdir, metadata=metadata, state=state)
         return manifest_to_srcfile
 
     def build_inventory(self, src_fs, versions_metadata=None):
@@ -275,7 +275,7 @@ class Object():  # pylint: disable=too-many-public-methods
         inventory = self.start_inventory()
         # Find the versions
         versions = {}
-        for vdir in src_fs.listdir('/'):
+        for vdir in src_fs.listdir("/"):
             if not src_fs.isdir(vdir):
                 continue
             try:
@@ -299,7 +299,7 @@ class Object():  # pylint: disable=too-many-public-methods
 
     def object_declaration_object(self):
         """NAMASTE object declaration Namaste object."""
-        return Namaste(0, 'ocfl_object_' + self.spec_version)
+        return Namaste(0, "ocfl_object_" + self.spec_version)
 
     def write_object_declaration(self):
         """Write NAMASTE object declaration.
@@ -309,14 +309,14 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         self.object_declaration_object().write(pyfs=self.obj_fs)
 
-    def write_inventory_and_sidecar(self, inventory=None, vdir=''):
+    def write_inventory_and_sidecar(self, inventory=None, vdir=""):
         """Write inventory and sidecar to vdir in the current object.
 
         Arguments:
             inventory: an Inventory object to write the inventory, else None
                 if only the sidecar should be written (default)
             vdir: string of the directory name within self.obj_fs that the
-                inventory and sidecar should be written to. Default is ''
+                inventory and sidecar should be written to. Default is ""
 
         Assumes self.obj_fs is open for this object. Will create vdir if that
         does not exist. If vdir is not specified then will write to root of
@@ -328,16 +328,16 @@ class Object():  # pylint: disable=too-many-public-methods
             self.obj_fs.makedir(vdir)
         invfile = fs.path.join(vdir, INVENTORY_FILENAME)
         if inventory is not None:
-            with self.obj_fs.open(invfile, 'w') as fh:
+            with self.obj_fs.open(invfile, "w") as fh:
                 inventory.write_json(fh)
         digest = file_digest(invfile, self.digest_algorithm, pyfs=self.obj_fs)
-        sidecar = fs.path.join(vdir, INVENTORY_FILENAME + '.' + self.digest_algorithm)
-        with self.obj_fs.open(sidecar, 'w') as fh:
-            fh.write(digest + ' ' + INVENTORY_FILENAME + '\n')
+        sidecar = fs.path.join(vdir, INVENTORY_FILENAME + "." + self.digest_algorithm)
+        with self.obj_fs.open(sidecar, "w") as fh:
+            fh.write(digest + " " + INVENTORY_FILENAME + "\n")
         return sidecar
 
     def write_inventory_sidecar(self):
-        """Write just sidecare for this object's already existing root inventory file.
+        """Write just sidecare for this object"s already existing root inventory file.
 
         Returns the inventory sidecar filename.
         """
@@ -405,9 +405,9 @@ class Object():  # pylint: disable=too-many-public-methods
         if objdir is not None:
             self.open_fs(objdir, create=True)
         inventory = self.start_inventory()
-        vdir = 'v1'
+        vdir = "v1"
         manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
-                                               src_dir='', vdir=vdir,
+                                               src_dir="", vdir=vdir,
                                                metadata=metadata)
         if objdir is None:
             return inventory
@@ -476,7 +476,7 @@ class Object():  # pylint: disable=too-many-public-methods
                     logging.info("FIXME - need to add fixity with digest %s", digest)
         if fixity != old_fixity:
             logging.info("New version will have %s instead of %s fixity",
-                         ','.join(sorted(fixity)), ','.join(sorted(old_fixity)))
+                         ",".join(sorted(fixity)), ",".join(sorted(old_fixity)))
         # Now look at contents, manifest and state
         manifest = copy.deepcopy(inventory.manifest)
         if digest_algorithm != old_digest_algorithm:
@@ -506,12 +506,13 @@ class Object():  # pylint: disable=too-many-public-methods
             # No content Update
             inventory.head = head
             state = copy.deepcopy(inventory.version(old_head).state)
-            inventory.versions_block[head] = metadata.as_dict(state=state)
+            inventory.versions_block[head] = metadata.as_dict()
+            inventory.versions_block[head]["state"] = state
         else:
             src_fs = open_fs(srcdir)
             manifest_to_srcfile = self.add_version(inventory=inventory,
                                                    src_fs=src_fs,
-                                                   src_dir='',
+                                                   src_dir="",
                                                    vdir=head,
                                                    metadata=metadata)
             # Copy files into this version
@@ -522,7 +523,7 @@ class Object():  # pylint: disable=too-many-public-methods
         self.write_inventory_and_sidecar(inventory)
         # Delete old root inventory sidecar if we changed digest algorithm
         if digest_algorithm != old_digest_algorithm:
-            self.obj_fs.remove(INVENTORY_FILENAME + '.' + old_digest_algorithm)
+            self.obj_fs.remove(INVENTORY_FILENAME + "." + old_digest_algorithm)
         logging.info("Updated OCFL object %s in %s by adding %s", self.id, objdir, head)
 
     def tree(self, objdir):
@@ -535,10 +536,10 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         def _show_indent(level, last=False, last_v=False):
             """Indent string for tree view at level for intermediate or last."""
-            tree_next = '├── '
-            tree_last = '└── '
-            tree_pass = '│   '
-            tree_indent = '    '
+            tree_next = "├── "
+            tree_last = "└── "
+            tree_pass = "│   "
+            tree_indent = "    "
             if level == 0:
                 return tree_last if last else tree_next
             return (tree_indent if last else tree_pass) + (tree_last if last_v else tree_next)
@@ -556,42 +557,42 @@ class Object():  # pylint: disable=too-many-public-methods
         else:
             logging.warning("OCFL v%s Object at %s is INVALID",
                             validator.spec_version, objdir)
-        tree = '[' + objdir + ']\n'
+        tree = "[" + objdir + "]\n"
         self.open_fs(objdir)
-        entries = sorted(self.obj_fs.listdir(''))
+        entries = sorted(self.obj_fs.listdir(""))
         n = 0
         seen_sidecar = False
         object_declaration_filename = self.object_declaration_object().filename
         for entry in entries:
             n += 1
-            note = entry + ' '
+            note = entry + " "
             v_notes = []
-            if re.match(r'''v\d+$''', entry):
+            if re.match(r"""v\d+$""", entry):
                 seen_v_sidecar = False
                 for v_entry in sorted(self.obj_fs.listdir(entry)):
-                    v_note = v_entry + ' '
+                    v_note = v_entry + " "
                     if v_entry == INVENTORY_FILENAME:
                         pass
-                    elif v_entry.startswith(INVENTORY_FILENAME + '.'):
+                    elif v_entry.startswith(INVENTORY_FILENAME + "."):
                         if seen_v_sidecar:
-                            v_note += '<--- multiple inventory digests?'
+                            v_note += "<--- multiple inventory digests?"
                             seen_v_sidecar = True
                     elif v_entry == self.content_directory:
                         num_files = 0
                         for (v_dirpath, v_dirs, v_files) in self.obj_fs.walk(fs.path.join(entry, v_entry)):  # pylint: disable=unused-variable
                             num_files += len(v_files)
-                        v_note += '(%d files)' % num_files
+                        v_note += "(%d files)" % num_files
                     else:
-                        v_note += '<--- ???'
+                        v_note += "<--- ???"
                     v_notes.append(v_note)
             elif entry in (object_declaration_filename, INVENTORY_FILENAME):
                 pass
-            elif entry.startswith(INVENTORY_FILENAME + '.'):
+            elif entry.startswith(INVENTORY_FILENAME + "."):
                 if seen_sidecar:
-                    note += '<--- multiple inventory digests?'
+                    note += "<--- multiple inventory digests?"
                 seen_sidecar = True
             else:
-                note += '<--- ???'
+                note += "<--- ???"
             last = (n == len(entries))
             tree += _show_indent(0, last) + note + "\n"
             nn = 0
@@ -639,9 +640,9 @@ class Object():  # pylint: disable=too-many-public-methods
         try:
             (inv_dir, inv_file) = fs.path.split(path)
             validator.obj_fs = open_fs(inv_dir, create=False)
-            validator.validate_inventory(inv_file, where='standalone', force_spec_version=force_spec_version)
+            validator.validate_inventory(inv_file, where="standalone", force_spec_version=force_spec_version)
         except fs.errors.ResourceNotFound:
-            validator.log.error('E033', where='standalone', explanation='failed to open directory')
+            validator.log.error("E033", where="standalone", explanation="failed to open directory")
         except ValidatorAbortException:
             pass
         return (validator.log.num_errors == 0), validator
@@ -651,18 +652,18 @@ class Object():  # pylint: disable=too-many-public-methods
 
         Arguments:
             objdir - directory for the object
-            version - version to be extracted ('v1', etc.) or 'head' for latest
+            version - version to be extracted ("v1", etc.) or "head" for latest
 
         Returns tuple of (inv, version) where inv is the parsed inventory and
         version if the checked object version.
 
-        Raises an ObjectException is the inventory can't be parsed or if the
-        version doesn't exist.
+        Raises an ObjectException is the inventory Can't be parsed or if the
+        version doesn"t exist.
         """
         self.open_fs(objdir)
         # Read inventory, set up version
         inv = self.parse_inventory()
-        if version == 'head':
+        if version == "head":
             version = inv.head
             logging.debug("Object at %s has head %s", objdir, version)
         elif version not in inv.version_directories:
@@ -674,7 +675,7 @@ class Object():  # pylint: disable=too-many-public-methods
 
         Arguments:
             objdir - directory for the object
-            version - version to be extracted ('v1', etc.) or 'head' for latest
+            version - version to be extracted ("v1", etc.) or "head" for latest
             dstdir - directory to create with extracted version
 
         The dstdir itself may exist bit if it is then it must be empty. The
@@ -713,12 +714,12 @@ class Object():  # pylint: disable=too-many-public-methods
 
         Arguments:
             objdir - directory for the object
-            version - version to be extracted ('v1', etc.) or 'head' for latest
+            version - version to be extracted ("v1", etc.) or "head" for latest
             dstdir - directory to create with extracted version
             logical_path - extract just one logical path into dstdir, without
                 any path segments below dstdir
 
-        If dstdir doesn't exists then create it. The parent directory of dstdir
+        If dstdir doesn"t exists then create it. The parent directory of dstdir
         must exist. If dstdir exists, then a file of the same name must not
         exist.
 
@@ -729,7 +730,7 @@ class Object():  # pylint: disable=too-many-public-methods
         try:
             dst_fs = open_fs(dstdir)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed):
-            # Doesn't exist, can we create it?
+            # Doesn"t exist, can we create it?
             (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
             if parentdir == "":
                 parentdir = "."
@@ -782,7 +783,7 @@ class Object():  # pylint: disable=too-many-public-methods
         inventory.normalize_digests(iv.digest_algorithm)
         return inventory
 
-    def id_from_inventory(self, failure_value='UNKNOWN-ID'):
+    def id_from_inventory(self, failure_value="UNKNOWN-ID"):
         """Read JSON root inventory file for this object and extract id.
 
         Returns the id from the inventory or failure_value is none can

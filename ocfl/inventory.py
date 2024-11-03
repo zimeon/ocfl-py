@@ -1,4 +1,4 @@
-"""OCFL Inventory.
+"""OCFL Inventory and Version.
 
 The storage mechanism for the inventory data is the python dict()
 structure resulting from reading the inventory JSON file and suitable
@@ -269,14 +269,17 @@ class Inventory():  # pylint: disable=too-many-public-methods
             return paths[0]
         return None
 
-    def add_version(self, vdir=None, metadata=None):
+    def add_version(self, vdir=None, metadata=None, state=None):
         """Add new version object to the versions block.
 
         Arguments:
             vdir: string with the version directory name (e.g. "v1"). If None
                 then will create the next version in sequence
             metadata: dict to initialize version metadata with, else None to
-                create empty
+                create empty (default)
+            state: either a dict with the state block for the version, an
+                object with an as_dict() method to producde such a
+                dictionary (e.g. from VersionMetadat), else None (default)
 
         Returns a Version object to access version properties.
         """
@@ -289,8 +292,15 @@ class Inventory():  # pylint: disable=too-many-public-methods
             vdir = "v" + str(highest_version + 1)
         if "versions" not in self.data:
             self.data["versions"] = {}
-        self.data["versions"][vdir] = {} if metadata is None else metadata
-        self.data["head"] = vdir
+        if metadata is None:
+            self.data["versions"][vdir] = {}
+        elif isinstance(metadata, dict):
+            self.data["versions"][vdir] = metadata
+        else:
+            self.data["versions"][vdir] = metadata.as_dict()
+        if state is not None:
+            self.data["versions"][vdir]["state"] = state
+        self.head = vdir
         return self.version(vdir)
 
     def add_file(self, *, digest, content_path):

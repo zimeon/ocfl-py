@@ -44,15 +44,17 @@ class VersionMetadata():
             self.from_inventory(inventory, version)
 
     def from_inventory(self, inventory, version=None):
-        """Initialize from an inventory dict or object.
-
-        Look for specific version directory version if specified, else
-        return the head version if none specified.
+        """Initialize from an inventory dict or Inventory object.
 
         Arguments:
             inventory: Inventory object or data dict
             version: explicit version name to extract metadata from, else
                 extract from the inventory head version
+
+        Look for specific version directory version if specified, else
+        return the head version if none specified. Will extract object id,
+        created, message, and user data. Will not extract the any state
+        information.
         """
         inv = inventory
         if isinstance(inventory, Inventory):
@@ -79,18 +81,12 @@ class VersionMetadata():
             if "address" in inv_version["user"]:
                 self.address = inv_version["user"]["address"]
 
-    def as_dict(self, **extra):
+    def as_dict(self):
         """Return dictionary object with version metedata.
-
-        Arguments:
-            **extra: keyword=value pairs that are used to add the corresponding
-                key and value to the dictionary. If no extra pairs are specified
-                then no additional data will be added
 
         Returns dict() created according to the inventory structure for
         information about a single version. If created is not set then will
-        add the current datatime string. Adds data from this object and
-        then any additional data in **extra.
+        add the current datatime string.
         """
         m = {}
         m["created"] = self.created if self.created else datetime_to_str()
@@ -102,7 +98,4 @@ class VersionMetadata():
                 m["user"]["name"] = self.name
             if self.address is not None:
                 m["user"]["address"] = self.address
-        # Add any extra values, and they will override instance variables
-        for key, value in extra.items():
-            m[key] = value
         return m
