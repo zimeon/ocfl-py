@@ -28,13 +28,13 @@ class Layout_NNNN_Tuple_Tree(Layout):
         self.tuple_size = tuple_size
         self.NAME = "nnnn-tuple-tree-layout"
         self.DESCRIPTION = "Local extension, unhashed tuple-tree with configurable tuple size"
-        self.PARAMS = {'tupleSize': self.check_tuple_size}
+        self.PARAMS = {"tupleSize": self.check_tuple_size}
 
     @property
     def config(self):
         """Dictionary with config.json configuration for the layout extenstion."""
-        return {'extensionName': self.NAME,
-                'tupleSize': self.tuple_size}
+        return {"extensionName": self.NAME,
+                "tupleSize": self.tuple_size}
 
     def check_tuple_size(self, value):
         """Check tuple size paremeter.
@@ -48,9 +48,9 @@ class Layout_NNNN_Tuple_Tree(Layout):
             Default: 3
         """
         if value is None:
-            raise LayoutException('tupleSize parameter must be specified')
+            raise LayoutException("tupleSize parameter must be specified")
         if not isinstance(value, int) or value < 2 or value > 6:
-            raise LayoutException('tupleSize parameter must be an integer between 2 and 6 inclusive')
+            raise LayoutException("tupleSize parameter must be an integer between 2 and 6 inclusive")
         self.tuple_size = value
 
     def encode(self, identifier):

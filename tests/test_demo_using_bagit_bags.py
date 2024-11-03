@@ -21,7 +21,7 @@ class TestAll(DemoTestCase):
                               text=text)
         self.assertIn("Created OCFL object info:bb123cd4567 in", out)
         out = self.run_script("Check new object is valid",
-                              ["python", 'ocfl-validate.py',
+                              ["python", "ocfl-validate.py",
                                "TMPDIR/obj"],
                               text="Now that we have the object it is of course valid.")
         self.assertIn("/obj is VALID", out)

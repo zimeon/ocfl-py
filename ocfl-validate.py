@@ -22,18 +22,18 @@ def parse_arguments():
     Returns Namespace object from argparse parsing of command line arguments.
     """
     parser = argparse.ArgumentParser(
-        description='Validate one or more OCFL objects, storage roots or standalone '
-        'inventory files. By default shows any errors or warnings, and final '
-        'validation status. Use -q to show only errors, -Q to show only validation '
-        'status. HAS NO OPTIONS TO MAKE CHANGES TO THE STORAGE ROOT OR OBJECT.')
-    parser.add_argument('path', type=str, nargs='*',
-                        help='OCFL storage root, object or inventory path(s) to validate')
-    parser.add_argument('--very-quiet', '-Q', action='store_true',
+        description="Validate one or more OCFL objects, storage roots or standalone "
+        "inventory files. By default shows any errors or warnings, and final "
+        "validation status. Use -q to show only errors, -Q to show only validation "
+        "status. HAS NO OPTIONS TO MAKE CHANGES TO THE STORAGE ROOT OR OBJECT.")
+    parser.add_argument("path", type=str, nargs="*",
+                        help="OCFL storage root, object or inventory path(s) to validate")
+    parser.add_argument("--very-quiet", "-Q", action="store_true",
                         help="be very quiet, show only validation status not warnings or errors (implies -q)")
-    parser.add_argument('--lax-digests', action='store_true',
-                        help='allow use of any known digest')
-    parser.add_argument('--no-check-digests', action='store_true',
-                        help='do not check digest values')
+    parser.add_argument("--lax-digests", action="store_true",
+                        help="allow use of any known digest")
+    parser.add_argument("--no-check-digests", action="store_true",
+                        help="do not check digest values")
 
     add_version_arg(parser)
     add_verbosity_args(parser)
@@ -62,7 +62,7 @@ def do_validation(args):
     for path in args.path:
         num += 1
         path_type = ocfl.find_path_type(path)
-        if path_type == 'object':
+        if path_type == "object":
             logging.debug("Validating OCFL Object at %s", path)
             obj = ocfl.Object(lax_digests=args.lax_digests)
             if validate_object(obj, path,
@@ -70,7 +70,7 @@ def do_validation(args):
                                log_errors=log_errors,
                                check_digests=not args.no_check_digests):
                 num_good += 1
-        elif path_type == 'root':
+        elif path_type == "root":
             logging.debug("Validating OCFL Storage Root at %s", path)
             store = ocfl.StorageRoot(root=path,
                                      lax_digests=args.lax_digests)
@@ -78,7 +78,7 @@ def do_validation(args):
                               log_errors=log_errors,
                               check_digests=not args.no_check_digests):
                 num_good += 1
-        elif path_type == 'file':
+        elif path_type == "file":
             logging.debug("Validating separate OCFL Inventory at %s", path)
             obj = ocfl.Object(lax_digests=args.lax_digests)
             if validate_object_inventory(obj, path,

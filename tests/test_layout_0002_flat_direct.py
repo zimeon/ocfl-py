@@ -9,16 +9,16 @@ class TestAll(unittest.TestCase):
 
     def test_name(self):
         """Test canonical name."""
-        self.assertEqual(Layout_0002_Flat_Direct().NAME, '0002-flat-direct-storage-layout')
+        self.assertEqual(Layout_0002_Flat_Direct().NAME, "0002-flat-direct-storage-layout")
 
     def test_identifier_to_path(self):
         """Test identifier_to_path."""
         d = Layout_0002_Flat_Direct()
-        self.assertEqual(d.identifier_to_path('abc'), 'abc')
-        self.assertEqual(d.identifier_to_path('this n that'), 'this n that')
+        self.assertEqual(d.identifier_to_path("abc"), "abc")
+        self.assertEqual(d.identifier_to_path("this n that"), "this n that")
         # From the extension
-        self.assertEqual(d.identifier_to_path('object-01'), 'object-01')
-        self.assertEqual(d.identifier_to_path('..hor_rib:lé-$id'), '..hor_rib:lé-$id')
+        self.assertEqual(d.identifier_to_path("object-01"), "object-01")
+        self.assertEqual(d.identifier_to_path("..hor_rib:lé-$id"), "..hor_rib:lé-$id")
         # Exception cases
-        for bad_id in ('', '.', os.path.join('a', 'b')):
+        for bad_id in ("", ".", os.path.join("a", "b")):
             self.assertRaises(Exception, d.identifier_to_path, bad_id)

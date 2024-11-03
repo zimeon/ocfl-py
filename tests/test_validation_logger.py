@@ -31,7 +31,7 @@ class TestAll(unittest.TestCase):
                     "xy": "Warning 999"
                 }
             }}
-        vl = ValidationLogger(lang='zz', validation_codes=vc)
+        vl = ValidationLogger(lang="zz", validation_codes=vc)
         vl.log("E333", is_error=True)
         self.assertEqual(len(vl.messages), 1)
         self.assertIn("Unknown error: E333 - params ({})", vl.messages[-1])
@@ -41,7 +41,7 @@ class TestAll(unittest.TestCase):
         vl.log("E999", is_error=True)
         self.assertEqual(len(vl.messages), 3)
         self.assertIn("[E999] No params here {}", vl.messages[-1])
-        vl.lang = 'yy'
+        vl.lang = "yy"
         vl.log("E999", is_error=True, param1="THAT")
         self.assertEqual(len(vl.messages), 4)
         self.assertIn("[E999] It is all broken, THAT - whoaaa!", vl.messages[-1])

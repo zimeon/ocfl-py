@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tests/demo building spec examples."""
+"""Demonstrate building 1.1 specification examples."""
 from testlib import DemoTestCase
 
 
@@ -12,7 +12,7 @@ class TestAll(DemoTestCase):
                "stripped out and replaced with an ellipsis. This is inventory should " \
                "match the example in <https://ocfl.io/1.1/spec/#example-minimal-object>."
         out = self.run_script("Minimal example",
-                              ["python", "ocfl-object.py", "build",
+                              ["python", "ocfl-object.py", "create",
                                "--src", "fixtures/1.1/content/spec-ex-minimal",
                                "--id", "http://example.org/minimal",
                                "--spec-version", "1.1",
@@ -37,6 +37,7 @@ class TestAll(DemoTestCase):
                                "--fixity", "md5",
                                "--fixity", "sha1",
                                "--digest", "sha512-spec-ex",
+                               "--metadata", "extra_fixtures/1.1/content/spec-ex-full-metadata.json",
                                "-v"],
                               text=text)
         self.assertIn("4d27c86b026ff70...b53", out)
@@ -47,9 +48,9 @@ class TestAll(DemoTestCase):
                "paths may differ from logical paths in " \
                "<https://ocfl.io/1.1/spec/#example-object-diff-paths>."
         out = self.run_script("Versioned example",
-                              ["python", "ocfl-object.py", "build",
-                               "--src", "fixtures/1.1/content/spec-ex-diff-paths",
-                               "--id", "http://example.org/diff-paths",
+                              ["python", "ocfl-object.py", "create",
+                               "--src", "fixtures/1.1/content/spec-ex-diff-paths/v1",
+                               "--id", "http://example.org/diff-paths/v1",
                                "--spec-version", "1.1",
                                "--digest", "sha512-spec-ex",
                                "--normalization", "md5",
@@ -59,6 +60,7 @@ class TestAll(DemoTestCase):
         # Content paths
         self.assertIn("v1/content/3bacb119a98a15c5", out)
         self.assertIn("v1/content/9f2bab8ef869947d", out)
+        self.assertIn('"created": "2019-03-14T20:31:00Z"', out)
 
 
 if __name__ == "__main__":
