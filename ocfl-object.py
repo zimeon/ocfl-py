@@ -133,7 +133,10 @@ def do_object_operation(args):
                       fixity=args.fixity)
     if args.cmd == "create":
         srcdir = args.srcdir
-        metadata = ocfl.VersionMetadata(args=args)
+        metadata = ocfl.VersionMetadata(created=args.created,
+                                        message=args.message,
+                                        name=args.name,
+                                        address=args.address)
         if args.srcbag is not None:
             srcdir = ocfl.bag_as_source(args.srcbag, metadata)
             if metadata.id is not None:
@@ -166,7 +169,10 @@ def do_object_operation(args):
             print_inventory(inventory)
     elif args.cmd == "update":
         srcdir = args.srcdir
-        metadata = ocfl.VersionMetadata(args=args)
+        metadata = ocfl.VersionMetadata(created=args.created,
+                                        message=args.message,
+                                        name=args.name,
+                                        address=args.address)
         if args.srcbag is not None:
             srcdir = ocfl.bag_as_source(args.srcbag, metadata)
         elif args.srcdir is None:

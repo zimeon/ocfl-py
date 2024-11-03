@@ -1,5 +1,4 @@
-"""Version tests."""
-import argparse
+"""VersionMetadata tests."""
 import json
 import unittest
 from ocfl.version_metadata import VersionMetadata, VersionMetadataException
@@ -10,11 +9,10 @@ class TestAll(unittest.TestCase):
 
     def test02_init(self):
         """Test VersionMetadata init method."""
-        args = argparse.Namespace(created='a',
-                                  message='b',
-                                  name='c',
-                                  address='d')
-        m = VersionMetadata(args=args)
+        m = VersionMetadata(created='a',
+                            message='b',
+                            name='c',
+                            address='d')
         d = m.as_dict(extra='x')
         self.assertEqual(d['created'], 'a')
         self.assertEqual(d['message'], 'b')
