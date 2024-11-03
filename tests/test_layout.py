@@ -2,7 +2,7 @@
 import unittest
 import unittest.mock
 from ocfl.layout import Layout, LayoutException
-from ocfl.pyfs import open_fs
+from ocfl.pyfs import pyfs_openfs
 
 
 class TestAll(unittest.TestCase):
@@ -46,7 +46,7 @@ class TestAll(unittest.TestCase):
 
     def test_read_layout_params(self):
         """Test read_layout_params."""
-        root_fs = open_fs("extra_fixtures/extension_configs")
+        root_fs = pyfs_openfs("extra_fixtures/extension_configs")
         layout = Layout()
         layout.NAME = "good_param"
         layout.param = None
@@ -92,7 +92,7 @@ class TestAll(unittest.TestCase):
 
     def test_write_layout_params(self):
         """Test write_layout_params."""
-        root_fs = open_fs("mem://")
+        root_fs = pyfs_openfs("mem://")
         layout = Layout()
         # No config_file will return none, so simply exits
         self.assertEqual(layout.write_layout_params(root_fs=root_fs), None)

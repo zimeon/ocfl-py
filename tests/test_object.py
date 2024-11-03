@@ -27,13 +27,13 @@ class TestAll(unittest.TestCase):
         self.assertEqual(oo.digest_algorithm, 'sha1')
         self.assertEqual(oo.fixity, ['md5', 'crc16'])
 
-    def test01_open_fs(self):
-        """Test open_fs."""
+    def test01_open_obj_fs(self):
+        """Test open_obj_fs."""
         oo = Object()
         self.assertEqual(oo.obj_fs, None)
-        oo.open_fs('tests')
+        oo.open_obj_fs('tests')
         self.assertNotEqual(oo.obj_fs, None)
-        self.assertRaises(ObjectException, oo.open_fs, 'tests/testdata/i_do_not_exist')
+        self.assertRaises(ObjectException, oo.open_obj_fs, 'tests/testdata/i_do_not_exist')
 
     def test03_digest(self):
         """Test digest wrapper mathod."""
@@ -353,7 +353,7 @@ class TestAll(unittest.TestCase):
     def test_parse_inventory(self):
         """Test parse_inventory method."""
         oo = Object()
-        oo.open_fs('fixtures/1.1/good-objects/minimal_one_version_one_file')
+        oo.open_obj_fs('fixtures/1.1/good-objects/minimal_one_version_one_file')
         inv = oo.parse_inventory()
         self.assertEqual(inv.id, "ark:123/abc")
         digest = "43a43fe8a8a082d3b5343dfaf2fd0c8b8e370675b1f376e92e9994612c33ea255b11298269d72f797399ebb94edeefe53df243643676548f584fb8603ca53a0f"
@@ -362,7 +362,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(inv.version('v1').state[digest],
                          ["a_file.txt"])
         # Digest normalization on read -- file has mixed case but result should be same
-        oo.open_fs('fixtures/1.1/good-objects/minimal_mixed_digests')
+        oo.open_obj_fs('fixtures/1.1/good-objects/minimal_mixed_digests')
         inv = oo.parse_inventory()
         self.assertEqual(inv.id, "http://example.org/minimal_mixed_digests")
         self.assertEqual(inv.manifest[digest],
@@ -370,7 +370,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(inv.version('v1').state[digest],
                          ["a_file.txt"])
         # Error cases
-        oo.open_fs('fixtures/1.0/bad-objects/E036_no_id')
+        oo.open_obj_fs('fixtures/1.0/bad-objects/E036_no_id')
         self.assertRaises(ObjectException, oo.parse_inventory)
 
     def test_map_filepath(self):

@@ -6,7 +6,7 @@ from setuptools import setup, Command
 
 # Extract version number
 verfile = Path("ocfl/_version.py").read_text(encoding="utf-8")
-match = re.search(r"^__version__ = '(\d\.\d.\d+(\.\d+)?)'",
+match = re.search(r'''^__version__ = "(\d\.\d.\d+(\.\d+)?)"''',
                   verfile, re.MULTILINE)
 if match:
     version = match.group(1)

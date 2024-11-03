@@ -12,7 +12,7 @@ from fs.copy import copy_dir
 
 from .namaste import find_namastes, Namaste
 from .object import Object
-from .pyfs import open_fs, ocfl_walk, ocfl_opendir
+from .pyfs import pyfs_openfs, pyfs_walk, pyfs_opendir
 from .validator import Validator
 from .validation_logger import ValidationLogger
 
@@ -95,7 +95,7 @@ class StorageRoot():
     def open_root_fs(self, create=False):
         """Open pyfs filesystem for this OCFL storage root."""
         try:
-            self.root_fs = open_fs(self.root, create=create)
+            self.root_fs = pyfs_openfs(self.root, create=create)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
             raise StorageRootException("Failed to open OCFL storage root filesystem '%s' (%s)" % (self.root, str(e)))
 
@@ -147,7 +147,7 @@ class StorageRoot():
         self.check_spec_version(spec_version=spec_version)
         # Now create the storage root
         (parent, root_dir) = fs.path.split(self.root)
-        parent_fs = open_fs(parent)
+        parent_fs = pyfs_openfs(parent)
         if parent_fs.exists(root_dir):
             raise StorageRootException("OCFL storage root %s already exists, aborting!" % (self.root))
         self.root_fs = parent_fs.makedir(root_dir)
@@ -232,7 +232,7 @@ class StorageRoot():
         Will log any errors seen while traversing the directory tree under the
         storage root.
         """
-        for (dirpath, dirs, files) in ocfl_walk(self.root_fs, is_storage_root=True):
+        for (dirpath, dirs, files) in pyfs_walk(self.root_fs, is_storage_root=True):
             if dirpath == '/':
                 if 'extensions' in dirs:
                     self.validate_extensions_dir()
@@ -288,7 +288,7 @@ class StorageRoot():
         self.check_root_structure()
         self.num_objects = 0
         for dirpath in self.object_paths():
-            with ocfl_opendir(self.root_fs, dirpath) as obj_fs:
+            with pyfs_opendir(pyfs=self.root_fs, dir=dirpath) as obj_fs:
                 # Parse inventory to extract id
                 identifier = Object(obj_fs=obj_fs).id_from_inventory()
                 self.num_objects += 1
@@ -314,7 +314,7 @@ class StorageRoot():
                                       log_warnings=log_warnings)
                 # FIXME - Should check that all objest are not higher spec
                 # version that storage root https://ocfl.io/1.1/spec/#E081
-                if validator.validate_object(ocfl_opendir(self.root_fs, dirpath)):
+                if validator.validate_object(pyfs_opendir(pyfs=self.root_fs, dir=dirpath)):
                     good_objects += 1
                 else:
                     logging.debug("Object at %s in INVALID", dirpath)
@@ -380,8 +380,7 @@ class StorageRoot():
         self.open_root_fs()
         self.check_root_structure()
         # Sanity check
-        o = Object()
-        o.open_fs(object_path)
+        o = Object(path=object_path)
         inventory = o.parse_inventory()
         identifier = inventory.id
         # Now copy

@@ -2,6 +2,7 @@
 import json
 import unittest
 from ocfl.version_metadata import VersionMetadata, VersionMetadataException
+from ocfl.inventory import Inventory
 
 
 class TestAll(unittest.TestCase):
@@ -42,6 +43,18 @@ class TestAll(unittest.TestCase):
         self.assertEqual(m.message, "text")
         self.assertEqual(m.address, "mailto:alice@example.org")
         self.assertEqual(m.name, "Alice")
+        # And now from an Inventory object
+        inv = Inventory()
+        inv.id = "info:a/b/c/99"
+        v = inv.add_version()
+        v.message = "Hello"
+        v.user_name = "Teresa"
+        m = VersionMetadata()
+        m.from_inventory(inventory=inv, version="v1")
+        self.assertEqual(m.id, "info:a/b/c/99")
+        self.assertEqual(m.created, None)
+        self.assertEqual(m.message, "Hello")
+        self.assertEqual(m.name, "Teresa")
         # Error cases
         m = VersionMetadata()
         self.assertRaises(VersionMetadataException, m.from_inventory, inventory={"no versions": 1})

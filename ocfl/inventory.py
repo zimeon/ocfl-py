@@ -11,8 +11,10 @@ import json
 import os.path
 import re
 
-from .object_utils import parse_version_directory
 from .digest import normalized_digest
+from .object_utils import first_version_directory, next_version_directory, \
+    parse_version_directory, make_unused_filepath
+from .pyfs import pyfs_openfile
 
 
 class InventoryException(Exception):
@@ -34,7 +36,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
             that an Inventory instance stores information.
     """
 
-    def __init__(self, data=None, filepath=None):
+    def __init__(self, data=None, filepath=None, pyfs=None):
         """Initialize Inventory object.
 
         Argument:
@@ -44,13 +46,15 @@ class Inventory():  # pylint: disable=too-many-public-methods
                 new object.
             filepath: If not None then the string file path from which to
                 read a JSON inventory file to initialize from.
+            pyfs: pyfs object for the filesystem to use, else None to use the
+                local filesystem (default). filepath is interpretted within
+                pyfs
         """
         if data is None:
             if filepath is None:
                 self.data = {}
             else:
-                # FIXME - Use pyfs and add error handling
-                with open(filepath, 'r', encoding="utf-8") as fh:
+                with pyfs_openfile(filepath, "r", pyfs=pyfs, encoding="utf-8") as fh:
                     self.data = json.load(fh)
         elif isinstance(data, Inventory):
             self.data = copy.deepcopy(data.data)
@@ -62,8 +66,8 @@ class Inventory():  # pylint: disable=too-many-public-methods
     @property
     def spec_version(self):
         """Get specification version from the conformance declaration."""
-        decl = self.data.get("type")
-        m = re.match(r'''https://ocfl.io/(\d+.\d)/spec/#inventory''', decl)
+        decl = self.data.get("type", "")
+        m = re.match(r"""https://ocfl.io/(\d+.\d)/spec/#inventory""", decl)
         if m:
             return m.group(1)
         return None
@@ -148,7 +152,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
     def fixity(self):
         """Get fixity block as dict().
 
-        Returns an empty dict() if there is no fixity block.
+        Returns fixity block else an empty dict() if there is no fixity block.
         """
         return self.data.get("fixity", {})
 
@@ -216,17 +220,6 @@ class Inventory():  # pylint: disable=too-many-public-methods
             vnums.append(parse_version_directory(vdir))
         return vnums
 
-    def digest_for_content_path(self, path):
-        """Return digest corresponding to specified content path.
-
-        Returns None if the content path is not specified in the
-        manifest, else the path string.
-        """
-        for digest, paths in self.manifest.items():
-            if path in paths:
-                return digest
-        return None
-
     def versiondata(self, vdir):
         """Return data for the version in vdir.
 
@@ -247,6 +240,20 @@ class Inventory():  # pylint: disable=too-many-public-methods
         for vdir in sorted(self.version_directories, key=parse_version_directory):
             yield Version(self, vdir)
 
+    def digest_for_content_path(self, path):
+        """Return digest corresponding to specified content path.
+
+        Argument:
+            path: string of content path
+
+        Returns None if the content path is not specified in the
+        manifest, else the path string.
+        """
+        for digest, paths in self.manifest.items():
+            if path in paths:
+                return digest
+        return None
+
     def content_paths_for_digest(self, digest):
         """Content paths for the given digest.
 
@@ -259,6 +266,9 @@ class Inventory():  # pylint: disable=too-many-public-methods
     def content_path_for_digest(self, digest):
         """Content path for the given digest.
 
+        Arguments:
+            digest: string value of digest
+
         Returns a content path or None if there isn't one for the
         given digest. There may actually be more than one content
         path for the given digest, we return the first in the
@@ -269,27 +279,53 @@ class Inventory():  # pylint: disable=too-many-public-methods
             return paths[0]
         return None
 
-    def add_version(self, vdir=None, metadata=None, state=None):
+    def _next_version_directory(self, zero_padded_width=None):
+        """Work out next version directory.
+
+        Arguments:
+            zero_padded_width: an integer to set the number if digits
+                used for zero padded identifiers, else None (default)
+
+        Returns the next version directory name as a string, based on the
+        set of existing versions in this inventory. Will only use the
+        zero_padded_width setting if there are no current versions and thus
+        we are creating the first version directory name.
+
+        Raises InventoryException if the value of zero_padded_width doesn't
+        make sense,
+        """
+        # Find higest version and add one to get next version number
+        highest_version = 0
+        vdir = None
+        for vdir in self.version_directories:
+            highest_version = max(highest_version,
+                                  parse_version_directory(vdir))
+        if highest_version == 0:
+            return first_version_directory(zero_padded_width)
+        return next_version_directory(vdir)
+
+    def add_version(self, vdir=None, metadata=None, state=None,
+                    zero_padded_width=None):
         """Add new version object to the versions block.
 
         Arguments:
-            vdir: string with the version directory name (e.g. "v1"). If None
-                then will create the next version in sequence
+            vdir: string with the version directory name (e.g. "v1" or "v0006").
+                If None then will create the next version in sequence
             metadata: dict to initialize version metadata with, else None to
                 create empty (default)
             state: either a dict with the state block for the version, an
                 object with an as_dict() method to producde such a
                 dictionary (e.g. from VersionMetadat), else None (default)
+            zero_padded_width: an integer to set the number if digits
+                used for zero padded identifiers, else None (default). Applies
+                only when creating first version
 
-        Returns a Version object to access version properties.
+        Returns a Version object that may be used to access version properties.
         """
+        # Work out the new version directory if not specified
         if vdir is None:
-            highest_version = 0
-            for vvdir in self.version_directories:
-                highest_version = max(highest_version,
-                                      parse_version_directory(vvdir))
-            # FIXME - Need to deal with zero padding
-            vdir = "v" + str(highest_version + 1)
+            vdir = self._next_version_directory(zero_padded_width=zero_padded_width)
+        # Add the new version information
         if "versions" not in self.data:
             self.data["versions"] = {}
         if metadata is None:
@@ -300,11 +336,12 @@ class Inventory():  # pylint: disable=too-many-public-methods
             self.data["versions"][vdir] = metadata.as_dict()
         if state is not None:
             self.data["versions"][vdir]["state"] = state
+        # Update head to point to the newly added version
         self.head = vdir
         return self.version(vdir)
 
     def add_file(self, *, digest, content_path):
-        """Add file to the object in the manifest.
+        """Add file to the manifest.
 
         Arguments:
             digest: the digest string computed with the specified digest
@@ -312,7 +349,19 @@ class Inventory():  # pylint: disable=too-many-public-methods
             content_path: the full content path including version directory,
                 content directory, and the path with the content directory.
 
-        FIXME - Does not check vdir and content_directory
+        Adds and entry to the manifest with the specified digest and the
+        specified content_path. Takes account of mutliple content paths with
+        the same digest.
+
+        Raises and InventoryException if there is an attempt to add a
+        content_path that is already included.
+
+        WARNING: Does not check that the content path is valid in that it
+        is within an extant version director, or that it is within the
+        specified content_directory for a version.
+
+        See also: Version.add_file() to add a file with logical_path in the
+        context of a specific version.
         """
         if content_path in self.content_paths:
             raise InventoryException("Attempt to add a content path that already exists: %s" % content_path)
@@ -535,7 +584,7 @@ class Version():
         return None
 
     def content_path_for_logical_path(self, path):
-        """Content path for the file corresponding with the logical path.
+        """Content path for the file in this version for the logical path.
 
         Note that there could be more than one content path with the
         digest. Here we just return the first one. Returns None if there
@@ -546,7 +595,7 @@ class Version():
             return None
         return self.inv.content_path_for_digest(digest)
 
-    def add_file(self, *, digest, logical_path, content_path=None):
+    def add_file(self, *, digest, logical_path, content_path=None, dedupe=True):
         """Add information for a file with given digest in this version.
 
         Arguments:
@@ -556,25 +605,28 @@ class Version():
             content_path: local content path to be used if a file is created
                 within this version. If not specified then the logical_path name
                 will be used as the basis.
+            dedupe: bool, True (default) to not add files for which there is
+                already a file with the same digest, False to add anyway
 
         Returns the full content path (including vdir and content directory) of
-        the file added, else None if no file was added.
+        the file added, else None if no file was added. Makes changes to both
+        the state for this version and the inventory manifest.
+
+        Raises an InventoryException if there is an attempt to add a logical
+        path that already exists in this version.
         """
         # Check logical_file not already present
         if logical_path in self.logical_paths:
             raise InventoryException("Logical path already exists in this version: %s" % logical_path)
         # Do we have any files with this digest already?
         files = self.inv.content_paths_for_digest(digest)
-        if len(files) == 0:
-            # No such file exists, add it
+        if len(files) == 0 or not dedupe:
+            # Add the file because no match exists or we don't want to dedupe
             suggested = os.path.join(self.vdir,
                                      self.inv.content_directory_to_use,
                                      logical_path if content_path is None else content_path)
-            content_path = suggested
-            n = 1
-            while content_path in self.inv.manifest.values():
-                n += 1
-                content_path = suggested + "_" + str(n)
+            content_path = make_unused_filepath(filepath=suggested,
+                                                used=self.inv.content_paths)
             # Have location now, add to manifest
             self.inv.add_file(digest=digest, content_path=content_path)
         else:

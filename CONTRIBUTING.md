@@ -25,5 +25,8 @@ If submitting a pull request:
        * [Checks already implemented in `pycodestyle` and `pydocstyle`](http://pylint.pycqa.org/en/latest/faq.html#i-am-using-another-popular-linter-alongside-pylint-which-messages-should-i-disable-to-avoid-duplicates)
        * A FIXME doesn't generate and error, but please avoid anyway (W0511)
        * See `.github/workflows/action.yml` for current exclusions
-   * Please don't repeat code
+  * Other style choices not enforced:
+    * Use double quotes (") and triple-double quotes (""") for strings unless
+      there is reason to avoid having to quote these inside
+  * Please don't repeat code
    * Please cover the code with tests

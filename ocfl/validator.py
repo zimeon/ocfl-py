@@ -16,7 +16,7 @@ import fs
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
 from .namaste import find_namastes
-from .pyfs import open_fs, ocfl_walk, ocfl_files_identical
+from .pyfs import pyfs_openfs, pyfs_walk, pyfs_files_identical
 from .validation_logger import ValidationLogger
 
 
@@ -105,6 +105,9 @@ class Validator():
     def validate_object(self, path):
         """Validate OCFL object at path or pyfs root.
 
+        Arguments:
+            path: either a filepath or else an open fs filesystem
+
         Designed to be called multiple times if used to validate many objects
         when validating a storage root, for example.
 
@@ -113,7 +116,7 @@ class Validator():
         self.initialize()
         try:
             if isinstance(path, str):
-                self.obj_fs = open_fs(path)
+                self.obj_fs = pyfs_openfs(path)
             else:
                 self.obj_fs = path
                 path = self.obj_fs.desc('')
@@ -306,7 +309,7 @@ class Validator():
                 # Don't validate in this case. Per the spec the inventory in the last version
                 # MUST be identical to the copy in the object root, just check that
                 root_inv_file = 'inventory.json'
-                if not ocfl_files_identical(self.obj_fs, inv_file, root_inv_file):
+                if not pyfs_files_identical(self.obj_fs, inv_file, root_inv_file):
                     self.log.error('E064', root_inv_file=root_inv_file, inv_file=inv_file)
                 else:
                     # We could also just compare digest files but this gives a more helpful error for
@@ -407,7 +410,7 @@ class Validator():
                         # Check content_directory
                         content_path = fs.path.join(version_dir, self.content_directory)
                         num_content_files_in_version = 0
-                        for dirpath, dirs, files in ocfl_walk(self.obj_fs, content_path):
+                        for dirpath, dirs, files in pyfs_walk(self.obj_fs, content_path):
                             if dirpath != '/' + content_path and (len(dirs) + len(files)) == 0:
                                 self.log.error("E024", where=version_dir, path=dirpath)
                             for file in files:

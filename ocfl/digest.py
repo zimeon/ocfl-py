@@ -1,16 +1,9 @@
 """Digest handling for OCFL."""
 import hashlib
-import fs
-from .pyfs import open_fs
+
+from .pyfs import pyfs_openbin
 
 BUFSIZE = 64 * 1024  # 64kB for want of better info...
-
-
-def _fs_digest(pyfs, filename, digester):
-    """Update digester reading from filename."""
-    with pyfs.openbin(filename, 'r') as fh:
-        for b in iter(lambda: fh.read(BUFSIZE), b''):
-            digester.update(b)
 
 
 def _file_digest(pyfs, filename, digester):
@@ -19,12 +12,9 @@ def _file_digest(pyfs, filename, digester):
     Like haslib.sha256 and hashlib.sha512, the digester object must
     support the .update() and .hexdigest() methods.
     """
-    if pyfs is None:
-        (dir_name, name) = fs.path.split(filename)
-        with open_fs(dir_name) as dir_fs:
-            _fs_digest(dir_fs, name, digester)
-    else:
-        _fs_digest(pyfs, filename, digester)
+    with pyfs_openbin(filename, 'r', pyfs=pyfs) as fh:
+        for b in iter(lambda: fh.read(BUFSIZE), b''):
+            digester.update(b)
     return digester.hexdigest()
 
 

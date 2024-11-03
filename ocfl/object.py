@@ -24,9 +24,9 @@ import fs.copy
 from .digest import file_digest
 from .inventory import Inventory
 from .inventory_validator import InventoryValidator
-from .object_utils import make_unused_filepath, next_version, \
+from .object_utils import make_unused_filepath, next_version_directory, \
     parse_version_directory, ObjectException
-from .pyfs import open_fs
+from .pyfs import pyfs_openfs
 from .namaste import Namaste
 from .validator import Validator, ValidatorAbortException
 from .version_metadata import VersionMetadata
@@ -100,9 +100,9 @@ class Object():  # pylint: disable=too-many-public-methods
         self.src_files = {}
         self.obj_fs = obj_fs  # fs filesystem (or sub-filesystem) for object
         if path is not None:
-            self.open_fs(path, create=create)
+            self.open_obj_fs(path, create=create)
 
-    def open_fs(self, objdir, create=False):
+    def open_obj_fs(self, objdir, create=False):
         """Open an fs filesystem for this object.
 
         Arguments:
@@ -111,12 +111,12 @@ class Object():  # pylint: disable=too-many-public-methods
                 or "mem://")
             create: True to create path/filesystem as needed, defaults to False.
 
-        Sets obj_fs attribute.
+        Sets obj_fs attribute with the filesystem instance.
 
         Raises ObjectException on failure to open filesystem.
         """
         try:
-            self.obj_fs = open_fs(fs_url=objdir, create=create)
+            self.obj_fs = pyfs_openfs(fs_url=objdir, create=create)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
             raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, e))
 
@@ -364,9 +364,9 @@ class Object():  # pylint: disable=too-many-public-methods
         if self.id is None:
             raise ObjectException("Can't build object, identifier is not set!")
         if objdir is not None:
-            self.open_fs(objdir, create=True)
+            self.open_obj_fs(objdir, create=True)
         num_versions = 0
-        src_fs = open_fs(srcdir)
+        src_fs = pyfs_openfs(srcdir)
         inventory = None
         # Create each version of the object
         for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(src_fs, versions_metadata):
@@ -401,9 +401,9 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         if self.id is None:
             raise ObjectException("Identifier is not set!")
-        src_fs = open_fs(srcdir)
+        src_fs = pyfs_openfs(srcdir)
         if objdir is not None:
-            self.open_fs(objdir, create=True)
+            self.open_obj_fs(objdir, create=True)
         inventory = self.start_inventory()
         vdir = "v1"
         manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
@@ -435,14 +435,14 @@ class Object():  # pylint: disable=too-many-public-methods
         (such as using a new digest). There will be no content change between
         versions.
         """
-        self.open_fs(objdir)
+        self.open_obj_fs(objdir)
         validator = Validator(check_digests=False, lax_digests=self.lax_digests)
         if not validator.validate_object(objdir):
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
         inventory = self.parse_inventory()
         self.id = inventory.id
         old_head = inventory.head
-        head = next_version(old_head)
+        head = next_version_directory(old_head)
         logging.info("Will update %s %s -> %s", self.id, old_head, head)
         self.obj_fs.makedir(head)
         # Is this a request to change the digest algorithm?
@@ -509,7 +509,7 @@ class Object():  # pylint: disable=too-many-public-methods
             inventory.versions_block[head] = metadata.as_dict()
             inventory.versions_block[head]["state"] = state
         else:
-            src_fs = open_fs(srcdir)
+            src_fs = pyfs_openfs(srcdir)
             manifest_to_srcfile = self.add_version(inventory=inventory,
                                                    src_fs=src_fs,
                                                    src_dir="",
@@ -558,7 +558,7 @@ class Object():  # pylint: disable=too-many-public-methods
             logging.warning("OCFL v%s Object at %s is INVALID",
                             validator.spec_version, objdir)
         tree = "[" + objdir + "]\n"
-        self.open_fs(objdir)
+        self.open_obj_fs(objdir)
         entries = sorted(self.obj_fs.listdir(""))
         n = 0
         seen_sidecar = False
@@ -639,7 +639,7 @@ class Object():  # pylint: disable=too-many-public-methods
                               log_errors=log_errors)
         try:
             (inv_dir, inv_file) = fs.path.split(path)
-            validator.obj_fs = open_fs(inv_dir, create=False)
+            validator.obj_fs = pyfs_openfs(inv_dir, create=False)
             validator.validate_inventory(inv_file, where="standalone", force_spec_version=force_spec_version)
         except fs.errors.ResourceNotFound:
             validator.log.error("E033", where="standalone", explanation="failed to open directory")
@@ -660,7 +660,7 @@ class Object():  # pylint: disable=too-many-public-methods
         Raises an ObjectException is the inventory Can't be parsed or if the
         version doesn"t exist.
         """
-        self.open_fs(objdir)
+        self.open_obj_fs(objdir)
         # Read inventory, set up version
         inv = self.parse_inventory()
         if version == "head":
@@ -687,7 +687,7 @@ class Object():  # pylint: disable=too-many-public-methods
         # Check the destination
         (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
         try:
-            parent_fs = open_fs(parentdir)
+            parent_fs = pyfs_openfs(parentdir)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
             raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
         if parent_fs.isdir(dir):
@@ -728,14 +728,14 @@ class Object():  # pylint: disable=too-many-public-methods
         inv, version = self._extract_setup(objdir, version)
         # Check the destination
         try:
-            dst_fs = open_fs(dstdir)
+            dst_fs = pyfs_openfs(dstdir)
         except (fs.opener.errors.OpenerError, fs.errors.CreateFailed):
             # Doesn"t exist, can we create it?
             (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
             if parentdir == "":
                 parentdir = "."
             try:
-                parent_fs = open_fs(parentdir)
+                parent_fs = pyfs_openfs(parentdir)
             except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
                 raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
             dst_fs = parent_fs.makedir(dir)
