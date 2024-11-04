@@ -776,8 +776,7 @@ class Object():  # pylint: disable=too-many-public-methods
             inventory = Inventory(json.load(fh))
         # Validate
         iv = InventoryValidator()
-        iv.validate(inventory=inventory.data)
-        if iv.log.num_errors > 0:
+        if not iv.validate(inventory=inventory.data):
             raise ObjectException("Root inventory is not valid (%d errors)" % iv.log.num_errors)
         self.spec_version = iv.spec_version
         # Normalize digests in place

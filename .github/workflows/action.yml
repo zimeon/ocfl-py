@@ -34,7 +34,7 @@ jobs:
       - name: Lint with pylint
         run: |
           pylint --disable=line-too-long,raise-missing-from,fixme,redefined-builtin,invalid-name,consider-using-f-string,too-many-instance-attributes,too-many-return-statements,too-many-branches,too-many-arguments,too-many-locals,too-many-statements,too-many-nested-blocks,broad-exception-raised,superfluous-parens,duplicate-code *.py ocfl
-          pylint --disable=line-too-long,fixme,invalid-name,consider-using-f-string,too-many-statements,duplicate-code tests
+          pylint --disable=line-too-long,fixme,invalid-name,consider-using-f-string,too-many-statements,duplicate-code,protected-access tests
       - name: Test with pytest
         run: |
           pytest
