@@ -197,14 +197,14 @@ class TestAll(unittest.TestCase):
         """Test _validate_versions method."""
         log = TLogger()
         iv = InventoryValidator(log=log, default_spec_version="1.0")
-        self.assertEqual(iv._validate_versions({}, [], set()), [])
+        self.assertEqual(iv._validate_versions({}, [], set(), set()), [])
         self.assertEqual(len(log.errors), 0)
         log.clear()
-        self.assertEqual(iv._validate_versions({}, [], set()), [])
+        self.assertEqual(iv._validate_versions({}, [], set(), set()), [])
         self.assertEqual(len(log.errors), 0)
         log.clear()
         # First, no useful data
-        self.assertEqual(iv._validate_versions({"v1": {}}, ["v1"], set()), [])
+        self.assertEqual(iv._validate_versions({"v1": {}}, ["v1"], set(), set()), [])
         self.assertIn("E048", log.errors)
         self.assertIn("E048c", log.errors)
         self.assertIn("W007a", log.warns)
@@ -215,42 +215,42 @@ class TestAll(unittest.TestCase):
                            "message": "A useful message",
                            "state": {},
                            "user": {"name": "A Person", "address": "info:uri1"}}}
-        self.assertEqual(iv._validate_versions(versions, ["v1"], set()), [])
+        self.assertEqual(iv._validate_versions(versions, ["v1"], set(), set()), [])
         self.assertEqual(log.errors, [])
         log.clear()
         versions["v1"]["created"] = {}  # not a string
-        self.assertEqual(iv._validate_versions(versions, ["v1"], set()), [])
+        self.assertEqual(iv._validate_versions(versions, ["v1"], set(), set()), [])
         self.assertIn("E049d", log.errors)
         log.clear()
         versions["v1"]["created"] = "not a datetime"
-        self.assertEqual(iv._validate_versions(versions, ["v1"], set()), [])
+        self.assertEqual(iv._validate_versions(versions, ["v1"], set(), set()), [])
         self.assertIn("E049c", log.errors)
         log.clear()
         versions["v1"]["created"] = "2010-03-30T21:24:00"  # no timezone
-        self.assertEqual(iv._validate_versions(versions, ["v1"], set()), [])
+        self.assertEqual(iv._validate_versions(versions, ["v1"], set(), set()), [])
         self.assertIn("E049a", log.errors)
         log.clear()
         versions["v1"]["created"] = "2010-03-30T21:24Z"  # no seconds
-        self.assertEqual(iv._validate_versions(versions, ["v1"], set()), [])
+        self.assertEqual(iv._validate_versions(versions, ["v1"], set(), set()), [])
         self.assertIn("E049b", log.errors)
         log.clear()
         versions["v1"]["created"] = "2010-03-30T21:24:00Z"
         versions["v1"]["message"] = {}  # not a string
-        self.assertEqual(iv._validate_versions(versions, ["v1"], set()), [])
+        self.assertEqual(iv._validate_versions(versions, ["v1"], set(), set()), [])
         self.assertIn("E094", log.errors)
         log.clear()
         versions["v1"]["message"] = "A message"
         versions["v1"]["user"] = "A string"  # not a dict
-        self.assertEqual(iv._validate_versions(versions, ["v1"], set()), [])
+        self.assertEqual(iv._validate_versions(versions, ["v1"], set(), set()), [])
         self.assertIn("E054a", log.errors)
         log.clear()
         versions["v1"]["user"] = {"name": {}, "address": {}}  # not strings
-        self.assertEqual(iv._validate_versions(versions, ["v1"], set()), [])
+        self.assertEqual(iv._validate_versions(versions, ["v1"], set(), set()), [])
         self.assertIn("E054b", log.errors)
         self.assertIn("E054c", log.errors)
         log.clear()
         versions["v1"]["user"] = {"name": "A Person"}  # no address
-        self.assertEqual(iv._validate_versions(versions, ["v1"], set()), [])
+        self.assertEqual(iv._validate_versions(versions, ["v1"], set(), set()), [])
         self.assertIn("W008", log.warns)
 
     def test__validate_state_block(self):
@@ -258,28 +258,28 @@ class TestAll(unittest.TestCase):
         log = TLogger()
         iv = InventoryValidator(log=log)
         iv.digest_algorithm = "sha512"
-        self.assertEqual(iv._validate_state_block({}, "v1", set()), [])
+        self.assertEqual(iv._validate_state_block({}, "v1", set(), set()), [])
         self.assertEqual(len(log.errors), 0)
         log.clear()
-        self.assertEqual(iv._validate_state_block("invalid", "v1", set()), [])
+        self.assertEqual(iv._validate_state_block("invalid", "v1", set(), set()), [])
         self.assertIn("E050c", log.errors)
         log.clear()
-        self.assertEqual(iv._validate_state_block({"not a digest": []}, "v1", set()), [])
+        self.assertEqual(iv._validate_state_block({"not a digest": []}, "v1", set(), set()), [])
         self.assertIn("E050d", log.errors)
         log.clear()
         d = "4a89417821564b1e1956130569c390dd6122b51296ec620cadd0555ff5aae21c2a17383a194290fc95c73c63261bd8cb77ac275c85e6300cd711fa132fe8706e"
-        self.assertEqual(iv._validate_state_block({d: "not a list"}, "v1", set()), [])
+        self.assertEqual(iv._validate_state_block({d: "not a list"}, "v1", set(), set()), [])
         self.assertIn("E050e", log.errors)
         log.clear()
-        self.assertEqual(iv._validate_state_block({d: ["good path", "a/./b"]}, "v1", set()), [d])
+        self.assertEqual(iv._validate_state_block({d: ["good path", "a/./b"]}, "v1", set(), set()), [d])
         self.assertIn("E052", log.errors)
         log.clear()
-        self.assertEqual(iv._validate_state_block({d: ["good path", "/"]}, "v1", set()), [d])
+        self.assertEqual(iv._validate_state_block({d: ["good path", "/"]}, "v1", set(), set()), [d])
         self.assertIn("E053", log.errors)
         log.clear()
         # Finally a good case
         d2 = "ae16b7632ee42fafd6b510e94a4951b2346ad90a1eff4baae2d7c0d5481515de61dcbc9a8d01f4824ab5215f033858189331859fb5b75fea5809230c63bad34a"
-        self.assertEqual(iv._validate_state_block({d2: ["path2", "good/path3"]}, "v1", set([d, d2])), [d2])
+        self.assertEqual(iv._validate_state_block({d2: ["path2", "good/path3"]}, "v1", set([d, d2]), set()), [d2])
         self.assertEqual(log.errors, [])
 
     def test__check_digests_present_and_used(self):
@@ -332,6 +332,8 @@ class TestAll(unittest.TestCase):
         prior.inventory = {"manifest": {"a2d1": ["v1/content/f1"],
                                         "a2d2": ["v1/content/f2"]},
                            "versions": {"v1": {"state": {"a2d1": ["f1"], "a2d2": ["f2"]}}}}
+        prior.manifest_files = {"v1/content/f1": "a2d1",
+                                "v1/content/f2": "a2d2"}
         iv.validate_as_prior_version(prior)
         self.assertEqual(log.errors, [])
         log.clear()
@@ -343,6 +345,8 @@ class TestAll(unittest.TestCase):
         # Now move that back but change a a manifest location
         prior.inventory["versions"]["v1"]["state"]["a2d2"] = ["f2"]
         prior.inventory["manifest"]["a2d2"] = ["v1/content/f2--moved"]
+        prior.manifest_files = {"v1/content/f1": "a2d1",
+                                "v1/content/f2--moved": "a2d2"}
         iv.validate_as_prior_version(prior)
         self.assertEqual(log.errors, ["E066c"])
 
