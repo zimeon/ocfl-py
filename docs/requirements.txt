@@ -1,0 +1,15 @@
+# Requirements for docs building with readthedocs.io
+# See: https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html#use-a-requirements-file-for-python-dependencies
+#
+# Defining the exact version will make sure things don't break
+myst-parser==4.0.0
+sphinx==7.4.7
+sphinx-autobuild==2024.10.3
+sphinx-rtd-theme==2.0.0
+sphinxcontrib-applehelp==2.0.0
+sphinxcontrib-devhelp==2.0.0
+sphinxcontrib-htmlhelp==2.1.0
+sphinxcontrib-jquery==4.1
+sphinxcontrib-jsmath==1.0.1
+sphinxcontrib-qthelp==2.0.0
+sphinxcontrib-serializinghtml==2.0.0
