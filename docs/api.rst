@@ -18,3 +18,6 @@ ocfl-py API
 
 .. automodule:: ocfl.inventory
    :members:
+
+.. automodule:: ocfl.inventory_validator
+   :members:
