@@ -27,6 +27,8 @@ class ValidatorAbortException(Exception):
 class Validator():
     """Class for OCFL Object Validator."""
 
+    _SPEC_VERSIONS_SUPPORTED = ("2.0", "1.1", "1.0")
+
     def __init__(self, *, log_warnings=False, log_errors=True,
                  check_digests=True, lax_digests=False,
                  force_spec_version=None, default_spec_version="1.1",
@@ -133,7 +135,7 @@ class Validator():
             for namaste in namastes:
                 # Extract and check spec version number
                 this_file_version = None
-                for version in ("1.1", "1.0"):
+                for version in self._SPEC_VERSIONS_SUPPORTED:
                     if namaste.filename == "0=ocfl_object_" + version:
                         this_file_version = version
                         break
