@@ -10,6 +10,7 @@ import re
 import fs
 from fs.copy import copy_dir
 
+from .constants import SPEC_VERSIONS_SUPPORTED
 from .namaste import find_namastes, Namaste
 from .object import Object
 from .pyfs import pyfs_openfs, pyfs_walk, pyfs_opendir
@@ -24,7 +25,7 @@ from .layout_nnnn_tuple_tree import Layout_NNNN_Tuple_Tree
 from .layout_nnnn_uuid_quadtree import Layout_NNNN_UUID_Quadtree
 
 
-def get_layout(layout_name=None):
+def _get_layout(layout_name=None):
     """Find Layout object for the given layout name.
 
     Returns a layout object for the appropriate layour if the layour_name
@@ -88,7 +89,7 @@ class StorageRoot():
         """Check the OCFL specification version is supported."""
         if spec_version is None and self.spec_version is None:
             spec_version = default
-        if spec_version not in ("1.0", "1.1"):
+        if spec_version not in SPEC_VERSIONS_SUPPORTED:
             raise StorageRootException("Unsupported OCFL specification version %s requested" % (spec_version))
         self.spec_version = spec_version
 
@@ -118,7 +119,7 @@ class StorageRoot():
         if the layout is not set.
         """
         if not self._layout and self.layout_name is not None:
-            self._layout = get_layout(layout_name=self.layout_name)
+            self._layout = _get_layout(layout_name=self.layout_name)
         return self._layout
 
     def traversal_error(self, code, **kwargs):
@@ -179,7 +180,7 @@ class StorageRoot():
         if len(namastes) > 1:
             raise StorageRootException("E069b Storage root %s has more than one 0= style declaration file" % (self.root))
         spec_version = None
-        for version in ("1.1", "1.0"):
+        for version in SPEC_VERSIONS_SUPPORTED:
             if namastes[0].filename == "0=ocfl_" + version:
                 spec_version = version
                 break
@@ -250,7 +251,7 @@ class StorageRoot():
                 elif len(zero_eqs) == 1:
                     declaration = zero_eqs[0]
                     match = re.match(r"""0=ocfl_object_(\d+\.\d+)""", declaration)
-                    if match and match.group(1) in ("1.0", "1.1"):  # FIXME - look up supported versions
+                    if match and match.group(1) in SPEC_VERSIONS_SUPPORTED:
                         yield dirpath.lstrip("/")
                     elif match:
                         self.traversal_error("E004a", path=dirpath, version=match.group(1))

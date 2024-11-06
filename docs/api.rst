@@ -1,23 +1,13 @@
-ocfl-py API
-===========
+API Reference
+=============
 
-.. autosummary::
-   :toctree: generated
+The API reference provides detailed descriptions of ocfl-py's classes and
+functions.
 
-   ocfl.object
+
+.. toctree::
+   :maxdepth: 1
+
    ocfl
-
-.. automodule:: ocfl
-   :members:
-
-.. automodule:: ocfl.object
-   :members:
-
-.. automodule:: ocfl.storage_root
-   :members:
-
-.. automodule:: ocfl.inventory
-   :members:
-
-.. automodule:: ocfl.inventory_validator
-   :members:
+   ocfl.object
+   

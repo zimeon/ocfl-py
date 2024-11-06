@@ -13,6 +13,7 @@ import json
 import re
 import fs
 
+from .constants import INVENTORY_FILENAME, SPEC_VERSIONS_SUPPORTED
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
 from .namaste import find_namastes
@@ -133,7 +134,7 @@ class Validator():
             for namaste in namastes:
                 # Extract and check spec version number
                 this_file_version = None
-                for version in ("1.1", "1.0"):
+                for version in SPEC_VERSIONS_SUPPORTED:
                     if namaste.filename == "0=ocfl_object_" + version:
                         this_file_version = version
                         break
@@ -151,7 +152,7 @@ class Validator():
                 if len(namastes) > 1:
                     self.log.error("E003b", files=len(namastes), using_version=self.spec_version)
         # Object root inventory file
-        inv_file = "inventory.json"
+        inv_file = INVENTORY_FILENAME
         if not self.obj_fs.exists(inv_file):
             self.log.error("E063")
             return False
@@ -239,7 +240,7 @@ class Validator():
         All expected_files must be present and no other files.
         All expected_dirs must be present and no other dirs.
         """
-        expected_files = ["0=ocfl_object_" + self.spec_version, "inventory.json",
+        expected_files = ["0=ocfl_object_" + self.spec_version, INVENTORY_FILENAME,
                           "inventory.json." + self.digest_algorithm]
         for entry in self.obj_fs.scandir(""):
             if entry.is_file:
@@ -300,7 +301,7 @@ class Validator():
         prev_version_dir = "NONE"  # will be set for first directory with inventory
         prev_spec_version = "1.0"  # lowest version
         for version_dir in version_dirs:
-            inv_file = fs.path.join(version_dir, "inventory.json")
+            inv_file = fs.path.join(version_dir, INVENTORY_FILENAME)
             if not self.obj_fs.exists(inv_file):
                 self.log.warning("W010", where=version_dir)
                 continue
@@ -308,7 +309,7 @@ class Validator():
             if version_dir == last_version:
                 # Don't validate in this case. Per the spec the inventory in the last version
                 # MUST be identical to the copy in the object root, just check that
-                root_inv_file = "inventory.json"
+                root_inv_file = INVENTORY_FILENAME
                 if not pyfs_files_identical(self.obj_fs, inv_file, root_inv_file):
                     self.log.error("E064", root_inv_file=root_inv_file, inv_file=inv_file)
                 else:
@@ -403,7 +404,7 @@ class Validator():
             try:
                 # Check contents of version directory except content_directory
                 for entry in self.obj_fs.listdir(version_dir):
-                    if ((entry == "inventory.json")
+                    if ((entry == INVENTORY_FILENAME)
                             or (version_dir in self.inventory_digest_files and entry == self.inventory_digest_files[version_dir])):
                         pass
                     elif entry == self.content_directory:
@@ -499,6 +500,6 @@ class Validator():
         m = re.match(r"""(\w+)\s+(\S+)\s*$""", line)
         if not m:
             raise Exception("Bad inventory digest file %s, wrong format" % (inv_digest_file))
-        if m.group(2) != "inventory.json":
+        if m.group(2) != INVENTORY_FILENAME:
             raise Exception("Bad inventory name in inventory digest file %s" % (inv_digest_file))
         return m.group(1)

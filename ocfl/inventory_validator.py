@@ -6,7 +6,6 @@ designed to be used on inventories alone or before any validation
 of files on storage.
 
 Example:
-
     >>> import ocfl
     >>> import json
     >>> with open("fixtures/1.1/good-objects/spec-ex-full/inventory.json") as fh:
@@ -28,6 +27,7 @@ Example:
 """
 import re
 
+from .constants import SPEC_VERSIONS_SUPPORTED
 from .digest import digest_regex, normalized_digest
 from .validation_logger import ValidationLogger
 from .w3c_datetime import str_to_datetime
@@ -87,8 +87,6 @@ class InventoryValidator():
         self.manifest_files = None
         self.unnormalized_digests = None
         self.head = "UNKNOWN"
-        # Configuration data
-        self.spec_versions_supported = ("1.0", "1.1")
 
     def validate(self, inventory, force_spec_version=None):
         """Validate a given inventory.
@@ -133,7 +131,7 @@ class InventoryValidator():
             m = re.match(r"""https://ocfl.io/(\d+.\d)/spec/#inventory""", inventory["type"])
             if not m:
                 self._error("E038b", got=inventory["type"], assumed_spec_version=self.spec_version)
-            elif m.group(1) in self.spec_versions_supported:
+            elif m.group(1) in SPEC_VERSIONS_SUPPORTED:
                 self.spec_version = m.group(1)
                 self.log.spec_version = self.spec_version
             else:
@@ -248,19 +246,18 @@ class InventoryValidator():
         # Success (True) if no errors added to logger
         return (self.log.num_errors - start_errors) == 0
 
-
     def _validate_manifest(self, manifest):
         """Validate manifest block in inventory.
 
         Returns:
-          * manifest_files - a mapping from file to digest for each file in
-              the manifest
-          * manifest_files_correct_format - a simple list of the manifest file
-              path that passed initial checks. They need to be checked for valid
-              version directories later, when we know what version directories
-              are valid
-          * unnormalized_digests - a set of the original digests in unnormalized
-              form that MUST match exactly the values used in state blocks
+            manifest_files: a mapping from file to digest for each file in
+                the manifest
+            manifest_files_correct_format: a simple list of the manifest file
+                path that passed initial checks. They need to be checked for valid
+                version directories later, when we know what version directories
+                are valid
+            unnormalized_digests: a set of the original digests in unnormalized
+                form that MUST match exactly the values used in state blocks
         """
         manifest_files = {}
         manifest_files_correct_format = []
@@ -402,9 +399,10 @@ class InventoryValidator():
         Requires as input two things which are assumed to be structurally correct
         from prior basic validation:
 
-          * versions - which is the JSON object (dict) from the inventory
-          * all_versions - an ordered list of the versions to look at in versions
-                           (all other keys in versions will be ignored)
+        Attributes:
+            versions: which is the JSON object (dict) from the inventory
+            all_versions: an ordered list of the versions to look at in versions
+                (all other keys in versions will be ignored)
 
         Returns a list of digests_used which can then be checked against the
         manifest.
