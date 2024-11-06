@@ -27,7 +27,8 @@ def add_common_args(parser, include_version_metadata=False, objdir_required=True
                         help="read from or write to OCFL object directory objdir")
     # Version metadata and object settings
     obj_params = parser.add_argument_group(title="OCFL object parameters")
-    obj_params.add_argument("--spec-version", "--spec", action="store", default="1.1",
+    obj_params.add_argument("--spec-version", "--spec",
+                            action="store", default=ocfl.DEFAULT_SPEC_VERSION,
                             help="OCFL specification version to adhere to")
     obj_params.add_argument("--digest", default="sha512",
                             help="digest algorithm to use")

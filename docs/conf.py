@@ -16,24 +16,28 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path('..').resolve()))
 
-#import ocfl
-
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = ["myst_parser",
               "sphinx.ext.autodoc",
               "sphinx.ext.autosummary",
+              "sphinx.ext.doctest",
               "sphinx_rtd_theme"]
 myst_enable_extensions = ["colon_fence"]
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
-
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'README.md']
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'alabaster' #'sphinx_rtd_theme'
+html_theme_options = {
+    'body_max_width' : 'none',
+    'page_width': 'auto',
+}
 html_static_path = ['_static']
+
+# Autodoc
+autodoc_member_order = 'bysource'
