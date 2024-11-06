@@ -24,7 +24,7 @@ from .layout_nnnn_tuple_tree import Layout_NNNN_Tuple_Tree
 from .layout_nnnn_uuid_quadtree import Layout_NNNN_UUID_Quadtree
 
 
-def get_layout(layout_name=None):
+def _get_layout(layout_name=None):
     """Find Layout object for the given layout name.
 
     Returns a layout object for the appropriate layour if the layour_name
@@ -118,7 +118,7 @@ class StorageRoot():
         if the layout is not set.
         """
         if not self._layout and self.layout_name is not None:
-            self._layout = get_layout(layout_name=self.layout_name)
+            self._layout = _get_layout(layout_name=self.layout_name)
         return self._layout
 
     def traversal_error(self, code, **kwargs):
