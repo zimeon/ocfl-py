@@ -3,4 +3,5 @@
 
 .. automodule:: ocfl.object
 
-.. autoclass: Object
+.. autoclass:: Object
+   :members:
