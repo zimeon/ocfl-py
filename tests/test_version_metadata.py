@@ -1,8 +1,8 @@
 """VersionMetadata tests."""
 import json
 import unittest
-from ocfl.version_metadata import VersionMetadata, VersionMetadataException
-from ocfl.inventory import Inventory
+from ocfl.version_metadata import VersionMetadata
+from ocfl.inventory import Inventory, InventoryException
 
 
 class TestAll(unittest.TestCase):
@@ -57,6 +57,6 @@ class TestAll(unittest.TestCase):
         self.assertEqual(m.name, "Teresa")
         # Error cases
         m = VersionMetadata()
-        self.assertRaises(VersionMetadataException, m.from_inventory, inventory={"no versions": 1})
-        self.assertRaises(VersionMetadataException, m.from_inventory, inventory={"versions": {}, "no head": 1})
-        self.assertRaises(VersionMetadataException, m.from_inventory, inventory={"versions": {"no v1": {}}, "head": "v1"})
+        self.assertRaises(InventoryException, m.from_inventory, inventory={"no versions": 1})
+        self.assertRaises(InventoryException, m.from_inventory, inventory={"versions": {}, "no head": 1})
+        self.assertRaises(InventoryException, m.from_inventory, inventory={"versions": {"no v1": {}}, "head": "v1"})

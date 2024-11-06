@@ -21,6 +21,7 @@ import fs
 import fs.path
 import fs.copy
 
+from .constants import INVENTORY_FILENAME
 from .digest import file_digest
 from .inventory import Inventory
 from .inventory_validator import InventoryValidator
@@ -30,8 +31,6 @@ from .pyfs import pyfs_openfs
 from .namaste import Namaste
 from .validator import Validator, ValidatorAbortException
 from .version_metadata import VersionMetadata
-
-INVENTORY_FILENAME = "inventory.json"
 
 
 class Object():  # pylint: disable=too-many-public-methods

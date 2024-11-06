@@ -7,8 +7,6 @@ import os.path
 import ocfl
 from ocfl.command_line_utils import add_version_arg, check_version_arg, add_verbosity_args, check_verbosity_args
 
-INVENTORY_NAME = "inventory.json"
-
 
 def parse_arguments():
     """Parse command line arguments.
@@ -39,7 +37,7 @@ def parse_arguments():
 
 def create_sidecar(args, directory):
     """Create sidecar for inventory in dir."""
-    inventory_path = os.path.join(directory, INVENTORY_NAME)
+    inventory_path = os.path.join(directory, ocfl.INVENTORY_FILENAME)
     if not os.path.isfile(inventory_path):
         logging.error("Ignoring path %s because there is no inventory file %s.", directory, inventory_path)
     else:
@@ -65,7 +63,7 @@ def main():
             create_sidecar(args, path)
         else:
             (directory, filename) = os.path.split(path)
-            if filename == INVENTORY_NAME:
+            if filename == ocfl.INVENTORY_FILENAME:
                 create_sidecar(args, directory)
             else:
                 logging.error("Ignoring path %s with filename that is not inventory.json")
