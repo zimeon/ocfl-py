@@ -13,7 +13,7 @@ import json
 import re
 import fs
 
-from .constants import INVENTORY_FILENAME
+from .constants import INVENTORY_FILENAME, SPEC_VERSIONS_SUPPORTED
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
 from .namaste import find_namastes
@@ -134,7 +134,7 @@ class Validator():
             for namaste in namastes:
                 # Extract and check spec version number
                 this_file_version = None
-                for version in ("1.1", "1.0"):
+                for version in SPEC_VERSIONS_SUPPORTED:
                     if namaste.filename == "0=ocfl_object_" + version:
                         this_file_version = version
                         break

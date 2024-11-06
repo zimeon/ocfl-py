@@ -1,7 +1,6 @@
 """Metadata for a specific version of OCFL Object's content."""
-from .w3c_datetime import datetime_to_str
-
 from .inventory import Inventory, InventoryException
+from .w3c_datetime import datetime_to_str
 
 
 class VersionMetadata():
