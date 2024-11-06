@@ -30,7 +30,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
     be an array or a dict, then and empty array or empty dict are returned
     if not present in the underlying data.
 
-    Instance attributes:
+    Attributes:
         data: dict that is the top level JSON object of the parsed JSON
             representation of the inventory file. This is the only place
             that an Inventory instance stores information.

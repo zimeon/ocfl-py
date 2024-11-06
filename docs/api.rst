@@ -10,4 +10,5 @@ functions.
 
    ocfl
    ocfl.object
-   
+   ocfl.storage_root
+   ocfl.inventory

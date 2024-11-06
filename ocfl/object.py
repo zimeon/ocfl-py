@@ -65,7 +65,7 @@ class Object():  # pylint: disable=too-many-public-methods
                  obj_fs=None, path=None, create=False):
         """Initialize OCFL object.
 
-        Arguments relevant to building an object:
+        Arguments:
             identifier: id for this object
             content_directory: allow override of the default "content"
             digest_algorithm: allow override of the default "sha512"
@@ -83,7 +83,6 @@ class Object():  # pylint: disable=too-many-public-methods
                 specification for fixity and to allow non-preferred digest algorithms
                 for content references in the object
             fixity: list of fixity types to add as fixity section
-
             obj_fs: a pyfs filesystem reference for the root of this object
             path: if set then open a pyfs filesystem at path (alternative to obj_fs)
             create: set True to allow opening filesystem at path to create a directory

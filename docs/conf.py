@@ -23,6 +23,7 @@ extensions = ["myst_parser",
               "sphinx.ext.autodoc",
               "sphinx.ext.autosummary",
               "sphinx.ext.doctest",
+              "sphinx.ext.napoleon",
               "sphinx_rtd_theme"]
 myst_enable_extensions = ["colon_fence"]
 
@@ -41,5 +42,6 @@ html_static_path = ['_static']
 
 # Autodoc
 autodoc_default_options = {
-    "autoclass_content": "both"
+    "autoclass_content": "both",  # doesn't work to show __init__ docs??
+    'special-members': '__init__'  # get __init__ to show explicitly
 }
