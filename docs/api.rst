@@ -12,3 +12,4 @@ functions.
    ocfl.object
    ocfl.storage_root
    ocfl.inventory
+   ocfl.inventory_validators

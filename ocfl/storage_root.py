@@ -332,7 +332,7 @@ class StorageRoot():
                  lang="en"):
         """Validate OCFL storage root, structure, and optionally all objects.
 
-        Arguments (keyword only):
+        Arguments:
            validate_objects (bool): True (default) to validate each object on
                the storage root, otherwise will not validate the objects
            check_digests (bool): True (default) to check the digests of each

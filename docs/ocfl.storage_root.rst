@@ -5,3 +5,6 @@
 
 .. autoclass:: StorageRoot
    :members:
+
+.. autoclass:: StorageRootException
+   :members:
