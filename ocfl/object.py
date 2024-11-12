@@ -622,7 +622,8 @@ class Object():  # pylint: disable=too-many-public-methods
                 tree += _show_indent(1, last, (nn == len(v_notes))) + v_note + "\n"
         return tree
 
-    def validate(self, objdir=None, log_warnings=True, log_errors=True, check_digests=True):
+    def validate(self, objdir=None, log_warnings=True,
+                 log_errors=True, check_digests=True):
         """Validate OCFL object at objdir.
 
         Returns tuple (passed, validator) where:
@@ -657,7 +658,8 @@ class Object():  # pylint: disable=too-many-public-methods
                 log and results
         """
         validator = Validator(log_warnings=log_warnings,
-                              log_errors=log_errors)
+                              log_errors=log_errors,
+                              lax_digests=self.lax_digests)
         try:
             (inv_dir, inv_file) = fs.path.split(path)
             validator.obj_fs = pyfs_openfs(inv_dir, create=False)
