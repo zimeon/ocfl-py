@@ -8,7 +8,6 @@ code, and additional test fixtures.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    command_line
    api
