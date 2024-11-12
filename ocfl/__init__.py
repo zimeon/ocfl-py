@@ -4,8 +4,8 @@ from ._version import __version__
 from .bagger import bag_as_source, bag_extracted_version, BaggerError
 from .constants import *
 from .digest import file_digest, string_digest, digest_regex, normalized_digest
-from .inventory import Inventory, InventoryException
-from .inventory_validator import InventoryVadlidator
+from .inventory import Inventory, Version, InventoryException
+from .inventory_validator import InventoryValidator
 from .object import Object
 from .object_utils import find_path_type, ObjectException
 from .storage_root import StorageRoot, StorageRootException

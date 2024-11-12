@@ -1,5 +1,5 @@
-``ocfl.storage_root``
-=====================
+``ocfl.StorageRoot``
+====================
 
 .. automodule:: ocfl.storage_root
 

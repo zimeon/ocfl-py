@@ -1,7 +1,7 @@
-``ocfl.object``
+``ocfl.Object``
 ===============
 
 .. automodule:: ocfl.object
 
-.. autoclass:: Object
+.. autoclass:: ocfl.Object
    :members:

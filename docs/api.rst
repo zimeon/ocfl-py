@@ -8,8 +8,10 @@ functions.
 .. toctree::
    :maxdepth: 1
 
-   ocfl
    ocfl.object
    ocfl.storage_root
    ocfl.inventory
-   ocfl.inventory_validators
+   ocfl.version
+   ocfl.inventory_validator
+   ocfl.version_metadata
+   ocfl.constants

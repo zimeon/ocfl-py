@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 """OCFL Object Implementation.
 
-Provides Object class for handling OCFL Object data and operations, including
-building, updating and inspecting. Also provides support for generating and
-updating OCFL inventories implemented via the Inventory class.
-
-This code uses PyFilesystem2 (import fs) exclusively for access to files, with
-some convenience functions in ocfl.pyfs. This enables application beyond the
-operating system filesystem to include 'mem://', 'zip://' and 's3://' filesystems.
+This code uses PyFilesystem2 (import fs) exclusively for access to files,
+with some convenience functions in ocfl.pyfs. This enables application
+beyond the operating system filesystem to include ``mem://``, ``zip://`` and
+``s3://`` filesystems.
 """
 import copy
 import hashlib
@@ -36,6 +33,10 @@ from .version_metadata import VersionMetadata
 class Object():  # pylint: disable=too-many-public-methods
     """Class for handling OCFL Object data and operations.
 
+    Operation supported include building, updating and inspecting OCFL Objects.
+    Also provides support for generating and updating OCFL inventories
+    implemented via the ocfl.Inventory class.
+
     Example use:
 
     >>> import ocfl
@@ -56,6 +57,27 @@ class Object():  # pylint: disable=too-many-public-methods
     'Initial import'
     >>> inv.version("v1").user_name
     'Alice'
+
+    Attributes:
+        identifier (str): id for this object
+        content_directory (str): the content directory used within this object
+            (default "content")
+        digest_algorithm (str): the digest algorithm used for content addressing
+            within this object (default "sha512")
+        filepath_normalization (str): the filepath normalization strategy to use
+            when files are added to this object (default "uri")
+        spec_version (str): OCFL specification version of this object
+        forward_delta (bool): if True then indicates that forward delta file
+            versioning should be used when files are added, not if False
+        dedupe (bool): if True then indicates that files are deduped within a
+            version when files are added, not if False
+        lax_digests (bool): if True then digests beyond those included in the
+            specification for fixity and to allow non-preferred digest algorithms
+            for content references in the object will be allowed. Defaults to
+            False
+        fixity (list): list of fixity types to add as fixity section
+        obj_fs (io.IOBase): a pyfs filesystem reference for the root of this object
+
     """
 
     def __init__(self, *, identifier=None, content_directory="content",
@@ -83,7 +105,7 @@ class Object():  # pylint: disable=too-many-public-methods
                 specification for fixity and to allow non-preferred digest algorithms
                 for content references in the object
             fixity: list of fixity types to add as fixity section
-            obj_fs: a pyfs filesystem reference for the root of this object
+            obj_fs: a pyfs filesystem for the root of this object
             path: if set then open a pyfs filesystem at path (alternative to obj_fs)
             create: set True to allow opening filesystem at path to create a directory
         """
@@ -623,14 +645,14 @@ class Object():  # pylint: disable=too-many-public-methods
 
         Arguments:
             path: path of inventory file
-            log_warnings: bool, True to log warnings
-            log_errors: bool, True to log errors
+            log_warnings (bool): True to log warnings
+            log_errors (bool): True to log errors
             force_spec_version: None to read specification version from
                 inventory; or specific number to force validation against
                 that specification version
 
         Returns tuple (passed, validator) where:
-            passed: True if valid, False otherwise
+            passed: True is validation passed, False otherwise.
             validator: Validator object with state that records validation
                 log and results
         """
@@ -650,8 +672,8 @@ class Object():  # pylint: disable=too-many-public-methods
         """Check object and version for extract() and extract_file().
 
         Arguments:
-            objdir - directory for the object
-            version - version to be extracted ("v1", etc.) or "head" for latest
+            objdir: directory for the object
+            version: version to be extracted ("v1", etc.) or "head" for latest
 
         Returns tuple of (inv, version) where inv is the parsed inventory and
         version if the checked object version.
@@ -673,9 +695,9 @@ class Object():  # pylint: disable=too-many-public-methods
         """Extract version from object at objdir into dstdir.
 
         Arguments:
-            objdir - directory for the object
-            version - version to be extracted ("v1", etc.) or "head" for latest
-            dstdir - directory to create with extracted version
+            objdir: directory for the object
+            version: version to be extracted ("v1", etc.) or "head" for latest
+            dstdir: directory to create with extracted version
 
         The dstdir itself may exist bit if it is then it must be empty. The
         parent directory of dstdir must exist.
