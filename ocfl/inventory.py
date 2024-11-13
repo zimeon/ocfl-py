@@ -460,7 +460,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
         for vdir in reversed(self.version_directories):
             version = self.version(vdir)
             if logical_path in version.logical_paths:
-               return vdir, version.content_path_for_logical_path(logical_path)
+                return vdir, version.content_path_for_logical_path(logical_path)
         return None, None
 
     def as_json(self):
