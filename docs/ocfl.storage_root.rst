@@ -3,8 +3,8 @@
 
 .. automodule:: ocfl.storage_root
 
-.. autoclass:: StorageRoot
+.. autoclass:: ocfl.StorageRoot
    :members:
 
-.. autoclass:: StorageRootException
+.. autoclass:: ocfl.StorageRootException
    :members:

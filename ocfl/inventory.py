@@ -434,6 +434,35 @@ class Inventory():  # pylint: disable=too-many-public-methods
             # No, new manifest etry
             self.manifest[digest] = [content_path]
 
+    def find_logical_path(self, logical_path):
+        """Find occurrance of logical path in inventory.
+
+        Arguments:
+            logical_path (str): logical file path within some version of the
+                object described by the current inventory
+
+        Returns:
+            tuple: (vdir, content_path) where vdir is the version directory
+                for the version this logical path was found in, and content_path
+                is the content path of that logical file within that version
+                of the object. In the case that the logical file path doesn't
+                exist in any version then (None, None) will be returned.
+
+        Example:
+            >>> import ocfl
+            >>> obj = ocfl.Object(path="fixtures/1.1/good-objects/spec-ex-full")
+            >>> inv = obj.parse_inventory()
+            >>> inv.find_logical_path("empty2.txt")
+            ('v3', 'v1/content/empty.txt')
+            >>> inv.find_logical_path("path that doesn't exist")
+            (None, None)
+        """
+        for vdir in reversed(self.version_directories):
+            version = self.version(vdir)
+            if logical_path in version.logical_paths:
+                return vdir, version.content_path_for_logical_path(logical_path)
+        return None, None
+
     def as_json(self):
         """Serlialize JSON representation."""
         return json.dumps(self.data, sort_keys=True, indent=2)
