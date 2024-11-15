@@ -178,9 +178,9 @@ def do_object_operation(args):
             srcdir = ocfl.bag_as_source(args.srcbag, metadata)
         elif args.srcdir is None:
             raise FatalError("Must specify either --srcdir or --srcbag containing new version files when updating an OCFL object!")
-        obj.update(objdir=args.objdir,
-                   srcdir=srcdir,
-                   metadata=metadata)
+        obj.add_version_with_content(objdir=args.objdir,
+                                     srcdir=srcdir,
+                                     metadata=metadata)
     elif args.cmd == "show":
         print("Object tree for %s\n%s" % (obj.id, obj.tree(objdir=args.objdir)))
     elif args.cmd == "validate":

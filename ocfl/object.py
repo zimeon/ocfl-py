@@ -212,23 +212,30 @@ class Object():  # pylint: disable=too-many-public-methods
             self.fixity = None
         return inventory
 
-    def add_version(self, *, inventory, src_fs, src_dir, vdir, metadata=None):
+    def _add_version_to_inventory(self, *,
+                                  inventory, src_fs, src_dir, vdir,
+                                  metadata=None):
         """Add to inventory data for new version based on files in srcdir.
 
+        Changes the inventory data for this object but does change anything on
+        storage (inventory, inventory digest files, or content files).
+
         Arguments:
-            inventory: an Invenory object with data up to versio (vdir-1) which
-                must include blocks for the manifest and versions. It must also
-                include a fixity block for every algorithm in self.fixity
-            src_fs: pyfs filesystem where this new version exist
-            src_dir: the version directory in src_fs that files are being added
-                from
-            vdir: the version name of the version being created
+            inventory: an Invenory object with data up to version (vdir-1)
+                which must include blocks for the manifest and versions. It
+                must also include a fixity block for every algorithm in
+                self.fixity
+            src_fs: pyfs filesystem where the new version files exist
+            src_dir: the version directory in src_fs that files are being
+                added from
+            vdir: the version directory name of the version being added
             metadata: a VersionMetadata object with any metadata for this
                 version
 
-        Returns manifest_to_srcfile, a dict mapping from paths in manifest to
-        the path of the source file in src_fs that should be include in the
-        content for this new version.
+        Returns:
+            dict: manifest_to_srcfile, a dict mapping from paths in manifest to
+                the path of the source file in src_fs that should be include in
+                the content for this new version.
         """
         state = {}  # state for this new version
         manifest = inventory.manifest
@@ -311,11 +318,11 @@ class Object():  # pylint: disable=too-many-public-methods
             vdir = versions[vn]
             # Do we have metadata for this version? Else empty.
             metadata = versions_metadata.get(vn, VersionMetadata())
-            manifest_to_srcfile = self.add_version(inventory=inventory,
-                                                   src_fs=src_fs,
-                                                   src_dir=vdir,
-                                                   vdir=vdir,
-                                                   metadata=metadata)
+            manifest_to_srcfile = self._add_version_to_inventory(inventory=inventory,
+                                                                 src_fs=src_fs,
+                                                                 src_dir=vdir,
+                                                                 vdir=vdir,
+                                                                 metadata=metadata)
             yield (vdir, inventory, manifest_to_srcfile)
 
     def object_declaration_object(self):
@@ -358,7 +365,7 @@ class Object():  # pylint: disable=too-many-public-methods
         return sidecar
 
     def write_inventory_sidecar(self):
-        """Write just sidecare for this object"s already existing root inventory file.
+        """Write just sidecare for this object's already existing root inventory file.
 
         Returns the inventory sidecar filename.
         """
@@ -427,9 +434,10 @@ class Object():  # pylint: disable=too-many-public-methods
             self.open_obj_fs(objdir, create=True)
         inventory = self.start_inventory()
         vdir = "v1"
-        manifest_to_srcfile = self.add_version(inventory=inventory, src_fs=src_fs,
-                                               src_dir="", vdir=vdir,
-                                               metadata=metadata)
+        manifest_to_srcfile = self._add_version_to_inventory(inventory=inventory,
+                                                             src_fs=src_fs,
+                                                             src_dir="", vdir=vdir,
+                                                             metadata=metadata)
         if objdir is None:
             return inventory
         # Write out v1 object
@@ -444,17 +452,17 @@ class Object():  # pylint: disable=too-many-public-methods
         logging.info("Created OCFL object %s in %s", self.id, objdir)
         return inventory
 
-    def update(self, objdir, srcdir=None, metadata=None):
-        """Update object creating a new version with content matching srcdir.
+    def add_version_with_content(self, objdir, srcdir=None, metadata=None):
+        """Update object by adding a new version with content matching srcdir.
 
         Arguments:
             objdir: directory for object to be update, must contain a valid object!
             srcdir: source directory with version sub-directories
             metadata: VersionMetadata object applied to all versions
 
-        If srcdir is None then the update will be just of metadata and any settings
-        (such as using a new digest). There will be no content change between
-        versions.
+        If srcdir is None then the update will be just of metadata and any
+        settings (such as using a new digest). There will be no content change
+        between versions.
         """
         self.open_obj_fs(objdir)
         validator = Validator(check_digests=False, lax_digests=self.lax_digests)
@@ -531,11 +539,11 @@ class Object():  # pylint: disable=too-many-public-methods
             inventory.versions_block[head]["state"] = state
         else:
             src_fs = pyfs_openfs(srcdir)
-            manifest_to_srcfile = self.add_version(inventory=inventory,
-                                                   src_fs=src_fs,
-                                                   src_dir="",
-                                                   vdir=head,
-                                                   metadata=metadata)
+            manifest_to_srcfile = self._add_version_to_inventory(inventory=inventory,
+                                                                 src_fs=src_fs,
+                                                                 src_dir="",
+                                                                 vdir=head,
+                                                                 metadata=metadata)
             # Copy files into this version
             for (path, srcfile) in manifest_to_srcfile.items():
                 self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
