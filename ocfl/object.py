@@ -22,6 +22,7 @@ from .constants import INVENTORY_FILENAME
 from .digest import file_digest
 from .inventory import Inventory
 from .inventory_validator import InventoryValidator
+from .new_version import NewVersion
 from .object_utils import make_unused_filepath, next_version_directory, \
     parse_version_directory, ObjectException
 from .pyfs import pyfs_openfs
@@ -452,27 +453,58 @@ class Object():  # pylint: disable=too-many-public-methods
         logging.info("Created OCFL object %s in %s", self.id, objdir)
         return inventory
 
-    def add_version_with_content(self, objdir, srcdir=None, metadata=None):
+    def add_version_with_content(self, objdir="", srcdir=None, metadata=None):
         """Update object by adding a new version with content matching srcdir.
 
         Arguments:
-            objdir: directory for object to be update, must contain a valid object!
+            objdir (str): sub-directory of the object filesystem that contains the
+                object to be update. The default is "" in which case the object
+                is assume to be at the filesystem root.
             srcdir: source directory with version sub-directories
             metadata: VersionMetadata object applied to all versions
+
+        As a first step the object is validated.
 
         If srcdir is None then the update will be just of metadata and any
         settings (such as using a new digest). There will be no content change
         between versions.
         """
+        nv = self.start_new_version(objdir=objdir,
+                                    carry_content_forward=False)
+
+        self.commit_new_version(nv)
+
+    def start_new_version(self, objdir="", carry_content_forward=True):
+        """Start a new version to be added to this object.
+
+        Arguments:
+            objdir (str): sub-directory of the object filesystem that contains the
+                object to be update. The default is "" in which case the object
+                is assume to be at the filesystem root.
+            carry_content_forward (bool): True to carry forward the state from
+                the last current version as a starting point. False to start
+                with empty version state.
+
+        Returns:
+            ocfl.NewVersion: object where the new version will be built before
+                finally be added with commit_new_version()
+        """
+        # Check the current object
         self.open_obj_fs(objdir)
         validator = Validator(check_digests=False, lax_digests=self.lax_digests)
         if not validator.validate_object(objdir):
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
         inventory = self.parse_inventory()
-        self.id = inventory.id
-        old_head = inventory.head
-        head = next_version_directory(old_head)
-        logging.info("Will update %s %s -> %s", self.id, old_head, head)
+        return NewVersion(object=self,
+                          carry_content_forward=carry_content_forward)
+
+    def commit_new_version(self, new_version):
+        """Update this object with the specified new version.
+
+        Arguments:
+            object (ocfl.NewVersion): object with new version information to be
+                added
+        """
         self.obj_fs.makedir(head)
         # Is this a request to change the digest algorithm?
         old_digest_algorithm = inventory.digest_algorithm
@@ -554,6 +586,7 @@ class Object():  # pylint: disable=too-many-public-methods
         if digest_algorithm != old_digest_algorithm:
             self.obj_fs.remove(INVENTORY_FILENAME + "." + old_digest_algorithm)
         logging.info("Updated OCFL object %s in %s by adding %s", self.id, objdir, head)
+
 
     def tree(self, objdir):
         """Build human readable tree showing OCFL object at objdir.
