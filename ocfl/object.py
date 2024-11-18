@@ -474,13 +474,22 @@ class Object():  # pylint: disable=too-many-public-methods
 
         self.commit_new_version(nv)
 
-    def start_new_version(self, objdir="", carry_content_forward=True):
+    def start_new_version(self, objdir="",
+                          digest_algorithm=None,
+                          fixity=None
+                          carry_content_forward=True):
         """Start a new version to be added to this object.
 
         Arguments:
             objdir (str): sub-directory of the object filesystem that contains the
                 object to be update. The default is "" in which case the object
                 is assume to be at the filesystem root.
+            digest_algorithm (str or None): the digest algorithm used for content addressing
+                within the new version of this object. Default None which means use
+                same digest algorithm as the last version
+            fixity (list or None): list of fixity types use for the fixity section of the
+                new version. Default None which means to use the same fixity digests as
+                the last version
             carry_content_forward (bool): True to carry forward the state from
                 the last current version as a starting point. False to start
                 with empty version state.
@@ -495,20 +504,10 @@ class Object():  # pylint: disable=too-many-public-methods
         if not validator.validate_object(objdir):
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
         inventory = self.parse_inventory()
-        return NewVersion(object=self,
-                          carry_content_forward=carry_content_forward)
-
-    def commit_new_version(self, new_version):
-        """Update this object with the specified new version.
-
-        Arguments:
-            object (ocfl.NewVersion): object with new version information to be
-                added
-        """
-        self.obj_fs.makedir(head)
+        # Object is valid, have inventory
         # Is this a request to change the digest algorithm?
         old_digest_algorithm = inventory.digest_algorithm
-        digest_algorithm = self.digest_algorithm
+        digest_algorithm = digest_algorithm
         if digest_algorithm is None:
             digest_algorithm = old_digest_algorithm
         elif digest_algorithm != old_digest_algorithm:
@@ -516,7 +515,6 @@ class Object():  # pylint: disable=too-many-public-methods
                          digest_algorithm, old_digest_algorithm)
             inventory.digest_algorithm = digest_algorithm
         # Is this a request to change the set of fixity information?
-        fixity = self.fixity
         old_fixity = set(inventory.fixity.keys())
         if fixity is None:
             # Not explicit, carry forward from previous version. Only change will
@@ -562,6 +560,19 @@ class Object():  # pylint: disable=too-many-public-methods
                     state[old_to_new_digest[old_digest]] = old_state[old_digest]
                 inventory.version(vdir).state = state
         inventory.manifest = manifest
+        return NewVersion(object=self,
+                          inventory=inventory,
+                          carry_content_forward=carry_content_forward)
+
+    def commit_new_version(self, new_version):
+        """Update this object with the specified new version.
+
+        Arguments:
+            object (ocfl.NewVersion): object with new version information to be
+                added
+        """
+        self.obj_fs.makedir(head)
+        inventory = new_version.inventory
         # Add and remove any contents by comparing srcdir with existing state and manifest
         if srcdir is None:
             # No content Update
@@ -586,7 +597,6 @@ class Object():  # pylint: disable=too-many-public-methods
         if digest_algorithm != old_digest_algorithm:
             self.obj_fs.remove(INVENTORY_FILENAME + "." + old_digest_algorithm)
         logging.info("Updated OCFL object %s in %s by adding %s", self.id, objdir, head)
-
 
     def tree(self, objdir):
         """Build human readable tree showing OCFL object at objdir.
