@@ -149,10 +149,6 @@ class Object():  # pylint: disable=too-many-public-methods
             self.obj_fs.makedirs(dstpath)
         fs.copy.copy_file(src_fs, srcfile, self.obj_fs, filepath)
 
-    def digest(self, pyfs, filename):
-        """Digest for file filename in the object filesystem."""
-        return file_digest(filename, self.digest_algorithm, pyfs=pyfs)
-
     def map_filepath(self, filepath, vdir, used):
         """Map source filepath to a content path within the object.
 
@@ -165,7 +161,7 @@ class Object():  # pylint: disable=too-many-public-methods
             filepath: the source filepath (possibly including directories) that
                 will be mapped into the object content path.
             vdir: the current version directory name.
-            used: discionary used to check whether a given vfilepath has
+            used: distionary used to check whether a given vfilepath has
                 been used already.
 
         Returns vfilepath, the version filepath for this content that starts
@@ -246,7 +242,7 @@ class Object():  # pylint: disable=too-many-public-methods
         for filepath in sorted(src_fs.walk.files(src_dir)):
             sfilepath = os.path.relpath(filepath, src_dir)
             vfilepath = self.map_filepath(sfilepath, vdir, used=manifest_to_srcfile)
-            digest = self.digest(src_fs, filepath)
+            digest = file_digest(filepath, self.digest_algorithm, pyfs=src_fs)
             # Always add file to state
             if digest not in state:
                 state[digest] = []
@@ -463,20 +459,35 @@ class Object():  # pylint: disable=too-many-public-methods
             srcdir: source directory with version sub-directories
             metadata: VersionMetadata object applied to all versions
 
+        Returns:
+            ocfl.Inventory: inventory of updated object
+
         As a first step the object is validated.
 
         If srcdir is None then the update will be just of metadata and any
         settings (such as using a new digest). There will be no content change
         between versions.
         """
-        nv = self.start_new_version(objdir=objdir,
-                                    carry_content_forward=False)
+        new_version = self.start_new_version(objdir=objdir,
+                                             srcdir=srcdir,
+                                             digest_algorithm=self.digest_algorithm,
+                                             fixity=self.fixity,
+                                             metadata=metadata,
+                                             carry_content_forward=False)
+        # Add and remove any contents by comparing srcdir with existing state and manifest
+        if srcdir is not None:
+            src_fs = pyfs_openfs(srcdir)
+            for src_path in sorted(src_fs.walk.files(".")):
+                print(src_path)
+                obj_path = self.map_filepath(src_path, new_version.inventory.head, used={})
+                new_version.add_content(src_path, obj_path, src_path)
+        # Write the new version
+        return self.commit_new_version(new_version)
 
-        self.commit_new_version(nv)
-
-    def start_new_version(self, objdir="",
+    def start_new_version(self, objdir="", srcdir="",
                           digest_algorithm=None,
-                          fixity=None
+                          fixity=None,
+                          metadata=None,
                           carry_content_forward=True):
         """Start a new version to be added to this object.
 
@@ -560,9 +571,11 @@ class Object():  # pylint: disable=too-many-public-methods
                     state[old_to_new_digest[old_digest]] = old_state[old_digest]
                 inventory.version(vdir).state = state
         inventory.manifest = manifest
-        return NewVersion(object=self,
-                          inventory=inventory,
-                          carry_content_forward=carry_content_forward)
+        return NewVersion(inventory=inventory,
+                          objdir=objdir,
+                          srcdir=srcdir,
+                          carry_content_forward=carry_content_forward,
+                          old_digest_algorithm=old_digest_algorithm)
 
     def commit_new_version(self, new_version):
         """Update this object with the specified new version.
@@ -570,33 +583,25 @@ class Object():  # pylint: disable=too-many-public-methods
         Arguments:
             object (ocfl.NewVersion): object with new version information to be
                 added
+
+        Returns:
+            ocfl.Inventory: 
         """
-        self.obj_fs.makedir(head)
         inventory = new_version.inventory
-        # Add and remove any contents by comparing srcdir with existing state and manifest
-        if srcdir is None:
-            # No content Update
-            inventory.head = head
-            state = copy.deepcopy(inventory.version(old_head).state)
-            inventory.versions_block[head] = metadata.as_dict()
-            inventory.versions_block[head]["state"] = state
-        else:
-            src_fs = pyfs_openfs(srcdir)
-            manifest_to_srcfile = self._add_version_to_inventory(inventory=inventory,
-                                                                 src_fs=src_fs,
-                                                                 src_dir="",
-                                                                 vdir=head,
-                                                                 metadata=metadata)
-            # Copy files into this version
-            for (path, srcfile) in manifest_to_srcfile.items():
-                self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
+        # Make new version directory
+        self.obj_fs.makedir(inventory.head)
+        # Copy files into this version
+        for (srcpath, objpath) in new_version.files_to_copy.items():
+            self.copy_into_object(src_fs, srcpath, objpath, create_dirs=True)
         # Write inventory in both root and head version
-        self.write_inventory_and_sidecar(inventory, head)
+        self.write_inventory_and_sidecar(inventory, inventory.head)
         self.write_inventory_and_sidecar(inventory)
         # Delete old root inventory sidecar if we changed digest algorithm
-        if digest_algorithm != old_digest_algorithm:
-            self.obj_fs.remove(INVENTORY_FILENAME + "." + old_digest_algorithm)
-        logging.info("Updated OCFL object %s in %s by adding %s", self.id, objdir, head)
+        if (new_version.old_digest_algorithm is not None and
+                inventory.digest_algorithm != new_version.old_digest_algorithm):
+            self.obj_fs.remove(INVENTORY_FILENAME + "." + new_version.old_digest_algorithm)
+        logging.info("Updated OCFL object %s in %s by adding %s", self.id, new_version.objdir, inventory.head)
+        return inventory
 
     def tree(self, objdir):
         """Build human readable tree showing OCFL object at objdir.

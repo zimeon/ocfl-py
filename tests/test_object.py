@@ -35,15 +35,6 @@ class TestAll(unittest.TestCase):
         self.assertNotEqual(oo.obj_fs, None)
         self.assertRaises(ObjectException, oo.open_obj_fs, 'tests/testdata/i_do_not_exist')
 
-    def test03_digest(self):
-        """Test digest wrapper mathod."""
-        oo = Object(digest_algorithm='md5')
-        src_fs = fs.open_fs('tests/testdata')
-        self.assertEqual(oo.digest(src_fs, 'files/empty'),
-                         'd41d8cd98f00b204e9800998ecf8427e')
-        self.assertEqual(oo.digest(src_fs, '/files/empty'),
-                         'd41d8cd98f00b204e9800998ecf8427e')
-
     def test04_start_inventory(self):
         """Test start_inventory mehthod stub."""
         oo = Object(identifier="info:a", digest_algorithm="sha256")
@@ -285,9 +276,10 @@ class TestAll(unittest.TestCase):
                          set(['0=ocfl_object_1.0',
                               'inventory.json', 'inventory.json.sha256',
                               'v1']))
-        # Now update
+        # Now update, same content different digest
         oo.digest_algorithm = 'sha512'
         oo.add_version_with_content(objdir=objdir,
+                                    srcdir='fixtures/1.0/content/spec-ex-minimal/v1',
                                     metadata=VersionMetadata())
         self.assertEqual(set(os.listdir(objdir)),
                          set(['0=ocfl_object_1.0',

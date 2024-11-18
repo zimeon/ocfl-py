@@ -292,6 +292,11 @@ class Inventory():  # pylint: disable=too-many-public-methods
         """Version object for the specified version directory."""
         return Version(self, vdir)
 
+    @property
+    def current_version(self):
+        """Version object for the current (latest) version directory."""
+        return Version(self, self.head)
+
     def versions(self):
         """Generate Version objects for each version.
 
@@ -369,6 +374,9 @@ class Inventory():  # pylint: disable=too-many-public-methods
                     zero_padded_width=None):
         """Add new version object to the versions block.
 
+        Adds the new version block and also updates the head property to
+        the new version directory name.
+
         Arguments:
             vdir: string with the version directory name (e.g. "v1" or "v0006").
                 If None then will create the next version in sequence
@@ -431,7 +439,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
             # Yes, add to file list
             self.manifest[digest].append(content_path)
         else:
-            # No, new manifest etry
+            # No, new manifest entry
             self.manifest[digest] = [content_path]
 
     def find_logical_path(self, logical_path):
