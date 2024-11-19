@@ -39,7 +39,7 @@ class TestAll(DemoTestCase):
                                "--srcbag", "tests/testdata/bags/uaa_v2",
                                "-v"],
                               text=text)
-        self.assertIn("Updated info:bb123cd4567 to v2", out)
+        self.assertIn("Updated object info:bb123cd4567 to v2", out)
         out = self.run_script("Look inside again",
                               ["python", "ocfl-object.py", "show",
                                "--objdir", "TMPDIR/obj"],
@@ -54,7 +54,7 @@ class TestAll(DemoTestCase):
                                "--srcbag", "tests/testdata/bags/uaa_v3",
                                "-v"],
                               text=text)
-        self.assertIn("Updated info:bb123cd4567 to v3", out)
+        self.assertIn("Updated object info:bb123cd4567 to v3", out)
         out = self.run_script("Look inside again",
                               ["python", "ocfl-object.py", "show",
                                "--objdir", "TMPDIR/obj"],
@@ -69,7 +69,7 @@ class TestAll(DemoTestCase):
                                "--srcbag", "tests/testdata/bags/uaa_v4",
                                "-v"],
                               text=text)
-        self.assertIn("Updated info:bb123cd4567 to v4", out)
+        self.assertIn("Updated object info:bb123cd4567 to v4", out)
         text = "Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` content as a Bagit bag."
         out = self.run_script("Update with v4",
                               ["python", "ocfl-object.py", "extract",

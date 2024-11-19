@@ -737,3 +737,30 @@ class Version():
         else:
             self.state[digest] = [logical_path]
         return content_path
+
+    def delete_logical_path(self, path):
+        """Delete the given logical path in this version.
+
+        Will remove the logical path, and possibly the state entry for its
+        digest if there was only one logical path for the given digest.
+
+        Arguments:
+            path: path within the state for this version
+
+        Returns:
+            str: digest of the content for which the logical path was removed
+
+        Raises:
+            InventoryException: if the logical path does not exist
+        """
+        for digest, paths in self.state.items():
+            if path in paths:
+                if len(paths) > 1:
+                    # More than one path, just zap this one
+                    paths.remove(path)
+                    self.state[digest] = paths
+                else:
+                    # Just this path, remove digest from state
+                    del self.state[digest]
+                return digest
+        raise InventoryException("Logical path to delete %s not found!" % (path))
