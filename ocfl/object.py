@@ -18,7 +18,7 @@ import fs
 import fs.path
 import fs.copy
 
-from .constants import INVENTORY_FILENAME
+from .constants import INVENTORY_FILENAME, DEFAULT_CONTENT_DIRECTORY
 from .digest import file_digest
 from .inventory import Inventory
 from .inventory_validator import InventoryValidator
@@ -65,8 +65,8 @@ class Object():  # pylint: disable=too-many-public-methods
             (default "content")
         digest_algorithm (str): the digest algorithm used for content addressing
             within this object (default "sha512")
-        filepath_normalization (str): the filepath normalization strategy to use
-            when files are added to this object (default "uri")
+        content_path_normalization (str): the filepath normalization strategy to
+            use when files are added to this object (default "uri")
         spec_version (str): OCFL specification version of this object
         forward_delta (bool): if True then indicates that forward delta file
             versioning should be used when files are added, not if False
@@ -81,8 +81,9 @@ class Object():  # pylint: disable=too-many-public-methods
 
     """
 
-    def __init__(self, *, identifier=None, content_directory="content",
-                 digest_algorithm="sha512", filepath_normalization="uri",
+    def __init__(self, *, identifier=None,
+                 content_directory=DEFAULT_CONTENT_DIRECTORY,
+                 digest_algorithm="sha512", content_path_normalization="uri",
                  spec_version="1.1", forward_delta=True, dedupe=True,
                  lax_digests=False, fixity=None,
                  obj_fs=None, path=None, create=False):
@@ -92,7 +93,7 @@ class Object():  # pylint: disable=too-many-public-methods
             identifier: id for this object
             content_directory: allow override of the default "content"
             digest_algorithm: allow override of the default "sha512"
-            filepath_normalization: allow override of default "uri"
+            content_path_normalization: allow override of default "uri"
             spec_version: OCFL specification version
             forward_delta: set False to turn off foward delta. With forward delta
                 turned off, the same content will be repeated in a new version
@@ -113,7 +114,7 @@ class Object():  # pylint: disable=too-many-public-methods
         self.id = identifier
         self.content_directory = content_directory
         self.digest_algorithm = digest_algorithm
-        self.filepath_normalization = filepath_normalization
+        self.content_path_normalization = content_path_normalization
         self.spec_version = spec_version
         self.forward_delta = forward_delta
         self.dedupe = dedupe
@@ -152,9 +153,11 @@ class Object():  # pylint: disable=too-many-public-methods
     def map_filepath(self, filepath, vdir, used):
         """Map source filepath to a content path within the object.
 
+        FIXME - Remove this method in favor or NewVersion._map_filepath
+
         The purpose of the mapping might be normalization, sanitization,
         content distribution, or something else. The mapping is set by the
-        filepath_normalization attribute where None indicates no mapping, the
+        content_path_normalization attribute where None indicates no mapping, the
         source file name and path are preserved.
 
         Arguments:
@@ -167,18 +170,18 @@ class Object():  # pylint: disable=too-many-public-methods
         Returns vfilepath, the version filepath for this content that starts
         with `vdir/content_directory/`.
         """
-        if self.filepath_normalization == "uri":
+        if self.content_path_normalization == "uri":
             filepath = urlquote(filepath)
             # also encode any leading period to unhide files
             if filepath[0] == ".":
                 filepath = "%2E" + filepath[1:]
-        elif self.filepath_normalization == "md5":
+        elif self.content_path_normalization == "md5":
             # Truncated MD5 hash of the _filepath_ as an illustration of diff
             # paths for the specification. Not sure whether there should be any
             # real application of this
             filepath = hashlib.md5(filepath.encode("utf-8")).hexdigest()[0:16]
-        elif self.filepath_normalization is not None:
-            raise Exception("Unknown filepath normalization '%s' requested" % (self.filepath_normalization))
+        elif self.content_path_normalization is not None:
+            raise Exception("Unknown filepath normalization '%s' requested" % (self.content_path_normalization))
         vfilepath = fs.path.join(vdir, self.content_directory, filepath)  # path relative to root, inc v#/content
         # Check we don"t already have this vfilepath from many to one
         # normalization, add suffix to distinguish if necessary
@@ -198,7 +201,7 @@ class Object():  # pylint: disable=too-many-public-methods
         inventory.digest_algorithm = self.digest_algorithm
         inventory.init_manifest_and_versions()
         # Add contentDirectory if not "content"
-        if self.content_directory != "content":
+        if self.content_directory != DEFAULT_CONTENT_DIRECTORY:
             inventory.content_directory = self.content_directory
         # Add fixity section if requested
         if self.fixity is not None and len(self.fixity) > 0:
@@ -481,9 +484,9 @@ class Object():  # pylint: disable=too-many-public-methods
             for src_path in sorted(src_fs.walk.files()):
                 src_path = os.path.relpath(src_path, "/")
                 obj_path = self.map_filepath(src_path, new_version.inventory.head, used={})
-                new_version.add_content(src_path, src_path, obj_path)
+                new_version.add(src_path, src_path, obj_path)
         # Write the new version
-        return self.commit_new_version(new_version)
+        return self.write_new_version(new_version)
 
     def start_new_version(self, *,
                           objdir=None,
@@ -512,7 +515,7 @@ class Object():  # pylint: disable=too-many-public-methods
 
         Returns:
             ocfl.NewVersion: object where the new version will be built before
-                finally be added with commit_new_version()
+                finally be added with write_new_version()
         """
         # Check the current object
         self.open_obj_fs(objdir)
@@ -579,10 +582,14 @@ class Object():  # pylint: disable=too-many-public-methods
                           objdir=objdir,
                           srcdir=srcdir,
                           metadata=metadata,
+                          content_directory=self.content_directory,
+                          content_path_normalization=self.content_path_normalization,
+                          forward_delta=self.forward_delta,
+                          dedupe=self.dedupe,
                           carry_content_forward=carry_content_forward,
                           old_digest_algorithm=old_digest_algorithm)
 
-    def commit_new_version(self, new_version):
+    def write_new_version(self, new_version):
         """Update this object with the specified new version.
 
         Arguments:

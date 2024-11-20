@@ -383,12 +383,12 @@ class TestAll(unittest.TestCase):
         self.assertEqual(oo.map_filepath('a', 'v1', {'v1/content/a': True}), 'v1/content/a__2')
         # md5
         oo = Object()
-        oo.filepath_normalization = 'md5'
+        oo.content_path_normalization = 'md5'
         self.assertEqual(oo.map_filepath('a', 'v1', {}), 'v1/content/0cc175b9c0f1b6a8')
         self.assertEqual(oo.map_filepath('a', 'v1', {'v1/content/0cc175b9c0f1b6a8': True}), 'v1/content/0cc175b9c0f1b6a8__2')
         # error case
         oo = Object()
-        oo.filepath_normalization = '???'
+        oo.content_path_normalization = '???'
         self.assertRaises(Exception, oo.map_filepath, 'a', 'v1', {})
 
     def test_extract(self):

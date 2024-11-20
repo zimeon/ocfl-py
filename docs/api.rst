@@ -14,4 +14,5 @@ functions.
    ocfl.version
    ocfl.inventory_validator
    ocfl.version_metadata
+   ocfl.new_version
    ocfl.constants

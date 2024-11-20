@@ -127,7 +127,7 @@ def do_object_operation(args):
     obj = ocfl.Object(identifier=args.id,
                       spec_version=args.spec_version,
                       digest_algorithm=args.digest,
-                      filepath_normalization=args.normalization,
+                      content_path_normalization=args.normalization,
                       forward_delta=not args.no_forward_delta,
                       dedupe=not args.no_dedupe,
                       lax_digests=args.lax_digests,

@@ -27,7 +27,7 @@ Example:
 """
 import re
 
-from .constants import SPEC_VERSIONS_SUPPORTED
+from .constants import SPEC_VERSIONS_SUPPORTED, DEFAULT_CONTENT_DIRECTORY
 from .digest import digest_regex, normalized_digest
 from .validation_logger import ValidationLogger
 from .w3c_datetime import str_to_datetime
@@ -87,7 +87,7 @@ class InventoryValidator():
         self.id = None
         self.spec_version = self.default_spec_version
         self.digest_algorithm = "sha512"
-        self.content_directory = "content"
+        self.content_directory = DEFAULT_CONTENT_DIRECTORY
         self.content_directory_set = False
         self.all_versions = []
         self.manifest_files = None

@@ -73,6 +73,7 @@ import json
 import os.path
 import re
 
+from .constants import DEFAULT_CONTENT_DIRECTORY
 from .digest import normalized_digest
 from .object_utils import first_version_directory, next_version_directory, \
     parse_version_directory, make_unused_filepath
@@ -177,7 +178,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
     @property
     def content_directory_to_use(self):
         """Get contentDirectory to use, default 'content' is not specified."""
-        return self.data.get("contentDirectory", "content")
+        return self.data.get("contentDirectory", DEFAULT_CONTENT_DIRECTORY)
 
     @content_directory.setter
     def content_directory(self, value):
