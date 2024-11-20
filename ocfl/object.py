@@ -485,7 +485,9 @@ class Object():  # pylint: disable=too-many-public-methods
         # Write the new version
         return self.commit_new_version(new_version)
 
-    def start_new_version(self, objdir=None, srcdir="",
+    def start_new_version(self, *,
+                          objdir=None,
+                          srcdir="",
                           digest_algorithm=None,
                           fixity=None,
                           metadata=None,
