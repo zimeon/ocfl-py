@@ -28,7 +28,7 @@ class NewVersion():
     def __init__(self, *,
                  inventory=None,
                  objdir=None,
-                 srcdir=None,
+                 srcdir=".",
                  metadata=None,
                  digest_algorithm=None,
                  content_directory=None,
@@ -176,6 +176,16 @@ class NewVersion():
                 creation
             logical_path (str): logical filepath that this content should
                 have within the version of the object
+            content_path (str or None): if None (default) then will generate a
+                content path based on the src_path and the
+                content_path_normalization strategy selected. Otherwise will
+                use the speficied content path provided is in the current
+                versions content directory (must start with
+                "vdir/content_directory/") and doesn't already exist in the
+                object
+
+        Raises:
+            NewVersionException: if the specifies content path is not allowed
         """
         inventory = self.inventory
         if content_path is None:
@@ -218,10 +228,6 @@ class NewVersion():
 
         This is likely to be used when constructing a new version starting from
         the previous state (initialization with carry_content_forward=True).
-
-        Assumes that the content is used in a previous version to will not
-        check to delete content from the manifest. Thus add() followed
-        but delete_content() could leave the new version in a bad state.
 
         Arguments:
             logical_path (str): logical path that should not appear in the new

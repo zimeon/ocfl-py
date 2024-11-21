@@ -457,6 +457,11 @@ class Inventory():  # pylint: disable=too-many-public-methods
                 of the object. In the case that the logical file path doesn't
                 exist in any version then (None, None) will be returned.
 
+        The method searchs backward from the latest version through to the
+        first version. The latest version that the logical path exists in
+        will be return, not any possible earlier version which might correspond
+        with different content.
+
         Example:
             >>> import ocfl
             >>> obj = ocfl.Object(path="fixtures/1.1/good-objects/spec-ex-full")
@@ -745,6 +750,13 @@ class Version():
         Will remove the logical path, and possibly the state entry for its
         digest if there was only one logical path for the given digest.
 
+        If this is the last reference to a given digest in the current version
+        state then delete any content files in this version for the given
+        digest. (There is the possibility of odd behavior if dedupe is set
+        False so that multiple copies are created within the version -- all
+        copies will be left until the last reference is deleted, then all
+        copies will be deleted.)
+
         Arguments:
             path: path within the state for this version
 
@@ -763,5 +775,14 @@ class Version():
                 else:
                     # Just this path, remove digest from state
                     del self.state[digest]
+                    # No more references from this version, delete manifest
+                    # entries in this verion
+                    if digest in self.inv.manifest:
+                        cpaths = []
+                        for cpath in self.inv.manifest[digest]:
+                            if not cpath.startswith(self.vdir + "/"):
+                                cpaths.append(cpath)
+                        self.inv.manifest[digest] = cpaths
+                    # FIXME - Also adjust fixity!
                 return digest
         raise InventoryException("Logical path to delete %s not found!" % (path))
