@@ -524,7 +524,10 @@ class Object():  # pylint: disable=too-many-public-methods
             raise ObjectException("Object at '%s' is not valid, aborting" % objdir)
         inventory = self.parse_inventory()
         # Object is valid, have inventory
-        # Is this a request to change the digest algorithm?
+        #
+        # Is this a request to change the digest algorithm? We implement this
+        # as part of the Object class because it requires access to all
+        # current object content files for potential recaclculation of digests
         old_digest_algorithm = inventory.digest_algorithm
         if digest_algorithm is None:
             digest_algorithm = old_digest_algorithm
@@ -582,7 +585,6 @@ class Object():  # pylint: disable=too-many-public-methods
                           objdir=objdir,
                           srcdir=srcdir,
                           metadata=metadata,
-                          content_directory=self.content_directory,
                           content_path_normalization=self.content_path_normalization,
                           forward_delta=self.forward_delta,
                           dedupe=self.dedupe,
@@ -860,7 +862,8 @@ class Object():  # pylint: disable=too-many-public-methods
         of the Object methods can assume correctness and matching string digests
         between state and manifest blocks.
 
-        Returns and Inventory object for the parsed inventory.
+        Returns:
+            ocfl.Inventory: new Inventory object for the parsed inventory.
         """
         with self.obj_fs.open(INVENTORY_FILENAME) as fh:
             inventory = Inventory(json.load(fh))
