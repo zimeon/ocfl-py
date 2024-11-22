@@ -581,15 +581,15 @@ class Object():  # pylint: disable=too-many-public-methods
                     state[old_to_new_digest[old_digest]] = old_state[old_digest]
                 inventory.version(vdir).state = state
         inventory.manifest = manifest
-        return NewVersion(inventory=inventory,
-                          objdir=objdir,
-                          srcdir=srcdir,
-                          metadata=metadata,
-                          content_path_normalization=self.content_path_normalization,
-                          forward_delta=self.forward_delta,
-                          dedupe=self.dedupe,
-                          carry_content_forward=carry_content_forward,
-                          old_digest_algorithm=old_digest_algorithm)
+        return NewVersion.next_version(inventory=inventory,
+                                       objdir=objdir,
+                                       srcdir=srcdir,
+                                       metadata=metadata,
+                                       content_path_normalization=self.content_path_normalization,
+                                       forward_delta=self.forward_delta,
+                                       dedupe=self.dedupe,
+                                       carry_content_forward=carry_content_forward,
+                                       old_digest_algorithm=old_digest_algorithm)
 
     def write_new_version(self, new_version):
         """Update this object with the specified new version.

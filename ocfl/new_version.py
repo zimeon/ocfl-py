@@ -25,29 +25,90 @@ class NewVersionException(Exception):
 class NewVersion():
     """Class to represent a new version to be added to an Object."""
 
-    def __init__(self, *,
-                 inventory=None,
-                 objdir=None,
-                 srcdir=".",
-                 metadata=None,
-                 digest_algorithm=None,
-                 content_directory=None,
-                 content_path_normalization="uri",
-                 carry_content_forward=True,
-                 forward_delta=True,
-                 dedupe=False,
-                 old_digest_algorithm=None):
+    def __init__(self, *, srcdir="."):
         """Create NewVersion object.
+
+        Arguments:
+            srcdir (str): source directory name for files that will be added
+                to this new version. May be a pyfs filesystem specificarion
+
+        The default constructor is not expected to be used directly, see
+        NewVersion.first_version(...) and NewVersion.next_version(..) for the
+        two cases in which a new version can be created.
+        """
+        # Configuration
+        self.inventory = None
+        self.objdir = None
+        self.srcdir = srcdir
+        self.src_fs = None
+        self.content_path_normalization = None
+        self.forward_delta = None
+        self.dedupe = None
+        # Additional state needed for final commit
+        self.old_digest_algorithm = None
+        self.files_to_copy = {}  # dict: src_path -> content_path
+        self.src_fs = pyfs_openfs(self.srcdir)
+
+    @classmethod
+    def first_version(cls, *,
+                      srcdir=".",
+                      digest_algorithm=None,
+                      content_directory=None,
+                      metadata=None,
+                      content_path_normalization="uri"):
+        """Start the first version for this object.
+
+        Arguments:
+            digest_algorithm (str or None):
+            content_directort (str or None):
+            content_path_normalization (str): the path normalization strategy
+                to use with content paths when files are added to this object
+                (default "uri")
+
+        """
+        self = cls(srcdir=srcdir)
+        inventory = Inventory()
+        inventory.add_version(metadata=metadata)  # also sets head "v1"
+        if digest_algorithm is None:
+            digest_algorithm = DEFAULT_DIGEST_ALGORITHM
+        inventory.digest_algorithm = digest_algorithm
+        if (content_directory is not None
+                and content_directory != DEFAULT_CONTENT_DIRECTORY):
+            inventory.content_directory = content_directory
+        self.inventory = inventory
+        self.content_path_normalization = content_path_normalization
+        return self
+
+    @classmethod
+    def next_version(cls, *,
+                     inventory,
+                     objdir=None,
+                     srcdir=".",
+                     metadata=None,
+                     content_path_normalization="uri",
+                     forward_delta=True,
+                     dedupe=True,
+                     carry_content_forward=False,
+                     old_digest_algorithm=None):
+        """Start the new version by adjusting inventory.
+
+        If carry_content_forward is set then the state block of the previous
+        version is copied forward into the new version. Items may later be
+        added or deleted.
 
         Arguments:
             inventory (ocfl.Inventory): inventory that we will modify to build
                 the new version.
+            metadata (ocfl.VersionMetadata or None): Either a VersionMetadata
+                object to set the metadata for the new version, None to not set
+                metadata
             content_path_normalization (str): the path normalization strategy
                 to use with content paths when files are added to this object
                 (default "uri")
             carry_content_forward (bool): True to carry forward the state from
                 the last current version as a starting point. False to start
                 with empty version state.
+
 
         Example use:
 
@@ -67,64 +128,18 @@ class NewVersion():
         INFO:root:Updated OCFL object ark:/12345/bcd987 in tmp/spec-ex-full by adding v4
         <ocfl.inventory.Inventory object at 0x1014e6cd0>
         """
-        # Configuration
+        self = cls(srcdir=srcdir)
         self.inventory = inventory
         self.objdir = objdir
-        self.srcdir = srcdir
-        self.src_fs = None
         self.content_path_normalization = content_path_normalization
         self.forward_delta = forward_delta
         self.dedupe = dedupe
-        # Additional state needed for final commit
         self.old_digest_algorithm = old_digest_algorithm
-        self.files_to_copy = {}  # dict: src_path -> content_path
-        if inventory is None:
-            self._start_first_version(digest_algorithm=digest_algorithm,
-                                      content_directory=content_directory,
-                                      metadata=metadata)
-        else:
-            self._start_next_version(carry_content_forward=carry_content_forward,
-                                     metadata=metadata)
-        self.src_fs = pyfs_openfs(self.srcdir)
-
-    def _start_first_version(self, *,
-                             digest_algorithm=None,
-                             content_directory=None,
-                             metadata):
-        """Start the first version for this object.
-
-        Arguments:
-            digest_algorithm (str or None):
-            content_directort (str or None):
-        """
-        inventory = Inventory()
-        inventory.add_version(metadata=metadata)  # also sets head "v1"
-        if digest_algorithm is None:
-            digest_algorithm = DEFAULT_DIGEST_ALGORITHM
-        inventory.digest_algorithm = digest_algorithm
-        if (content_directory is not None
-                and content_directory != DEFAULT_CONTENT_DIRECTORY):
-            inventory.content_directory = content_directory
-        self.inventory = inventory
-
-    def _start_next_version(self, *, metadata, carry_content_forward=False):
-        """Start the new version by adjusting inventory.
-
-        If carry_content_forward is set then the state block of the previous
-        version is copied forward into the new version. Items may later be
-        added or deleted.
-
-        Arguments:
-            metadata (ocfl.VersionMetadata or None): Either a VersionMetadata
-                object to set the metadata for the new version, None to not set
-                metadata
-            carry_content_forward (bool): True to copy state forward, False to
-                creat new version with empty state
-        """
         state = {}
         if carry_content_forward:
             state = copy.deepcopy(self.inventory.current_version.state)
         self.inventory.add_version(state=state, metadata=metadata)
+        return self
 
     @property
     def content_directory(self):
