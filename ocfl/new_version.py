@@ -10,8 +10,9 @@ import logging
 from urllib.parse import quote as urlquote
 
 import fs.path
+import os.path
 
-from .constants import DEFAULT_DIGEST_ALGORITHM, DEFAULT_CONTENT_DIRECTORY
+from .constants import DEFAULT_DIGEST_ALGORITHM, DEFAULT_CONTENT_DIRECTORY, DEFAULT_SPEC_VERSION
 from .digest import file_digest
 from .inventory import Inventory, InventoryException
 from .object_utils import make_unused_filepath
@@ -52,13 +53,17 @@ class NewVersion():
     @classmethod
     def first_version(cls, *,
                       srcdir=".",
+                      identifier,
+                      spec_version=DEFAULT_SPEC_VERSION,
                       digest_algorithm=None,
                       content_directory=None,
                       metadata=None,
+                      fixity=None,
                       content_path_normalization="uri"):
         """Start the first version for this object.
 
         Arguments:
+            identifier (str): identifier of the object to be created
             digest_algorithm (str or None):
             content_directort (str or None):
             content_path_normalization (str): the path normalization strategy
@@ -68,6 +73,19 @@ class NewVersion():
         """
         self = cls(srcdir=srcdir)
         inventory = Inventory()
+        self.inventory = inventory
+        inventory.id = identifier
+        inventory.spec_version = spec_version
+        inventory.digest_algorithm = digest_algorithm
+        inventory.init_manifest_and_versions()
+        # Add contentDirectory if not "content"
+        if self.content_directory != DEFAULT_CONTENT_DIRECTORY:
+            inventory.content_directory = self.content_directory
+        # Add fixity section if requested
+        if fixity is not None and len(fixity) > 0:
+            for fixity_type in fixity:
+                inventory.add_fixity_type(fixity_type)
+        #
         inventory.add_version(metadata=metadata)  # also sets head "v1"
         if digest_algorithm is None:
             digest_algorithm = DEFAULT_DIGEST_ALGORITHM
@@ -75,7 +93,6 @@ class NewVersion():
         if (content_directory is not None
                 and content_directory != DEFAULT_CONTENT_DIRECTORY):
             inventory.content_directory = content_directory
-        self.inventory = inventory
         self.content_path_normalization = content_path_normalization
         return self
 
@@ -84,6 +101,7 @@ class NewVersion():
                      inventory,
                      objdir=None,
                      srcdir=".",
+                     spec_version=DEFAULT_SPEC_VERSION,
                      metadata=None,
                      content_path_normalization="uri",
                      forward_delta=True,
@@ -136,6 +154,12 @@ class NewVersion():
         self.dedupe = dedupe
         self.old_digest_algorithm = old_digest_algorithm
         state = {}
+        if spec_version != inventory.spec_version:
+            # Check we are upgrading
+            if spec_version < inventory.spec_version:
+                raise NewVersionException("Must not create new version with lower spec version (%s) than last version (%s)"
+                                          % (spec_version, inventory.spec_version))
+            inventory.spec_version = spec_version
         if carry_content_forward:
             state = copy.deepcopy(self.inventory.current_version.state)
         self.inventory.add_version(state=state, metadata=metadata)
@@ -183,7 +207,7 @@ class NewVersion():
             vfilepath = make_unused_filepath(vfilepath, used)
         return vfilepath
 
-    def add(self, src_path, logical_path, content_path=None):
+    def add(self, src_path, logical_path, content_path=None, src_path_has_prefix=False):
         """Add a file to the new version.
 
         Arguments:
@@ -203,9 +227,11 @@ class NewVersion():
             NewVersionException: if the specifies content path is not allowed
         """
         inventory = self.inventory
+        prefix = inventory.head + "/" + self.content_directory + "/"
         if content_path is None:
+            src = src_path if src_path_has_prefix else prefix + src_path
             content_path = self._map_filepath(src_path)
-        elif not content_path.startswith(inventory.head + "/" + self.content_directory + "/"):
+        elif not content_path.startswith(prefix):
             raise NewVersionException("Bad content path %s, must start with version directory and content directory path elements"
                                       % (content_path))
         elif content_path in inventory.content_paths:
@@ -217,7 +243,10 @@ class NewVersion():
             raise NewVersionException("Logical path %s already exists in new version %s" % (logical_path, inventory.head))
         # Work out digest, add to state
         digest = file_digest(src_path, inventory.digest_algorithm, pyfs=self.src_fs)
-        inventory.current_version.state[digest] = [logical_path]
+        if digest in inventory.current_version.state_add_if_not_present():
+            inventory.current_version.state[digest].append(logical_path)
+        else:
+            inventory.current_version.state[digest] = [logical_path]
         # Work out whether we already have this content in the current
         # and or previous versions, as a basis to work out whether we want
         # to add a content file
@@ -236,7 +265,7 @@ class NewVersion():
                 or (in_current_version and not self.dedupe)):
             # Yes, we copy this file in...
             self.files_to_copy[src_path] = content_path
-            inventory.add_file(digest=digest, content_path=content_path)
+            inventory.add_file_to_manifest(digest=digest, content_path=content_path)
 
     def delete(self, logical_path):
         """Delete a logical path from this new version.
@@ -280,3 +309,9 @@ class NewVersion():
                 inventory.current_version.state[digest] = [new_logical_path]
         except InventoryException:
             raise NewVersionException("Cannot rename logical path %s that does not exist in new version %s" % (old_logical_path, inventory.head))
+
+    def add_from_srcdir(self):
+        """Add all content from srcdir."""
+        for src_path in sorted(self.src_fs.walk.files()):
+            src_path = os.path.relpath(src_path, "/")
+            self.add(src_path, src_path, src_path_has_prefix=False)

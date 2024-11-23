@@ -432,23 +432,28 @@ class Object():  # pylint: disable=too-many-public-methods
         src_fs = pyfs_openfs(srcdir)
         if objdir is not None:
             self.open_obj_fs(objdir, create=True)
-        inventory = self.start_inventory()
-        vdir = "v1"
-        manifest_to_srcfile = self._add_version_to_inventory(inventory=inventory,
-                                                             src_fs=src_fs,
-                                                             src_dir="", vdir=vdir,
-                                                             metadata=metadata)
+        nv = NewVersion.first_version(srcdir=srcdir,
+                                      identifier=self.id,
+                                      spec_version=self.spec_version,
+                                      digest_algorithm=self.digest_algorithm,
+                                      content_directory=self.content_directory,
+                                      metadata=metadata,
+                                      fixity=self.fixity,
+                                      content_path_normalization=self.content_path_normalization)
+        # Add content, everything in srcdir
+        nv.add_from_srcdir()
+        inventory = nv.inventory
+        # If objdir is not set then don't write anything, just return inventory
         if objdir is None:
             return inventory
         # Write out v1 object
-        self.write_inventory_and_sidecar(inventory, vdir)
+        self.write_inventory_and_sidecar(inventory, "v1")
         # Write object root with object declaration, inventory and sidecar
         self.write_object_declaration()
         self.write_inventory_and_sidecar(inventory)
         # Write version files
-        for path in inventory.content_paths:
-            srcfile = manifest_to_srcfile[path]
-            self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
+        for (srcpath, objpath) in nv.files_to_copy.items():
+            self.copy_into_object(nv.src_fs, srcpath, objpath, create_dirs=True)
         logging.info("Created OCFL object %s in %s", self.id, objdir)
         return inventory
 
@@ -472,21 +477,17 @@ class Object():  # pylint: disable=too-many-public-methods
         between versions.
         """
         print("### " + str(metadata))
-        new_version = self.start_new_version(objdir=objdir,
-                                             srcdir=srcdir,
-                                             digest_algorithm=self.digest_algorithm,
-                                             fixity=self.fixity,
-                                             metadata=metadata,
-                                             carry_content_forward=False)
-        # Add and remove any contents by comparing srcdir with existing state and manifest
+        nv = self.start_new_version(objdir=objdir,
+                                    srcdir=srcdir,
+                                    digest_algorithm=self.digest_algorithm,
+                                    fixity=self.fixity,
+                                    metadata=metadata,
+                                    carry_content_forward=False)
+        # Add files if srcdir is set
         if srcdir is not None:
-            src_fs = pyfs_openfs(srcdir)
-            for src_path in sorted(src_fs.walk.files()):
-                src_path = os.path.relpath(src_path, "/")
-                obj_path = self.map_filepath(src_path, new_version.inventory.head, used={})
-                new_version.add(src_path, src_path, obj_path)
+            nv.add_from_srcdir()
         # Write the new version
-        return self.write_new_version(new_version)
+        return self.write_new_version(nv)
 
     def start_new_version(self, *,
                           objdir=None,

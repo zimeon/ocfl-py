@@ -259,6 +259,7 @@ class TestAll(unittest.TestCase):
                               'inventory.json', 'inventory.json.sha512',
                               'v1']))
         self.assertEqual(inv.head, "v1")
+        self.assertEqual(len(inv.manifest), 3)
         self.assertEqual(len(inv.version("v1").state), 3)
 
     def test11_add_version_with_content(self):

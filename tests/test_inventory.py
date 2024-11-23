@@ -117,18 +117,18 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(v.message, "and again")
         self.assertEqual(inv.head, "v0002")
 
-    def test_add_file(self):
-        """Test add_file method."""
+    def test_add_file_to_manifest(self):
+        """Test add_file_to_manifest method."""
         inv = Inventory()
-        inv.add_file(digest="abc123", content_path="file1")
+        inv.add_file_to_manifest(digest="abc123", content_path="file1")
         self.assertEqual(inv.manifest["abc123"], ["file1"])
-        inv.add_file(digest="abc123", content_path="file2")
+        inv.add_file_to_manifest(digest="abc123", content_path="file2")
         self.assertEqual(inv.manifest["abc123"], ["file1", "file2"])
-        inv.add_file(digest="def456", content_path="file3")
+        inv.add_file_to_manifest(digest="def456", content_path="file3")
         self.assertEqual(inv.manifest["abc123"], ["file1", "file2"])
         self.assertEqual(inv.manifest["def456"], ["file3"])
         # Errors
-        self.assertRaises(InventoryException, inv.add_file,
+        self.assertRaises(InventoryException, inv.add_file_to_manifest,
                           digest="anything", content_path="file1")
 
     def test_getter_properties_minimal_example(self):
