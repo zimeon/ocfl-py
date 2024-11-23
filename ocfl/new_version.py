@@ -39,7 +39,6 @@ class NewVersion():
         """
         # Configuration
         self.inventory = None
-        self.objdir = None
         self.srcdir = srcdir
         self.src_fs = None
         self.content_path_normalization = None
@@ -99,7 +98,6 @@ class NewVersion():
     @classmethod
     def next_version(cls, *,
                      inventory,
-                     objdir=None,
                      srcdir=".",
                      spec_version=DEFAULT_SPEC_VERSION,
                      metadata=None,
@@ -148,7 +146,6 @@ class NewVersion():
         """
         self = cls(srcdir=srcdir)
         self.inventory = inventory
-        self.objdir = objdir
         self.content_path_normalization = content_path_normalization
         self.forward_delta = forward_delta
         self.dedupe = dedupe

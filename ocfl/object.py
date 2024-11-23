@@ -283,7 +283,7 @@ class Object():  # pylint: disable=too-many-public-methods
         inventory.add_version(vdir=vdir, metadata=metadata, state=state)
         return manifest_to_srcfile
 
-    def build_inventory(self, src_fs, versions_metadata=None):
+    def version_dirs_and_metadata(self, src_fs, versions_metadata=None):
         """Generate an OCFL inventory from a set of source files.
 
         Arguments:
@@ -300,7 +300,6 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         if versions_metadata is None:
             versions_metadata = {}
-        inventory = self.start_inventory()
         # Find the versions
         versions = {}
         for vdir in src_fs.listdir("/"):
@@ -312,18 +311,19 @@ class Object():  # pylint: disable=too-many-public-methods
             except ObjectException:
                 # Ignore directories that are not valid version dirs
                 pass
+        # Do we have a valid sequence of versions?
+        n = 1
+        for vn in sorted(versions.keys()):
+            if vn != n:
+                ObjectException("Bad version sequence (%s)" % (str(sorted(versions.keys()))))
+            n += 1
         # Go through versions in order building versions array, deduping
         # files to include if selected
         for vn in sorted(versions.keys()):
             vdir = versions[vn]
             # Do we have metadata for this version? Else empty.
             metadata = versions_metadata.get(vn, VersionMetadata())
-            manifest_to_srcfile = self._add_version_to_inventory(inventory=inventory,
-                                                                 src_fs=src_fs,
-                                                                 src_dir=vdir,
-                                                                 vdir=vdir,
-                                                                 metadata=metadata)
-            yield (vdir, inventory, manifest_to_srcfile)
+            yield (vdir, metadata)
 
     def object_declaration_object(self):
         """NAMASTE object declaration Namaste object."""
@@ -397,13 +397,33 @@ class Object():  # pylint: disable=too-many-public-methods
         src_fs = pyfs_openfs(srcdir)
         inventory = None
         # Create each version of the object
-        for (vdir, inventory, manifest_to_srcfile) in self.build_inventory(src_fs, versions_metadata):
+        for (vdir, metadata) in self.version_dirs_and_metadata(src_fs, versions_metadata):
+            if vdir == "v1":
+                nv = NewVersion.first_version(srcdir=os.path.join(srcdir,vdir),
+                                              identifier=self.id,
+                                              spec_version=self.spec_version,
+                                              digest_algorithm=self.digest_algorithm,
+                                              content_directory=self.content_directory,
+                                              metadata=metadata,
+                                              fixity=self.fixity,
+                                              content_path_normalization=self.content_path_normalization)
+            else:
+                nv = NewVersion.next_version(inventory=inventory,
+                                             srcdir=os.path.join(srcdir,vdir),
+                                             metadata=metadata,
+                                             content_path_normalization=self.content_path_normalization,
+                                             forward_delta=self.forward_delta,
+                                             dedupe=self.dedupe,
+                                             carry_content_forward=False)
+            # Add content, everything in srcdir
+            nv.add_from_srcdir()
+            inventory = nv.inventory
             num_versions += 1
             if objdir is not None:
                 self.write_inventory_and_sidecar(inventory, vdir)
                 # Copy files into this version
-                for (path, srcfile) in manifest_to_srcfile.items():
-                    self.copy_into_object(src_fs, srcfile, path, create_dirs=True)
+                for (srcpath, objpath) in nv.files_to_copy.items():
+                    self.copy_into_object(nv.src_fs, srcpath, objpath, create_dirs=True)
         # Finally populate the object root
         if objdir is not None:
             # Write object declaration, inventory and sidecar
@@ -429,9 +449,6 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         if self.id is None:
             raise ObjectException("Identifier is not set!")
-        src_fs = pyfs_openfs(srcdir)
-        if objdir is not None:
-            self.open_obj_fs(objdir, create=True)
         nv = NewVersion.first_version(srcdir=srcdir,
                                       identifier=self.id,
                                       spec_version=self.spec_version,
@@ -447,6 +464,7 @@ class Object():  # pylint: disable=too-many-public-methods
         if objdir is None:
             return inventory
         # Write out v1 object
+        self.open_obj_fs(objdir, create=True)
         self.write_inventory_and_sidecar(inventory, "v1")
         # Write object root with object declaration, inventory and sidecar
         self.write_object_declaration()
@@ -583,7 +601,6 @@ class Object():  # pylint: disable=too-many-public-methods
                 inventory.version(vdir).state = state
         inventory.manifest = manifest
         return NewVersion.next_version(inventory=inventory,
-                                       objdir=objdir,
                                        srcdir=srcdir,
                                        metadata=metadata,
                                        content_path_normalization=self.content_path_normalization,
@@ -615,7 +632,7 @@ class Object():  # pylint: disable=too-many-public-methods
         # Write inventory in both root and head version
         self.write_inventory_and_sidecar(inventory, inventory.head)
         self.write_inventory_and_sidecar(inventory)
-        logging.info("Updated OCFL object %s in %s by adding %s", inventory.id, new_version.objdir, inventory.head)
+        logging.info("Updated OCFL object %s by adding %s", inventory.id, inventory.head)
         return inventory
 
     def tree(self, objdir):

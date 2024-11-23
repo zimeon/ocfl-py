@@ -174,21 +174,23 @@ class TestAll(unittest.TestCase):
             "v1/content/empty1.txt", "v1/content/empty2.txt",
             "v1/content/empty3.txt", "v2/content/empty4.txt"]})
 
-    def test06_build_inventory(self):
-        """Test build_inventory."""
+    def test06_version_dirs_and_metadata(self):
+        """Test version_dirs_and_metadata."""
         oo = Object(digest_algorithm="md5", spec_version='1.0')
         src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
-        inventory = None
-        for (dummy_vdir, inventory, dummy_manifest_to_srcfile) in oo.build_inventory(src_fs):
-            pass
-        self.assertEqual(inventory.data['type'], 'https://ocfl.io/1.0/spec/#inventory')
-        self.assertEqual(inventory.head, 'v3')
-        self.assertEqual(inventory.manifest,
-                         {'184f84e28cbe75e050e9c25ea7f2e939': ['v1/content/foo/bar.xml'],
-                          '2673a7b11a70bc7ff960ad8127b4adeb': ['v2/content/foo/bar.xml'],
-                          'c289c8ccd4bab6e385f5afdd89b5bda2': ['v1/content/image.tiff'],
-                          'd41d8cd98f00b204e9800998ecf8427e': ['v1/content/empty.txt']})
-        self.assertEqual(len(inventory.version_numbers), 3)
+        vdirs = []
+        metadatas = []
+        for (vdir, metadata) in oo.version_dirs_and_metadata(src_fs):
+            vdirs.append(vdir)
+            metadatas.append(metadata)
+        self.assertEqual(vdirs, ["v1", "v2", "v3"])
+        self.assertEqual(metadatas[0].created, None)  # FIXME - Was the intention to read from the json files alongside version directories?
+        self.assertEqual(metadatas[0].message, None)
+        self.assertEqual(metadatas[0].name, None)
+        self.assertEqual(metadatas[0].address, None)
+        self.assertEqual(metadatas[1].created, None)
+        self.assertEqual(metadatas[2].created, None)
+
 
     def test07_write_object_declaration(self):
         """Test write_object_declaration."""
