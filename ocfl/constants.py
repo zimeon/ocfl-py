@@ -8,3 +8,9 @@ SPEC_VERSIONS_SUPPORTED = ("1.0", "1.1")
 
 DEFAULT_SPEC_VERSION = "1.1"
 """str: OCFL specification version number to assume if none specified."""
+
+DEFAULT_DIGEST_ALGORITHM = "sha512"
+"""str: default digest algorithm to use for content addressing."""
+
+DEFAULT_CONTENT_DIRECTORY = "content"
+"""str: default content directy name if none is specified."""

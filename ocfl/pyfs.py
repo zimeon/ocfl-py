@@ -90,7 +90,8 @@ def pyfs_walk(pyfs, dir="/", is_storage_root=False):
 
     Arguments:
         pyfs: fs filesytem to use
-        dir: string of directory to start from (default /)
+        dir: string of directory to start from (default "/" which is the root
+            of the filesystem)
         is_storage_root: boolean that affects behaviour according to whether
             this is a storage root, default False
 

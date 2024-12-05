@@ -105,7 +105,6 @@ def make_unused_filepath(filepath, used, separator="__"):
     supplied filepath if that hasn't been used, otherwise a filepath based
     on that with separator and a sequence integer added.
     """
-    print("#USED= " + str(used))
     n = 1
     f = filepath
     while f in used:

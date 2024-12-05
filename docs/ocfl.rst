@@ -1,5 +1,0 @@
-``ocfl``
-========
-
-.. automodule:: ocfl
-    :members:

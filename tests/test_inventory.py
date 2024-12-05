@@ -250,3 +250,32 @@ class TestVersion(unittest.TestCase):
         self.assertEqual(inv.manifest["digest1"], ["v1/content/file1", "v2/content/file1_duped"])
         # Error
         self.assertRaises(InventoryException, v2.add_file, digest="digest5", logical_path="file1_deduped")
+
+    def test_find_logical_path(self):
+        """Test find_local_path method."""
+        inv = Inventory()
+        inv.manifest = {"abc123": ["v1/content/file1", "v2/content/file2"],
+                        "def456": ["v2/content/file3"]}
+        inv.add_version(state={"abc123": ["file1_added_v1"]})  # v1
+        inv.add_version(state={"abc123": ["file1_added_v1_moved", "file2_added_v2"],
+                               "def456": ["file3_added_v2"]})  # v2
+        self.assertEqual(inv.find_logical_path("not there"), (None, None))
+        self.assertEqual(inv.find_logical_path("file1_added_v1_moved"), ("v2", "v1/content/file1"))
+        self.assertEqual(inv.find_logical_path("file3_added_v2"), ("v2", "v2/content/file3"))
+
+    def test_delete_logical_path(self):
+        """Test delete_logical_path method."""
+        inv = Inventory()
+        inv.manifest = {"d1": ["v1/content/file1", "v2/content/file3"],
+                        "d2": ["v1/content/file2"]}
+        inv.add_version(state={"d1": ["file1"],
+                               "d2": ["file2"]})  # v1
+        inv.add_version(state={"d1": ["file1_moved", "file3"],
+                               "d2": ["file2"]})  # v2
+        self.assertRaises(InventoryException, inv.current_version.delete_logical_path, "file1")
+        self.assertEqual(inv.current_version.delete_logical_path("file1_moved"), "d1")
+        self.assertEqual(inv.manifest["d1"], ["v1/content/file1", "v2/content/file3"])
+        self.assertEqual(inv.current_version.delete_logical_path("file3"), "d1")
+        self.assertEqual(inv.manifest["d1"], ["v1/content/file1"])
+        self.assertEqual(inv.current_version.delete_logical_path("file2"), "d2")
+        self.assertEqual(inv.manifest["d2"], ["v1/content/file2"])

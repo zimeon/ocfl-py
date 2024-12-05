@@ -5,12 +5,75 @@ structure resulting from reading the inventory JSON file and suitable
 for writing an inventory JSON file. Here we provide convenient
 property based access to read and set this data safely without
 needing such intimate knowledge of the JSON format.
+
+Example:
+    >>> import ocfl
+    >>> inv = ocfl.Inventory(filepath="fixtures/1.1/good-objects/spec-ex-full/inventory.json")
+    >>> inv.spec_version
+    '1.1'
+    >>> inv.version_numbers
+    [1, 2, 3]
+    >>> v2 = inv.version("v2")
+    >>> v2.logical_paths
+    ['foo/bar.xml', 'empty.txt', 'empty2.txt']
+    >>> v2.digest_for_logical_path("foo/bar.xml")
+    '4d27c86b026ff709b02b05d126cfef7ec3aed5f83f5e98df7d7592f7a44bd1dc7f29509cff06b884158baa36a2bbeda11ab8a64b56585a70f5ce1fa96e26eb53'
+    >>> v2.content_path_for_logical_path("foo/bar.xml")
+    'v2/content/foo/bar.xml'
+
+    >>> import ocfl
+    >>> inv = ocfl.Inventory()
+    >>> inv.as_json()
+    '{}'
+    >>> inv.spec_version = "1.1"
+    >>> print(inv.as_json())
+    {
+      "type": "https://ocfl.io/1.1/spec/#inventory"
+    }
+    >>> inv.id = "http://example.org/minimal_no_content"
+    >>> inv.digest_algorithm = "sha512"
+    >>> ver = inv.add_version("v1")
+    >>> ver.created = "2019-01-01T02:03:04Z"
+    >>> ver.message = "One version and no content"
+    >>> ver.user_name = "Person A"
+    >>> ver.user_address = "mailto:Person_A@example.org"
+    >>> print(inv.as_json())
+    {
+      "digestAlgorithm": "sha512",
+      "head": "v1",
+      "id": "http://example.org/minimal_no_content",
+      "type": "https://ocfl.io/1.1/spec/#inventory",
+      "versions": {
+        "v1": {
+          "created": "2019-01-01T02:03:04Z",
+          "message": "One version and no content",
+          "user": {
+            "address": "mailto:Person_A@example.org",
+            "name": "Person A"
+          }
+        }
+      }
+    }
+    >>> validator = ocfl.InventoryValidator()
+    >>> validator.validate(inv.data)
+    False
+    >>> print(str(validator.log))
+    [E041a] OCFL Object ??? inventory missing `manifest` attribute (see https://ocfl.io/1.1/spec/#E041)
+    [E048c] OCFL Object ??? inventory v1 version block does not include a state block (see https://ocfl.io/1.1/spec/#E048)
+    >>> inv.manifest_add_if_not_present()
+    {}
+    >>> ver.state_add_if_not_present()
+    {}
+    >>> validator = ocfl.InventoryValidator()
+    >>> validator.validate(inv.data)
+    True
 """
 import copy
 import json
 import os.path
 import re
 
+from .constants import DEFAULT_CONTENT_DIRECTORY
 from .digest import normalized_digest
 from .object_utils import first_version_directory, next_version_directory, \
     parse_version_directory, make_unused_filepath
@@ -115,7 +178,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
     @property
     def content_directory_to_use(self):
         """Get contentDirectory to use, default 'content' is not specified."""
-        return self.data.get("contentDirectory", "content")
+        return self.data.get("contentDirectory", DEFAULT_CONTENT_DIRECTORY)
 
     @content_directory.setter
     def content_directory(self, value):
@@ -136,7 +199,6 @@ class Inventory():  # pylint: disable=too-many-public-methods
         """Set the manifest to the supplied dict()."""
         self.data["manifest"] = value
 
-    @property
     def manifest_add_if_not_present(self):
         """Get the manifest of digests and corresponding content paths.
 
@@ -163,7 +225,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
 
     @property
     def content(self):
-        """Get all the content paths and their digests stored within the object.
+        """All of the content paths and their digests stored within the object.
 
         Returns a dictionary of content paths with values that are the
         digests for each file. Essentially an inversion of the manifest.
@@ -230,6 +292,11 @@ class Inventory():  # pylint: disable=too-many-public-methods
     def version(self, vdir):
         """Version object for the specified version directory."""
         return Version(self, vdir)
+
+    @property
+    def current_version(self):
+        """Version object for the current (latest) version directory."""
+        return Version(self, self.head)
 
     def versions(self):
         """Generate Version objects for each version.
@@ -308,6 +375,9 @@ class Inventory():  # pylint: disable=too-many-public-methods
                     zero_padded_width=None):
         """Add new version object to the versions block.
 
+        Adds the new version block and also updates the head property to
+        the new version directory name.
+
         Arguments:
             vdir: string with the version directory name (e.g. "v1" or "v0006").
                 If None then will create the next version in sequence
@@ -366,19 +436,53 @@ class Inventory():  # pylint: disable=too-many-public-methods
         if content_path in self.content_paths:
             raise InventoryException("Attempt to add a content path that already exists: %s" % content_path)
         # Does this digest already exist?
-        if digest in self.manifest_add_if_not_present:
+        if digest in self.manifest_add_if_not_present():
             # Yes, add to file list
             self.manifest[digest].append(content_path)
         else:
-            # No, new manifest etry
+            # No, new manifest entry
             self.manifest[digest] = [content_path]
+
+    def find_logical_path(self, logical_path):
+        """Find occurrance of logical path in inventory.
+
+        Arguments:
+            logical_path (str): logical file path within some version of the
+                object described by the current inventory
+
+        Returns:
+            tuple: (vdir, content_path) where vdir is the version directory
+                for the version this logical path was found in, and content_path
+                is the content path of that logical file within that version
+                of the object. In the case that the logical file path doesn't
+                exist in any version then (None, None) will be returned.
+
+        The method searchs backward from the latest version through to the
+        first version. The latest version that the logical path exists in
+        will be return, not any possible earlier version which might correspond
+        with different content.
+
+        Example:
+            >>> import ocfl
+            >>> obj = ocfl.Object(path="fixtures/1.1/good-objects/spec-ex-full")
+            >>> inv = obj.parse_inventory()
+            >>> inv.find_logical_path("empty2.txt")
+            ('v3', 'v1/content/empty.txt')
+            >>> inv.find_logical_path("path that doesn't exist")
+            (None, None)
+        """
+        for vdir in reversed(self.version_directories):
+            version = self.version(vdir)
+            if logical_path in version.logical_paths:
+                return vdir, version.content_path_for_logical_path(logical_path)
+        return None, None
 
     def as_json(self):
         """Serlialize JSON representation."""
         return json.dumps(self.data, sort_keys=True, indent=2)
 
     def write_json(self, fh):
-        """Serialise JSON representation to file.
+        """Serialize JSON representation to file.
 
         Arguments:
             fh - filehandle to write to
@@ -504,13 +608,15 @@ class Version():
         """Set state block for this version."""
         self.inv.versiondata(self.vdir)["state"] = value
 
-    @property
     def state_add_if_not_present(self):
-        """State block for this version.
+        """State block for this version, adding an empty one if not present.
 
-        Returns a dict for the state block.As a side effect will create
+        Returns a dict for the state block. As a side effect will create
         an empty dict in the data structure if none was present, so that new
-        data can be added.
+        data can be added by assignment.
+
+        Example:
+            >>> ver.state_add_if_not_present()[digest] = [logical_path]
         """
         if "state" not in self.inv.versiondata(self.vdir):
             self.inv.versiondata(self.vdir)["state"] = {}
@@ -521,7 +627,6 @@ class Version():
         """User block for this version."""
         return self.inv.versiondata(self.vdir).get("user", {})
 
-    @property
     def user_add_if_not_present(self):
         """User block for this version, add if not present."""
         if "user" not in self.inv.versiondata(self.vdir):
@@ -539,7 +644,7 @@ class Version():
     @user_address.setter
     def user_address(self, value):
         """Set address element in the user description for this version."""
-        self.user_add_if_not_present["address"] = value
+        self.user_add_if_not_present()["address"] = value
 
     @property
     def user_name(self):
@@ -552,7 +657,7 @@ class Version():
     @user_name.setter
     def user_name(self, value):
         """Set name element in the user description for this version."""
-        self.user_add_if_not_present["name"] = value
+        self.user_add_if_not_present()["name"] = value
 
     @property
     def logical_paths(self):
@@ -633,8 +738,51 @@ class Version():
             # File or files with same digest exist
             content_path = None
         # Now add to the version state
-        if digest in self.state_add_if_not_present:
+        if digest in self.state_add_if_not_present():
             self.state[digest].append(logical_path)
         else:
             self.state[digest] = [logical_path]
         return content_path
+
+    def delete_logical_path(self, path):
+        """Delete the given logical path in this version.
+
+        Will remove the logical path, and possibly the state entry for its
+        digest if there was only one logical path for the given digest.
+
+        If this is the last reference to a given digest in the current version
+        state then delete any content files in this version for the given
+        digest. (There is the possibility of odd behavior if dedupe is set
+        False so that multiple copies are created within the version -- all
+        copies will be left until the last reference is deleted, then all
+        copies will be deleted.)
+
+        Arguments:
+            path: path within the state for this version
+
+        Returns:
+            str: digest of the content for which the logical path was removed
+
+        Raises:
+            InventoryException: if the logical path does not exist
+        """
+        for digest, paths in self.state.items():
+            if path in paths:
+                if len(paths) > 1:
+                    # More than one path, just zap this one
+                    paths.remove(path)
+                    self.state[digest] = paths
+                else:
+                    # Just this path, remove digest from state
+                    del self.state[digest]
+                    # No more references from this version, delete manifest
+                    # entries in this verion
+                    if digest in self.inv.manifest:
+                        cpaths = []
+                        for cpath in self.inv.manifest[digest]:
+                            if not cpath.startswith(self.vdir + "/"):
+                                cpaths.append(cpath)
+                        self.inv.manifest[digest] = cpaths
+                    # FIXME - Also adjust fixity!
+                return digest
+        raise InventoryException("Logical path to delete %s not found!" % (path))

@@ -27,7 +27,7 @@ Example:
 """
 import re
 
-from .constants import SPEC_VERSIONS_SUPPORTED
+from .constants import SPEC_VERSIONS_SUPPORTED, DEFAULT_CONTENT_DIRECTORY
 from .digest import digest_regex, normalized_digest
 from .validation_logger import ValidationLogger
 from .w3c_datetime import str_to_datetime
@@ -60,6 +60,12 @@ class InventoryValidator():
                  lax_digests=False, default_spec_version="1.1"):
         """Initialize OCFL Inventory Validator.
 
+        It is expected that a new InventoryValidator object be created for
+        each validation because object state records both the status of
+        validation and some extracted properties. The exception is the
+        method validate_as_prior_version() which validates a second inventory
+        as a prior version of this (root) inventory.
+
         Keyword arguments:
             log: a ValidationLogger instance to log errors and
                 warnings encountered during validation. If not
@@ -83,7 +89,7 @@ class InventoryValidator():
         self.id = None
         self.spec_version = self.default_spec_version
         self.digest_algorithm = "sha512"
-        self.content_directory = "content"
+        self.content_directory = DEFAULT_CONTENT_DIRECTORY
         self.content_directory_set = False
         self.head = "UNKNOWN"
         self.all_versions = []

@@ -1,10 +1,7 @@
-``ocfl.inventory``
+``ocfl.Inventory``
 ==================
 
 .. automodule:: ocfl.inventory
 
-.. autoclass:: Inventory
-   :members:
-
-.. autoclass:: Version
+.. autoclass:: ocfl.Inventory
    :members:

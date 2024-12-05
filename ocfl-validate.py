@@ -86,7 +86,7 @@ def do_validation(args):
                                          log_errors=log_errors):
                 num_good += 1
         else:
-            print("Bad path %s (%s)", path, path_type)
+            print("Bad path '%s' (%s)" % (path, path_type))
         if num_paths > 1:
             logging.debug(" [%d / %d paths validated, %d / %d VALID]\n", num, num_paths, num_good, num)
     return num_good == num

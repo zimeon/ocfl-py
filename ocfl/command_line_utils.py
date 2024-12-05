@@ -94,8 +94,8 @@ def check_verbosity_args(args):
     """Check verbosity arguments and set root logging level.
 
     Arguments:
-        args: Namespace oject with arguments from argparse, of which
-             the arguments debug, verbose and quiet are examined.
+        args (Namespace): Namespace object with arguments from argparse, of
+            which the arguments debug, verbose and quiet are examined.
     """
     level = logging.WARN
     if args.debug:

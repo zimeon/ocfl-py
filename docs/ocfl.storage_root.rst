@@ -1,7 +1,10 @@
-``ocfl.storage_root``
-=====================
+``ocfl.StorageRoot``
+====================
 
 .. automodule:: ocfl.storage_root
 
-.. autoclass:: StorageRoot
+.. autoclass:: ocfl.StorageRoot
+   :members:
+
+.. autoclass:: ocfl.StorageRootException
    :members:
