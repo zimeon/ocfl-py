@@ -176,8 +176,10 @@ class TestAll(unittest.TestCase):
                             "W004_versions_diff_digests": ["W004"],
                             "W005_id_not_uri": ["W005"],
                             "W007_no_message_or_user": ["W007a", "W007b"],
+                            "W007_spec-ex-diff-paths": ["W007a", "W007b"],
                             "W008_user_no_address": ["W008"],
                             "W009_user_address_not_uri": ["W009"],
+                            "W009_spec-ex-minimal": ["W009"],
                             "W010_no_version_inventory": ["W010"],
                             "W011_version_inv_diff_metadata": ["W011"],
                             "W013_unregistered_extension": ["W013"]}.items():
@@ -197,6 +199,7 @@ class TestAll(unittest.TestCase):
                             "W004_versions_diff_digests": ["W004"],
                             "W005_id_not_uri": ["W005"],
                             "W007_no_message_or_user": ["W007a", "W007b"],
+                            "W007_spec-ex-diff-paths": ["W007a"],
                             "W008_user_no_address": ["W008"],
                             "W009_user_address_not_uri": ["W009"],
                             "W010_no_version_inventory": ["W010"],

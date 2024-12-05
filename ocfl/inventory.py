@@ -73,6 +73,7 @@ import json
 import os.path
 import re
 
+from .constants import DEFAULT_CONTENT_DIRECTORY
 from .digest import normalized_digest
 from .object_utils import first_version_directory, next_version_directory, \
     parse_version_directory, make_unused_filepath
@@ -177,7 +178,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
     @property
     def content_directory_to_use(self):
         """Get contentDirectory to use, default 'content' is not specified."""
-        return self.data.get("contentDirectory", "content")
+        return self.data.get("contentDirectory", DEFAULT_CONTENT_DIRECTORY)
 
     @content_directory.setter
     def content_directory(self, value):
@@ -292,6 +293,11 @@ class Inventory():  # pylint: disable=too-many-public-methods
         """Version object for the specified version directory."""
         return Version(self, vdir)
 
+    @property
+    def current_version(self):
+        """Version object for the current (latest) version directory."""
+        return Version(self, self.head)
+
     def versions(self):
         """Generate Version objects for each version.
 
@@ -369,6 +375,9 @@ class Inventory():  # pylint: disable=too-many-public-methods
                     zero_padded_width=None):
         """Add new version object to the versions block.
 
+        Adds the new version block and also updates the head property to
+        the new version directory name.
+
         Arguments:
             vdir: string with the version directory name (e.g. "v1" or "v0006").
                 If None then will create the next version in sequence
@@ -431,7 +440,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
             # Yes, add to file list
             self.manifest[digest].append(content_path)
         else:
-            # No, new manifest etry
+            # No, new manifest entry
             self.manifest[digest] = [content_path]
 
     def find_logical_path(self, logical_path):
@@ -447,6 +456,11 @@ class Inventory():  # pylint: disable=too-many-public-methods
                 is the content path of that logical file within that version
                 of the object. In the case that the logical file path doesn't
                 exist in any version then (None, None) will be returned.
+
+        The method searchs backward from the latest version through to the
+        first version. The latest version that the logical path exists in
+        will be return, not any possible earlier version which might correspond
+        with different content.
 
         Example:
             >>> import ocfl
@@ -729,3 +743,46 @@ class Version():
         else:
             self.state[digest] = [logical_path]
         return content_path
+
+    def delete_logical_path(self, path):
+        """Delete the given logical path in this version.
+
+        Will remove the logical path, and possibly the state entry for its
+        digest if there was only one logical path for the given digest.
+
+        If this is the last reference to a given digest in the current version
+        state then delete any content files in this version for the given
+        digest. (There is the possibility of odd behavior if dedupe is set
+        False so that multiple copies are created within the version -- all
+        copies will be left until the last reference is deleted, then all
+        copies will be deleted.)
+
+        Arguments:
+            path: path within the state for this version
+
+        Returns:
+            str: digest of the content for which the logical path was removed
+
+        Raises:
+            InventoryException: if the logical path does not exist
+        """
+        for digest, paths in self.state.items():
+            if path in paths:
+                if len(paths) > 1:
+                    # More than one path, just zap this one
+                    paths.remove(path)
+                    self.state[digest] = paths
+                else:
+                    # Just this path, remove digest from state
+                    del self.state[digest]
+                    # No more references from this version, delete manifest
+                    # entries in this verion
+                    if digest in self.inv.manifest:
+                        cpaths = []
+                        for cpath in self.inv.manifest[digest]:
+                            if not cpath.startswith(self.vdir + "/"):
+                                cpaths.append(cpath)
+                        self.inv.manifest[digest] = cpaths
+                    # FIXME - Also adjust fixity!
+                return digest
+        raise InventoryException("Logical path to delete %s not found!" % (path))
