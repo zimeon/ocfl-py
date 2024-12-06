@@ -204,7 +204,7 @@ class NewVersion():
             vfilepath = make_unused_filepath(vfilepath, used)
         return vfilepath
 
-    def add(self, src_path, logical_path, content_path=None, src_path_has_prefix=False):
+    def add(self, src_path, logical_path, content_path=None, src_path_has_prefix=False):  # pylint: disable=unused-argument
         """Add a file to the new version.
 
         Arguments:

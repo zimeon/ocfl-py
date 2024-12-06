@@ -202,7 +202,7 @@ class Object():  # pylint: disable=too-many-public-methods
         n = 1
         for vn in sorted(versions.keys()):
             if vn != n:
-                ObjectException("Bad version sequence (%s)" % (str(sorted(versions.keys()))))
+                raise ObjectException("Bad version sequence (%s)" % (str(sorted(versions.keys()))))
             n += 1
         # Go through versions in order building versions array, deduping
         # files to include if selected
