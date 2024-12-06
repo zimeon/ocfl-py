@@ -410,7 +410,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
         self.head = vdir
         return self.version(vdir)
 
-    def add_file(self, *, digest, content_path):
+    def add_file_to_manifest(self, *, digest, content_path):
         """Add file to the manifest.
 
         Arguments:
@@ -733,7 +733,7 @@ class Version():
             content_path = make_unused_filepath(filepath=suggested,
                                                 used=self.inv.content_paths)
             # Have location now, add to manifest
-            self.inv.add_file(digest=digest, content_path=content_path)
+            self.inv.add_file_to_manifest(digest=digest, content_path=content_path)
         else:
             # File or files with same digest exist
             content_path = None

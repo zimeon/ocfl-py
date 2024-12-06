@@ -62,8 +62,8 @@ INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/t
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v2/bagit.txt
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v2/bag-info.txt
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v2/manifest-sha512.txt
-INFO:root:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v2
-### <ocfl.version_metadata.VersionMetadata object at 0x7fb92132e6e0>
+INFO:root:Updated OCFL object info:bb123cd4567 by adding v2
+### <ocfl.version_metadata.VersionMetadata object at 0x7f1cf4eaa5f0>
 Updated object info:bb123cd4567 to v2
 ```
 
@@ -103,8 +103,8 @@ INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/t
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v3/bagit.txt
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v3/bag-info.txt
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v3/manifest-sha512.txt
-INFO:root:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v3
-### <ocfl.version_metadata.VersionMetadata object at 0x7f1bba34a6e0>
+INFO:root:Updated OCFL object info:bb123cd4567 by adding v3
+### <ocfl.version_metadata.VersionMetadata object at 0x7fb59dd525f0>
 Updated object info:bb123cd4567 to v3
 ```
 
@@ -149,8 +149,8 @@ INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/t
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v4/bagit.txt
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v4/bag-info.txt
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v4/manifest-sha512.txt
-INFO:root:Updated OCFL object info:bb123cd4567 in tmp/obj by adding v4
-### <ocfl.version_metadata.VersionMetadata object at 0x7f37a7dfe6e0>
+INFO:root:Updated OCFL object info:bb123cd4567 by adding v4
+### <ocfl.version_metadata.VersionMetadata object at 0x7f924be4a5f0>
 Updated object info:bb123cd4567 to v4
 ```
 
@@ -164,12 +164,13 @@ Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` cont
 INFO:root:Extracted v4 into tmp/extracted_v4
 INFO:bagit:Creating bag for directory tmp/extracted_v4
 INFO:bagit:Creating data directory
-INFO:bagit:Moving my_content to tmp/extracted_v4/tmpt_h62tn4/my_content
-INFO:bagit:Moving tmp/extracted_v4/tmpt_h62tn4 to data
+INFO:bagit:Moving my_content to tmp/extracted_v4/tmp6gveuavx/my_content
+INFO:bagit:Moving tmp/extracted_v4/tmp6gveuavx to data
 INFO:bagit:Using 1 processes to generate manifests: sha512
 INFO:bagit:Generating manifest lines for file data/my_content/dracula.txt
 INFO:bagit:Generating manifest lines for file data/my_content/dunwich.txt
 INFO:bagit:Generating manifest lines for file data/my_content/poe-nevermore.txt
+INFO:bagit:Generating manifest lines for file data/my_content/another_directory/a_third_copy_of_dracula.txt
 INFO:bagit:Creating bagit.txt
 INFO:bagit:Creating bag-info.txt
 INFO:bagit:Creating tmp/extracted_v4/tagmanifest-sha512.txt
@@ -186,24 +187,14 @@ We note that the OCFL object had only one `content` file in `v4` but the extract
 diff -r tmp/extracted_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
 1,2c1
 < Bag-Software-Agent: bagit.py v1.8.1 <https://github.com/LibraryOfCongress/bagit-python>
-< Bagging-Date: 2024-12-05
+< Bagging-Date: 2024-12-06
 ---
 > Bagging-Date: 2020-01-04
-7c6
-< Payload-Oxum: 1032810.3
----
-> Payload-Oxum: 1915970.4
-Only in tests/testdata/bags/uaa_v4/data/my_content: another_directory
-diff -r tmp/extracted_v4/manifest-sha512.txt tests/testdata/bags/uaa_v4/manifest-sha512.txt
-3a4
-> ffc150e7944b5cf5ddb899b2f48efffbd490f97632fc258434aefc4afb92aef2e3441ddcceae11404e5805e1b6c804083c9398c28f061c9ba42dd4bac53d5a2e  data/my_content/another_directory/a_third_copy_of_dracula.txt
 diff -r tmp/extracted_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagmanifest-sha512.txt
-2,3c2,3
-< ba0f77d695226f32ef316aa1c0000a13d8f78b6948a5415a3e11a95f73153ecf351c91211a5e7b20ab6b785ec472ec5fcc6e8e6fb5a3e718ea86d7719cd3c690 bag-info.txt
-< e4cb52067909ba58668f21c0da72c73c586a3f87d64b471187cb6234ed605d17974e4c7833f6ae7e639ab1126502534b3bed4cfeee8cba485cfc764b48225e0f manifest-sha512.txt
+2c2
+< 7e23b308ac51b064e7471d7b8e5ba1f758891631ad8c8fb57799a39018d7d77e893a8236a608a8087117000c55efde9529cb76cdb63bacc5642b38ab459b30d5 bag-info.txt
 ---
 > 10624e6d45462def7af66d1a0d977606c7b073b01809c1d42258cfab5c34a275480943cbe78044416aee1f23822cc3762f92247b8f39b5c6ddc5ae32a8f94ce5 bag-info.txt
-> 5c2e2b9cacc93cb315d57f09fac6d199c3378313b6cf918bb0a70e1839c4e4c0c2e5a7f9ae869cf7755e09a196a835be1af7c510d3d5faa5d0c0b3f6be9f816a manifest-sha512.txt
 ```
 
 (last command exited with return code 1)
