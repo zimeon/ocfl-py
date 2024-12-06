@@ -74,7 +74,6 @@ class TestAll(unittest.TestCase):
         self.assertEqual(metadatas[1].created, None)
         self.assertEqual(metadatas[2].created, None)
 
-
     def test07_write_object_declaration(self):
         """Test write_object_declaration."""
         tmpfs = fs.tempfs.TempFS(identifier='test_write_object_declaration')

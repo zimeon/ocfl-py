@@ -13,6 +13,7 @@ import fs.path
 import os.path
 
 from .constants import DEFAULT_DIGEST_ALGORITHM, DEFAULT_CONTENT_DIRECTORY, DEFAULT_SPEC_VERSION
+
 from .digest import file_digest
 from .inventory import Inventory, InventoryException
 from .object_utils import make_unused_filepath

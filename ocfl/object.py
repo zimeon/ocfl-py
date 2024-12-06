@@ -289,7 +289,7 @@ class Object():  # pylint: disable=too-many-public-methods
         # Create each version of the object
         for (vdir, metadata) in self.version_dirs_and_metadata(src_fs, versions_metadata):
             if vdir == "v1":
-                nv = NewVersion.first_version(srcdir=os.path.join(srcdir,vdir),
+                nv = NewVersion.first_version(srcdir=os.path.join(srcdir, vdir),
                                               identifier=self.id,
                                               spec_version=self.spec_version,
                                               digest_algorithm=self.digest_algorithm,
@@ -299,7 +299,7 @@ class Object():  # pylint: disable=too-many-public-methods
                                               content_path_normalization=self.content_path_normalization)
             else:
                 nv = NewVersion.next_version(inventory=inventory,
-                                             srcdir=os.path.join(srcdir,vdir),
+                                             srcdir=os.path.join(srcdir, vdir),
                                              metadata=metadata,
                                              content_path_normalization=self.content_path_normalization,
                                              forward_delta=self.forward_delta,
