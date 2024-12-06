@@ -7,12 +7,10 @@ beyond the operating system filesystem to include ``mem://``, ``zip://`` and
 ``s3://`` filesystems.
 """
 import copy
-import hashlib
 import json
 import os.path
 import re
 import logging
-from urllib.parse import quote as urlquote
 
 import fs
 import fs.path
@@ -23,8 +21,7 @@ from .digest import file_digest
 from .inventory import Inventory
 from .inventory_validator import InventoryValidator
 from .new_version import NewVersion
-from .object_utils import make_unused_filepath, parse_version_directory, \
-    ObjectException
+from .object_utils import parse_version_directory, ObjectException
 from .pyfs import pyfs_openfs
 from .namaste import Namaste
 from .validator import Validator, ValidatorAbortException

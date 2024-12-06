@@ -7,13 +7,12 @@ write_new_version() methods.
 import copy
 import hashlib
 import logging
+import os.path
 from urllib.parse import quote as urlquote
 
 import fs.path
-import os.path
 
 from .constants import DEFAULT_DIGEST_ALGORITHM, DEFAULT_CONTENT_DIRECTORY, DEFAULT_SPEC_VERSION
-
 from .digest import file_digest
 from .inventory import Inventory, InventoryException
 from .object_utils import make_unused_filepath
@@ -227,7 +226,7 @@ class NewVersion():
         inventory = self.inventory
         prefix = inventory.head + "/" + self.content_directory + "/"
         if content_path is None:
-            src = src_path if src_path_has_prefix else prefix + src_path
+            # src_path = src_path if src_path_has_prefix else prefix + src_path
             content_path = self._map_filepath(src_path)
         elif not content_path.startswith(prefix):
             raise NewVersionException("Bad content path %s, must start with version directory and content directory path elements"
