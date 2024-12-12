@@ -31,7 +31,8 @@ class NewVersion():
 
         Arguments:
             srcdir (str): source directory name for files that will be added
-                to this new version. May be a pyfs filesystem specificarion
+                to this new version. May be a pyfs filesystem specification.
+                Default is "."
 
         The default constructor is not expected to be used directly, see
         NewVersion.first_version(...) and NewVersion.next_version(..) for the
@@ -62,13 +63,65 @@ class NewVersion():
         """Start the first version for this object.
 
         Arguments:
+            srcdir (str): source directory name for files that will be added
+                to this new version. May be a pyfs filesystem specification
             identifier (str): identifier of the object to be created
-            digest_algorithm (str or None):
-            content_directort (str or None):
+            spec_version (str): the specification version that the new version
+                should be created in accord with. Defaults to
+                ocfl.constants.DEFAULT_SPEC_VERSION
+            digest_algorithm (str or None): the digest algorithm to use for
+                content addressing. If None (default) then will use the value
+                ocfl.constants.DEFAULT_DIGEST_ALGORITHM
+            content_directory (str or None): the content directory name. If
+                None (default) then will use the value "content" (as set in
+                ocfl.constants.DEFAULT_CONTENT_DIRECTORY)
+            metadata (ocfl.VersionMetadata or None): if an ocfl.VersionMetadata
+                object is provided then this is used to set the metadata of the
+                new version. The setters .created, .message, .user_address and
+                .user_name may alternatively be used
+            fixity (None or list of str): If a list then will be interpretted as
+                the set of fixity digest types to be added for all content files
+                in this version
             content_path_normalization (str): the path normalization strategy
                 to use with content paths when files are added to this object
                 (default "uri")
 
+        Example use:
+
+        >>> import ocfl
+        >>> nv = ocfl.NewVersion.first_version(identifier="http://example.org/minimal")
+        >>> nv.add("fixtures/1.1/good-objects/spec-ex-minimal/v1/content/file.txt", "file.txt")
+        >>> nv.created = "2018-10-02T12:00:00Z"
+        >>> nv.message = "One file"
+        >>> nv.user_address = "mailto:alice@example.org"
+        >>> nv.user_name = "Alice"
+        >>> print(nv.inventory.as_json())
+        {
+          "digestAlgorithm": "sha512",
+          "head": "v1",
+          "id": "http://example.org/minimal",
+          "manifest": {
+            "7545b8720a601235067473f2c87f43461f5c147fb622d51bfcdcda05e0773c96e9f922f4d88d371bb7f87793b655b9e1c3b8bbca35f2950c5c87eda955179f67": [
+              "v1/content/fixtures/1.1/good-objects/spec-ex-minimal/v1/content/file.txt"
+            ]
+          },
+          "type": "https://ocfl.io/1.1/spec/#inventory",
+          "versions": {
+            "v1": {
+              "created": "2018-10-02T12:00:00Z",
+              "message": "One file",
+              "state": {
+                "7545b8720a601235067473f2c87f43461f5c147fb622d51bfcdcda05e0773c96e9f922f4d88d371bb7f87793b655b9e1c3b8bbca35f2950c5c87eda955179f67": [
+                  "file.txt"
+                ]
+              },
+              "user": {
+                "address": "mailto:alice@example.org",
+                "name": "Alice"
+              }
+            }
+          }
+        }
         """
         self = cls(srcdir=srcdir)
         inventory = Inventory()
@@ -115,16 +168,33 @@ class NewVersion():
         Arguments:
             inventory (ocfl.Inventory): inventory that we will modify to build
                 the new version.
+            srcdir (str): source directory name for files that will be added
+                to this new version. May be a pyfs filesystem specification
             metadata (ocfl.VersionMetadata or None): Either a VersionMetadata
                 object to set the metadata for the new version, None to not set
                 metadata
             content_path_normalization (str): the path normalization strategy
                 to use with content paths when files are added to this object
                 (default "uri")
+            forward_delta (bool): True (default) to use forward delta strategy
+                for files in the new version, meaning that only files not
+                present in a previous version will be added in the content
+                directory of this new version. If False the all files that are
+                part of this version's state will be added in the content
+                directory
+            dedupe (bool): True (defult) to deduplicate files within this
+                version, meaning that only one copy of a given file will be
+                included in the content directory even if there are multiple
+                copies in the new version state. If False then will store
+                multiple copies
             carry_content_forward (bool): True to carry forward the state from
                 the last current version as a starting point. False to start
                 with empty version state.
-
+            old_digest_algorithm (str): Can be used to record the digest
+                algorithm of the previous version so that the root inventory
+                sidecar is cleaned up when writing the new inventory in the
+                object root. The value is not used within NewVerion code.
+                Default is None
 
         Example use:
 
@@ -312,3 +382,43 @@ class NewVersion():
         for src_path in sorted(self.src_fs.walk.files()):
             src_path = os.path.relpath(src_path, "/")
             self.add(src_path, src_path, src_path_has_prefix=False)
+
+    @property
+    def created(self):
+        """Created string for this version."""
+        return self.inventory.current_version.created
+
+    @created.setter
+    def created(self, value):
+        """Set created string for this version."""
+        self.inventory.current_version.created = value
+
+    @property
+    def message(self):
+        """Message string for this version."""
+        return self.inventory.current_version.message
+
+    @message.setter
+    def message(self, value):
+        """Set message string for this version."""
+        self.inventory.current_version.message = value
+
+    @property
+    def user_address(self):
+        """User_address string for this version."""
+        return self.inventory.current_version.user_address
+
+    @user_address.setter
+    def user_address(self, value):
+        """Set user_address string for this version."""
+        self.inventory.current_version.user_address = value
+
+    @property
+    def user_name(self):
+        """user_name string for this version."""
+        return self.inventory.current_version.user_name
+
+    @user_name.setter
+    def user_name(self, value):
+        """Set user_name string for this version."""
+        self.inventory.current_version.user_name = value
