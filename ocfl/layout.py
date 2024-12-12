@@ -71,6 +71,15 @@ class Layout:
         """
         return None
 
+    def check_full_config(self):
+        """Check full configuration in instance variables.
+
+        Trivial implementation that does nothing. It is intended that
+        sub-classes will override to do real checks if necessary. No
+        return value, raise a LayoutException on error.
+        """
+        return
+
     def strip_root(self, path, root):
         """Remove root from path, throw exception on failure."""
         root = root.rstrip(os.sep)  # ditch any trailing path separator
@@ -130,8 +139,15 @@ class Layout:
             require_extension_name: boolean, True by default. If set False then
                 the extensionName paramater is not required
 
+        Raises:
+            LayoutException: if the extensionName is missig from the config, if
+                support for the named extension isn't implemented, or if there
+                is an error in the parameters or full configuration.
+
         For each parameter that is recognized, the appropriate check and set
         method in self.PARAMS is called. The methods set instance attributes.
+        Finally, the check_full_config method is called to check anything that
+        might required all of the configuration to be known.
         """
         # Check the extensionName if required and/or specified
         if "extensionName" not in config:
@@ -142,6 +158,8 @@ class Layout:
         # Read and check the parameters (ignore any extra params)
         for key, method in self.PARAMS.items():
             method(config.get(key))
+        # Finally, check full config
+        self.check_full_config()
 
     def write_layout_params(self, root_fs=None):
         """Write the config.json file with layout parameters if need for this layout.
