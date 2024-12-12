@@ -383,7 +383,6 @@ class Object():  # pylint: disable=too-many-public-methods
         settings (such as using a new digest). There will be no content change
         between versions.
         """
-        print("### " + str(metadata))
         nv = self.start_new_version(objdir=objdir,
                                     srcdir=srcdir,
                                     digest_algorithm=self.digest_algorithm,
