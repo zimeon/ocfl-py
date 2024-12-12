@@ -72,6 +72,14 @@ class Layout_0003_Hash_And_Id_N_Tuple(Layout):
             Type: string
             Constraints: Must not be empty
             Default: sha256
+
+        Argument:
+            value (str): digest algorithm name
+
+        Raises:
+            LayoutException: if the digest algorithm is not supported
+
+        Sets the digest_algorithm property of this object as a side effect.
         """
         if value is None:
             raise LayoutException("digestAlgorithm parameter must be specified")
@@ -91,6 +99,14 @@ class Layout_0003_Hash_And_Id_N_Tuple(Layout):
             Type: number
             Constraints: An integer between 0 and 32 inclusive
             Default: 3
+
+        Argument:
+            value (int): integer value for tuple size in characters
+
+        Raises:
+            LayoutException: if the tuple size is not allowed
+
+        Sets the tuple_size property of this object as a side effect.
         """
         if value is None:
             raise LayoutException("tupleSize parameter must be specified")
@@ -107,6 +123,14 @@ class Layout_0003_Hash_And_Id_N_Tuple(Layout):
             Type: number
             Constraints: An integer between 0 and 32 inclusive
             Default: 3
+
+        Argument:
+            value (int): integer value for number of tuples
+
+        Raises:
+            LayoutException: if the number of tuples is not allowed
+
+        Sets the number_of_tuples property of this object as a side effect.
         """
         if value is None:
             raise LayoutException("numberOfTuples parameter must be specified")

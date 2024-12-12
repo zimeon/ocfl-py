@@ -97,7 +97,6 @@ class TestAll(unittest.TestCase):
                                                      "numberOfTuples": 9},
                           require_extension_name=False)
 
-
     def test_config(self):
         """Test config property."""
         layout = Layout_0003_Hash_And_Id_N_Tuple()
