@@ -63,7 +63,11 @@ INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/t
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v2/bag-info.txt
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v2/manifest-sha512.txt
 INFO:root:Updated OCFL object info:bb123cd4567 by adding v2
+<<<<<<< HEAD
 ### <ocfl.version_metadata.VersionMetadata object at 0x7f9e64caeb00>
+=======
+### <ocfl.version_metadata.VersionMetadata object at 0x7f6067126b30>
+>>>>>>> main
 Updated object info:bb123cd4567 to v2
 ```
 
@@ -104,7 +108,11 @@ INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/t
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v3/bag-info.txt
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v3/manifest-sha512.txt
 INFO:root:Updated OCFL object info:bb123cd4567 by adding v3
+<<<<<<< HEAD
 ### <ocfl.version_metadata.VersionMetadata object at 0x7fa0ecf7ead0>
+=======
+### <ocfl.version_metadata.VersionMetadata object at 0x7f586cc5ab60>
+>>>>>>> main
 Updated object info:bb123cd4567 to v3
 ```
 
@@ -150,7 +158,11 @@ INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/t
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v4/bag-info.txt
 INFO:bagit:Verifying checksum for file /home/runner/work/ocfl-py/ocfl-py/tests/testdata/bags/uaa_v4/manifest-sha512.txt
 INFO:root:Updated OCFL object info:bb123cd4567 by adding v4
+<<<<<<< HEAD
 ### <ocfl.version_metadata.VersionMetadata object at 0x7f77fe5c2b00>
+=======
+### <ocfl.version_metadata.VersionMetadata object at 0x7fbd12f42b60>
+>>>>>>> main
 Updated object info:bb123cd4567 to v4
 ```
 
@@ -164,8 +176,13 @@ Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` cont
 INFO:root:Extracted v4 into tmp/extracted_v4
 INFO:bagit:Creating bag for directory tmp/extracted_v4
 INFO:bagit:Creating data directory
+<<<<<<< HEAD
 INFO:bagit:Moving my_content to tmp/extracted_v4/tmpeornl0iv/my_content
 INFO:bagit:Moving tmp/extracted_v4/tmpeornl0iv to data
+=======
+INFO:bagit:Moving my_content to tmp/extracted_v4/tmpw3baynt4/my_content
+INFO:bagit:Moving tmp/extracted_v4/tmpw3baynt4 to data
+>>>>>>> main
 INFO:bagit:Using 1 processes to generate manifests: sha512
 INFO:bagit:Generating manifest lines for file data/my_content/dracula.txt
 INFO:bagit:Generating manifest lines for file data/my_content/dunwich.txt
