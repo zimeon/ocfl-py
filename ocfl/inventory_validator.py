@@ -128,7 +128,7 @@ class InventoryValidator():
         if "type" not in inventory:
             self._error("E036b")
         elif not isinstance(inventory["type"], str):
-            self._error("E999")
+            self._error("E038d")
         elif (force_spec_version
                 and inventory["type"] != "https://ocfl.io/" + force_spec_version + "/spec/#inventory"):
             self._error("E038a", expected="https://ocfl.io/" + force_spec_version + "/spec/#inventory", got=inventory["type"])

@@ -122,6 +122,7 @@ class TestAll(unittest.TestCase):
                            "E036_no_id": ["E036a"],
                            "E036_no_head": ["E036d"],
                            "E037_inconsistent_id": ["E037b"],
+                           "E038_type_not_str": ["E038d"],
                            "E040_head_not_most_recent": ["E040"],
                            "E040_wrong_head_doesnt_exist": ["E040"],
                            "E040_wrong_head_format": ["E040"],
