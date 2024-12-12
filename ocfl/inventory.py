@@ -1,5 +1,11 @@
 """OCFL Inventory and Version.
 
+The Inventory class provides storage for inventory data and mehtods to
+conveniently access and manipulate it. The associated Version class provides
+methods to access and manipulate information about a specific object version.
+Neither of these classes interact with object content, see ocfl.NewVersion
+and ocfl.Object.
+
 The storage mechanism for the inventory data is the python dict()
 structure resulting from reading the inventory JSON file and suitable
 for writing an inventory JSON file. Here we provide convenient
@@ -91,7 +97,11 @@ class Inventory():  # pylint: disable=too-many-public-methods
     attribute is a string that is not set in the underlying data, else
     the value if it is. In the cases that the normal return value would
     be an array or a dict, then and empty array or empty dict are returned
-    if not present in the underlying data.
+    if not present in the underlying data. In some cases, additional methods
+    with a suffix ``_add_if_not_present`` are provided so that assignements
+    will work for previously missing attributes. See, for example, the
+    ``manifest`` property and the corresponding
+    ``manifest_add_if_not_present()`` method.
 
     Attributes:
         data: dict that is the top level JSON object of the parsed JSON
@@ -559,9 +569,9 @@ class Inventory():  # pylint: disable=too-many-public-methods
 class Version():
     """Version class to represent version information in an Inventory.
 
-    The class stores only pointers to the appropriate inventory and
-    version directory with the versions block. These are used to access
-    data in the inventory.
+    The class stores only pointers to the appropriate ocfl.Inventory object
+    and the version directory key within the versions block. These are used
+    to access and manipulate data for a specific version in the inventory.
     """
 
     def __init__(self, inv, vdir):
