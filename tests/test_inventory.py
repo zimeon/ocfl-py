@@ -131,6 +131,21 @@ class TestInventory(unittest.TestCase):
         self.assertRaises(InventoryException, inv.add_file_to_manifest,
                           digest="anything", content_path="file1")
 
+    def test_add_fixity_data(self):
+        """Test add_fixity_data method."""
+        inv = Inventory()
+        self.assertEqual(inv.fixity, {})
+        self.assertRaises(KeyError, inv.add_fixity_data, "fx1", "digest1", "path1")
+        inv.add_fixity_type("fx1")
+        self.assertEqual(inv.fixity, {"fx1": {}})
+        inv.add_fixity_data("fx1", "digest1", "path1")
+        self.assertEqual(inv.fixity, {"fx1": {"digest1": ["path1"]}})
+        inv.add_fixity_data("fx1", "digest1", "path2")
+        self.assertEqual(inv.fixity, {"fx1": {"digest1": ["path1", "path2"]}})
+        inv.add_fixity_data("fx1", "digest2", "path3")
+        self.assertEqual(inv.fixity, {"fx1": {"digest1": ["path1", "path2"],
+                                              "digest2": ["path3"]}})
+
     def test_getter_properties_minimal_example(self):
         """Test read of fixture and extract properties."""
         inv = Inventory(filepath="fixtures/1.1/good-objects/minimal_one_version_one_file/inventory.json")
