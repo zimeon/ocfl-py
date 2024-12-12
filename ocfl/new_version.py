@@ -7,11 +7,12 @@ write_new_version() methods.
 import copy
 import hashlib
 import logging
+import os.path
 from urllib.parse import quote as urlquote
 
 import fs.path
 
-from .constants import DEFAULT_DIGEST_ALGORITHM, DEFAULT_CONTENT_DIRECTORY
+from .constants import DEFAULT_DIGEST_ALGORITHM, DEFAULT_CONTENT_DIRECTORY, DEFAULT_SPEC_VERSION
 from .digest import file_digest
 from .inventory import Inventory, InventoryException
 from .object_utils import make_unused_filepath
@@ -30,7 +31,8 @@ class NewVersion():
 
         Arguments:
             srcdir (str): source directory name for files that will be added
-                to this new version. May be a pyfs filesystem specificarion
+                to this new version. May be a pyfs filesystem specification.
+                Default is "."
 
         The default constructor is not expected to be used directly, see
         NewVersion.first_version(...) and NewVersion.next_version(..) for the
@@ -38,7 +40,6 @@ class NewVersion():
         """
         # Configuration
         self.inventory = None
-        self.objdir = None
         self.srcdir = srcdir
         self.src_fs = None
         self.content_path_normalization = None
@@ -52,22 +53,91 @@ class NewVersion():
     @classmethod
     def first_version(cls, *,
                       srcdir=".",
+                      identifier,
+                      spec_version=DEFAULT_SPEC_VERSION,
                       digest_algorithm=None,
                       content_directory=None,
                       metadata=None,
+                      fixity=None,
                       content_path_normalization="uri"):
         """Start the first version for this object.
 
         Arguments:
-            digest_algorithm (str or None):
-            content_directort (str or None):
+            srcdir (str): source directory name for files that will be added
+                to this new version. May be a pyfs filesystem specification
+            identifier (str): identifier of the object to be created
+            spec_version (str): the specification version that the new version
+                should be created in accord with. Defaults to
+                ocfl.constants.DEFAULT_SPEC_VERSION
+            digest_algorithm (str or None): the digest algorithm to use for
+                content addressing. If None (default) then will use the value
+                ocfl.constants.DEFAULT_DIGEST_ALGORITHM
+            content_directory (str or None): the content directory name. If
+                None (default) then will use the value "content" (as set in
+                ocfl.constants.DEFAULT_CONTENT_DIRECTORY)
+            metadata (ocfl.VersionMetadata or None): if an ocfl.VersionMetadata
+                object is provided then this is used to set the metadata of the
+                new version. The setters .created, .message, .user_address and
+                .user_name may alternatively be used
+            fixity (None or list of str): If a list then will be interpretted as
+                the set of fixity digest types to be added for all content files
+                in this version
             content_path_normalization (str): the path normalization strategy
                 to use with content paths when files are added to this object
                 (default "uri")
 
+        Example use:
+
+        >>> import ocfl
+        >>> nv = ocfl.NewVersion.first_version(identifier="http://example.org/minimal")
+        >>> nv.add("fixtures/1.1/good-objects/spec-ex-minimal/v1/content/file.txt", "file.txt")
+        >>> nv.created = "2018-10-02T12:00:00Z"
+        >>> nv.message = "One file"
+        >>> nv.user_address = "mailto:alice@example.org"
+        >>> nv.user_name = "Alice"
+        >>> print(nv.inventory.as_json())
+        {
+          "digestAlgorithm": "sha512",
+          "head": "v1",
+          "id": "http://example.org/minimal",
+          "manifest": {
+            "7545b8720a601235067473f2c87f43461f5c147fb622d51bfcdcda05e0773c96e9f922f4d88d371bb7f87793b655b9e1c3b8bbca35f2950c5c87eda955179f67": [
+              "v1/content/fixtures/1.1/good-objects/spec-ex-minimal/v1/content/file.txt"
+            ]
+          },
+          "type": "https://ocfl.io/1.1/spec/#inventory",
+          "versions": {
+            "v1": {
+              "created": "2018-10-02T12:00:00Z",
+              "message": "One file",
+              "state": {
+                "7545b8720a601235067473f2c87f43461f5c147fb622d51bfcdcda05e0773c96e9f922f4d88d371bb7f87793b655b9e1c3b8bbca35f2950c5c87eda955179f67": [
+                  "file.txt"
+                ]
+              },
+              "user": {
+                "address": "mailto:alice@example.org",
+                "name": "Alice"
+              }
+            }
+          }
+        }
         """
         self = cls(srcdir=srcdir)
         inventory = Inventory()
+        self.inventory = inventory
+        inventory.id = identifier
+        inventory.spec_version = spec_version
+        inventory.digest_algorithm = digest_algorithm
+        inventory.init_manifest_and_versions()
+        # Add contentDirectory if not "content"
+        if self.content_directory != DEFAULT_CONTENT_DIRECTORY:
+            inventory.content_directory = self.content_directory
+        # Add fixity section if requested
+        if fixity is not None and len(fixity) > 0:
+            for fixity_type in fixity:
+                inventory.add_fixity_type(fixity_type)
+        #
         inventory.add_version(metadata=metadata)  # also sets head "v1"
         if digest_algorithm is None:
             digest_algorithm = DEFAULT_DIGEST_ALGORITHM
@@ -75,15 +145,14 @@ class NewVersion():
         if (content_directory is not None
                 and content_directory != DEFAULT_CONTENT_DIRECTORY):
             inventory.content_directory = content_directory
-        self.inventory = inventory
         self.content_path_normalization = content_path_normalization
         return self
 
     @classmethod
     def next_version(cls, *,
                      inventory,
-                     objdir=None,
                      srcdir=".",
+                     spec_version=DEFAULT_SPEC_VERSION,
                      metadata=None,
                      content_path_normalization="uri",
                      forward_delta=True,
@@ -99,16 +168,33 @@ class NewVersion():
         Arguments:
             inventory (ocfl.Inventory): inventory that we will modify to build
                 the new version.
+            srcdir (str): source directory name for files that will be added
+                to this new version. May be a pyfs filesystem specification
             metadata (ocfl.VersionMetadata or None): Either a VersionMetadata
                 object to set the metadata for the new version, None to not set
                 metadata
             content_path_normalization (str): the path normalization strategy
                 to use with content paths when files are added to this object
                 (default "uri")
+            forward_delta (bool): True (default) to use forward delta strategy
+                for files in the new version, meaning that only files not
+                present in a previous version will be added in the content
+                directory of this new version. If False the all files that are
+                part of this version's state will be added in the content
+                directory
+            dedupe (bool): True (defult) to deduplicate files within this
+                version, meaning that only one copy of a given file will be
+                included in the content directory even if there are multiple
+                copies in the new version state. If False then will store
+                multiple copies
             carry_content_forward (bool): True to carry forward the state from
                 the last current version as a starting point. False to start
                 with empty version state.
-
+            old_digest_algorithm (str): Can be used to record the digest
+                algorithm of the previous version so that the root inventory
+                sidecar is cleaned up when writing the new inventory in the
+                object root. The value is not used within NewVerion code.
+                Default is None
 
         Example use:
 
@@ -130,12 +216,17 @@ class NewVersion():
         """
         self = cls(srcdir=srcdir)
         self.inventory = inventory
-        self.objdir = objdir
         self.content_path_normalization = content_path_normalization
         self.forward_delta = forward_delta
         self.dedupe = dedupe
         self.old_digest_algorithm = old_digest_algorithm
         state = {}
+        if spec_version != inventory.spec_version:
+            # Check we are upgrading
+            if spec_version < inventory.spec_version:
+                raise NewVersionException("Must not create new version with lower spec version (%s) than last version (%s)"
+                                          % (spec_version, inventory.spec_version))
+            inventory.spec_version = spec_version
         if carry_content_forward:
             state = copy.deepcopy(self.inventory.current_version.state)
         self.inventory.add_version(state=state, metadata=metadata)
@@ -183,7 +274,7 @@ class NewVersion():
             vfilepath = make_unused_filepath(vfilepath, used)
         return vfilepath
 
-    def add(self, src_path, logical_path, content_path=None):
+    def add(self, src_path, logical_path, content_path=None, src_path_has_prefix=False):  # pylint: disable=unused-argument
         """Add a file to the new version.
 
         Arguments:
@@ -203,9 +294,11 @@ class NewVersion():
             NewVersionException: if the specifies content path is not allowed
         """
         inventory = self.inventory
+        prefix = inventory.head + "/" + self.content_directory + "/"
         if content_path is None:
+            # src_path = src_path if src_path_has_prefix else prefix + src_path
             content_path = self._map_filepath(src_path)
-        elif not content_path.startswith(inventory.head + "/" + self.content_directory + "/"):
+        elif not content_path.startswith(prefix):
             raise NewVersionException("Bad content path %s, must start with version directory and content directory path elements"
                                       % (content_path))
         elif content_path in inventory.content_paths:
@@ -217,7 +310,10 @@ class NewVersion():
             raise NewVersionException("Logical path %s already exists in new version %s" % (logical_path, inventory.head))
         # Work out digest, add to state
         digest = file_digest(src_path, inventory.digest_algorithm, pyfs=self.src_fs)
-        inventory.current_version.state[digest] = [logical_path]
+        if digest in inventory.current_version.state_add_if_not_present():
+            inventory.current_version.state[digest].append(logical_path)
+        else:
+            inventory.current_version.state[digest] = [logical_path]
         # Work out whether we already have this content in the current
         # and or previous versions, as a basis to work out whether we want
         # to add a content file
@@ -236,7 +332,7 @@ class NewVersion():
                 or (in_current_version and not self.dedupe)):
             # Yes, we copy this file in...
             self.files_to_copy[src_path] = content_path
-            inventory.add_file(digest=digest, content_path=content_path)
+            inventory.add_file_to_manifest(digest=digest, content_path=content_path)
 
     def delete(self, logical_path):
         """Delete a logical path from this new version.
@@ -280,3 +376,49 @@ class NewVersion():
                 inventory.current_version.state[digest] = [new_logical_path]
         except InventoryException:
             raise NewVersionException("Cannot rename logical path %s that does not exist in new version %s" % (old_logical_path, inventory.head))
+
+    def add_from_srcdir(self):
+        """Add all content from srcdir."""
+        for src_path in sorted(self.src_fs.walk.files()):
+            src_path = os.path.relpath(src_path, "/")
+            self.add(src_path, src_path, src_path_has_prefix=False)
+
+    @property
+    def created(self):
+        """Created string for this version."""
+        return self.inventory.current_version.created
+
+    @created.setter
+    def created(self, value):
+        """Set created string for this version."""
+        self.inventory.current_version.created = value
+
+    @property
+    def message(self):
+        """Message string for this version."""
+        return self.inventory.current_version.message
+
+    @message.setter
+    def message(self, value):
+        """Set message string for this version."""
+        self.inventory.current_version.message = value
+
+    @property
+    def user_address(self):
+        """User_address string for this version."""
+        return self.inventory.current_version.user_address
+
+    @user_address.setter
+    def user_address(self, value):
+        """Set user_address string for this version."""
+        self.inventory.current_version.user_address = value
+
+    @property
+    def user_name(self):
+        """user_name string for this version."""
+        return self.inventory.current_version.user_name
+
+    @user_name.setter
+    def user_name(self, value):
+        """Set user_name string for this version."""
+        self.inventory.current_version.user_name = value
