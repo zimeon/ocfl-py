@@ -77,3 +77,14 @@ class TestAll(unittest.TestCase):
         vl.warning("W333")
         self.assertEqual(vl.num_warnings, 1)
         self.assertIn("Unknown warning: W333 - params ({})", vl.messages[-1])
+
+    def test_status_str_and_str(self):
+        """Test status_str method and __str__."""
+        vl = ValidationLogger()
+        self.assertEqual(vl.status_str(), "")
+        vl.error("E991")
+        vl.error("E992")
+        self.assertEqual(vl.status_str(),
+                         "Unknown error: E991 - params ({})\nUnknown error: E992 - params ({})")
+        # str(vl) is just a call to vl.status_str()
+        self.assertEqual(vl.status_str(), str(vl))
