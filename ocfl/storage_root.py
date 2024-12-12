@@ -10,7 +10,7 @@ import re
 import fs
 from fs.copy import copy_dir
 
-from .constants import SPEC_VERSIONS_SUPPORTED
+from .constants import DEFAULT_SPEC_VERSION, SPEC_VERSIONS_SUPPORTED
 from .namaste import find_namastes, Namaste
 from .object import Object
 from .pyfs import pyfs_openfs, pyfs_walk, pyfs_opendir
@@ -85,7 +85,7 @@ class StorageRoot():
         self.structure_error = None
         self.traversal_errors = None
 
-    def check_spec_version(self, spec_version, default="1.1"):
+    def check_spec_version(self, spec_version, default=DEFAULT_SPEC_VERSION):
         """Check the OCFL specification version is supported."""
         if spec_version is None and self.spec_version is None:
             spec_version = default

@@ -14,7 +14,7 @@ import re
 import fs
 
 from .constants import INVENTORY_FILENAME, SPEC_VERSIONS_SUPPORTED, \
-    DEFAULT_CONTENT_DIRECTORY
+    DEFAULT_SPEC_VERSION, DEFAULT_CONTENT_DIRECTORY
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
 from .namaste import find_namastes
@@ -31,7 +31,8 @@ class Validator():
 
     def __init__(self, *, log_warnings=False, log_errors=True,
                  check_digests=True, lax_digests=False,
-                 force_spec_version=None, default_spec_version="1.1",
+                 force_spec_version=None,
+                 default_spec_version=DEFAULT_SPEC_VERSION,
                  log=None, lang="en"):
         """Initialize OCFL Object validator object.
 
@@ -44,18 +45,19 @@ class Validator():
             lax_digests: default is False. Set True to allow digests beyond
                 those included in the specification for fixity and to allow
                 non-preferred digest algorithms for content references in the
-                object.
+                object
             force_spec_version: string of specification version to force
                 validation at, else None (default) to not force a specific
                 version. If force_spec_version is set then a declaration within
-                the object that doesn't match will be reported as an error.
+                the object that doesn't match will be reported as an error
             default_spec_version: string of default specification version to
-                assume where not specified (default "1.1")
+                assume where not specified. Default is taken from
+                ocfl.constants.DEFAULT_SPEC_VERSION
             log: None (default) to create new ValidationLogger instance, or
                 else use the specified instance which is the appropriate case
                 for validation of multiple objects within a storage root.
             lang: language string (default "en") to pass to the validation
-                logger.
+                logger
         """
         self.check_digests = check_digests
         self.lax_digests = lax_digests

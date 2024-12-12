@@ -8,6 +8,7 @@ import sys
 import ocfl  # pylint: disable=import-self; this isn"t actually self import
 from ocfl.command_line_utils import add_version_arg, add_verbosity_args, \
     check_version_arg, check_verbosity_args
+from ocfl.constants import DEFAULT_SPEC_VERSION
 
 
 def add_common_args(parser):
@@ -38,7 +39,8 @@ def parse_arguments():
         "create",
         help="Create and initialize storage root")
     add_common_args(create_parser)
-    create_parser.add_argument("--spec-version", "--spec", action="store", default="1.1",
+    create_parser.add_argument("--spec-version", "--spec", action="store",
+                               default=DEFAULT_SPEC_VERSION,
                                help="OCFL specification version to adhere to")
     create_parser.add_argument("--layout-params", action="store", default=None,
                                help="Specify parameters for the selected storage layout as a JSON string (including the extensionName is optional)")
