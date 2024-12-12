@@ -29,26 +29,56 @@ class Layout_NNNN_UUID_Quadtree(Layout):
     def check_prefix(self, value):
         """Check prefix paremeter.
 
-        Any string is allowed.
+        Argument:
+            value (str): prefix string
+
+        Raises:
+            LayoutException: if the prefix is not allowed
+
+        Any non-empty string is allowed. Sets the prefix property as a side-effect.
         """
         if value is None:
             raise LayoutException("prefix parameter must be specified")
-        if not isinstance(value, str):
-            raise LayoutException("prefix parameter must be a string")
+        if not isinstance(value, str) or value == "":
+            raise LayoutException("prefix parameter must be a non-empty string")
         self.prefix = value
 
     def encode(self, identifier):
-        """NOOP encode identifier."""
+        """NOOP encode identifier.
+
+        Arguments:
+            identifier (str): identifier
+
+        Returns:
+            str: unchanged identifier
+        """
         return identifier
 
     def decode(self, identifier):
-        """NOOP decode identifier."""
+        """NOOP decode identifier.
+
+        Arguments:
+            identifier (str): identifier
+
+        Returns:
+            str: unchanged identifier
+        """
         return identifier
 
     def identifier_to_path(self, identifier):
         """Convert identifier to path relative to root.
 
-        Must match prefix:6ba7b810-9dad-11d1-80b4-00c04fd430c8
+        Argument:
+            identifier (str): object identifier
+
+        Returns:
+            str: object path for this layout
+
+        Raises:
+            LayoutException: if the identifier cannot be converted to a valid
+            object path.
+
+        Format is "prefix:6ba7b810-9dad-11d1-80b4-00c04fd430c8"
         """
         if identifier.startswith(self.prefix):
             identifier = identifier[len(self.prefix):]

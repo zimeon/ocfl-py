@@ -65,47 +65,102 @@ class Layout:
     def config(self):
         """Dictionary with config.json configuration for the layout extenstion.
 
-        Returns a dict with values based on the current attributes (to be
-        serialized with json.dump()), else None indicates that there is no
-        config.json this layout.
+        Dict values are based on the current attributes (as would be serialized
+        with json.dump()), else None indicates that there is no config.json
+        this layout.
         """
         return None
 
+    def check_full_config(self):
+        """Check full configuration in instance variables.
+
+        Trivial implementation that does nothing. It is intended that
+        sub-classes will override to do real checks if necessary. No
+        return value, raise a LayoutException on error.
+        """
+        return
+
     def strip_root(self, path, root):
-        """Remove root from path, throw exception on failure."""
+        """Remove root from path, throw exception on failure.
+
+        Arguments:
+            path (str): file path from which root will be stripped
+            root (str): root path that will be stripped from path, also
+                any leading path separator is removed.
+
+        Raises:
+            LayoutException: if the path is not within the given root and thus
+                root cannot be stripped from it
+        """
         root = root.rstrip(os.sep)  # ditch any trailing path separator
         if os.path.commonprefix((path, root)) == root:
             return os.path.relpath(path, start=root)
         raise LayoutException("Path %s is not in root %s" % (path, root))
 
     def is_valid(self, identifier):  # pylint: disable=unused-argument
-        """Return True if identifier is valid, always True in this base implementation."""
+        """Check validity of identifier for this layout.
+
+        Arguments:
+            identifier (str): identifier to check
+
+        Returns:
+            bool: True if valid, False otherwise. Always True in this base
+            implementation.
+        """
         return True
 
     def encode(self, identifier):
-        """Encode identifier to get rid of unsafe chars."""
+        """Encode identifier to get rid of unsafe chars.
+
+        Arguments:
+            identifier (str): identifier to encode
+
+        Returns:
+            str: encoded identifier
+        """
         return quote_plus(identifier)
 
     def decode(self, identifier):
-        """Decode identifier to put back unsafe chars."""
+        """Decode identifier to put back unsafe chars.
+
+        Arguments:
+            identifier (str): identifier to decode
+
+        Returns:
+            str: decoded identifier
+        """
         return unquote_plus(identifier)
 
     def identifier_to_path(self, identifier):
-        """Convert identifier to path relative to some root."""
+        """Convert identifier to path relative to some root.
+
+        Arguments:
+            identifier (str): identifier to encode
+
+        Returns:
+            str: object path for this identifier
+
+        Raises:
+            LayoutException: if the identifer cannot be used to create an object
+                path. In this base implementation, an exception is always raised.
+                The method should be overridded with the same signature
+        """
         raise LayoutException("No yet implemented")
 
     def read_layout_params(self, root_fs=None, params_required=False):
         """Look for and read and layout configuration parameters.
 
         Arguments:
-          root_fs: the storage root fs object
-          params_required: if True then throw exception for params file not present
+            root_fs (str): the storage root fs object
+            params_required (bool): if True then throw exception for params file
+                not present
 
-        Returns None, sets instance data in accord with the configuration using
-        the methods in self.PARAMS to parse for each key.
+        Raises:
+            LayoutException: if the config can't be read or if required by
+                params_required but not present
 
-        Raises LayoutException if the config can't be read or if required by
-        params_required but not present.
+        Sets instance data in accord with the configuration using the methods
+        in self.PARAMS to parse for each key.
         """
         config = None
         logging.debug("Reading extension config file %s", self.config_file)
@@ -130,8 +185,15 @@ class Layout:
             require_extension_name: boolean, True by default. If set False then
                 the extensionName paramater is not required
 
+        Raises:
+            LayoutException: if the extensionName is missig from the config, if
+                support for the named extension isn't implemented, or if there
+                is an error in the parameters or full configuration.
+
         For each parameter that is recognized, the appropriate check and set
         method in self.PARAMS is called. The methods set instance attributes.
+        Finally, the check_full_config method is called to check anything that
+        might required all of the configuration to be known.
         """
         # Check the extensionName if required and/or specified
         if "extensionName" not in config:
@@ -142,14 +204,20 @@ class Layout:
         # Read and check the parameters (ignore any extra params)
         for key, method in self.PARAMS.items():
             method(config.get(key))
+        # Finally, check full config
+        self.check_full_config()
 
     def write_layout_params(self, root_fs=None):
         """Write the config.json file with layout parameters if need for this layout.
 
-        Does nothing if there is no config.json content defined for this layout.
+        Arguments:
+            root_fs (str): the storage root fs object
 
-        Raises a LayoutException if there is an error trying to write the config.json
-        file, including if one already exists.
+        Raises:
+            LayoutException: if there is an error trying to write the config.json
+            file, including if one already exists.
+
+        Does nothing if there is no config.json content defined for this layout.
         """
         config = self.config
         if config is None:

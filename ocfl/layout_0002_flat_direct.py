@@ -18,7 +18,20 @@ class Layout_0002_Flat_Direct(Layout):
         self.PARAMS = None  # No parameters
 
     def identifier_to_path(self, identifier):
-        """Convert identifier to path relative to root."""
+        """Convert identifier to path relative to root.
+
+        Argument:
+            identifier (str): object identifier
+
+        Returns:
+            str: object path for this layout
+
+        Raises:
+            LayoutException: if the identifier cannot be converted to a valid
+                object path. For the direct layout it is not allowd to have
+                identifiers that are blank, '.', '..' or include a filesystem
+                path separator
+        """
         if identifier in ("", ".", "..") or os.sep in identifier:
             raise LayoutException("Identifier '%s' unsafe for %s layout" % (identifier, self.NAME))
         return identifier
