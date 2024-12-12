@@ -195,7 +195,7 @@ class TestAll(unittest.TestCase):
         self.assertFalse(passed)
         self.assertIn("[E036a]", validator.status_str())
         #
-        oo = Object(spec_version='1.1')
+        oo = Object(spec_version="1.1")
         (passed, validator) = oo.validate(objdir='fixtures/1.1/good-objects/minimal_one_version_one_file')
         self.assertTrue(passed)
         self.assertEqual(validator.status_str(), "")
@@ -213,7 +213,7 @@ class TestAll(unittest.TestCase):
         self.assertFalse(oo.validate_inventory(path='fixtures/1.0/bad-objects/E036_no_id/inventory.json')[0])
         self.assertFalse(oo.validate_inventory(path='tests/testdata/namaste/0=frog')[0])  # not JSON
         #
-        oo = Object(spec_version='1.1')
+        oo = Object(spec_version="1.1")
         (passed, validator) = oo.validate_inventory(path='fixtures/1.1/good-objects/minimal_one_version_one_file/inventory.json')
         self.assertTrue(passed)
         self.assertEqual(validator.status_str(), '')

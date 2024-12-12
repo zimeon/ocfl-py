@@ -16,7 +16,7 @@ import fs
 import fs.path
 import fs.copy
 
-from .constants import INVENTORY_FILENAME, DEFAULT_CONTENT_DIRECTORY
+from .constants import INVENTORY_FILENAME, DEFAULT_SPEC_VERSION, DEFAULT_CONTENT_DIRECTORY
 from .digest import file_digest
 from .inventory import Inventory
 from .inventory_validator import InventoryValidator
@@ -81,7 +81,8 @@ class Object():  # pylint: disable=too-many-public-methods
     def __init__(self, *, identifier=None,
                  content_directory=DEFAULT_CONTENT_DIRECTORY,
                  digest_algorithm="sha512", content_path_normalization="uri",
-                 spec_version="1.1", forward_delta=True, dedupe=True,
+                 spec_version=DEFAULT_SPEC_VERSION,
+                 forward_delta=True, dedupe=True,
                  lax_digests=False, fixity=None,
                  obj_fs=None, path=None, create=False):
         """Initialize OCFL object.
@@ -91,7 +92,8 @@ class Object():  # pylint: disable=too-many-public-methods
             content_directory: allow override of the default "content"
             digest_algorithm: allow override of the default "sha512"
             content_path_normalization: allow override of default "uri"
-            spec_version: OCFL specification version
+            spec_version: OCFL specification version, default value is
+                taken from ocfl.constants.DEFAULT_SPEC_VERSION
             forward_delta: set False to turn off foward delta. With forward delta
                 turned off, the same content will be repeated in a new version
                 rather than simply being included by reference through the

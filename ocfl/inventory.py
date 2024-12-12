@@ -16,7 +16,7 @@ Example:
     >>> import ocfl
     >>> inv = ocfl.Inventory(filepath="fixtures/1.1/good-objects/spec-ex-full/inventory.json")
     >>> inv.spec_version
-    '1.1'
+    "1.1"
     >>> inv.version_numbers
     [1, 2, 3]
     >>> v2 = inv.version("v2")
