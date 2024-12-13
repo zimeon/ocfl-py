@@ -3,6 +3,13 @@ Command Line Tools
 
 .. toctree::
    :maxdepth: 1
+
+   ocfl_object_script
+   ocfl_validate_script
+   ocfl_sidecar_script
+
+.. toctree::
+   :maxdepth: 1
    :caption: Demonstration Examples
 
    demo_ocfl_script

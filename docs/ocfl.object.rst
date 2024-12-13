@@ -5,3 +5,6 @@
 
 .. autoclass:: ocfl.Object
    :members:
+
+.. autoclass:: ocfl.ObjectException
+   :members:
