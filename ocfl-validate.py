@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Command line tool to validate an OCFL Storage Root, Object or Inventory.
 
-Validation functions are provided by both the ocfl.py and ocfl-object.py
+Validation functions are provided by both the ocfl-root.py and ocfl-object.py
 tools, but these also have features for manipulations. This tool is designed
 for validation only, with no options that manipulate stores, objectes or files.
 """

@@ -31,7 +31,7 @@ class DemoTestCase(unittest.TestCase):
             shutil.rmtree(self.tmpdir)
 
     def run_script(self, desc, options, text=None):
-        """Run the ocfl.py script.
+        """Run the ocfl-root.py script.
 
         Usually desc will be a section heading for this test. However, if desc
         is None then we do note create a new section. This is useful for follow

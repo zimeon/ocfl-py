@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python tests/test_demo_ocfl_script.py > docs/demo_ocfl_script.md
+python tests/test_demo_ocfl_root_script.py > docs/demo_ocfl_root_script.md
 python tests/test_demo_ocfl_object_script.py > docs/demo_ocfl_object_script.md
 python tests/test_demo_ocfl_validate_script.py > docs/demo_ocfl_validate_script.md
 python tests/test_demo_using_bagit_bags.py > docs/demo_using_bagit_bags.md

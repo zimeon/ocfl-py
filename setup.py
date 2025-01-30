@@ -46,7 +46,7 @@ setup(
     author_email='simeon.warner@cornell.edu',
     packages=['ocfl'],
     package_data={'ocfl': ['data/*']},
-    scripts=['ocfl.py', 'ocfl-object.py', 'ocfl-sidecar.py', 'ocfl-validate.py'],
+    scripts=['ocfl-root.py', 'ocfl-object.py', 'ocfl-sidecar.py', 'ocfl-validate.py'],
     classifiers=["Development Status :: 4 - Beta",
                  "Intended Audience :: Developers",
                  "Operating System :: OS Independent",
