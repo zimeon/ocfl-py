@@ -1,4 +1,4 @@
-# OCFL Sidecar creation and update script
+# Demonstration of OCFL Sidecar creation and update script
 
 _Output from `tests/test_demo_ocfl_sidecar_script.py`._
 
@@ -20,7 +20,7 @@ ocfl-sidecar.py is part of ocfl-py version 1.9.0
 
 ```
 > mkdir -v tmp/obj
-mkdir: created directory 'tmp/obj'
+tmp/obj
 ```
 
 
@@ -28,7 +28,7 @@ mkdir: created directory 'tmp/obj'
 
 ```
 > cp -v fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json tmp/obj
-'fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json' -> 'tmp/obj/inventory.json'
+fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json -> tmp/obj/inventory.json
 ```
 
 
@@ -68,7 +68,7 @@ Written sidecar file tmp/obj/inventory.json.sha256
 
 ```
 > mkdir -v tmp/obj1
-mkdir: created directory 'tmp/obj1'
+tmp/obj1
 ```
 
 
@@ -76,7 +76,7 @@ mkdir: created directory 'tmp/obj1'
 
 ```
 > mkdir -v tmp/obj2
-mkdir: created directory 'tmp/obj2'
+tmp/obj2
 ```
 
 
@@ -84,7 +84,7 @@ mkdir: created directory 'tmp/obj2'
 
 ```
 > mkdir -v tmp/obj3
-mkdir: created directory 'tmp/obj3'
+tmp/obj3
 ```
 
 
@@ -92,7 +92,7 @@ mkdir: created directory 'tmp/obj3'
 
 ```
 > cp -v fixtures/1.1/good-objects/minimal_uppercase_digests/inventory.json tmp/obj1
-'fixtures/1.1/good-objects/minimal_uppercase_digests/inventory.json' -> 'tmp/obj1/inventory.json'
+fixtures/1.1/good-objects/minimal_uppercase_digests/inventory.json -> tmp/obj1/inventory.json
 ```
 
 
@@ -100,7 +100,7 @@ mkdir: created directory 'tmp/obj3'
 
 ```
 > cp -v fixtures/1.1/good-objects/minimal_mixed_digests/inventory.json tmp/obj2
-'fixtures/1.1/good-objects/minimal_mixed_digests/inventory.json' -> 'tmp/obj2/inventory.json'
+fixtures/1.1/good-objects/minimal_mixed_digests/inventory.json -> tmp/obj2/inventory.json
 ```
 
 
@@ -108,7 +108,7 @@ mkdir: created directory 'tmp/obj3'
 
 ```
 > cp -v fixtures/1.1/good-objects/minimal_no_content/inventory.json tmp/obj3
-'fixtures/1.1/good-objects/minimal_no_content/inventory.json' -> 'tmp/obj3/inventory.json'
+fixtures/1.1/good-objects/minimal_no_content/inventory.json -> tmp/obj3/inventory.json
 ```
 
 

@@ -62,4 +62,4 @@ class TestAll(DemoTestCase):
 
 if __name__ == "__main__":
     # Run in demo mode if run directly instead of through py.test
-    TestAll.run_as_demo(title="OCFL Sidecar creation and update script")
+    TestAll.run_as_demo(title="Demonstration of OCFL Sidecar creation and update script")

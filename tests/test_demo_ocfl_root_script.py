@@ -108,4 +108,4 @@ class TestAll(DemoTestCase):
 
 if __name__ == "__main__":
     # Run in demo mode if run directly instead of through py.test
-    TestAll.run_as_demo(title="OCFL Object Root Store manipulation script")
+    TestAll.run_as_demo(title="Demonstration of OCFL Storage Root manipulation script")

@@ -65,4 +65,4 @@ class TestAll(DemoTestCase):
 
 if __name__ == "__main__":
     # Run in demo mode if run directly instead of through py.test
-    TestAll.run_as_demo(title="Build the v1.0 specification examples")
+    TestAll.run_as_demo(title="Demonstration of building OCFL v1.0 specification examples")

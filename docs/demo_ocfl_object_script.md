@@ -1,4 +1,4 @@
-# OCFL Object manipulation script
+# Demonstration of OCFL Object manipulation script
 
 _Output from `tests/test_demo_ocfl_object_script.py`._
 
@@ -148,10 +148,12 @@ and the extracted files are:
 
 ```
 > find -s tmp/v1 -print
-find: unknown predicate `-s'
+tmp/v1
+tmp/v1/empty.txt
+tmp/v1/foo
+tmp/v1/foo/bar.xml
+tmp/v1/image.tiff
 ```
-
-(last command exited with return code 1)
 
 
 ### 5.2 Extract v2 of content in an OCFL v1.1 object
@@ -166,10 +168,12 @@ and the extracted files are:
 
 ```
 > find -s tmp/v2 -print
-find: unknown predicate `-s'
+tmp/v2
+tmp/v2/empty.txt
+tmp/v2/empty2.txt
+tmp/v2/foo
+tmp/v2/foo/bar.xml
 ```
-
-(last command exited with return code 1)
 
 
 ### 5.3 Extract head version (v3) of content in the same OCFL v1.1 object
@@ -184,7 +188,7 @@ and the extracted files are:
 
 ```
 > find -s tmp/v3 -print
-find: unknown predicate `-s'
+find: tmp/v3: No such file or directory
 ```
 
 (last command exited with return code 1)
@@ -201,10 +205,9 @@ and the extracted file is:
 
 ```
 > find -s tmp/files -print
-find: unknown predicate `-s'
+tmp/files
+tmp/files/bar.xml
 ```
-
-(last command exited with return code 1)
 
 
 ### 5.5 Extract image.tiff of v3 (default) into the same directory
@@ -218,10 +221,10 @@ and the directory now contains two extracted files:
 
 ```
 > find -s tmp/files -print
-find: unknown predicate `-s'
+tmp/files
+tmp/files/bar.xml
+tmp/files/image.tiff
 ```
-
-(last command exited with return code 1)
 
 
 ## 6. Test error conditions.
