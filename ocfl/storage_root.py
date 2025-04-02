@@ -133,6 +133,9 @@ class StorageRoot():
 
     def object_path(self, identifier):
         """Path to OCFL object with given identifier relative to the OCFL storage root."""
+        if self.layout is None:
+            self.open_root_fs()
+            self.check_root_structure()
         return self.layout.identifier_to_path(identifier)
 
     def initialize(self, spec_version=None, layout_params=None):
