@@ -303,6 +303,7 @@ class Object():  # pylint: disable=too-many-public-methods
                                               content_directory=self.content_directory,
                                               metadata=metadata,
                                               fixity=self.fixity,
+                                              dedupe=self.dedupe,
                                               content_path_normalization=self.content_path_normalization)
             else:
                 nv = NewVersion.next_version(inventory=inventory,
@@ -354,6 +355,7 @@ class Object():  # pylint: disable=too-many-public-methods
                                       content_directory=self.content_directory,
                                       metadata=metadata,
                                       fixity=self.fixity,
+                                      dedupe=self.dedupe,
                                       content_path_normalization=self.content_path_normalization)
         # Add content, everything in srcdir
         nv.add_from_srcdir()
