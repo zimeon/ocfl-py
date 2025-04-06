@@ -16,6 +16,7 @@ suited to transferring content that might be used to update an OCLF object
 or disseminate a particular version.
 """
 import os.path
+import logging
 import bagit
 
 
@@ -41,6 +42,8 @@ def bag_as_source(srcbag, metadata):
 
     Raises BaggerError if the bag is not valid.
     """
+    # Avoid default noisy output from bagit
+    logging.getLogger('bagit').setLevel(logging.ERROR)
     bag = bagit.Bag(srcbag)
     if not bag.is_valid():
         raise BaggerError("Source Bagit bag at %s is not valid" % (srcbag))
@@ -76,4 +79,6 @@ def bag_extracted_version(dst, metadata):
         tags["Contact-Name"] = metadata.name
     if metadata.address and metadata.address.startswith("mailto:"):
         tags["Contact-Email"] = metadata.address[7:]
+    # Avoid default noisy output from bagit
+    logging.getLogger('bagit').setLevel(logging.ERROR)
     bagit.make_bag(dst, bag_info=tags, checksums=["sha512"])
