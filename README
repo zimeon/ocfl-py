@@ -43,7 +43,7 @@ Use
 
 There should then be four command-line scripts available:
 
-- ``ocfl.py`` - add or access OCFL objects under an OCFL storage root
+- ``ocfl-root.py`` - add or access OCFL objects under an OCFL storage root
 - ``ocfl-validate.py`` - validate OCFL objects, OCFL storage roots or standalone OCFL inventory files
 - ``ocfl-object.py`` - build, manipulate, extract from or validate a stand-alonde OCFL object 
 - ``ocfl-sidecar.py`` - update OCFL inventory sidecar file (useful for manually building examples and test cases)

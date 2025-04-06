@@ -1,4 +1,4 @@
-# OCFL Object and Storage Root validation script
+# Demonstration of OCFL Object and Storage Root validation script
 
 _Output from `tests/test_demo_ocfl_validate_script.py`._
 

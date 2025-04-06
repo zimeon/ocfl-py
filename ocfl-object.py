@@ -123,7 +123,7 @@ def print_inventory(inventory):
 
 
 def do_object_operation(args):
-    """Implement object operations in a way that can be reused by ocfl.py."""
+    """Implement object operations in a way that can be reused by ocfl-root.py."""
     obj = ocfl.Object(identifier=args.id,
                       spec_version=args.spec_version,
                       digest_algorithm=args.digest,

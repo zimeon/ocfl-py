@@ -1,4 +1,4 @@
-# Build the v1.1 specification examples
+# Demonstration of building OCFL v1.1 specification examples
 
 _Output from `tests/test_demo_build_spec_v1_1_examples.py`._
 

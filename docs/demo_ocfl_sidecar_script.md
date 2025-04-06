@@ -1,4 +1,4 @@
-# OCFL Sidecar creation and update script
+# Demonstration of OCFL Sidecar creation and update script
 
 _Output from `tests/test_demo_ocfl_sidecar_script.py`._
 

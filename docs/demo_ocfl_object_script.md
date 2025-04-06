@@ -1,4 +1,4 @@
-# OCFL Object manipulation script
+# Demonstration of OCFL Object manipulation script
 
 _Output from `tests/test_demo_ocfl_object_script.py`._
 

@@ -2,7 +2,7 @@
 
 Documentation is limited to a set of example run outputs, mostly produced automatically from various tests codes.
 
-  * [OCFL Storage Root manipulation script](demo_ocfl_script.md)
+  * [OCFL Storage Root manipulation script](demo_ocfl_root_script.md)
   * [OCFL Object manipulation script](demo_ocfl_object_script.md)
   * [OCFL Object and Storage Root validation script](demo_ocfl_validate_script.md)
   * [OCFL Object manipulation using Bagit bags to import and export versions](demo_using_bagit_bags.md)
