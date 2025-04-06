@@ -148,12 +148,10 @@ and the extracted files are:
 
 ```
 > find -s tmp/v1 -print
-tmp/v1
-tmp/v1/empty.txt
-tmp/v1/foo
-tmp/v1/foo/bar.xml
-tmp/v1/image.tiff
+find: unknown predicate `-s'
 ```
+
+(last command exited with return code 1)
 
 
 ### 5.2 Extract v2 of content in an OCFL v1.1 object
@@ -168,12 +166,10 @@ and the extracted files are:
 
 ```
 > find -s tmp/v2 -print
-tmp/v2
-tmp/v2/empty.txt
-tmp/v2/empty2.txt
-tmp/v2/foo
-tmp/v2/foo/bar.xml
+find: unknown predicate `-s'
 ```
+
+(last command exited with return code 1)
 
 
 ### 5.3 Extract head version (v3) of content in the same OCFL v1.1 object
@@ -188,7 +184,7 @@ and the extracted files are:
 
 ```
 > find -s tmp/v3 -print
-find: tmp/v3: No such file or directory
+find: unknown predicate `-s'
 ```
 
 (last command exited with return code 1)
@@ -205,9 +201,10 @@ and the extracted file is:
 
 ```
 > find -s tmp/files -print
-tmp/files
-tmp/files/bar.xml
+find: unknown predicate `-s'
 ```
+
+(last command exited with return code 1)
 
 
 ### 5.5 Extract image.tiff of v3 (default) into the same directory
@@ -221,10 +218,10 @@ and the directory now contains two extracted files:
 
 ```
 > find -s tmp/files -print
-tmp/files
-tmp/files/bar.xml
-tmp/files/image.tiff
+find: unknown predicate `-s'
 ```
+
+(last command exited with return code 1)
 
 
 ## 6. Test error conditions.
