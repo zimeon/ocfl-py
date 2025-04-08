@@ -44,6 +44,33 @@ class TestAll(DemoTestCase):
                                "--created", "2024-10-24T18:30:03Z",
                                "-v"])
         self.assertIn("Created OCFL object http://example.org/obj1", out)
+        out = self.run_script("New object with two identical files",
+                              ["python", "ocfl-object.py", "create",
+                               "--id", "http://example.org/obj_dedupe",
+                               "--src", "fixtures/1.1/content/dupe-files",
+                               "--objdir", "TMPDIR/obj_dedupe",
+                               "--created", "2025-04-08T14:00:01Z",
+                               "-v"],
+                              text="The two identical files are deduped, only one copy being stored and using the first name of the dupes by alphanumeric sort")
+        self.assertIn("Created OCFL object http://example.org/obj_dedupe", out)
+        self.demo_tree("obj_dedupe",
+                       text="Object tree shows v1 with content:")
+        self.demo_file_exists("obj_dedupe/v1/content/file1.txt", 10)
+        self.demo_file_does_not_exist("obj_dedupe/v1/content/file1_dupe.txt")
+        out = self.run_script("New object with two identical files not deduped",
+                              ["python", "ocfl-object.py", "create",
+                               "--id", "http://example.org/obj_no_dedupe",
+                               "--src", "fixtures/1.1/content/dupe-files",
+                               "--objdir", "TMPDIR/obj_no_dedupe",
+                               "--created", "2025-04-08T14:00:02Z",
+                               "--no-dedupe",
+                               "-v"],
+                              text="The identical file are not deduped because the --no-dedupe flag is given")
+        self.assertIn("Created OCFL object http://example.org/obj_no_dedupe", out)
+        self.demo_tree("obj_no_dedupe",
+                       text="Object tree shows v1 with content:")
+        self.demo_file_exists("obj_no_dedupe/v1/content/file1.txt", 10)
+        self.demo_file_exists("obj_no_dedupe/v1/content/file1_dupe.txt", 10)
 
     def test03_create_multi(self):
         """Test object build with three versions."""
