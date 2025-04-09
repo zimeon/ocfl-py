@@ -58,7 +58,7 @@ class NewVersion():
                       digest_algorithm=None,
                       content_directory=None,
                       metadata=None,
-                      dedupe=False,
+                      dedupe=True,
                       fixity=None,
                       content_path_normalization="uri"):
         """Start the first version for this object.
@@ -76,11 +76,11 @@ class NewVersion():
             content_directory (str or None): the content directory name. If
                 None (default) then will use the value "content" (as set in
                 ocfl.constants.DEFAULT_CONTENT_DIRECTORY)
-            dedupe (bool): True to deduplicate files within this
+            dedupe (bool): True (default) to deduplicate files within this
                 version, meaning that only one copy of a given file will be
                 included in the content directory even if there are multiple
                 copies in the new version state. If False then will store
-                multiple copies. Defaults to False.
+                multiple copies.
             metadata (ocfl.VersionMetadata or None): if an ocfl.VersionMetadata
                 object is provided then this is used to set the metadata of the
                 new version. The setters .created, .message, .user_address and
