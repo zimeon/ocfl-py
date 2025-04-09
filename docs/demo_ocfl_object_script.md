@@ -122,6 +122,18 @@ INFO:root:Created OCFL object http://example.org/obj1 in tmp/obj1
 ```
 
 
+### 3.2 New object with two identical files
+
+The two identical files are deduped, only one copy being stored and using the first name of the dupes by alphanumeric sort
+
+```
+> python ocfl-object.py create --id http://example.org/obj_dedupe --src extra_fixtures/content/dupe-files --objdir tmp/obj_dedupe --created 2025-04-08T14:00:01Z -v
+INFO:root:Created OCFL object http://example.org/obj_dedupe in tmp/obj_dedupe
+```
+
+Object tree shows v1 with content:
+
+
 ## 4. Test object build with three versions.
 
 ### 4.1 New object with three versions
