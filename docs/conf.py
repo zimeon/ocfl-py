@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'ocfl-py'
-copyright = '2018--2024, Simeon Warner and contributors'
+copyright = '2018--2025, Simeon Warner and contributors'
 author = 'Simeon Warner and other contributors'
 
 # Documentation is in docs, code is in repo root dir. Add ".." to path
