@@ -1,8 +1,10 @@
 """NewVersion tests."""
 import unittest
 
+from ocfl.constants import DEFAULT_DIGEST_ALGORITHM, DEFAULT_SPEC_VERSION
 from ocfl.inventory import Inventory
 from ocfl.new_version import NewVersion, NewVersionException
+from ocfl.version_metadata import VersionMetadata
 
 
 class TestNewVersion(unittest.TestCase):
@@ -38,6 +40,41 @@ class TestNewVersion(unittest.TestCase):
         nv.inventory.head = "v1"
         nv.content_path_normalization = "???"
         self.assertRaises(NewVersionException, nv._map_filepath, "a")
+
+    def test_first_version(self):
+        """Test first_version method."""
+        # Minimal settings
+        nv = NewVersion.first_version(srcdir="fixtures/1.1/content/spec-ex-full/v1",
+                                      identifier="tfv1")
+        self.assertEqual(nv.srcdir, "fixtures/1.1/content/spec-ex-full/v1")
+        self.assertEqual(nv.inventory.id, "tfv1")
+        self.assertEqual(nv.inventory.spec_version, DEFAULT_SPEC_VERSION)
+        self.assertEqual(nv.inventory.digest_algorithm, DEFAULT_DIGEST_ALGORITHM)
+        self.assertEqual(nv.inventory.content_directory, None)
+        self.assertEqual(nv.inventory.fixity, {})
+        self.assertTrue(nv.dedupe)
+        self.assertEqual(nv.content_path_normalization, "uri")
+        # Set everything
+        vm = VersionMetadata(message="hello", name="me")
+        nv = NewVersion.first_version(srcdir="fixtures/1.1/content/spec-ex-full/v2",
+                                      identifier="tfv2",
+                                      spec_version="1.0",
+                                      digest_algorithm="sha256",
+                                      content_directory="c",
+                                      dedupe=False,
+                                      metadata=vm,
+                                      fixity=["md5", "sha1"],
+                                      content_path_normalization="md5")
+        self.assertEqual(nv.srcdir, "fixtures/1.1/content/spec-ex-full/v2")
+        self.assertEqual(nv.inventory.id, "tfv2")
+        self.assertEqual(nv.inventory.spec_version, "1.0")
+        self.assertEqual(nv.inventory.digest_algorithm, "sha256")
+        self.assertEqual(nv.inventory.content_directory, "c")
+        self.assertEqual(nv.inventory.fixity, {"md5": {}, "sha1": {}})
+        self.assertEqual(nv.message, "hello")
+        self.assertEqual(nv.user_name, "me")
+        self.assertFalse(nv.dedupe)
+        self.assertEqual(nv.content_path_normalization, "md5")
 
     def test_add(self):
         """Test add method."""
