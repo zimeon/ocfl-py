@@ -76,6 +76,47 @@ class TestNewVersion(unittest.TestCase):
         self.assertFalse(nv.dedupe)
         self.assertEqual(nv.content_path_normalization, "md5")
 
+    def test_next_version(self):
+        """Test next_version_method."""
+        inv = Inventory(filepath="fixtures/1.1/good-objects/spec-ex-full/v1/inventory.json")
+        # Minimal, just inventory
+        nv = NewVersion.next_version(srcdir="fixtures/1.1/content/spec-ex-full/v2",
+                                     inventory=inv)
+        self.assertEqual(nv.srcdir, "fixtures/1.1/content/spec-ex-full/v2")
+        self.assertEqual(nv.inventory.id, "ark:/12345/bcd987")
+        self.assertEqual(nv.inventory.spec_version, DEFAULT_SPEC_VERSION)
+        self.assertEqual(nv.inventory.digest_algorithm, DEFAULT_DIGEST_ALGORITHM)
+        self.assertEqual(nv.inventory.content_directory, None)
+        self.assertEqual(set(nv.inventory.fixity.keys()), set(["md5", "sha1"]))
+        self.assertTrue(nv.forward_delta)
+        self.assertTrue(nv.dedupe)
+        self.assertEqual(nv.content_path_normalization, "uri")
+        # Maximal, set everything
+        vm = VersionMetadata(message="unhelpful message")
+        nv = NewVersion.next_version(srcdir="fixtures/1.1/content/spec-ex-full/v3",
+                                     inventory=inv,
+                                     forward_delta=False,
+                                     dedupe=False,
+                                     metadata=vm,
+                                     content_path_normalization="md5",
+                                     carry_content_forward=True,
+                                     old_digest_algorithm="bogus")
+        self.assertEqual(nv.srcdir, "fixtures/1.1/content/spec-ex-full/v3")
+        self.assertEqual(nv.inventory.id, "ark:/12345/bcd987")
+        self.assertEqual(nv.message, "unhelpful message")
+        self.assertEqual(nv.user_name, None)
+        self.assertFalse(nv.forward_delta)
+        self.assertFalse(nv.dedupe)
+        self.assertEqual(nv.content_path_normalization, "md5")
+        self.assertEqual(nv.old_digest_algorithm, "bogus")
+        self.assertEqual(nv.inventory.content_paths, ['v1/content/foo/bar.xml', 'v1/content/empty.txt', 'v1/content/image.tiff'])
+        # Error
+        self.assertRaises(NewVersionException,
+                          NewVersion.next_version,
+                          srcdir="fixtures/1.1/content/spec-ex-full/v2",
+                          inventory=inv,
+                          spec_version="1.0")
+
     def test_add(self):
         """Test add method."""
         inv = Inventory(filepath="fixtures/1.1/good-objects/updates_three_versions_one_file/inventory.json")

@@ -169,6 +169,13 @@ class NewVersion():
         version is copied forward into the new version. Items may later be
         added or deleted.
 
+        Note that this method does not take a digest_algorithm parameter. The
+        digest_algorithm is a property of the inventory. Code to implement a
+        change of digest_algorithm between version requires access to the files
+        and is implemented within ocfl.object. This method does have an
+        old_digest_algorithm parameter which is used just to store information
+        for ocfl.object methods.
+
         Arguments:
             inventory (ocfl.Inventory): inventory that we will modify to build
                 the new version.
