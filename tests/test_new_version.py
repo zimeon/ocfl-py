@@ -122,12 +122,18 @@ class TestNewVersion(unittest.TestCase):
         inv = Inventory(filepath="fixtures/1.1/good-objects/updates_three_versions_one_file/inventory.json")
         nv = NewVersion.next_version(inventory=inv)
         # Bad content paths
-        self.assertRaises(NewVersionException, nv.add, "src1", "log1", "vBAD/content/something")
-        self.assertRaises(NewVersionException, nv.add, "src1", "log1", "v4/BAD/something")
+        self.assertRaises(NewVersionException, nv.add, "src1", "logical1", "vBAD/content/something")
+        self.assertRaises(NewVersionException, nv.add, "src1", "logical1", "v4/BAD/something")
         # Content path already exists
-        nv.add("fixtures/1.1/content/README.md", "log1", "v4/content/a_file.txt")
-        self.assertRaises(NewVersionException, nv.add, "src1", "log1", "v4/content/a_file.txt")
-        # Generate content path
+        nv.add("fixtures/1.1/content/README.md", "logical1", "v4/content/a_file.txt")
+        self.assertRaises(NewVersionException, nv.add, "src1", "logical1", "v4/content/a_file.txt")
+        # Deduping checks (use the content already added)
+        nv.dedupe = False
+        nv.add("fixtures/1.1/content/README.md", "logical2", "v4/content/a_file_dupe.txt")
+        self.assertIn("v4/content/a_file_dupe.txt", nv.inventory.content_paths)
+        nv.dedupe = True
+        nv.add("fixtures/1.1/content/README.md", "logical3", "v4/content/a_file_dupe2.txt")
+        self.assertNotIn("v4/content/a_file_dupe2.txt", nv.inventory.content_paths)
 
     def test_delete(self):
         """Test delete method."""

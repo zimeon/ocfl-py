@@ -80,7 +80,7 @@ class NewVersion():
                 version, meaning that only one copy of a given file will be
                 included in the content directory even if there are multiple
                 copies in the new version state. If False then will store
-                multiple copies.
+                multiple copies
             metadata (ocfl.VersionMetadata or None): if an ocfl.VersionMetadata
                 object is provided then this is used to set the metadata of the
                 new version. The setters .created, .message, .user_address and
@@ -178,7 +178,7 @@ class NewVersion():
 
         Arguments:
             inventory (ocfl.Inventory): inventory that we will modify to build
-                the new version.
+                the new version
             srcdir (str): source directory name for files that will be added
                 to this new version. May be a pyfs filesystem specification
             metadata (ocfl.VersionMetadata or None): Either a VersionMetadata
@@ -200,7 +200,7 @@ class NewVersion():
                 multiple copies
             carry_content_forward (bool): True to carry forward the state from
                 the last current version as a starting point. False to start
-                with empty version state.
+                with empty version state
             old_digest_algorithm (str): Can be used to record the digest
                 algorithm of the previous version so that the root inventory
                 sidecar is cleaned up when writing the new inventory in the
@@ -258,11 +258,11 @@ class NewVersion():
 
         Arguments:
             filepath: the source filepath (possibly including directories) that
-                will be mapped into the object content path.
+                will be mapped into the object content path
 
         Returns:
             str: the full content path for this content that starts
-                with `vdir/content_directory/`.
+                with `vdir/content_directory/`
         """
         if self.content_path_normalization == "uri":
             filepath = urlquote(filepath)
@@ -289,8 +289,10 @@ class NewVersion():
         """Add a file to the new version.
 
         Arguments:
-            src_path (str): path within the source directory specified on
-                creation
+            src_path (str): path of the content to be added, within the
+                source directory specified on creation. This need not have
+                any relation tthe o path of the content within the object
+                if the content_path parameter is supplied
             logical_path (str): logical filepath that this content should
                 have within the version of the object
             content_path (str or None): if None (default) then will generate a
