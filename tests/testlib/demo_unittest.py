@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Modified version of unittest.TestCase that includes demo support."""
+import os
 import re
 import shutil
 import subprocess
@@ -66,16 +67,34 @@ class DemoTestCase(unittest.TestCase):
         if self.demo:
             if text is not None:
                 print(text + "\n")
-            tree = subprocess.check_output("cd %s; tree -a %s" % (self.tmpdir, treedir),
-                                           stderr=subprocess.STDOUT,
-                                           shell=True).decode("utf-8")
-            print("```\n" + tree + "```\n")
+            cmd = ["find", "-s", os.path.join(self.tmpdir, treedir), "-print"]
+            out = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode("utf-8")
+            out = "```\n> " + " ".join(cmd) + "\n" + out + "```\n"
+            out = re.sub(self.tmpdir, "tmp", out)
+            print(out)
 
     def demo_text(self, text=None):
         """Show text if in demo mode."""
         if self.demo:
             if text is not None:
                 print(text + "\n")
+
+    def demo_file_exists(self, file, size=None):
+        """Test file exists under tmpdir, size if specified."""
+        self.assertTrue(os.path.exists(os.path.join(self.tmpdir, file)))
+        if size is not None:
+            self.assertEqual(os.path.getsize(os.path.join(self.tmpdir, file)), size)
+        if self.demo:
+            if size is not None:
+                print("File `tmp/%s` exists with size %d\n" % (file, size))
+            else:
+                print("File `tmp/%s` exists\n" % (file))
+
+    def demo_file_does_not_exist(self, file):
+        """Test file does not exist under tmpdir."""
+        self.assertFalse(os.path.exists(os.path.join(self.tmpdir, file)))
+        if self.demo:
+            print("File `tmp/%s` does not exist\n" % (file))
 
     @classmethod
     def run_as_demo(cls, title="Demo output"):
