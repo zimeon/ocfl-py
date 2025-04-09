@@ -137,9 +137,6 @@ class NewVersion():
         inventory.spec_version = spec_version
         inventory.digest_algorithm = digest_algorithm
         inventory.init_manifest_and_versions()
-        # Add contentDirectory if not "content"
-        if self.content_directory != DEFAULT_CONTENT_DIRECTORY:
-            inventory.content_directory = self.content_directory
         # Add fixity section if requested
         if fixity is not None and len(fixity) > 0:
             for fixity_type in fixity:
