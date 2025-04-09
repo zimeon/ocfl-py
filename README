@@ -7,7 +7,7 @@ FOR VERSION 2.0 SPECIFICATION WORK. THE LATEST STABLE VERSION IS `v1.3.0
 <https://github.com/zimeon/ocfl-py/releases/tag/v1.3.0>`_, ALSO AVAILABLE ON `PyPI
 <https://pypi.org/project/ocfl-py/>`_
 
-`ocfl-py` is a Python reference implementation of the Oxford Common File Layout
+``ocfl-py`` is a Python reference implementation of the Oxford Common File Layout
 (OCFL). It also provides a number of command-line tools that may be useful for
 validating and manipulating OCFL Objects and OCFL Storage Roots. The code
 implements the current `OCFL specification v1.1
@@ -16,8 +16,8 @@ implements the current `OCFL specification v1.1
 <https://github.com/zimeon/ocfl-py/blob/main/docs/validation_status.md>`_ for
 details of validator support.
 
-See `ocfl-py` `documentation on ReadTheDocs
-<https://oclf-py.readthedocs.io/en/latest/index.html>`_.
+See `ocfl-py documentation
+<https://oclf-py.readthedocs.io/en/latest/index.html>`_  on ReadTheDocs.
 
 Installing
 ----------
