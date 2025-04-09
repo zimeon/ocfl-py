@@ -16,10 +16,8 @@ implements the current `OCFL specification v1.1
 <https://github.com/zimeon/ocfl-py/blob/main/docs/validation_status.md>`_ for
 details of validator support.
 
-See also `OCFL-Core
-<https://github.com/inveniosoftware/ocflcore>`_ which is another Python implementation
-of OCFL, designed to support the InvenioRDM repository, and `other OCFL implementations
-<https://github.com/OCFL/spec/wiki/Implementations>`_.
+See `ocfl-py` `documentation on ReadTheDocs
+<https://oclf-py.readthedocs.io/en/latest/index.html>`_.
 
 Installing
 ----------
@@ -45,7 +43,7 @@ There should then be four command-line scripts available:
 
 - ``ocfl-root.py`` - add or access OCFL objects under an OCFL storage root
 - ``ocfl-validate.py`` - validate OCFL objects, OCFL storage roots or standalone OCFL inventory files
-- ``ocfl-object.py`` - build, manipulate, extract from or validate a stand-alonde OCFL object 
+- ``ocfl-object.py`` - build, manipulate, extract from or validate a stand-alonde OCFL object
 - ``ocfl-sidecar.py`` - update OCFL inventory sidecar file (useful for manually building examples and test cases)
 
 Each script takes ``-h`` for help.
@@ -65,10 +63,18 @@ See `CONTRIBUTING.md
 <https://github.com/zimeon/ocfl-py/blob/main/CONTRIBUTING.md>`_
 for guidelines for contributing.
 
+Other Python OCFL Code
+----------------------
+
+See also `OCFL-Core
+<https://github.com/inveniosoftware/ocflcore>`_ which is another Python implementation
+of OCFL, designed to support the InvenioRDM repository, and `other OCFL implementations
+<https://github.com/OCFL/spec/wiki/Implementations>`_.
+
 Copyright and License
 ---------------------
 
-Copyright 2018--2024 Simeon Warner and `contributors
+Copyright 2018--2025 Simeon Warner and `contributors
 <https://github.com/zimeon/ocfl-py/graphs/contributors>`_.
 Provided under the MIT license, see `LICENSE.txt
 <https://github.com/zimeon/ocfl-py/blob/main/LICENSE.txt>`_.
