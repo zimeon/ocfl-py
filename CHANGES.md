@@ -1,6 +1,6 @@
 # ocfl-py changelog
 
-## 2024-XX-XX v2.0.0
+## 2025-04-11 v2.0.0
 
   * SIGNIFICANTLY REWRITTEN AND REFACTORED to align better with the specification language and approach. Includes refactoring, command line tool changes, and many API changes. The InventoryValidator class is relatively unchanged, however
   * Improved docstrings in many places
@@ -8,10 +8,9 @@
   * Adjust for removed `E023_missing_file` fixture (https://github.com/OCFL/fixtures/pull/99)
   * Add note of specification version number in validation output
   * Ignore `logs` directory if present in object root (extra fixture https://github.com/OCFL/fixtures/issues/108)
-  * Changed Object.show() method to Object.tree() that returns string
   * Change validator to use `force_spec_version` to validate against a specific version and remove old `extract_spec_version` with that becoming the default behavior unless force is specified
   * Code style change to use double quotes for strings unless there is a good reason to use single quotes
-  * Drop Python 3.6 and 3.7 from testing, add 3.11
+  * Drop Python 3.6 and 3.7 from testing; add 3.11, 3.12 and 3.13
 
 ## 2022-04-26 v1.3.0
 
