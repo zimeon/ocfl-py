@@ -1,19 +1,34 @@
 """Digest tests."""
 import unittest
+from ocfl.layout import LayoutException
 from ocfl.layout_nnnn_uuid_quadtree import Layout_NNNN_UUID_Quadtree
 
 
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
-    def test01_encode(self):
+    def test_config(self):
+        """Test config property."""
+        layout = Layout_NNNN_UUID_Quadtree()
+        self.assertEqual(set(layout.config.keys()), set(("extensionName", "prefix")))
+
+    def test_check_prefix(self):
+        """Test check_prefix method."""
+        layout = Layout_NNNN_UUID_Quadtree()
+        self.assertRaises(LayoutException, layout.check_prefix, None)
+        self.assertRaises(LayoutException, layout.check_prefix, 53)
+        self.assertRaises(LayoutException, layout.check_prefix, "")  # stil not!
+        self.assertEqual(layout.check_prefix("Pref"), None)
+        self.assertEqual(layout.prefix, "Pref")
+
+    def test_encode(self):
         """Test NOOP encode."""
         uuqt = Layout_NNNN_UUID_Quadtree()
         self.assertEqual(uuqt.encode(""), "")
         self.assertEqual(uuqt.encode("a"), "a")
         self.assertEqual(uuqt.encode("a/b:?"), "a/b:?")
 
-    def test02_decode(self):
+    def test_decode(self):
         """Test NOOP decode."""
         uuqt = Layout_NNNN_UUID_Quadtree()
         self.assertEqual(uuqt.decode(""), "")

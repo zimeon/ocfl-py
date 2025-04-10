@@ -44,8 +44,16 @@ class Layout_NNNN_Tuple_Tree(Layout):
             Description: Indicates the size of the segments (in characters)
               that the digest is split into
             Type: number
-            Constraints: An integer between 0 and 32 inclusive
-            Default: 3
+            Constraints: An integer between 2 and 6 inclusive
+            Default: 2
+
+        Argument:
+            value (int): integer value for tuple size in characters
+
+        Raises:
+            LayoutException: if the tuple size is not allowed
+
+        Sets the tuple_size property of this object as a side effect.
         """
         if value is None:
             raise LayoutException("tupleSize parameter must be specified")
@@ -54,15 +62,45 @@ class Layout_NNNN_Tuple_Tree(Layout):
         self.tuple_size = value
 
     def encode(self, identifier):
-        """Pairtree encode identifier."""
+        """Pairtree encode identifier.
+
+        Argument:
+            identifier (str): object identifier to encode
+
+        Returns:
+            str: encoded identifier
+        """
         return id_encode(identifier)
 
     def decode(self, identifier):
-        """Pairtree decode identifier."""
+        """Pairtree decode identifier.
+
+        Argument:
+            identifier (str): object identifier to decode
+
+        Returns:
+            str: decoded identifier
+        """
         return id_decode(identifier)
 
     def identifier_to_path(self, identifier):
-        """Convert identifier to path relative to root."""
+        """Convert identifier to path relative to root.
+
+        Argument:
+            identifier (str): object identifier
+
+        Returns:
+            str: object path for this layout
+
+        Raises:
+            LayoutException: if the identifier cannot be converted to a valid
+            object path. Currently just a check for blank
+
+        Uses Layout.encode() to generate a safe directory name from any
+        identifier.
+        """
+        if identifier == "":
+            raise LayoutException("Identifier '%s' unsafe for %s layout" % (identifier, self.NAME))
         identifier = self.encode(identifier)
         id_remains = identifier
         segments = []
@@ -72,4 +110,4 @@ class Layout_NNNN_Tuple_Tree(Layout):
         segments.append(id_remains)  # the statement means that segments will always have at least one element
         # Use full identifier to encapsulate
         segments.append(identifier)
-        return os.path.join(*segments)  # pylint: disable=no-value-for-parameter
+        return os.path.join(*segments)

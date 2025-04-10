@@ -72,11 +72,19 @@ class Layout_0003_Hash_And_Id_N_Tuple(Layout):
             Type: string
             Constraints: Must not be empty
             Default: sha256
+
+        Argument:
+            value (str): digest algorithm name
+
+        Raises:
+            LayoutException: if the digest algorithm is not supported
+
+        Sets the digest_algorithm property of this object as a side effect.
         """
         if value is None:
             raise LayoutException("digestAlgorithm parameter must be specified")
         try:
-            string_digest("aa", digest_type=value)
+            string_digest("dummy_data", digest_type=value)
         except ValueError as e:
             raise LayoutException("digestAlgorithm parameter specifies unknown or unsupported digests %s (%s)" % (value, str(e)))
         self.digest_algorithm = value
@@ -91,6 +99,14 @@ class Layout_0003_Hash_And_Id_N_Tuple(Layout):
             Type: number
             Constraints: An integer between 0 and 32 inclusive
             Default: 3
+
+        Argument:
+            value (int): integer value for tuple size in characters
+
+        Raises:
+            LayoutException: if the tuple size is not allowed
+
+        Sets the tuple_size property of this object as a side effect.
         """
         if value is None:
             raise LayoutException("tupleSize parameter must be specified")
@@ -107,12 +123,41 @@ class Layout_0003_Hash_And_Id_N_Tuple(Layout):
             Type: number
             Constraints: An integer between 0 and 32 inclusive
             Default: 3
+
+        Argument:
+            value (int): integer value for number of tuples
+
+        Raises:
+            LayoutException: if the number of tuples is not allowed
+
+        Sets the number_of_tuples property of this object as a side effect.
         """
         if value is None:
             raise LayoutException("numberOfTuples parameter must be specified")
         if not isinstance(value, int) or value < 0 or value > 32:
             raise LayoutException("numberOfTuples parameter must be aninteger between 0 and 32 inclusive")
         self.number_of_tuples = value
+
+    def check_full_config(self):
+        """Check combined configuration parameters.
+
+        From extension:
+            If tupleSize is set to 0, then no tuples are created and numberOfTuples
+            MUST also equal 0.
+            The product of tupleSize and numberOfTuples MUST be less than or equal
+            to the number of characters in the hex encoded digest.
+
+        Raises:
+            LayoutException: in the case that there is an error.
+        """
+        # Both zero if one zero
+        if ((self.tuple_size == 0 and self.number_of_tuples != 0)
+                or (self.tuple_size != 0 and self.number_of_tuples == 0)):
+            raise LayoutException("Bad layout configuration: If tupleSize is set to 0, then numberOfTuples MUST also equal 0.")
+        # Enough chars in digest
+        n = len(string_digest("dummy_data", digest_type=self.digest_algorithm))
+        if self.tuple_size * self.number_of_tuples > n:
+            raise LayoutException("Bad layout configuration: The product of tupleSize and numberOfTuples MUST be less than or equal to the number of characters in the hex encoded digest.")
 
     @property
     def config(self):

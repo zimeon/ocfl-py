@@ -16,7 +16,7 @@ import fs
 import fs.path
 import fs.copy
 
-from .constants import INVENTORY_FILENAME, DEFAULT_CONTENT_DIRECTORY
+from .constants import INVENTORY_FILENAME, DEFAULT_SPEC_VERSION, DEFAULT_CONTENT_DIRECTORY
 from .digest import file_digest
 from .inventory import Inventory
 from .inventory_validator import InventoryValidator
@@ -75,38 +75,41 @@ class Object():  # pylint: disable=too-many-public-methods
             False
         fixity (list): list of fixity types to add as fixity section
         obj_fs (io.IOBase): a pyfs filesystem reference for the root of this object
-
     """
 
     def __init__(self, *, identifier=None,
                  content_directory=DEFAULT_CONTENT_DIRECTORY,
                  digest_algorithm="sha512", content_path_normalization="uri",
-                 spec_version="1.1", forward_delta=True, dedupe=True,
+                 spec_version=DEFAULT_SPEC_VERSION,
+                 forward_delta=True, dedupe=True,
                  lax_digests=False, fixity=None,
                  obj_fs=None, path=None, create=False):
         """Initialize OCFL object.
 
         Arguments:
-            identifier: id for this object
-            content_directory: allow override of the default "content"
-            digest_algorithm: allow override of the default "sha512"
-            content_path_normalization: allow override of default "uri"
-            spec_version: OCFL specification version
-            forward_delta: set False to turn off foward delta. With forward delta
-                turned off, the same content will be repeated in a new version
-                rather than simply being included by reference through the
-                digest linking to the copy in the previous version
-            dedupe: set False to turn off dedupe within versions. With dedupe
-                turned off, the same content will be repeated within a given version
-                rather than one copy being included and then a reference being used
-                from the multiple logical files
-            lax_digests: set True to allow digests beyond those included in the
-                specification for fixity and to allow non-preferred digest algorithms
-                for content references in the object
-            fixity: list of fixity types to add as fixity section
-            obj_fs: a pyfs filesystem for the root of this object
-            path: if set then open a pyfs filesystem at path (alternative to obj_fs)
-            create: set True to allow opening filesystem at path to create a directory
+            identifier (str): id for this object
+            content_directory (str): allow override of the default "content"
+            digest_algorithm (str): allow override of the default "sha512"
+            content_path_normalization (str): allow override of default "uri"
+            spec_version (str): OCFL specification version
+            forward_delta (bool): set False to turn off foward delta. With
+                forward delta turned off, the same content will be repeated
+                in a new version rather than simply being included by
+                reference through the digest linking to the copy in the
+                previous version
+            dedupe (bool): set False to turn off dedupe within versions. With
+                dedupe turned off, the same content will be repeated within a
+                given version rather than one copy being included and then a
+                reference being used from the multiple logical files
+            lax_digests (bool): set True to allow digests beyond those included
+                in the  specification for fixity and to allow non-preferred digest
+                algorithms for content references in the object
+            fixity (list of str): list of fixity types to add as fixity section
+            obj_fs (str): a pyfs filesystem for the root of this object
+            path (str): if set then open a pyfs filesystem at path (alternative
+                to obj_fs)
+            create (bool): set True to allow opening filesystem at path to create
+                a directory
         """
         self.id = identifier
         self.content_directory = content_directory
@@ -126,14 +129,16 @@ class Object():  # pylint: disable=too-many-public-methods
         """Open an fs filesystem for this object.
 
         Arguments:
-            objdir: path string to either regular filesystem directory or else
-                to a fs filesystem string (e.g. may be "zip://.../zipfile.zip"
-                or "mem://")
-            create: True to create path/filesystem as needed, defaults to False.
+            objdir (str): path string to either regular filesystem directory
+                or else to a fs filesystem string (e.g. may be
+                ``zip://.../zipfile.zip`` or ``mem://``)
+            create (bool): True to create path/filesystem as needed, defaults
+                to False
 
-        Sets obj_fs attribute with the filesystem instance.
+        Raises:
+            ocfl.ObjectException: on failure to open filesystem
 
-        Raises ObjectException on failure to open filesystem.
+        Sets obj_fs attribute with the filesystem instance
         """
         try:
             self.obj_fs = pyfs_openfs(fs_url=objdir, create=create)
@@ -150,8 +155,9 @@ class Object():  # pylint: disable=too-many-public-methods
     def start_inventory(self):
         """Create inventory start with metadata from self.
 
-        Returns the start of an Inventory object based on the instance data
-        in this object.
+        Returns:
+            ocfl.Inventory: the start of an Inventory object based on the
+            instance data in this object
         """
         inventory = Inventory()
         inventory.id = self.id
@@ -174,16 +180,17 @@ class Object():  # pylint: disable=too-many-public-methods
         """Generate an OCFL inventory from a set of source files.
 
         Arguments:
-            src_fc: pyfs filesystem of source files.
-            versions_metadata: dict of VersionMetadata objects for each
+            src_fc (str): pyfs filesystem of source files.
+            versions_metadata (dict): dict of VersionMetadata objects for each
                 version, key is the integer version number. Default is None
                 in which case no metadata is added.
 
-        Yields (vdir, inventory, manifest_to_srcfile) for each version in
-        sequence, where vdir is the version directory name, inventory is the
-        Inventory object for that version, and manifest_to_srcfile is a
-        dictionary that maps filepaths in the manifest to actual source
-        filepaths.
+        Yields:
+            tuple: (vdir, inventory, manifest_to_srcfile) for each version in
+            sequence, where vdir is the version directory name, inventory is the
+            Inventory object for that version, and manifest_to_srcfile is a
+            dictionary that maps filepaths in the manifest to actual source
+            filepaths.
         """
         if versions_metadata is None:
             versions_metadata = {}
@@ -233,11 +240,12 @@ class Object():  # pylint: disable=too-many-public-methods
             vdir: string of the directory name within self.obj_fs that the
                 inventory and sidecar should be written to. Default is ""
 
+        Returns:
+            str: the inventory sidecar filename
+
         Assumes self.obj_fs is open for this object. Will create vdir if that
         does not exist. If vdir is not specified then will write to root of
         the object filesystem.
-
-        Returns the inventory sidecar filename.
         """
         if not self.obj_fs.exists(vdir):
             self.obj_fs.makedir(vdir)
@@ -254,7 +262,8 @@ class Object():  # pylint: disable=too-many-public-methods
     def write_inventory_sidecar(self):
         """Write just sidecare for this object's already existing root inventory file.
 
-        Returns the inventory sidecar filename.
+        Returns:
+            str: the inventory sidecar filename
         """
         return self.write_inventory_and_sidecar(inventory=None)
 
@@ -264,15 +273,16 @@ class Object():  # pylint: disable=too-many-public-methods
         Will write the object to objdir if set, else just build inventory.
 
         Arguments:
-          srcdir: source directory with version sub-directories.
-          versions_metadata: dict of VersionMetadata objects for each
+          srcdir (str): source directory with version sub-directories.
+          versions_metadata (dict): dict of VersionMetadata objects for each
               version, key is the integer version number. Default is None
               in which case no metadata is added.
-          objdir: output directory for object (must not already exist), if not
+          objdir (str): output directory for object (must not already exist), if not
               set then will just return head inventory that would have been
               created as a dry-run.
 
-        Returns the Inventory object for the last version.
+        Returns:
+            ocfl.Inventory: object for the last version.
 
         See also create(...) for creating a new object with one version.
         """
@@ -293,6 +303,7 @@ class Object():  # pylint: disable=too-many-public-methods
                                               content_directory=self.content_directory,
                                               metadata=metadata,
                                               fixity=self.fixity,
+                                              dedupe=self.dedupe,
                                               content_path_normalization=self.content_path_normalization)
             else:
                 nv = NewVersion.next_version(inventory=inventory,
@@ -324,13 +335,14 @@ class Object():  # pylint: disable=too-many-public-methods
         """Create a new OCFL object with v1 content from srcdir.
 
         Arguments:
-            srcdir - source directory with content for v1.
-            metadata - VersionMetadata object for v1.
-            objdir - output directory for object (must not already exist), if not
-                set then will just return inventory for object that would have been
-                created.
+            srcdir (str): source directory with content for v1
+            metadata (ocfl.VersionMetadata): metadata object for v1
+            objdir (str): output directory for object (must not already
+                exist), if not set then will just return inventory for
+                object that would have been created
 
-        Returns the Inventory object for the last version.
+        Returns:
+            ocfl.Inventory: object for the last version.
 
         See also build(...) for building a new object with multiple versions.
         """
@@ -343,6 +355,7 @@ class Object():  # pylint: disable=too-many-public-methods
                                       content_directory=self.content_directory,
                                       metadata=metadata,
                                       fixity=self.fixity,
+                                      dedupe=self.dedupe,
                                       content_path_normalization=self.content_path_normalization)
         # Add content, everything in srcdir
         nv.add_from_srcdir()
@@ -369,8 +382,8 @@ class Object():  # pylint: disable=too-many-public-methods
             objdir (str): sub-directory of the object filesystem that contains the
                 object to be update. The default is "" in which case the object
                 is assume to be at the filesystem root.
-            srcdir: source directory with version sub-directories
-            metadata: VersionMetadata object applied to all versions
+            srcdir (str): source directory with version sub-directories
+            metadata (ocfl.VersionMetadata): object applied to all versions
 
         Returns:
             ocfl.Inventory: inventory of updated object
@@ -381,7 +394,6 @@ class Object():  # pylint: disable=too-many-public-methods
         settings (such as using a new digest). There will be no content change
         between versions.
         """
-        print("### " + str(metadata))
         nv = self.start_new_version(objdir=objdir,
                                     srcdir=srcdir,
                                     digest_algorithm=self.digest_algorithm,
@@ -421,7 +433,7 @@ class Object():  # pylint: disable=too-many-public-methods
 
         Returns:
             ocfl.NewVersion: object where the new version will be built before
-                finally be added with write_new_version()
+            finally be added with write_new_version()
         """
         # Check the current object
         self.open_obj_fs(objdir)
@@ -504,7 +516,7 @@ class Object():  # pylint: disable=too-many-public-methods
                 added
 
         Returns:
-            ocfl.Inventory:
+            ocfl.Inventory: of the latest version just written
         """
         inventory = new_version.inventory
         # Delete old root inventory sidecar if we changed digest algorithm
@@ -526,9 +538,10 @@ class Object():  # pylint: disable=too-many-public-methods
         """Build human readable tree showing OCFL object at objdir.
 
         Arguments:
-            objdir - object directory to examine.
+            objdir (str): object directory to examine
 
-        Returns human readable string with tree of object structure.
+        Returns:
+            str: human readable string with tree of object structure
         """
         def _show_indent(level, last=False, last_v=False):
             """Indent string for tree view at level for intermediate or last."""
@@ -601,10 +614,20 @@ class Object():  # pylint: disable=too-many-public-methods
                  log_errors=True, check_digests=True):
         """Validate OCFL object at objdir.
 
-        Returns tuple (passed, validator) where:
-            passed: True is validation passed, False otherwise.
-            validator: Validator object used for validation. State records
-                validation history including validator.messages
+        Arguments:
+            objdir (str): path to object to validate
+            log_warnings (bool): True (default) to include warnings in the
+                validation log
+            log_errors (bool): True (default) to include errors in the
+                validation log
+            check_digests (bool): True (deafult) to check content file digests
+                in the validation process
+
+        Returns:
+            tuple: ``(passed, validator)`` where passed is True if validation
+            passed, False otherwise. validator is the ocfl.Validator object
+            used for validation. The state in validator records validation
+            history including validator.messages
         """
         validator = Validator(log_warnings=log_warnings,
                               log_errors=log_errors,
@@ -620,17 +643,18 @@ class Object():  # pylint: disable=too-many-public-methods
         """Validate just an OCFL Object inventory at path.
 
         Arguments:
-            path: path of inventory file
+            path (str): path of inventory file
             log_warnings (bool): True to log warnings
             log_errors (bool): True to log errors
-            force_spec_version: None to read specification version from
-                inventory; or specific number to force validation against
+            force_spec_version (str or None): None to read specification version
+                from inventory; or specific number to force validation against
                 that specification version
 
-        Returns tuple (passed, validator) where:
-            passed: True is validation passed, False otherwise.
-            validator: Validator object with state that records validation
-                log and results
+        Returns:
+            tuple: ``(passed, validator)`` where passed is True if validation
+            passed, False otherwise. validator is the ocfl.Validator object
+            used for validation. The state in validator records validation
+            history including ``validator.messages``
         """
         validator = Validator(log_warnings=log_warnings,
                               log_errors=log_errors,
@@ -652,11 +676,13 @@ class Object():  # pylint: disable=too-many-public-methods
             objdir: directory for the object
             version: version to be extracted ("v1", etc.) or "head" for latest
 
-        Returns tuple of (inv, version) where inv is the parsed inventory and
-        version if the checked object version.
+        Returns:
+            tuple: ``(inv, version)`` where inv is the parsed inventory and
+            version is the checked object version string.
 
-        Raises an ObjectException is the inventory Can't be parsed or if the
-        version doesn"t exist.
+        Raises:
+            ocfl.ObjectException: if the inventory can't be parsed or if the
+            version doesn't exist.
         """
         self.open_obj_fs(objdir)
         # Read inventory, set up version
@@ -672,14 +698,16 @@ class Object():  # pylint: disable=too-many-public-methods
         """Extract version from object at objdir into dstdir.
 
         Arguments:
-            objdir: directory for the object
-            version: version to be extracted ("v1", etc.) or "head" for latest
-            dstdir: directory to create with extracted version
+            objdir (str): directory for the object
+            version (str): version to be extracted ("v1", etc.) or "head"
+                for latest
+            dstdir (str): directory to create with extracted version
+
+        Returns:
+            ocfl.VersionMetadata: metadata object for the version extracted.
 
         The dstdir itself may exist bit if it is then it must be empty. The
         parent directory of dstdir must exist.
-
-        Returns a VersionMetadata object for the version extracted.
         """
         inv, version = self._extract_setup(objdir, version)
         # Check the destination
@@ -711,17 +739,19 @@ class Object():  # pylint: disable=too-many-public-methods
         """Extract one file from version from object at objdir into dstdir.
 
         Arguments:
-            objdir - directory for the object
-            version - version to be extracted ("v1", etc.) or "head" for latest
-            dstdir - directory to create with extracted version
-            logical_path - extract just one logical path into dstdir, without
-                any path segments below dstdir
+            objdir (str): directory for the object
+            version (str): version to be extracted ("v1", etc.) or "head"
+                for latest
+            dstdir (str) directory to create with extracted version
+            logical_path (str): extract just one logical path into dstdir,
+                without any path segments below dstdir
 
-        If dstdir doesn"t exists then create it. The parent directory of dstdir
+        Returns:
+            ocfl.VersionMetadata: metadata object for the version extracted.
+
+        If dstdir doesn't exists then create it. The parent directory of dstdir
         must exist. If dstdir exists, then a file of the same name must not
         exist.
-
-        Returns a VersionMetadata object for the version extracted.
         """
         inv, version = self._extract_setup(objdir, version)
         # Check the destination
@@ -784,8 +814,13 @@ class Object():  # pylint: disable=too-many-public-methods
     def id_from_inventory(self, failure_value="UNKNOWN-ID"):
         """Read JSON root inventory file for this object and extract id.
 
-        Returns the id from the inventory or failure_value is none can
-        be extracted.
+        Arguments:
+            failure_value (str or None): value to return if no id can
+                be extracted. Default is "UNKNOWN-ID"
+
+        Returns:
+            str: the id from the inventory or failure_value is none can
+            be extracted.
         """
         try:
             inventory = self.parse_inventory()

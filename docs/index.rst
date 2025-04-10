@@ -13,3 +13,8 @@ code, and additional test fixtures.
    api
    conformance
    fixtures
+
+The code and documentation for ``ocfl-py`` are maintained in the
+<https://github.com/zimeon/ocfl-py> github repository, see
+`guidelines for contributing
+<https://github.com/zimeon/ocfl-py/blob/main/CONTRIBUTING.md>`_.

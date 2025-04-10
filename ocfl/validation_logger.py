@@ -28,6 +28,8 @@ import os
 import os.path
 import re
 
+from ocfl.constants import DEFAULT_SPEC_VERSION
+
 
 class ValidationLogger():
     """Class for OCFL ValidationLogger.
@@ -40,24 +42,25 @@ class ValidationLogger():
     validation_codes = None
 
     def __init__(self, *, log_warnings=False, log_errors=True,
-                 spec_version="1.1", lang="en", validation_codes=None):
+                 spec_version=DEFAULT_SPEC_VERSION,
+                 lang="en", validation_codes=None):
         """Initialize OCFL validation logger.
 
-        Keyword arguments:
+        Arguments:
             log_warnings (bool): True to log warnings via the
-                warning() method. Default False.
+                warning() method. Default False
             log_errors (bool): True to logs errors via the error()
-                method. Default True.
+                method. Default True
             spec_version (str): Specification version being validated
-                against, default "1.1".
+                against, default taken from ocfl.constants.DEFAULT_SPEC_VERSION
             lang (str): Language code to look up description strings
-                with, default "en".
+                with, default "en"
             validation_codes (dict): Default None. Usual behavior is to
                 not use this argument in which case the validation codes
                 and description data are loaded from the normal location
                 on first use of this class. Subsequent instantiations use
                 the same class data. Allows an override to supply the
-                data explicitly.
+                data explicitly
         """
         self.log_warnings = log_warnings
         self.log_errors = log_errors

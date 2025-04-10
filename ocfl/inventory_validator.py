@@ -15,7 +15,7 @@ Example:
     >>> iv.validate(inv)
     True
     >>> iv.spec_version
-    '1.1'
+    "1.1"
     >>> with open("fixtures/1.1/bad-objects/E025_wrong_digest_algorithm/inventory.json") as fh:
     ...     inv = json.load(fh)
     ...
@@ -27,7 +27,7 @@ Example:
 """
 import re
 
-from .constants import SPEC_VERSIONS_SUPPORTED, DEFAULT_CONTENT_DIRECTORY
+from .constants import SPEC_VERSIONS_SUPPORTED, DEFAULT_SPEC_VERSION, DEFAULT_CONTENT_DIRECTORY
 from .digest import digest_regex, normalized_digest
 from .validation_logger import ValidationLogger
 from .w3c_datetime import str_to_datetime
@@ -57,7 +57,7 @@ class InventoryValidator():
     _SPEC_VERSIONS_SUPPORTED = ("1.0", "1.1", "2.0")
 
     def __init__(self, *, log=None, where="???",
-                 lax_digests=False, default_spec_version="1.1"):
+                 lax_digests=False, default_spec_version=DEFAULT_SPEC_VERSION):
         """Initialize OCFL Inventory Validator.
 
         It is expected that a new InventoryValidator object be created for
@@ -77,8 +77,9 @@ class InventoryValidator():
             lax_digests: True to allow any digest to be used for
                 content addressing, as opposed to only those allowed
                 by the specification.
-            default_spec_version: string (default "1.1") indicating
-               the specification version to assume if it is not set.
+            default_spec_version: string (defaults to
+                ocfl.constants.DEFAULT_SPEC_VERSION) indicating
+                the specification version to assume if it is not set.
         """
         self.log = ValidationLogger() if log is None else log
         self.where = where

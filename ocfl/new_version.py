@@ -58,6 +58,7 @@ class NewVersion():
                       digest_algorithm=None,
                       content_directory=None,
                       metadata=None,
+                      dedupe=True,
                       fixity=None,
                       content_path_normalization="uri"):
         """Start the first version for this object.
@@ -75,6 +76,11 @@ class NewVersion():
             content_directory (str or None): the content directory name. If
                 None (default) then will use the value "content" (as set in
                 ocfl.constants.DEFAULT_CONTENT_DIRECTORY)
+            dedupe (bool): True (default) to deduplicate files within this
+                version, meaning that only one copy of a given file will be
+                included in the content directory even if there are multiple
+                copies in the new version state. If False then will store
+                multiple copies
             metadata (ocfl.VersionMetadata or None): if an ocfl.VersionMetadata
                 object is provided then this is used to set the metadata of the
                 new version. The setters .created, .message, .user_address and
@@ -126,13 +132,11 @@ class NewVersion():
         self = cls(srcdir=srcdir)
         inventory = Inventory()
         self.inventory = inventory
+        self.dedupe = dedupe
         inventory.id = identifier
         inventory.spec_version = spec_version
         inventory.digest_algorithm = digest_algorithm
         inventory.init_manifest_and_versions()
-        # Add contentDirectory if not "content"
-        if self.content_directory != DEFAULT_CONTENT_DIRECTORY:
-            inventory.content_directory = self.content_directory
         # Add fixity section if requested
         if fixity is not None and len(fixity) > 0:
             for fixity_type in fixity:
@@ -165,9 +169,16 @@ class NewVersion():
         version is copied forward into the new version. Items may later be
         added or deleted.
 
+        Note that this method does not take a digest_algorithm parameter. The
+        digest_algorithm is a property of the inventory. Code to implement a
+        change of digest_algorithm between version requires access to the files
+        and is implemented within ocfl.object. This method does have an
+        old_digest_algorithm parameter which is used just to store information
+        for ocfl.object methods.
+
         Arguments:
             inventory (ocfl.Inventory): inventory that we will modify to build
-                the new version.
+                the new version
             srcdir (str): source directory name for files that will be added
                 to this new version. May be a pyfs filesystem specification
             metadata (ocfl.VersionMetadata or None): Either a VersionMetadata
@@ -189,7 +200,7 @@ class NewVersion():
                 multiple copies
             carry_content_forward (bool): True to carry forward the state from
                 the last current version as a starting point. False to start
-                with empty version state.
+                with empty version state
             old_digest_algorithm (str): Can be used to record the digest
                 algorithm of the previous version so that the root inventory
                 sidecar is cleaned up when writing the new inventory in the
@@ -247,11 +258,11 @@ class NewVersion():
 
         Arguments:
             filepath: the source filepath (possibly including directories) that
-                will be mapped into the object content path.
+                will be mapped into the object content path
 
         Returns:
             str: the full content path for this content that starts
-                with `vdir/content_directory/`.
+                with `vdir/content_directory/`
         """
         if self.content_path_normalization == "uri":
             filepath = urlquote(filepath)
@@ -278,8 +289,10 @@ class NewVersion():
         """Add a file to the new version.
 
         Arguments:
-            src_path (str): path within the source directory specified on
-                creation
+            src_path (str): path of the content to be added, within the
+                source directory specified on creation. This need not have
+                any relation tthe o path of the content within the object
+                if the content_path parameter is supplied
             logical_path (str): logical filepath that this content should
                 have within the version of the object
             content_path (str or None): if None (default) then will generate a
