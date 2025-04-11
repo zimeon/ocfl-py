@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ocfl-py"
+version = "2.0.1"
+authors = [{name = "Simeon Warner", email = "simeon.warner@cornell.edu"}]
+description = "ocfl-py - A Python implementation of OCFL"
+readme = "README"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+urls = {Homepage = "https://github.com/zimeon/ocfl-py"}
+dependencies = [
+    "bagit>=1.8.1",
+    "dateutils>=0.6.6",
+    "fs>2.4.13",
+    "fs_s3fs>=1.1.1",
+    "pairtree>=0.8.1",
+]
+
+[project.optional-dependencies]
+testing = ["mock>=5.1"]
+
+[tool.setuptools]
+packages = ["ocfl"]
+script-files = [
+    "ocfl-root.py",
+    "ocfl-object.py",
+    "ocfl-sidecar.py",
+    "ocfl-validate.py",
+]
+test-suite = "tests"
+include-package-data = false
+
+[tool.setuptools.package-data]
+ocfl = ["data/*"]
