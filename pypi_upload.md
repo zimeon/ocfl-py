@@ -16,7 +16,7 @@ Putting up a new version
     3. Check version number working branch in `ocfl/_version.py`
     4. Check all changes described in `CHANGES.md`
     5. Check code is up-to-date with `main` branch on github
-    6. Check all tests good (`tox`)
+    6. Check all tests good (`py.test`)
     7. Upload new version to PyPI:
 
       ```

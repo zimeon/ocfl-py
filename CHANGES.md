@@ -1,5 +1,9 @@
 # ocfl-py changelog
 
+## 2025-04-11 v2.0.1
+
+  * Get rid of old message in README about 1.3.0 being stable version (doh!)
+
 ## 2025-04-11 v2.0.0
 
   * SIGNIFICANTLY REWRITTEN AND REFACTORED to align better with the specification language and approach. Includes refactoring, command line tool changes, and many API changes. The InventoryValidator class is relatively unchanged, however
