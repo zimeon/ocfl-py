@@ -10,7 +10,7 @@ The `--version` argument will show version number and exit
 
 ```
 > python ocfl-object.py --version
-ocfl-object.py is part of ocfl-py version 1.9.0
+ocfl-object.py is part of ocfl-py version 2.0.0
 ```
 
 
