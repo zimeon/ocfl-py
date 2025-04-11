@@ -2,11 +2,6 @@
 ocfl-py - An OCFL implementation in Python
 ==========================================
 
-2024-09 - WARNING - THIS CODE IS UNDERGOING A SIGNIFICANT REWORKING TO PREPARE
-FOR VERSION 2.0 SPECIFICATION WORK. THE LATEST STABLE VERSION IS `v1.3.0
-<https://github.com/zimeon/ocfl-py/releases/tag/v1.3.0>`_, ALSO AVAILABLE ON `PyPI
-<https://pypi.org/project/ocfl-py/>`_
-
 ``ocfl-py`` is a Python reference implementation of the Oxford Common File Layout
 (OCFL). It also provides a number of command-line tools that may be useful for
 validating and manipulating OCFL Objects and OCFL Storage Roots. The code
