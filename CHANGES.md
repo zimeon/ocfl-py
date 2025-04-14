@@ -1,5 +1,9 @@
 # ocfl-py changelog
 
+## 2025-XX-YY v2.0.2
+
+  * Switch from `setup.py` to `pyproject.toml` for package build informaion
+
 ## 2025-04-11 v2.0.1
 
   * Get rid of old message in README about 1.3.0 being stable version (doh!)

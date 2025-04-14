@@ -20,9 +20,10 @@ Putting up a new version
     7. Upload new version to PyPI:
 
       ```
-      pip install --upgrade setuptools wheel twine
-      python setup.py sdist bdist_wheel; ls dist
-      twine upload dist/*1.X.X*
+      pip install --upgrade build setuptools wheel twine
+      python -m build --no-isolation
+      ls -lrt dist
+      twine upload dist/*2.X.X*
       ```
     8. Check on PyPI at <https://pypi.org/project/ocfl-py>
     9. Check everything up to date in `main` on github
