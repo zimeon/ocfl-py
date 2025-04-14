@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=61.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ocfl-py"
+dynamic = ["version"]
+authors = [{name = "Simeon Warner", email = "simeon.warner@cornell.edu"}]
+description = "ocfl-py - A Python implementation of OCFL"
+readme = "README"
+dependencies = [
+    "bagit>=1.8.1",
+    "dateutils>=0.6.6",
+    "fs>2.4.13",
+    "fs_s3fs>=1.1.1",
+    "pairtree>=0.8.1",
+]
+requires-python = ">=3.8"
+#license = "MIT"
+#license-files = ["LICENSE.txt"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/zimeon/ocfl-py"
+
+[project.optional-dependencies]
+testing = [
+    "mock>=5.1",
+    "requests>=2.20.0",
+]
+
+[tool.setuptools]
+packages = ["ocfl"]
+script-files = [
+    "ocfl-root.py",
+    "ocfl-object.py",
+    "ocfl-sidecar.py",
+    "ocfl-validate.py",
+]
+include-package-data = false
+
+[tool.setuptools.dynamic]
+# See https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html#dynamic-metadata
+version = {attr = "ocfl.__version__"}
+
+[tool.setuptools.package-data]
+ocfl = ["data/*"]
+
+[tool.pytest.ini_options]
+# Silence warnings from imported packages,
+# see: https://docs.python.org/3/library/warnings.html#warning-filter
+# Format of each entry: "action:message:category:module:line"
+# Should check these periodically to see whether still necessary
+filterwarnings = [
+    # added 2025-04-14
+    # bagit.py:24: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    "ignore::DeprecationWarning:bagit",
+    # added 2025-04-14
+    # site-packages/pkg_resources/__init__.py:3147: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('sphinxcontrib')`.
+    "ignore::DeprecationWarning:pkg_resources",    
+    # added 2025-04-14
+    # site-packages/fs/__init__.py:4: DeprecationWarning: Deprecated call to `pkg_resources.declare_namespace('fs')`.
+    "ignore::DeprecationWarning:fs",
+]
