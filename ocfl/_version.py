@@ -1,2 +1,2 @@
 """Version number for this Python implementation of OCFL."""
-__version__ = "2.0.1"
+__version__ = "2.0.2"
