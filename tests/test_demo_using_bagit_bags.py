@@ -89,7 +89,7 @@ class TestAll(DemoTestCase):
                "create `v4` `tests/testdata/bags/uaa_v4` using a recursive `diff`."
         out = self.run_script("Compare extracted and original v4",
                               ["diff",
-                               "--ignore-matching-lines","bag-info.txt",
+                               "--ignore-matching-lines", " bag-info.txt",
                                "-r", "TMPDIR/extracted_v4", "tests/testdata/bags/uaa_v4"],
                               text=text)
         self.demo_text("The only difference that shows in the output of the `diff` is the "
