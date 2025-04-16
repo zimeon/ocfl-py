@@ -70,7 +70,7 @@ class TestAll(DemoTestCase):
                                "-v"],
                               text=text)
         self.assertIn("Updated object info:bb123cd4567 to v4", out)
-        text = "Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` content as a Bagit bag." \
+        text = "Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` content as a Bagit bag. " \
                "The `--set-bagging-date` means that the created time for v4 will be used to generate the " \
                "Bagging-Date in the Bagit bag's metadata."
         out = self.run_script("Update with v4",
@@ -89,10 +89,15 @@ class TestAll(DemoTestCase):
                "create `v4` `tests/testdata/bags/uaa_v4` using a recursive `diff`."
         out = self.run_script("Compare extracted and original v4",
                               ["diff",
+                               "--ignore-matching-lines","bag-info.txt",
                                "-r", "TMPDIR/extracted_v4", "tests/testdata/bags/uaa_v4"],
                               text=text)
-        self.demo_text("The only differences are in the `bag-info.txt` file and the checksum file "
-                       "for that file (`tagmanifest-sha512.txt`). The content matches.")
+        self.demo_text("The only difference that shows in the output of the `diff` is the "
+                       "addition of the `Bag-Software-Agent:` line in the newly created bag "
+                       "that was no present in the input metadata. Because of this additional "
+                       "metadata, the digest for the bag is also different, but this is removed "
+                       "from the `diff` output with the `--ignore-matching-lines ' bag-info.txt'` "
+                       "parameter. The bag content matches.")
 
 
 if __name__ == "__main__":
