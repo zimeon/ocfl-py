@@ -37,10 +37,12 @@ def bag_as_source(srcbag, metadata):
         metadata: a VersionMetadata object that will be updated with metadata
             from the bag, including the object id
 
-    Returns the srcdir for OCFL object content within the bag as it should be
-    expressed in the state block.
+    Returns:
+        str: the srcdir for OCFL object content within the bag as it should be
+            expressed in the state block
 
-    Raises BaggerError if the bag is not valid.
+    Raises:
+        BaggerError: if the bag is not valid
     """
     # Avoid default noisy output from bagit
     logging.getLogger('bagit').setLevel(logging.ERROR)
@@ -61,14 +63,18 @@ def bag_as_source(srcbag, metadata):
     return os.path.join(srcbag, "data")
 
 
-def bag_extracted_version(dst, metadata):
+def bag_extracted_version(dst, metadata, set_bagging_date=False):
     """Bag the extracted files in dst using metadata from metadata.
 
-    Paramaters:
+    Arguments:
         dst: destination location for the bag that initially contains the
             content to be bagged (ie. end up in the data directory)
         metadata: a VersionMetadata object that has metadata to add into
             the bag information, including the id
+        set_bagging_date: set True to use the OCFL object's created
+            date as the Bagging-Date in the bagit metadata. Default is False
+            in which case the current system date will be used to set the
+            Bagging-Date
     """
     tags = {}
     if metadata.id:
@@ -79,6 +85,9 @@ def bag_extracted_version(dst, metadata):
         tags["Contact-Name"] = metadata.name
     if metadata.address and metadata.address.startswith("mailto:"):
         tags["Contact-Email"] = metadata.address[7:]
+    if set_bagging_date:
+        # metadata.created is a well-formed datatime string, take portion before T
+        tags["Bagging-Date"] = metadata.created.split("T")[0]
     # Avoid default noisy output from bagit
     logging.getLogger('bagit').setLevel(logging.ERROR)
     bagit.make_bag(dst, bag_info=tags, checksums=["sha512"])

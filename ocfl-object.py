@@ -104,6 +104,11 @@ def parse_arguments():
                                 help="destination directory path")
     extract_parser.add_argument("--dstbag", action="store",
                                 help="destination Bagit bag path (alternative to --dstdir)")
+    extract_parser.add_argument("--set-bagging-date", action="store_true",
+                                help="if creating a destination Bagit bag (see --dstbag) then the "
+                                     "default behavior is to set the Bagging-Date tag to the current "
+                                     "system date. This flag will instead set the Bagging-Date to the "
+                                     "date portion of the created time of the object version")
     extract_parser.add_argument("--logical-path", "--path", action="store", default=None,
                                 help="if specified, extract just the file at the specified logical path into --dstdir")
 
@@ -205,7 +210,7 @@ def do_object_operation(args):
             if args.dstdir:
                 print("Extracted content for %s in %s" % (metadata.version, dst))
             else:  # args.dstbag
-                ocfl.bag_extracted_version(dst, metadata)
+                ocfl.bag_extracted_version(dst, metadata, set_bagging_date=args.set_bagging_date)
                 print("Extracted content for %s saved as Bagit bag in %s" % (metadata.version, dst))
     else:
         logging.error("Unrecognized command!")
