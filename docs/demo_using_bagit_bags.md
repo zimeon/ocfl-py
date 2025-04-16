@@ -129,7 +129,7 @@ Updated object info:bb123cd4567 to v4
 
 ### 1.9 Update with v4
 
-Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` content as a Bagit bag.The `--set-bagging-date` means that the created time for v4 will be used to generate the Bagging-Date in the Bagit bag's metadata.
+Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` content as a Bagit bag. The `--set-bagging-date` means that the created time for v4 will be used to generate the Bagging-Date in the Bagit bag's metadata.
 
 ```
 > python ocfl-object.py extract --objver v4 --objdir tmp/obj --dstbag tmp/extracted_v4 --set-bagging-date -v
@@ -143,11 +143,11 @@ Extracted content for v4 saved as Bagit bag in tmp/extracted_v4
 We note that the OCFL object had only one `content` file in `v4` but the extracted object state for `v4` includes 4 files, two of which have identical content (`dracula.txt` and `another_directory/a_third_copy_of_dracula.txt`). We can now compare the extracted bag `/tmp/uaa_v4` that with the bag we used to create `v4` `tests/testdata/bags/uaa_v4` using a recursive `diff`.
 
 ```
-> diff -r tmp/extracted_v4 tests/testdata/bags/uaa_v4
-diff -r tmp/extracted_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
+> diff --ignore-matching-lines  bag-info.txt -r tmp/extracted_v4 tests/testdata/bags/uaa_v4
+diff --ignore-matching-lines ' bag-info.txt' -r tmp/extracted_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
 1d0
 < Bag-Software-Agent: bagit.py v1.8.1 <https://github.com/LibraryOfCongress/bagit-python>
-diff -r tmp/extracted_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagmanifest-sha512.txt
+diff --ignore-matching-lines ' bag-info.txt' -r tmp/extracted_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagmanifest-sha512.txt
 1,2d0
 < 5c2e2b9cacc93cb315d57f09fac6d199c3378313b6cf918bb0a70e1839c4e4c0c2e5a7f9ae869cf7755e09a196a835be1af7c510d3d5faa5d0c0b3f6be9f816a manifest-sha512.txt
 < 6f2dbad07611c6c313392e6ae0676233b5a50379021ee93fb667c301fca5924a65792e23275cb4ee5f91265a570d2fbe4eba734397534717ffb7c555b6c1ab19 bag-info.txt
@@ -158,5 +158,5 @@ diff -r tmp/extracted_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagma
 
 (last command exited with return code 1)
 
-The only differences are in the `bag-info.txt` file and the checksum file for that file (`tagmanifest-sha512.txt`). The content matches.
+The only difference that shows in the output of the `diff` is the addition of the `Bag-Software-Agent:` line in the newly created bag that was no present in the input metadata. Because of this additional metadata, the digest for the bag is also different, but this is removed from the `diff` output with the `--ignore-matching-lines ' bag-info.txt'` parameter. The bag content matches.
 
