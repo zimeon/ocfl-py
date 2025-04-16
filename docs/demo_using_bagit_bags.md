@@ -129,10 +129,10 @@ Updated object info:bb123cd4567 to v4
 
 ### 1.9 Update with v4
 
-Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` content as a Bagit bag.
+Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` content as a Bagit bag.The `--set-bagging-date` means that the created time for v4 will be used to generate the Bagging-Date in the Bagit bag's metadata.
 
 ```
-> python ocfl-object.py extract --objver v4 --objdir tmp/obj --dstbag tmp/extracted_v4 -v
+> python ocfl-object.py extract --objver v4 --objdir tmp/obj --dstbag tmp/extracted_v4 --set-bagging-date -v
 INFO:root:Extracted v4 into tmp/extracted_v4
 Extracted content for v4 saved as Bagit bag in tmp/extracted_v4
 ```
@@ -145,15 +145,12 @@ We note that the OCFL object had only one `content` file in `v4` but the extract
 ```
 > diff -r tmp/extracted_v4 tests/testdata/bags/uaa_v4
 diff -r tmp/extracted_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
-1,2c1
+1d0
 < Bag-Software-Agent: bagit.py v1.8.1 <https://github.com/LibraryOfCongress/bagit-python>
-< Bagging-Date: 2025-04-14
----
-> Bagging-Date: 2020-01-04
 diff -r tmp/extracted_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagmanifest-sha512.txt
 1,2d0
 < 5c2e2b9cacc93cb315d57f09fac6d199c3378313b6cf918bb0a70e1839c4e4c0c2e5a7f9ae869cf7755e09a196a835be1af7c510d3d5faa5d0c0b3f6be9f816a manifest-sha512.txt
-< 60c0edc88d37ccaf29b411ec444e2b7b57901ae31f322c3162a352efab6bf3724d8be4aeb13ab6876ca366f4bfbe5ae4b54f9c1963d9efc18f298fcfdb1c75e4 bag-info.txt
+< 6f2dbad07611c6c313392e6ae0676233b5a50379021ee93fb667c301fca5924a65792e23275cb4ee5f91265a570d2fbe4eba734397534717ffb7c555b6c1ab19 bag-info.txt
 3a2,3
 > 10624e6d45462def7af66d1a0d977606c7b073b01809c1d42258cfab5c34a275480943cbe78044416aee1f23822cc3762f92247b8f39b5c6ddc5ae32a8f94ce5 bag-info.txt
 > 5c2e2b9cacc93cb315d57f09fac6d199c3378313b6cf918bb0a70e1839c4e4c0c2e5a7f9ae869cf7755e09a196a835be1af7c510d3d5faa5d0c0b3f6be9f816a manifest-sha512.txt
