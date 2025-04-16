@@ -3,6 +3,7 @@
 ## 2025-XX-YY v2.0.2
 
   * Switch from `setup.py` to `pyproject.toml` for package build informaion
+  * Add `--set-bagging-date` option to `ocfl-object.py`
 
 ## 2025-04-11 v2.0.1
 
