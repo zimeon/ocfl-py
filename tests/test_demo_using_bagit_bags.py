@@ -70,12 +70,15 @@ class TestAll(DemoTestCase):
                                "-v"],
                               text=text)
         self.assertIn("Updated object info:bb123cd4567 to v4", out)
-        text = "Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` content as a Bagit bag."
+        text = "Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` content as a Bagit bag." \
+               "The `--set-bagging-date` means that the created time for v4 will be used to generate the " \
+               "Bagging-Date in the Bagit bag's metadata."
         out = self.run_script("Update with v4",
                               ["python", "ocfl-object.py", "extract",
                                "--objver", "v4",
                                "--objdir", "TMPDIR/obj",
                                "--dstbag", "TMPDIR/extracted_v4",
+                               "--set-bagging-date",
                                "-v"],
                               text=text)
         self.assertIn("Extracted content for v4 saved as Bagit bag", out)
