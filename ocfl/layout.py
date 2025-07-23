@@ -1,4 +1,4 @@
-"""Handle different storage layouts.
+"""Layout class.
 
 OCFL Storage Roots require a deterministic mapping from the object identifiers
 to the path within the storage root. (It is not required that one can deduce the
@@ -19,6 +19,7 @@ collision in this part within a given path.
 
 See: https://ocfl.io/1.1/spec/#root-hierarchies
 """
+
 import json
 import logging
 import os
