@@ -375,7 +375,7 @@ class Object():  # pylint: disable=too-many-public-methods
         logging.info("Created OCFL object %s in %s", self.id, objdir)
         return inventory
 
-    def add_version_with_content(self, objdir="", srcdir=None, metadata=None):
+    def add_version_with_content(self, objdir="", srcdir=None, metadata=None, abort_if_no_difference=False):
         """Update object by adding a new version with content matching srcdir.
 
         Arguments:
@@ -384,9 +384,11 @@ class Object():  # pylint: disable=too-many-public-methods
                 is assume to be at the filesystem root.
             srcdir (str): source directory with version sub-directories
             metadata (ocfl.VersionMetadata): object applied to all versions
+            abort_if_no_difference (bool): if True, do not create a new version if
+                the content of srcdir is the same as the latest version
 
         Returns:
-            ocfl.Inventory: inventory of updated object
+            ocfl.Inventory: inventory of updated object or False if no new version was created.
 
         As a first step the object is validated.
 
@@ -403,6 +405,12 @@ class Object():  # pylint: disable=too-many-public-methods
         # Add files if srcdir is set
         if srcdir is not None:
             nv.add_from_srcdir()
+        # Optionally abort if no difference
+        if abort_if_no_difference:
+            diff = nv.diff_with_previous()
+            if len(diff) == 0:
+                logging.info("No difference between srcdir and latest version, aborting new version creation.")
+                return False
         # Write the new version
         return self.write_new_version(nv)
 
