@@ -165,7 +165,7 @@ class StorageRoot():
         if self.root_fs.exists(self.layout_file):
             self.layout_name, self.layout_description = self.parse_layout_file()
             if not layout_is_registered(self.layout_name):
-                raise StorageRootException("Storage root %s includes ocfl_layout.json with unknown layout %s (%s)" % (self.root, self.layout_name))
+                raise StorageRootException("Storage root %s includes ocfl_layout.json with unknown layout %s" % (self.root, self.layout_name))
             if self.layout.NAME not in self.registered_extensions:
                 self.registered_extensions.append(self.layout.NAME)
             try:
