@@ -146,12 +146,13 @@ We note that the OCFL object had only one `content` file in `v4` but the extract
 > diff --ignore-matching-lines  bag-info.txt -r tmp/extracted_v4 tests/testdata/bags/uaa_v4
 diff --ignore-matching-lines ' bag-info.txt' -r tmp/extracted_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
 1d0
-< Bag-Software-Agent: bagit.py v1.8.1 <https://github.com/LibraryOfCongress/bagit-python>
+< Bag-Software-Agent: bagit.py v1.9.0 <https://github.com/LibraryOfCongress/bagit-python>
 diff --ignore-matching-lines ' bag-info.txt' -r tmp/extracted_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagmanifest-sha512.txt
-1,2d0
+1d0
 < 5c2e2b9cacc93cb315d57f09fac6d199c3378313b6cf918bb0a70e1839c4e4c0c2e5a7f9ae869cf7755e09a196a835be1af7c510d3d5faa5d0c0b3f6be9f816a manifest-sha512.txt
-< 6f2dbad07611c6c313392e6ae0676233b5a50379021ee93fb667c301fca5924a65792e23275cb4ee5f91265a570d2fbe4eba734397534717ffb7c555b6c1ab19 bag-info.txt
-3a2,3
+3c2,3
+< 1270e5f8a1250c4e5b205101786689a8d8d56488b39ade6e2b78bf4d0b93214eb381f5b5b7f03a6bdde86e35648a4be592535b5bc600cdb92ee8c33e95f06b82 bag-info.txt
+---
 > 10624e6d45462def7af66d1a0d977606c7b073b01809c1d42258cfab5c34a275480943cbe78044416aee1f23822cc3762f92247b8f39b5c6ddc5ae32a8f94ce5 bag-info.txt
 > 5c2e2b9cacc93cb315d57f09fac6d199c3378313b6cf918bb0a70e1839c4e4c0c2e5a7f9ae869cf7755e09a196a835be1af7c510d3d5faa5d0c0b3f6be9f816a manifest-sha512.txt
 ```
