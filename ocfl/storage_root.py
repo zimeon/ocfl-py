@@ -18,7 +18,8 @@ from .validator import Validator
 from .validation_logger import ValidationLogger
 
 # Specific layouts
-from .layout_registry import get_layout, layout_is_registered
+from .layout_registry import get_layout, layout_is_supported
+
 
 class StorageRootException(Exception):
     """Exception class for OCFL Storage Root."""
@@ -164,10 +165,8 @@ class StorageRoot():
         # Layout file (if present)
         if self.root_fs.exists(self.layout_file):
             self.layout_name, self.layout_description = self.parse_layout_file()
-            if not layout_is_registered(self.layout_name):
+            if not layout_is_supported(self.layout_name):
                 raise StorageRootException("Storage root %s includes ocfl_layout.json with unknown layout %s" % (self.root, self.layout_name))
-            if self.layout.NAME not in self.registered_extensions:
-                self.registered_extensions.append(self.layout.NAME)
             try:
                 if self.layout.NAME == self.layout_name:
                     logging.info("Storage root layout is %s", self.layout_name)
