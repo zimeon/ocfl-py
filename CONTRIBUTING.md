@@ -30,4 +30,4 @@ If submitting a pull request:
      * Follow something close to the [Google Python Style Guide for docstrings](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings). Use `Arguments:` not `Args:` however, and triple greater-thans (`>>>`) for code examples.
    * Please don't repeat code
    * Please cover the code with tests
-     * The setup file is configure to run coverage with `python setup.py coverage` and output goes in the `htmlcov` directory
+     * You can run coverage checks with `run_coverage.sh` and output goes in the `htmlcov` directory
