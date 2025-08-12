@@ -2,8 +2,9 @@
 
 ## 2025-XX-YY v2.0.2
 
-  * Switch from `setup.py` to `pyproject.toml` for package build informaion
+  * Switch from `setup.py` to `pyproject.toml` for package build informayion
   * Add `--set-bagging-date` option to `ocfl-object.py`
+  * Add dynamic addition of new storage layouts with `ocfl.layout_registry` (thanks @eroux)
 
 ## 2025-04-11 v2.0.1
 
@@ -61,7 +62,7 @@
 
 ## 2020-08-03 v1.1.0
 
-  * Change to use [PyFilesystem2](https://docs.pyfilesystem.org/en/latest/) for filesystem access which allows use of local filesystem, zip files, and S3. The S3 support is preliminary because it has a number of work-arounds to avoid PyFilesystem2's expectation that there are empty directrory objects
+  * Change to use [PyFilesystem2](https://docs.pyfilesystem.org/en/latest/) for filesystem access which allows use of local filesystem, zip files, and S3. The S3 support is preliminary because it has a number of work-arounds to avoid PyFilesystem2's expectation that there are empty directory objects
   * Renames ocfl.version to ocfl.version_metadata for clarity
 
 ## 2020-07-10 v1.0.2
