@@ -1,4 +1,4 @@
-"""Digest tests."""
+"""Layout tests."""
 import unittest
 import unittest.mock
 from ocfl.layout import Layout, LayoutException
