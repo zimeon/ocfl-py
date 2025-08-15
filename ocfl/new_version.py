@@ -291,7 +291,7 @@ class NewVersion():
         Arguments:
             src_path (str): path of the content to be added, within the
                 source directory specified on creation. This need not have
-                any relation tthe o path of the content within the object
+                any relation to the path of the content within the object
                 if the content_path parameter is supplied
             logical_path (str): logical filepath that this content should
                 have within the version of the object

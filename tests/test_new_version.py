@@ -142,7 +142,9 @@ class TestNewVersion(unittest.TestCase):
         self.assertRaises(NewVersionException, nv.add, "src1", "logical1", "v4/BAD/something")
         # Content path already exists
         nv.add("fixtures/1.1/content/README.md", "logical1", "v4/content/a_file.txt")
-        self.assertRaises(NewVersionException, nv.add, "src1", "logical1", "v4/content/a_file.txt")
+        self.assertRaises(NewVersionException, nv.add, "src1", "logical2", "v4/content/a_file.txt")
+        # Logical path already exists
+        self.assertRaises(NewVersionException, nv.add, "src1", "logical1")
         # Deduping checks (use the content already added)
         nv.dedupe = False
         nv.add("fixtures/1.1/content/README.md", "logical2", "v4/content/a_file_dupe.txt")
@@ -153,9 +155,41 @@ class TestNewVersion(unittest.TestCase):
 
     def test_delete(self):
         """Test delete method."""
+        inv = Inventory()
+        inv.spec_version = "1.1"
+        inv.add_version("v1", state={"digestA": ["file1", "file2"]})
+        nv = NewVersion.next_version(inventory=inv, carry_content_forward=True)
+        self.assertRaises(NewVersionException, nv.delete, "logical_path_that_doesnt_exist")
+        nv.delete("file1")
+        self.assertEqual(nv.inventory.current_version.logical_paths, ["file2"])
+        nv.delete("file2")
+        self.assertEqual(nv.inventory.current_version.logical_paths, [])
 
     def test_rename(self):
         """Test rename method."""
+        nv = NewVersion.first_version(identifier="obj_id")
+        self.assertRaises(NewVersionException, nv.rename, "logical_path_that_doesnt_exist", "new_path")
+        nv.add("fixtures/1.1/content/README.md", "lp0")
+        # One logical path with the given digest/content
+        nv.rename("lp0", "lp1")
+        nv.add("fixtures/1.1/content/README.md", "lp2")
+        self.assertEqual(set(nv.inventory.current_version.logical_paths), set(["lp1", "lp2"]))
+        self.assertRaises(NewVersionException, nv.rename, "lp1", "lp2")
+        # Two logical paths with the given digest/content
+        nv.rename("lp1", "lp3")
+        self.assertEqual(set(nv.inventory.current_version.logical_paths), set(["lp2", "lp3"]))
+
+    def test_setters_getters(self):
+        """Test setters and getters for created, message, user_name and user_address."""
+        nv = NewVersion.first_version(identifier="obj_id")
+        nv.created = "2001-01-01T01:01:01Z"
+        nv.message = "Two thousand and one and one..."
+        nv.user_name = "A Person"
+        nv.user_address = "mailto:a_person@example.org"
+        self.assertEqual(nv.created, "2001-01-01T01:01:01Z")
+        self.assertEqual(nv.message, "Two thousand and one and one...")
+        self.assertEqual(nv.user_name, "A Person")
+        self.assertEqual(nv.user_address, "mailto:a_person@example.org")
 
     def test_diff_with_previous_add_delete(self):
         """Test diff_with_previous method with add and delete."""
