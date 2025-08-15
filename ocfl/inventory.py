@@ -274,7 +274,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
 
     @property
     def version_directories(self):
-        """List of all version directories.
+        """List of all version directories in order.
 
         Returns a list of all version in the versions block. The values
         in the list are the version directory names so they will have
@@ -282,7 +282,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
 
         See also: inv.version_numbers for just the numbers: [1, 2, 3].
         """
-        return list(self.versions_block.keys())
+        return sorted(list(self.versions_block.keys()), key=parse_version_directory)
 
     @property
     def version_numbers(self):
@@ -314,7 +314,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
         Yields a Version() object for each version in this Inventiry in
         numeric order.
         """
-        for vdir in sorted(self.version_directories, key=parse_version_directory):
+        for vdir in self.version_directories:
             yield Version(self, vdir)
 
     def digest_for_content_path(self, path):

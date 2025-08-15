@@ -435,3 +435,49 @@ class NewVersion():
     def user_name(self, value):
         """Set user_name string for this version."""
         self.inventory.current_version.user_name = value
+
+    def diff_with_previous(self):
+        """
+        Compare the current version state with the previous version state.
+        Returns a list of operations: add, delete.
+        Each operation is a dict with keys:
+          - op: "add" or "delete"
+          - digest: digest string
+          - logical_path: logical path
+        """
+        inventory = self.inventory
+        current_state = inventory.current_version.state
+        # Get previous version state, if any
+        prev_vdir = None
+        for v in inventory.version_directories:
+            if v == inventory.head:
+                break
+            prev_vdir = v
+        if not prev_vdir:
+            # No previous version, everything is an add
+            return [
+                ("A", digest, lp)
+                for digest, lps in current_state.items() for lp in lps
+            ]
+        prev_state = inventory.version(prev_vdir).state
+        # Flatten previous version state: set of (digest, logical_path)
+        prev_paths = set()
+        for digest, logical_paths in prev_state.items():
+            for lp in logical_paths:
+                prev_paths.add((digest, lp))
+        # Flatten current version state: set of (digest, logical_path)
+        curr_paths = set()
+        for digest, logical_paths in current_state.items():
+            for lp in logical_paths:
+                curr_paths.add((digest, lp))
+        # Additions
+        adds = curr_paths - prev_paths
+        # Deletions
+        deletes = prev_paths - curr_paths
+        # Compose result
+        result = []
+        for (d, lp) in adds:
+            result.append(("A", d, lp))
+        for (d, lp) in deletes:
+            result.append(("D", d, lp))
+        return result
