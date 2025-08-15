@@ -1,4 +1,3 @@
-import pytest
 from ocfl.inventory import Inventory
 from ocfl.new_version import NewVersion
 
@@ -31,10 +30,9 @@ def test_add_delete():
     nv = NewVersion.next_version(inventory=inv)
     nv.inventory.head = "v2"
     diff = nv.diff_with_previous()
-    ops = { (op["op"], op["digest"], op["logical_path"]) for op in diff }
-    assert ("add", "digestB", "fileB.txt") in ops
-    assert ("add", "digestA", "fileC.txt") in ops
-    assert ("delete", "digestA", "fileA.txt") in ops
+    assert ("A", "digestB", "fileB.txt") in diff
+    assert ("A", "digestA", "fileC.txt") in diff
+    assert ("D", "digestA", "fileA.txt") in diff
     assert len(diff) == 3
 
 def test_no_previous_version_all_adds():
@@ -46,9 +44,8 @@ def test_no_previous_version_all_adds():
     nv = NewVersion.next_version(inventory=inv)
     nv.inventory.head = "v1"
     diff = nv.diff_with_previous()
-    ops = { (op["op"], op["digest"], op["logical_path"]) for op in diff }
-    assert ("add", "digestA", "fileA.txt") in ops
-    assert ("add", "digestB", "fileB.txt") in ops
+    assert ("A", "digestA", "fileA.txt") in diff
+    assert ("A", "digestB", "fileB.txt") in diff
     assert len(diff) == 2
 
 def test_multiple_logical_paths_same_digest():
@@ -64,10 +61,9 @@ def test_multiple_logical_paths_same_digest():
     nv = NewVersion.next_version(inventory=inv)
     nv.inventory.head = "v2"
     diff = nv.diff_with_previous()
-    ops = { (op["op"], op["digest"], op["logical_path"]) for op in diff }
-    assert ("delete", "digestX", "file2.txt") in ops
-    assert ("add", "digestX", "file3.txt") in ops
-    assert all(op[0] in ("add", "delete") for op in ops)
+    assert ("D", "digestX", "file2.txt") in diff
+    assert ("A", "digestX", "file3.txt") in diff
+    assert all(op[0] in ("A", "D") for op in diff)
 
 def test_multiple_adds_and_deletes():
     # Previous version: two logical paths for same digest
@@ -82,9 +78,8 @@ def test_multiple_adds_and_deletes():
     nv = NewVersion.next_version(inventory=inv)
     nv.inventory.head = "v2"
     diff = nv.diff_with_previous()
-    ops = { (op["op"], op["digest"], op["logical_path"]) for op in diff }
-    assert ("delete", "digestY", "a.txt") in ops
-    assert ("delete", "digestY", "b.txt") in ops
-    assert ("add", "digestY", "c.txt") in ops
-    assert ("add", "digestY", "d.txt") in ops
+    assert ("D", "digestY", "a.txt") in diff
+    assert ("D", "digestY", "b.txt") in diff
+    assert ("A", "digestY", "c.txt") in diff
+    assert ("A", "digestY", "d.txt") in diff
     assert len(diff) == 4

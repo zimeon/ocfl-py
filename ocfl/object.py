@@ -388,7 +388,7 @@ class Object():  # pylint: disable=too-many-public-methods
                 the content of srcdir is the same as the latest version
 
         Returns:
-            ocfl.Inventory: inventory of updated object or False if no new version was created.
+            ocfl.Inventory: inventory of updated object or None if no new version was created.
 
         As a first step the object is validated.
 
@@ -410,7 +410,7 @@ class Object():  # pylint: disable=too-many-public-methods
             diff = nv.diff_with_previous()
             if len(diff) == 0:
                 logging.info("No difference between srcdir and latest version, aborting new version creation.")
-                return False
+                return None
         # Write the new version
         return self.write_new_version(nv)
 

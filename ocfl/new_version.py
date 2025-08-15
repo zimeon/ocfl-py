@@ -456,7 +456,7 @@ class NewVersion():
         if not prev_vdir:
             # No previous version, everything is an add
             return [
-                {"op": "add", "digest": digest, "logical_path": lp}
+                ("A", digest, lp)
                 for digest, lps in current_state.items() for lp in lps
             ]
         prev_state = inventory.version(prev_vdir).state
@@ -477,7 +477,7 @@ class NewVersion():
         # Compose result
         result = []
         for (d, lp) in adds:
-            result.append({"op": "add", "digest": d, "logical_path": lp})
+            result.append(("A", d, lp))
         for (d, lp) in deletes:
-            result.append({"op": "delete", "digest": d, "logical_path": lp})
+            result.append(("D", d, lp))
         return result
