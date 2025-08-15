@@ -1,5 +1,9 @@
 # ocfl-py changelog
 
+## 2025-XX-XX v2.0.3
+
+  * ...
+
 ## 2025-08-15 v2.0.2
 
   * Switch from `setup.py` to `pyproject.toml` for package build information
