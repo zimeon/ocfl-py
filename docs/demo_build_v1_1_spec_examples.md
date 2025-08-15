@@ -10,8 +10,6 @@ The digest type sha512-spec-ex is sha512 with most of the content stripped out a
 
 ```
 > python ocfl-object.py create --src fixtures/1.1/content/spec-ex-minimal --id http://example.org/minimal --spec-version 1.1 --digest sha512-spec-ex --created 2018-10-02T12:00:00Z --message One file --name Alice --address alice@example.org -v
-/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
-  from pkg_resources import DistributionNotFound, get_distribution
 ### Inventory for v1
 {
   "digestAlgorithm": "sha512-spec-ex",
@@ -50,8 +48,6 @@ This is inventory should match the example with 3 versions in <https://ocfl.io/1
 
 ```
 > python ocfl-object.py build --src fixtures/1.1/content/spec-ex-full --spec-version 1.1 --id ark:/12345/bcd987 --fixity md5 --fixity sha1 --digest sha512-spec-ex --metadata extra_fixtures/1.1/content/spec-ex-full-metadata.json -v
-/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
-  from pkg_resources import DistributionNotFound, get_distribution
 ### Inventory for v3
 {
   "digestAlgorithm": "sha512-spec-ex",
@@ -145,8 +141,6 @@ This is inventory should match the example showing how content paths may differ 
 
 ```
 > python ocfl-object.py create --src fixtures/1.1/content/spec-ex-diff-paths/v1 --id http://example.org/diff-paths/v1 --spec-version 1.1 --digest sha512-spec-ex --normalization md5 --created 2019-03-14T20:31:00Z -v
-/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
-  from pkg_resources import DistributionNotFound, get_distribution
 ### Inventory for v1
 {
   "digestAlgorithm": "sha512-spec-ex",
