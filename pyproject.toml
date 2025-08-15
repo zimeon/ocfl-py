@@ -54,7 +54,7 @@ include-package-data = false
 
 [tool.setuptools.dynamic]
 # See https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html#dynamic-metadata
-version = {attr = "ocfl.__version__"}
+version = {attr = "ocfl._version.__version__"}
 
 [tool.setuptools.package-data]
 ocfl = ["data/*"]
