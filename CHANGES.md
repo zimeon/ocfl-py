@@ -1,10 +1,11 @@
 # ocfl-py changelog
 
-## 2025-XX-YY v2.0.2
+## 2025-08-15 v2.0.2
 
-  * Switch from `setup.py` to `pyproject.toml` for package build informayion
+  * Switch from `setup.py` to `pyproject.toml` for package build information
   * Add `--set-bagging-date` option to `ocfl-object.py`
   * Add dynamic addition of new storage layouts with `ocfl.layout_registry` (thanks @eroux)
+  * Add `abort_if_no_difference` option to `ocfl.object.add_version_with_content` (thanks @eroux)
 
 ## 2025-04-11 v2.0.1
 

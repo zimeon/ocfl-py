@@ -7,6 +7,22 @@ from ocfl.new_version import NewVersion, NewVersionException
 from ocfl.version_metadata import VersionMetadata
 
 
+def make_inventory_with_state(state, head="v2", prev_state=None):
+    """Make inventory with given state and head for tests."""
+    inv = Inventory()
+    inv.spec_version = "1.1"
+    inv.id = "test"
+    inv.digest_algorithm = "sha512"
+    inv.init_manifest_and_versions()
+    # Add previous version if provided
+    if prev_state is not None:
+        inv.add_version("v1", state=prev_state)
+        inv.head = "v1"
+    inv.add_version(head, state=state)
+    inv.head = head
+    return inv
+
+
 class TestNewVersion(unittest.TestCase):
     """TestNewVersion class to run test for the Invenory class."""
 
@@ -140,3 +156,77 @@ class TestNewVersion(unittest.TestCase):
 
     def test_rename(self):
         """Test rename method."""
+
+    def test_diff_with_previous_add_delete(self):
+        """Test diff_with_previous method with add and delete."""
+        # Previous version: one file
+        prev_state = {
+            "digestA": ["fileA.txt"]
+        }
+        # Current version: fileA.txt deleted, fileB.txt added, fileC.txt added with same digest as fileA.txt
+        curr_state = {
+            "digestB": ["fileB.txt"],
+            "digestA": ["fileC.txt"]
+        }
+        inv = make_inventory_with_state(curr_state, head="v2", prev_state=prev_state)
+        # Instead of creating a new version, just set head to v2 and use NewVersion with carry_content_forward=True
+        nv = NewVersion.next_version(inventory=inv)
+        nv.inventory.head = "v2"
+        diff = nv.diff_with_previous()
+        assert ("A", "digestB", "fileB.txt") in diff
+        assert ("A", "digestA", "fileC.txt") in diff
+        assert ("D", "digestA", "fileA.txt") in diff
+        assert len(diff) == 3
+
+    def test_diff_with_previous_no_previous_version_all_adds(self):
+        """Test diff_with_previous method with no previous version."""
+        curr_state = {
+            "digestA": ["fileA.txt"],
+            "digestB": ["fileB.txt"]
+        }
+        inv = make_inventory_with_state(curr_state, head="v1")
+        nv = NewVersion.next_version(inventory=inv)
+        nv.inventory.head = "v1"
+        diff = nv.diff_with_previous()
+        self.assertIn(("A", "digestA", "fileA.txt"), diff)
+        self.assertIn(("A", "digestB", "fileB.txt"), diff)
+        self.assertEqual(len(diff), 2)
+
+    def test_diff_with_previous_multiple_logical_paths_same_digest(self):
+        """Test diff_with_previous with same digest, changing logical paths."""
+        # Previous version: two logical paths for same digest
+        prev_state = {
+            "digestX": ["file1.txt", "file2.txt"]
+        }
+        # Current version: file2.txt deleted, file3.txt added for same digest
+        curr_state = {
+            "digestX": ["file1.txt", "file3.txt"]
+        }
+        inv = make_inventory_with_state(curr_state, head="v2", prev_state=prev_state)
+        nv = NewVersion.next_version(inventory=inv)
+        nv.inventory.head = "v2"
+        diff = nv.diff_with_previous()
+        self.assertIn(("D", "digestX", "file2.txt"), diff)
+        self.assertIn(("A", "digestX", "file3.txt"), diff)
+        for op in diff:
+            self.assertIn(op[0], ("A", "D"))
+
+    def test_diff_with_previous_multiple_adds_and_deletes(self):
+        """Test diff_with_previous with a mix of changes."""
+        # Previous version: two logical paths for same digest
+        prev_state = {
+            "digestY": ["a.txt", "b.txt"]
+        }
+        # Current version: both logical paths deleted, two new added
+        curr_state = {
+            "digestY": ["c.txt", "d.txt"]
+        }
+        inv = make_inventory_with_state(curr_state, head="v2", prev_state=prev_state)
+        nv = NewVersion.next_version(inventory=inv)
+        nv.inventory.head = "v2"
+        diff = nv.diff_with_previous()
+        self.assertIn(("D", "digestY", "a.txt"), diff)
+        self.assertIn(("D", "digestY", "b.txt"), diff)
+        self.assertIn(("A", "digestY", "c.txt"), diff)
+        self.assertIn(("A", "digestY", "d.txt"), diff)
+        self.assertEqual(len(diff), 4)

@@ -354,7 +354,7 @@ class NewVersion():
         the previous state (initialization with carry_content_forward=True).
 
         Arguments:
-            logical_path (str): logical path that should not appear in the new
+            logical_path (str): logical path that should be removed from the new
                 version state
 
         Raises:
@@ -437,13 +437,15 @@ class NewVersion():
         self.inventory.current_version.user_name = value
 
     def diff_with_previous(self):
-        """
-        Compare the current version state with the previous version state.
-        Returns a list of operations: add, delete.
-        Each operation is a dict with keys:
-          - op: "add" or "delete"
-          - digest: digest string
-          - logical_path: logical path
+        """Compare the current version state with the previous version state.
+
+        Returns:
+            list: of add and delete operations representing diff. Each operation
+                is a tuple (op, digest, logical_path) where op is "A" for and
+                addition or "D" for a deletion; digest is the string of the
+                content digest; and logical_path is the logical path of the
+                content file. An empty list indicates no content change between
+                versions.
         """
         inventory = self.inventory
         current_state = inventory.current_version.state
