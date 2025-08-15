@@ -18,30 +18,7 @@ from .validator import Validator
 from .validation_logger import ValidationLogger
 
 # Specific layouts
-from .layout_0002_flat_direct import Layout_0002_Flat_Direct
-from .layout_0003_hash_and_id_n_tuple import Layout_0003_Hash_And_Id_N_Tuple
-from .layout_nnnn_flat_quoted import Layout_NNNN_Flat_Quoted
-from .layout_nnnn_tuple_tree import Layout_NNNN_Tuple_Tree
-from .layout_nnnn_uuid_quadtree import Layout_NNNN_UUID_Quadtree
-
-
-def _get_layout(layout_name=None):
-    """Find Layout object for the given layout name.
-
-    Returns a layout object for the appropriate layour if the layour_name
-    is recognized, otherwise throws a StorageRootException.
-    """
-    if layout_name in ("0002-flat-direct-storage-layout", "0002", "flat-direct"):
-        return Layout_0002_Flat_Direct()
-    if layout_name in ("0003-hash-and-id-n-tuple-storage-layout", "0003"):
-        return Layout_0003_Hash_And_Id_N_Tuple()
-    if layout_name in ("nnnn-flat-quoted-storage-layout", "flat-quoted"):
-        return Layout_NNNN_Flat_Quoted()
-    if layout_name == "nnnn-tuple-tree":
-        return Layout_NNNN_Tuple_Tree()
-    if layout_name == "nnnn-uuid-quadtree":
-        return Layout_NNNN_UUID_Quadtree()
-    raise StorageRootException("Unsupported layout_name %s, aborting!" % (layout_name))
+from .layout_registry import get_layout, layout_is_supported
 
 
 class StorageRootException(Exception):
@@ -67,14 +44,6 @@ class StorageRoot():
             "0002-flat-direct-storage-layout",
             "0003-hash-and-id-n-tuple-storage-layout"
         ]
-        self.supported_layouts = [
-            "0002-flat-direct-storage-layout",
-            "0003-hash-and-id-n-tuple-storage-layout",
-            "nnnn-flat-quoted-storage-layout",
-            "nnnn-tuple-tree",
-            "nnnn-uuid-quadtree"
-        ]
-        #
         self.root_fs = None
         # Validation records
         self.num_traversal_errors = 0
@@ -119,7 +88,7 @@ class StorageRoot():
         if the layout is not set.
         """
         if not self._layout and self.layout_name is not None:
-            self._layout = _get_layout(layout_name=self.layout_name)
+            self._layout = get_layout(self.layout_name)
         return self._layout
 
     def traversal_error(self, code, **kwargs):
@@ -196,6 +165,8 @@ class StorageRoot():
         # Layout file (if present)
         if self.root_fs.exists(self.layout_file):
             self.layout_name, self.layout_description = self.parse_layout_file()
+            if not layout_is_supported(self.layout_name):
+                raise StorageRootException("Storage root %s includes ocfl_layout.json with unknown layout %s" % (self.root, self.layout_name))
             try:
                 if self.layout.NAME == self.layout_name:
                     logging.info("Storage root layout is %s", self.layout_name)

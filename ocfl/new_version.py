@@ -291,7 +291,7 @@ class NewVersion():
         Arguments:
             src_path (str): path of the content to be added, within the
                 source directory specified on creation. This need not have
-                any relation tthe o path of the content within the object
+                any relation to the path of the content within the object
                 if the content_path parameter is supplied
             logical_path (str): logical filepath that this content should
                 have within the version of the object
@@ -354,7 +354,7 @@ class NewVersion():
         the previous state (initialization with carry_content_forward=True).
 
         Arguments:
-            logical_path (str): logical path that should not appear in the new
+            logical_path (str): logical path that should be removed from the new
                 version state
 
         Raises:
@@ -435,3 +435,51 @@ class NewVersion():
     def user_name(self, value):
         """Set user_name string for this version."""
         self.inventory.current_version.user_name = value
+
+    def diff_with_previous(self):
+        """Compare the current version state with the previous version state.
+
+        Returns:
+            list: of add and delete operations representing diff. Each operation
+                is a tuple (op, digest, logical_path) where op is "A" for and
+                addition or "D" for a deletion; digest is the string of the
+                content digest; and logical_path is the logical path of the
+                content file. An empty list indicates no content change between
+                versions.
+        """
+        inventory = self.inventory
+        current_state = inventory.current_version.state
+        # Get previous version state, if any
+        prev_vdir = None
+        for v in inventory.version_directories:
+            if v == inventory.head:
+                break
+            prev_vdir = v
+        if not prev_vdir:
+            # No previous version, everything is an add
+            return [
+                ("A", digest, lp)
+                for digest, lps in current_state.items() for lp in lps
+            ]
+        prev_state = inventory.version(prev_vdir).state
+        # Flatten previous version state: set of (digest, logical_path)
+        prev_paths = set()
+        for digest, logical_paths in prev_state.items():
+            for lp in logical_paths:
+                prev_paths.add((digest, lp))
+        # Flatten current version state: set of (digest, logical_path)
+        curr_paths = set()
+        for digest, logical_paths in current_state.items():
+            for lp in logical_paths:
+                curr_paths.add((digest, lp))
+        # Additions
+        adds = curr_paths - prev_paths
+        # Deletions
+        deletes = prev_paths - curr_paths
+        # Compose result
+        result = []
+        for (d, lp) in adds:
+            result.append(("A", d, lp))
+        for (d, lp) in deletes:
+            result.append(("D", d, lp))
+        return result

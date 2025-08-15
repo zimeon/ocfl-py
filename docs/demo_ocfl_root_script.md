@@ -10,7 +10,7 @@ The `--version` argument will show version number and exit (but we still tave to
 
 ```
 > python ocfl-root.py --version
-ocfl-root.py is part of ocfl-py version 1.9.0
+ocfl-root.py is part of ocfl-py version 2.0.2
 ```
 
 
@@ -59,9 +59,9 @@ ERROR:root:Add object failed because path ark%3A123%2Fabc exists
 
 ```
 > python ocfl-root.py list --root=extra_fixtures/good-storage-roots/simple-root
+ark%3A%2F12345%2Fbcd987 -- id=ark:/12345/bcd987
 http%3A%2F%2Fexample.org%2Fminimal_mixed_digests -- id=http://example.org/minimal_mixed_digests
 ark%3A123%2Fabc -- id=ark:123/abc
-ark%3A%2F12345%2Fbcd987 -- id=ark:/12345/bcd987
 Found 3 OCFL Objects under root extra_fixtures/good-storage-roots/simple-root
 ```
 

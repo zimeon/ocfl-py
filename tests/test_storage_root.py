@@ -6,7 +6,8 @@ import os
 import tempfile
 import unittest
 
-from ocfl.storage_root import _get_layout, StorageRoot, StorageRootException
+from ocfl.storage_root import StorageRoot, StorageRootException
+from ocfl.layout_registry import get_layout
 from ocfl.layout_0002_flat_direct import Layout_0002_Flat_Direct
 from ocfl.validation_logger import ValidationLogger
 
@@ -14,19 +15,19 @@ from ocfl.validation_logger import ValidationLogger
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
-    def test__get_layout(self):
+    def test_get_layout(self):
         """Test everything, just a little."""
-        d = _get_layout(layout_name="0002-flat-direct-storage-layout")
+        d = get_layout("0002-flat-direct-storage-layout")
         self.assertEqual(d.identifier_to_path("ab cd"), "ab cd")
-        d = _get_layout(layout_name="nnnn-tuple-tree")
+        d = get_layout("nnnn-tuple-tree")
         self.assertEqual(d.identifier_to_path("abcd"), "ab/cd/abcd")
-        d = _get_layout("nnnn-uuid-quadtree")
+        d = get_layout("nnnn-uuid-quadtree")
         self.assertEqual(d.identifier_to_path("urn:uuid:6ba7b810-9dad-11d1-80b4-00c04fd430c8"),
                          "6ba7/b810/9dad/11d1/80b4/00c0/4fd4/30c8")
         # Errors
-        self.assertRaises(Exception, _get_layout)
-        self.assertRaises(Exception, _get_layout, None)
-        self.assertRaises(Exception, _get_layout, "unknown")
+        self.assertRaises(Exception, get_layout)
+        self.assertRaises(Exception, get_layout, None)
+        self.assertRaises(Exception, get_layout, "unknown")
 
     def test_init(self):
         """Test StorageRoot init."""

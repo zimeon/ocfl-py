@@ -1,6 +1,21 @@
 # ocfl-py changelog
 
-## 2024-XX-XX v2.0.0
+## 2025-XX-XX v2.0.3
+
+  * ...
+
+## 2025-08-15 v2.0.2
+
+  * Switch from `setup.py` to `pyproject.toml` for package build information
+  * Add `--set-bagging-date` option to `ocfl-object.py`
+  * Add dynamic addition of new storage layouts with `ocfl.layout_registry` (thanks @eroux)
+  * Add `abort_if_no_difference` option to `ocfl.object.add_version_with_content` (thanks @eroux)
+
+## 2025-04-11 v2.0.1
+
+  * Get rid of old message in README about 1.3.0 being stable version (doh!)
+
+## 2025-04-11 v2.0.0
 
   * SIGNIFICANTLY REWRITTEN AND REFACTORED to align better with the specification language and approach. Includes refactoring, command line tool changes, and many API changes. The InventoryValidator class is relatively unchanged, however
   * Improved docstrings in many places
@@ -8,10 +23,9 @@
   * Adjust for removed `E023_missing_file` fixture (https://github.com/OCFL/fixtures/pull/99)
   * Add note of specification version number in validation output
   * Ignore `logs` directory if present in object root (extra fixture https://github.com/OCFL/fixtures/issues/108)
-  * Changed Object.show() method to Object.tree() that returns string
   * Change validator to use `force_spec_version` to validate against a specific version and remove old `extract_spec_version` with that becoming the default behavior unless force is specified
   * Code style change to use double quotes for strings unless there is a good reason to use single quotes
-  * Drop Python 3.6 and 3.7 from testing, add 3.11
+  * Drop Python 3.6 and 3.7 from testing; add 3.11, 3.12 and 3.13
 
 ## 2022-04-26 v1.3.0
 
@@ -53,7 +67,7 @@
 
 ## 2020-08-03 v1.1.0
 
-  * Change to use [PyFilesystem2](https://docs.pyfilesystem.org/en/latest/) for filesystem access which allows use of local filesystem, zip files, and S3. The S3 support is preliminary because it has a number of work-arounds to avoid PyFilesystem2's expectation that there are empty directrory objects
+  * Change to use [PyFilesystem2](https://docs.pyfilesystem.org/en/latest/) for filesystem access which allows use of local filesystem, zip files, and S3. The S3 support is preliminary because it has a number of work-arounds to avoid PyFilesystem2's expectation that there are empty directory objects
   * Renames ocfl.version to ocfl.version_metadata for clarity
 
 ## 2020-07-10 v1.0.2

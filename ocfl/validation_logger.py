@@ -28,7 +28,7 @@ import os
 import os.path
 import re
 
-from ocfl.constants import DEFAULT_SPEC_VERSION
+from .constants import DEFAULT_SPEC_VERSION
 
 
 class ValidationLogger():

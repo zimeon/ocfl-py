@@ -44,6 +44,7 @@ class TestAll(unittest.TestCase):
         bag_extracted_version(tempdir, metadata)
         with open(os.path.join(tempdir, "bag-info.txt"), "r", encoding="utf-8") as fh:
             info = fh.read()
+        self.assertIn("Bagging-Date: 2", info)  # Leaving a little Y3K bug ;-)
         self.assertNotIn("Contact-Email", info)
         self.assertNotIn("Contact-Name", info)
         self.assertNotIn("External-Description", info)
@@ -58,9 +59,11 @@ class TestAll(unittest.TestCase):
         metadata.name = "A Person"
         metadata.address = "mailto:a.person@example.org"
         metadata.id = "info:a-bag-2"
-        bag_extracted_version(tempdir, metadata)
+        metadata.created = "1999-12-31T23:59:59Z"
+        bag_extracted_version(tempdir, metadata, set_bagging_date=True)
         with open(os.path.join(tempdir, "bag-info.txt"), "r", encoding="utf-8") as fh:
             info = fh.read()
+        self.assertIn("Bagging-Date: 1999-12-31", info)
         self.assertIn("Contact-Email: a.person@example.org", info)
         self.assertIn("Contact-Name: A Person", info)
         self.assertIn("External-Description: hello", info)
