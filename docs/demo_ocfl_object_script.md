@@ -10,6 +10,8 @@ The `--version` argument will show version number and exit
 
 ```
 > python ocfl-object.py --version
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 ocfl-object.py is part of ocfl-py version 2.0.2
 ```
 
@@ -22,6 +24,8 @@ Without an `--objdir` argument the script just writes out the inventory for the 
 
 ```
 > python ocfl-object.py create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1 --created 2024-10-24T18:30:01Z
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 ### Inventory for v1
 {
   "digestAlgorithm": "sha512",
@@ -53,6 +57,8 @@ Without an `--objdir` argument the script just writes out the inventory for each
 
 ```
 > python ocfl-object.py build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 --metadata extra_fixtures/1.0/content/spec-ex-full-metadata.json
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 ### Inventory for v3
 {
   "digestAlgorithm": "sha512",
@@ -118,6 +124,8 @@ Without an `--objdir` argument the script just writes out the inventory for each
 
 ```
 > python ocfl-object.py create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1 --objdir tmp/obj1 --created 2024-10-24T18:30:03Z -v
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 INFO:root:Created OCFL object http://example.org/obj1 in tmp/obj1
 ```
 
@@ -128,10 +136,61 @@ The two identical files are deduped, only one copy being stored and using the fi
 
 ```
 > python ocfl-object.py create --id http://example.org/obj_dedupe --src extra_fixtures/content/dupe-files --objdir tmp/obj_dedupe --created 2025-04-08T14:00:01Z -v
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 INFO:root:Created OCFL object http://example.org/obj_dedupe in tmp/obj_dedupe
 ```
 
 Object tree shows v1 with content:
+
+```
+> find -s tmp/obj_dedupe -print
+tmp/obj_dedupe
+tmp/obj_dedupe/0=ocfl_object_1.1
+tmp/obj_dedupe/inventory.json
+tmp/obj_dedupe/inventory.json.sha512
+tmp/obj_dedupe/v1
+tmp/obj_dedupe/v1/content
+tmp/obj_dedupe/v1/content/file1.txt
+tmp/obj_dedupe/v1/inventory.json
+tmp/obj_dedupe/v1/inventory.json.sha512
+```
+
+File `tmp/obj_dedupe/v1/content/file1.txt` exists with size 10
+
+File `tmp/obj_dedupe/v1/content/file1_dupe.txt` does not exist
+
+
+### 3.3 New object with two identical files not deduped
+
+The identical file are not deduped because the --no-dedupe flag is given
+
+```
+> python ocfl-object.py create --id http://example.org/obj_no_dedupe --src extra_fixtures/content/dupe-files --objdir tmp/obj_no_dedupe --created 2025-04-08T14:00:02Z --no-dedupe -v
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
+INFO:root:Created OCFL object http://example.org/obj_no_dedupe in tmp/obj_no_dedupe
+```
+
+Object tree shows v1 with content:
+
+```
+> find -s tmp/obj_no_dedupe -print
+tmp/obj_no_dedupe
+tmp/obj_no_dedupe/0=ocfl_object_1.1
+tmp/obj_no_dedupe/inventory.json
+tmp/obj_no_dedupe/inventory.json.sha512
+tmp/obj_no_dedupe/v1
+tmp/obj_no_dedupe/v1/content
+tmp/obj_no_dedupe/v1/content/file1.txt
+tmp/obj_no_dedupe/v1/content/file1_dupe.txt
+tmp/obj_no_dedupe/v1/inventory.json
+tmp/obj_no_dedupe/v1/inventory.json.sha512
+```
+
+File `tmp/obj_no_dedupe/v1/content/file1.txt` exists with size 10
+
+File `tmp/obj_no_dedupe/v1/content/file1_dupe.txt` exists with size 10
 
 
 ## 4. Test object build with three versions.
@@ -140,6 +199,8 @@ Object tree shows v1 with content:
 
 ```
 > python ocfl-object.py build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 --objdir tmp/obj2 -v
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 INFO:root:Built object http://example.org/obj2 at tmp/obj2 with 3 versions
 ```
 
@@ -152,6 +213,8 @@ Version 1 object with location specified in `--objdir` and the first version spe
 
 ```
 > python ocfl-object.py extract --objdir fixtures/1.0/good-objects/spec-ex-full --objver v1 --dstdir tmp/v1 -v
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 INFO:root:Extracted v1 into tmp/v1
 Extracted content for v1 in tmp/v1
 ```
@@ -160,16 +223,20 @@ and the extracted files are:
 
 ```
 > find -s tmp/v1 -print
-find: unknown predicate `-s'
+tmp/v1
+tmp/v1/empty.txt
+tmp/v1/foo
+tmp/v1/foo/bar.xml
+tmp/v1/image.tiff
 ```
-
-(last command exited with return code 1)
 
 
 ### 5.2 Extract v2 of content in an OCFL v1.1 object
 
 ```
 > python ocfl-object.py extract --objver v2 --objdir fixtures/1.1/good-objects/spec-ex-full --dstdir tmp/v2 -v
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 INFO:root:Extracted v2 into tmp/v2
 Extracted content for v2 in tmp/v2
 ```
@@ -178,16 +245,20 @@ and the extracted files are:
 
 ```
 > find -s tmp/v2 -print
-find: unknown predicate `-s'
+tmp/v2
+tmp/v2/empty.txt
+tmp/v2/empty2.txt
+tmp/v2/foo
+tmp/v2/foo/bar.xml
 ```
-
-(last command exited with return code 1)
 
 
 ### 5.3 Extract head version (v3) of content in the same OCFL v1.1 object
 
 ```
 > python ocfl-object.py extract --objver head --objdir fixtures/1.1/good-objects/spec-ex-full --dstdir tmp/head -v
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 INFO:root:Extracted v3 into tmp/head
 Extracted content for v3 in tmp/head
 ```
@@ -196,7 +267,7 @@ and the extracted files are:
 
 ```
 > find -s tmp/v3 -print
-find: unknown predicate `-s'
+find: tmp/v3: No such file or directory
 ```
 
 (last command exited with return code 1)
@@ -206,6 +277,8 @@ find: unknown predicate `-s'
 
 ```
 > python ocfl-object.py extract --objver v3 --objdir fixtures/1.1/good-objects/spec-ex-full --logical-path foo/bar.xml --dstdir tmp/files -v
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 Extracted foo/bar.xml in v3 to tmp/files
 ```
 
@@ -213,16 +286,17 @@ and the extracted file is:
 
 ```
 > find -s tmp/files -print
-find: unknown predicate `-s'
+tmp/files
+tmp/files/bar.xml
 ```
-
-(last command exited with return code 1)
 
 
 ### 5.5 Extract image.tiff of v3 (default) into the same directory
 
 ```
 > python ocfl-object.py extract --objdir fixtures/1.1/good-objects/spec-ex-full --logical-path image.tiff --dstdir tmp/files -v
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 Extracted image.tiff in v3 to tmp/files
 ```
 
@@ -230,10 +304,10 @@ and the directory now contains two extracted files:
 
 ```
 > find -s tmp/files -print
-find: unknown predicate `-s'
+tmp/files
+tmp/files/bar.xml
+tmp/files/image.tiff
 ```
-
-(last command exited with return code 1)
 
 
 ## 6. Test error conditions.
@@ -244,6 +318,8 @@ With no argument and error and suggections are shown.
 
 ```
 > python ocfl-object.py
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 ERROR:root:No command, nothing to do (use -h to show help)
 ```
 
@@ -256,6 +332,8 @@ The `create` command requires a source.
 
 ```
 > python ocfl-object.py create --objdir TMP/v1
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 ERROR:root:Must specify either --srcdir or --srcbag containing v1 files when creating an OCFL object!
 ```
 
@@ -268,6 +346,8 @@ The `show` command requires --objdir.
 
 ```
 > python ocfl-object.py show --srcdir tmp
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 usage: ocfl-object.py show [-h] [--verbose] [--debug] [--quiet] --objdir
                            OBJDIR [--spec-version SPEC_VERSION]
                            [--digest DIGEST] [--fixity FIXITY] [--id ID]

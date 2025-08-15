@@ -10,6 +10,8 @@ Imagine that we have a Bagit bag [`tests/testdata/bags/uaa_v1`](https://github.c
 
 ```
 > python ocfl-object.py create --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v1 -v
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 INFO:root:Created OCFL object info:bb123cd4567 in tmp/obj
 ```
 
@@ -20,6 +22,8 @@ Now that we have the object it is of course valid.
 
 ```
 > python ocfl-validate.py tmp/obj
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 OCFL v1.1 Object at tmp/obj is VALID
 ```
 
@@ -30,6 +34,8 @@ Looking inside the object we see `v1` with the expected 2 content files.
 
 ```
 > python ocfl-object.py show --objdir tmp/obj
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
 Object tree for None
 [tmp/obj]
@@ -50,6 +56,8 @@ If we have a bag [`tests/testdata/bags/uaa_v2`](https://github.com/zimeon/ocfl-p
 
 ```
 > python ocfl-object.py update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v2 -v
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 INFO:root:Updated OCFL object info:bb123cd4567 by adding v2
 Updated object info:bb123cd4567 to v2
 ```
@@ -61,6 +69,8 @@ Looking inside the object we now see `v1` and `v2`. There are no content files i
 
 ```
 > python ocfl-object.py show --objdir tmp/obj
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
 Object tree for None
 [tmp/obj]
@@ -84,6 +94,8 @@ Similarly we can `--update` with [`tests/testdata/bags/uaa_v3`](https://github.c
 
 ```
 > python ocfl-object.py update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v3 -v
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 INFO:root:Updated OCFL object info:bb123cd4567 by adding v3
 Updated object info:bb123cd4567 to v3
 ```
@@ -95,6 +107,8 @@ Looking inside again we see that `v3` does add another content file.
 
 ```
 > python ocfl-object.py show --objdir tmp/obj
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
 Object tree for None
 [tmp/obj]
@@ -122,6 +136,8 @@ Finally, we can `--update` again with [`tests/testdata/bags/uaa_v4`](https://git
 
 ```
 > python ocfl-object.py update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v4 -v
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 INFO:root:Updated OCFL object info:bb123cd4567 by adding v4
 Updated object info:bb123cd4567 to v4
 ```
@@ -133,6 +149,8 @@ Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` cont
 
 ```
 > python ocfl-object.py extract --objver v4 --objdir tmp/obj --dstbag tmp/extracted_v4 --set-bagging-date -v
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 INFO:root:Extracted v4 into tmp/extracted_v4
 Extracted content for v4 saved as Bagit bag in tmp/extracted_v4
 ```
@@ -144,17 +162,9 @@ We note that the OCFL object had only one `content` file in `v4` but the extract
 
 ```
 > diff --ignore-matching-lines  bag-info.txt -r tmp/extracted_v4 tests/testdata/bags/uaa_v4
-diff --ignore-matching-lines ' bag-info.txt' -r tmp/extracted_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
+diff --ignore-matching-lines  bag-info.txt -r tmp/extracted_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
 1d0
-< Bag-Software-Agent: bagit.py v1.9.0 <https://github.com/LibraryOfCongress/bagit-python>
-diff --ignore-matching-lines ' bag-info.txt' -r tmp/extracted_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagmanifest-sha512.txt
-1d0
-< 5c2e2b9cacc93cb315d57f09fac6d199c3378313b6cf918bb0a70e1839c4e4c0c2e5a7f9ae869cf7755e09a196a835be1af7c510d3d5faa5d0c0b3f6be9f816a manifest-sha512.txt
-3c2,3
-< 1270e5f8a1250c4e5b205101786689a8d8d56488b39ade6e2b78bf4d0b93214eb381f5b5b7f03a6bdde86e35648a4be592535b5bc600cdb92ee8c33e95f06b82 bag-info.txt
----
-> 10624e6d45462def7af66d1a0d977606c7b073b01809c1d42258cfab5c34a275480943cbe78044416aee1f23822cc3762f92247b8f39b5c6ddc5ae32a8f94ce5 bag-info.txt
-> 5c2e2b9cacc93cb315d57f09fac6d199c3378313b6cf918bb0a70e1839c4e4c0c2e5a7f9ae869cf7755e09a196a835be1af7c510d3d5faa5d0c0b3f6be9f816a manifest-sha512.txt
+< Bag-Software-Agent: bagit.py v1.8.1 <https://github.com/LibraryOfCongress/bagit-python>
 ```
 
 (last command exited with return code 1)

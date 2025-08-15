@@ -10,6 +10,8 @@ The `--version` argument will show version number and exit
 
 ```
 > python ocfl-validate.py --version
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 ocfl-validate.py is part of ocfl-py version 2.0.2
 ```
 
@@ -20,6 +22,8 @@ ocfl-validate.py is part of ocfl-py version 2.0.2
 
 ```
 > python ocfl-validate.py fixtures/1.0/good-objects/minimal_uppercase_digests
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 OCFL v1.0 Object at fixtures/1.0/good-objects/minimal_uppercase_digests is VALID
 ```
 
@@ -32,6 +36,8 @@ The test shows warning W004 with a link to the v1.0 specification
 
 ```
 > python ocfl-validate.py fixtures/1.0/warn-objects/W004_uses_sha256
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 [W004] OCFL Object root inventory SHOULD use sha512 but uses sha256 as the DigestAlgorithm (see https://ocfl.io/1.0/spec/#W004)
 OCFL v1.0 Object at fixtures/1.0/warn-objects/W004_uses_sha256 is VALID
 ```
@@ -43,6 +49,8 @@ The -q or --quiet flag will silence any warning messages
 
 ```
 > python ocfl-validate.py -q fixtures/1.0/warn-objects/W004_uses_sha256
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 OCFL v1.0 Object at fixtures/1.0/warn-objects/W004_uses_sha256 is VALID
 ```
 
@@ -53,6 +61,8 @@ The test shows warning W004 with a link to the v1.0 specification
 
 ```
 > python ocfl-validate.py fixtures/1.1/warn-objects/W001_W004_W005_zero_padded_versions
+/Users/sw272/.python_venv/py311/lib/python3.11/site-packages/bagit.py:24: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import DistributionNotFound, get_distribution
 [W001] OCFL Object root inventory version numbers SHOULD NOT be zero-padded (see https://ocfl.io/1.1/spec/#W001)
 [W001] OCFL Object v0001 inventory version numbers SHOULD NOT be zero-padded (see https://ocfl.io/1.1/spec/#W001)
 [W001] OCFL Object v0002 inventory version numbers SHOULD NOT be zero-padded (see https://ocfl.io/1.1/spec/#W001)
