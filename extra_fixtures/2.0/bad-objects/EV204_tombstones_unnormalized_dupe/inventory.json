@@ -1,0 +1,19 @@
+{
+  "digestAlgorithm": "sha512",
+  "head": "v1",
+  "id": "http://example.org/tombstones_unnormalized_dupe",
+  "manifest": { },
+  "tombstones": {
+    "2b51ea749337badef9484b0fe9cc0773280c0aa11d5ec2ad677c132b03c4cbc82ab2f5804268789fb4e1b861ebed69598dac9a754c99e0aefcb71ecf61f4426f": ["path1"],
+    "2B51EA749337BADEF9484B0FE9CC0773280C0AA11D5EC2AD677C132B03C4CBC82AB2F5804268789FB4E1B861EBED69598DAC9A754C99E0AEFCB71ECF61F4426F": ["path2"]
+  },
+  "type": "https://ocfl.io/2.0/spec/#inventory",
+  "versions": {
+    "v1": {
+      "created": "2019-01-01T02:03:04Z",
+      "message": "One version and no content",
+      "state": { },
+      "user": { "address": "mailto:Person_A@example.org", "name": "Person A" }
+    }
+  }
+}

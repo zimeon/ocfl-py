@@ -731,6 +731,12 @@
        "en": "OCFL Object %s inventory tombstones block with digest (%s) that doesn't have path list value"
     }
   },
+  "EV204": {
+    "params": ["where", "digest"],
+    "description": {
+       "en": "OCFL Object %s inventory tombstones block includes digest (%s) more than once with different normalizations"
+    }
+  },
   "WV201": {
     "params": ["where", "num_tombstones"],
     "description": {

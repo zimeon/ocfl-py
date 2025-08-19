@@ -350,7 +350,7 @@ class InventoryValidator():
                     norm_digest = normalized_digest(digest, self.digest_algorithm)
                     if norm_digest in tombstone_digests:
                         # We have already seen this in different un-normalized form!
-                        self._error("EV2096", digest=norm_digest)
+                        self._error("EV204", digest=norm_digest)
                     else:
                         tombstone_digests.add(norm_digest)
                     for file in tombstones[digest]:
