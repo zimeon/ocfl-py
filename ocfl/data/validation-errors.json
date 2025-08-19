@@ -617,6 +617,12 @@
         "en": "OCFL Object %s inventory conforms to specification version %s which is an earlier version than the %s inventory which conforms to specification version %s"
     }
   },
+  "E107": {
+    "params": ["where", "digests"],
+    "description": {
+        "en": "OCFL Object %s inventory manifest contains digest(s) (%s) that are not used in the object state"
+    }
+  },
   "E111": {
     "params": ["where"],
     "description": {
