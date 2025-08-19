@@ -10,7 +10,7 @@ The `--version` argument will show version number and exit (but we still tave to
 
 ```
 > python ocfl-root.py --version
-ocfl-root.py is part of ocfl-py version 2.0.2
+ocfl-root.py is part of ocfl-py version 2.0.3
 ```
 
 
