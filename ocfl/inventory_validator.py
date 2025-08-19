@@ -326,6 +326,8 @@ class InventoryValidator():
     def _validate_tombstones(self, tombstones, manifest_files):
         """Validate tombstones block in inventory.
 
+        Arguments:
+            tomstones (dict): dictionary of the tombstones block
         Returns:
             tombstone_files: a mapping from file to digest for each file in
                 the manifest
@@ -335,14 +337,14 @@ class InventoryValidator():
         unnormalized_tombstones = set()
         tombstone_digests = set()
         if not isinstance(tombstones, dict):
-            self._error("EV2b")
+            self._error("EV201")
         else:
             for digest in tombstones:
                 m = re.match(self._digest_regex(), digest)
                 if not m:
-                    self._error("EV2025b", digest=digest, algorithm=self.digest_algorithm)  # wrong form of digest
+                    self._error("EV202", digest=digest, algorithm=self.digest_algorithm)  # wrong form of digest
                 elif not isinstance(tombstones[digest], list):
-                    self._error("EV2092", digest=digest)  # must have path list value
+                    self._error("EV203", digest=digest)  # must have path list value
                 else:
                     unnormalized_tombstones.add(digest)
                     norm_digest = normalized_digest(digest, self.digest_algorithm)
@@ -360,7 +362,7 @@ class InventoryValidator():
                 if path in manifest_files:
                     self._error("EV2-tombstone-file-also-in-manifest", path=path)
         if len(tombstone_files):
-            self._warning("EV2 Inventory includes %d tombstoned tiles" % (len(tombstone_files)))
+            self._warning("WV201", num_tombstones=str(len(tombstone_files)))
         return tombstone_files, unnormalized_tombstones
 
     def _validate_fixity(self, fixity, manifest_files):

@@ -711,5 +711,30 @@
     "description": {
        "en": "OCFL Storage Root includes unregistered extension directory '%s'"
     }
+  },
+
+  "EV201": {
+    "params": ["where"],
+    "description": {
+       "en": "OCFL Object %s inventory has a tombstones entry that is not a JSON object"
+    }
+  },
+  "EV202": {
+    "params": ["where", "digest", "algorithm"],
+    "description": {
+       "en": "OCFL Object %s inventory tombstones block includes a digest (%s) that doesn't have the correct form for the %s algorithm"
+    }
+  },
+  "EV203": {
+    "params": ["where", "digest"],
+    "description": {
+       "en": "OCFL Object %s inventory tombstones block with digest (%s) that doesn't have path list value"
+    }
+  },
+  "WV201": {
+    "params": ["where", "num_tombstones"],
+    "description": {
+      "en": "OCFL Object %s inventory includes %s tombstoned file(s)"
+    }
   }
 }
