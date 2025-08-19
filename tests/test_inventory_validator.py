@@ -293,7 +293,7 @@ class TestAll(unittest.TestCase):
         self.assertIn("E107", log.errors)
         log.clear()
         iv._check_digests_present_and_used(manifest, ["aaa", "bbb", "ccc"], {})
-        self.assertIn("EV2-050a", log.errors)
+        self.assertIn("E050a", log.errors)
 
     def test__digest_regex(self):
         """Test _digest_regex."""

@@ -1,0 +1,22 @@
+{
+  "digestAlgorithm": "sha512",
+  "head": "v1",
+  "id": "http://example.org/tombstones_digest_in_manifest",
+  "manifest": {
+    "ce110435726b00597efbf81cba160c4a14ace854b1b2a3a916df5059b5be9d90545cb8e655b137c5cfcb8e017cb8cd0f607dab363a368a844a2e2694447c7b61": ["v1/content/file.txt"]
+  },
+  "tombstones": {
+    "ce110435726b00597efbf81cba160c4a14ace854b1b2a3a916df5059b5be9d90545cb8e655b137c5cfcb8e017cb8cd0f607dab363a368a844a2e2694447c7b61": ["v1/content/file.txt"]
+  },
+  "type": "https://ocfl.io/2.0/spec/#inventory",
+  "versions": {
+    "v1": {
+      "created": "2019-01-01T02:03:04Z",
+      "message": "One version and one file",
+      "state": {
+        "ce110435726b00597efbf81cba160c4a14ace854b1b2a3a916df5059b5be9d90545cb8e655b137c5cfcb8e017cb8cd0f607dab363a368a844a2e2694447c7b61": ["file.txt"]
+      },
+      "user": { "address": "mailto:Person_A@example.org", "name": "Person A" }
+    }
+  }
+}

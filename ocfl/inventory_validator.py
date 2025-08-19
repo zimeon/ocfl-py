@@ -182,7 +182,7 @@ class InventoryValidator():
             (self.manifest_files, manifest_files_correct_format, self.unnormalized_digests) = self._validate_manifest(inventory["manifest"])
         if "tombstones" in inventory:
             if self.spec_version < "2.0":
-                self._error("EV2a")  # Should not be here to <2, ignore
+                self._error("EV205", spec_version=self.spec_version)  # tombstones not allowed prior to v2.0, ignore them
             else:
                 (self.tombstone_files, self.unnormalized_tombstones) = self._validate_tombstones(inventory["tombstones"], self.manifest_files)
         digests_used = []
@@ -360,7 +360,7 @@ class InventoryValidator():
             # Check for content paths that conflict with those in manifest
             for path in tombstone_files:
                 if path in manifest_files:
-                    self._error("EV2-tombstone-file-also-in-manifest", path=path)
+                    self._error("EV206", path=path)
         if len(tombstone_files):
             self._warning("WV201", num_tombstones=str(len(tombstone_files)))
         return tombstone_files, unnormalized_tombstones
@@ -585,9 +585,11 @@ class InventoryValidator():
         in_state = set(digests_used)
         not_in_manifest_or_tombstones = in_state.difference(in_manifest_or_tombstones)
         if len(not_in_manifest_or_tombstones) > 0:
-            self._error("EV2-050a", digests=", ".join(sorted(not_in_manifest_or_tombstones)))
+            # FIXMEv2 - Change error message or maybe split manifest/tombstones
+            self._error("E050a", digests=", ".join(sorted(not_in_manifest_or_tombstones)))
         not_in_state = in_manifest_or_tombstones.difference(in_state)
         if len(not_in_state) > 0:
+            # FIXMEv2 - Change error message or maybe split manifest/tombstones
             self._error("E107", digests=", ".join(sorted(not_in_state)))
 
     def _digest_regex(self):
