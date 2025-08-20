@@ -40,7 +40,6 @@ jobs:
           pytest
 
   is_pr_job:  # Goal is simply to set is_pr output if this is a PR
-    needs: tests_job
     runs-on: ubuntu-latest
     outputs:
       is_pr: ${{ steps.pr_check.outputs.pr_found }}
@@ -53,7 +52,7 @@ jobs:
     - tests_job
     - is_pr_job
     runs-on: ubuntu-latest
-    if: ${{ needs.is_pr_job.outputs.is_pr }}
+    if: needs.is_pr_job.outputs.is_pr == 'true'
     steps:
       - uses: actions/checkout@v4
         with:
