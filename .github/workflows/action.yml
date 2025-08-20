@@ -7,6 +7,7 @@ on:
 
 jobs:
   tests_job:
+    # Run both functional tests and style/lint checks
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -39,7 +40,8 @@ jobs:
         run: |
           pytest
 
-  is_pr_job:  # Goal is simply to set is_pr output if this is a PR
+  is_pr_job:
+    # Goal is simply to set is_pr output if this is a PR
     runs-on: ubuntu-latest
     outputs:
       is_pr: ${{ steps.pr_check.outputs.pr_found }}
@@ -48,6 +50,7 @@ jobs:
         id: pr_check
 
   documentation_job:
+    # Update documentation if tests passed and this is a PR
     needs:
     - tests_job
     - is_pr_job
