@@ -8,13 +8,9 @@ Installation of ``ocfl-py`` gives access to both the `command line tools
 Install with ``pip``
 --------------------
 
-To install ``ocfl-py`` for the first time, simply run this command in your terminal of choice::
+To install or update ``ocfl-py``, simply run this command in your terminal of choice::
 
-    > python -m pip install ocfl-py
-
-Or, to ensure that your current installation is up-to-date, run::
-
-  > python -m pip install --upgrade ocfl-py
+    > python -m pip install --upgrade ocfl-py
 
 Get the source code
 -------------------
