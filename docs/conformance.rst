@@ -1,10 +1,13 @@
 Conformance
 ===========
 
-``ocfl-py`` is designed to follow closely the OCFL specifications, which
-includes reporting errors in response to violations of MUST and MUST NOT
+``ocfl-py`` is designed to follow closely the `OCFL v1.1 specification
+<https://ocfl.io/1.1/spec/>`_ (which implies also supporting `v1.0
+<https://ocfl.io/1.0/spec/>`_).
+This includes reporting errors in response to violations of MUST and MUST NOT
 requirements in the specification, and warnings in response to not following
-SHOULD or SHOULD NOT requirements in the specification (see the `Conformance
+SHOULD or SHOULD NOT requirements in the specification (see the
+`OCFL v1.1 Conformance
 <https://ocfl.io/1.1/spec/#conformance>`_ section).
 
 The following is list of error and warning codes implemented but the ``ocfl-py``
