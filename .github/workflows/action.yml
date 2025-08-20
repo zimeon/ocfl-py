@@ -48,6 +48,10 @@ jobs:
     steps:
       - uses: 8BitJonny/gh-get-current-pr@3.0.0
         id: pr_check
+      - run: echo "This is not a pull-request"
+        if: steps.pr_check.outputs.pr_found != 'true'
+      - run: echo "This is pull-request number ${{ steps.PR.outputs.number }}"
+        if: steps.pr_check.outputs.pr_found == 'true'
 
   documentation_job:
     # Update documentation if tests passed and this is a PR
