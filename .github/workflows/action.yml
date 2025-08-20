@@ -38,11 +38,22 @@ jobs:
       - name: Test with pytest
         run: |
           pytest
-  documentation_job:
+
+  is_pr_job:  # Goal is simply to set is_pr output if this is a PR
     needs: tests_job
     runs-on: ubuntu-latest
-    - uses: 8BitJonny/gh-get-current-pr@3.0.0
-      if: steps.documentation_job.outputs.pr_found == 'true'
+    outputs:
+      is_pr: ${{ steps.pr_check.outputs.pr_found }}
+    steps:
+      - uses: 8BitJonny/gh-get-current-pr@3.0.0
+        id: pr_check
+
+  documentation_job:
+    needs:
+    - tests_job
+    - is_pr_job
+    runs-on: ubuntu-latest
+    if: ${{ needs.is_pr_job.outputs.is_pr }}
     steps:
       - uses: actions/checkout@v4
         with:
