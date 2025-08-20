@@ -1,6 +1,6 @@
 # Documentation
 
-Documentation is limited to a set of example run outputs, mostly produced automatically from various tests codes.
+The primary location for `ocfl-py` documentation is now [ocfl-py documentation on ReadTheDocs](https://oclf-py.readthedocs.io/en/latest/index.html). Documentation duplicated here in github pages is limited to a set of example run outputs, mostly produced automatically from various tests codes:
 
   * [OCFL Storage Root manipulation script](demo_ocfl_root_script.md)
   * [OCFL Object manipulation script](demo_ocfl_object_script.md)
