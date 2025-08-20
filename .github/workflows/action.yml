@@ -41,8 +41,8 @@ jobs:
   documentation_job:
     needs: tests_job
     runs-on: ubuntu-latest
-    uses: 8BitJonny/gh-get-current-pr@3.0.0
-    if: steps.documentation_job.outputs.pr_found == 'true'
+    - uses: 8BitJonny/gh-get-current-pr@3.0.0
+      if: steps.documentation_job.outputs.pr_found == 'true'
     steps:
       - uses: actions/checkout@v4
         with:
