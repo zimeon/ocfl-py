@@ -9,6 +9,7 @@ code, and additional test fixtures.
 .. toctree::
    :maxdepth: 2
 
+   installation
    command_line
    api
    conformance

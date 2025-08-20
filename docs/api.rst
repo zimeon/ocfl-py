@@ -1,8 +1,8 @@
 API Reference
 =============
 
-The API reference provides detailed descriptions of ocfl-py's classes and
-functions.
+This API reference provides detailed descriptions of the classes and
+functions in the ``ocfl`` module provided by ``ocfl-py``.
 
 
 .. toctree::

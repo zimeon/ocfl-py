@@ -1,6 +1,8 @@
 Command Line Tools
 ==================
 
+``ocfl-py`` includes a set of command line tools designed to allow validation and manipulation of OCFL objects and storage roots.
+
 .. toctree::
    :maxdepth: 1
 
