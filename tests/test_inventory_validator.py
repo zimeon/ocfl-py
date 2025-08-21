@@ -1,4 +1,4 @@
-"""Identity layout tests."""
+"""InventoryValidator tests."""
 import json
 import unittest
 from ocfl.inventory_validator import InventoryValidator

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Object tests."""
+"""Tests for ocfl.command_line_utils module."""
 import argparse
 import logging
 import unittest

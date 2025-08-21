@@ -1,4 +1,4 @@
-"""Test validator module."""
+"""Validator tests."""
 import os
 import os.path
 import unittest

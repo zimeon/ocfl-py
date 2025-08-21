@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tests/demo building spec examples."""
+"""Tests/demo using bagit bags with command line scripts."""
 from testlib import DemoTestCase
 
 
