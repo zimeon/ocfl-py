@@ -1,4 +1,4 @@
-"""Digest tests."""
+"""Layout_NNNN_UUID_Quadtree tests."""
 import unittest
 from ocfl.layout import LayoutException
 from ocfl.layout_nnnn_uuid_quadtree import Layout_NNNN_UUID_Quadtree

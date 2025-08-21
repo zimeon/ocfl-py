@@ -1,4 +1,4 @@
-"""Version tests."""
+"""ValidationLogger tests."""
 import unittest
 from ocfl.validation_logger import ValidationLogger
 

@@ -1,4 +1,4 @@
-"""Tests for w3c_datatime modules (copied from resync code)."""
+"""Tests for ocfl.w3c_datatime module (copied from resync code)."""
 import unittest
 import re
 from ocfl.w3c_datetime import str_to_datetime, datetime_to_str

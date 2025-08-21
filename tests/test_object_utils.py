@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Object Utilities tests."""
+"""Tests for ocfl.object_utils module."""
 import unittest
 from ocfl.object_utils import ObjectException, remove_first_directory, \
     make_unused_filepath, first_version_directory, next_version_directory, \

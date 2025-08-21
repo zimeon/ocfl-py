@@ -1,4 +1,4 @@
-"""0003: Hashed Truncated N-tuple Trees with Object ID layout tests."""
+"""Layout_0003_Hash_And_Id_N_Tuple: Hashed Truncated N-tuple Trees with Object ID layout tests."""
 import unittest
 from ocfl.layout import LayoutException
 from ocfl.layout_0003_hash_and_id_n_tuple import Layout_0003_Hash_And_Id_N_Tuple, _percent_encode, _id_to_path
