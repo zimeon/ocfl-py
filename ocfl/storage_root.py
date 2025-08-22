@@ -28,7 +28,7 @@ class StorageRootException(Exception):
         """Initialze StorageRootException.
 
         Arguments:
-            code (str): either an exception message (if no *aargs) or
+            code (str): either an exception message (if no **kwargs) or
                 otherwise a validation error code that can be passed to
                 a ValidationLogger instance
             kwargs (dict): keyword arguments to complete the error message
@@ -56,7 +56,15 @@ class StorageRoot():
 
     def __init__(self, root=None, layout_name=None, lax_digests=False,
                  spec_version=None):
-        """Initialize OCFL Storage Root."""
+        """Initialize OCFL Storage Root.
+
+        Arguments:
+            root (str): file path or pyfs filesystem descriptor for the OCFL
+                Storage Root
+            layout_name (str): name of the file layout to use
+            lax_digests (bool):
+            spec_version (str): OCFL specification version expected
+        """
         self.root = root
         self.layout_name = layout_name
         self.layout_description = None
@@ -159,7 +167,7 @@ class StorageRoot():
                 layout = {"extension": self.layout.NAME,
                           "description": self.layout.DESCRIPTION}
                 json.dump(layout, fh, sort_keys=True, indent=2)
-            # Do we need to qrite a extension description?
+            # Do we need to write a extension description?
             self.layout.write_layout_params(root_fs=self.root_fs)
         else:
             logging.debug("No layout set so no %s file written", self.layout_file)
@@ -242,8 +250,9 @@ class StorageRoot():
     def object_paths(self):
         """Generate object paths for every obect in the OCFL storage root.
 
-        Yields (dirpath) that is the path to the directory for each object
-        located, relative to the OCFL storage root and without a preceding /.
+        Yields:
+            str: the path to the directory for each object located, relative
+                to the OCFL storage root and without a preceding /.
 
         Will log any errors seen while traversing the directory tree under the
         storage root.
@@ -294,11 +303,12 @@ class StorageRoot():
     def list_objects(self):
         """List contents of this OCFL storage root.
 
-        Generator that yields tuple for each object, which contain
-        (dirpath, identifier)
+        Yields:
+            tuple: for each object, which contains (dirpath, identifier)
 
-        Side effects: The count of num_objects is updated through the taversal
-        of the storage root and is available afterwards.
+        Side effects:
+            The count of self.num_objects is updated through the traversal
+            of the storage root
         """
         self.open_root_fs()
         self.check_root_structure()
@@ -389,7 +399,8 @@ class StorageRoot():
         The identifier is extracted from the object and the path is determined
         by the storage layouts
 
-        Return the (identifier, path) on success
+        Returns:
+            tuple: the (identifier (str), path (str)) on success
 
         Raises:
             StorageException: with message string on failure.
