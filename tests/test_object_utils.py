@@ -56,7 +56,7 @@ class TestAll(unittest.TestCase):
 
     def test_find_path_type(self):
         """Test find_path_type function."""
-        self.assertEqual(find_path_type("extra_fixtures/good-storage-roots/fedora-root"), "root")
+        self.assertEqual(find_path_type("extra_fixtures/1.0/good-storage-roots/fedora-root"), "root")
         self.assertEqual(find_path_type("fixtures/1.0/good-objects/minimal_one_version_one_file"), "object")
         self.assertEqual(find_path_type("README"), "file")
         self.assertIn("does not exist", find_path_type("this_path_does_not_exist"))

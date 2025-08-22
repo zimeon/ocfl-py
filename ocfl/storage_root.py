@@ -24,6 +24,32 @@ from .layout_registry import get_layout, layout_is_supported
 class StorageRootException(Exception):
     """Exception class for OCFL Storage Root."""
 
+    def __init__(self, code, **kwargs):
+        """Initialze StorageRootException.
+
+        Arguments:
+            code (str): either an exception message (if no *aargs) or
+                otherwise a validation error code that can be passed to
+                a ValidationLogger instance
+            kwargs (dict): keyword arguments to complete the error message
+                for the given code
+
+        All exceptions relevant to the validator context should supply
+        both an error code (e.g. "E072") and a set of kwargs that match
+        the strings defined for ValidationLogger. In other contexts, such
+        as operations on a StorageRoot, one parameter may be supplied as
+        the full error string.
+        """
+        self.code = code  # or full exception message
+        self.kwargs = kwargs
+
+    def __str__(self):
+        """Message for use in non-validator contexts."""
+        if len(self.kwargs) == 0:
+            return self.code
+        # FIXME - Representation in non-validator contexts
+        return self.code + ": " + ", ".join("{0}={1!r}".format(k, v) for k, v in self.kwargs.items())
+
 
 class StorageRoot():
     """Class for handling OCFL Storage Root and include OCFL Objects."""
@@ -50,8 +76,7 @@ class StorageRoot():
         self.log = None
         self.num_objects = 0
         self.good_objects = 0
-        self.errors = None
-        self.structure_error = None
+        self.errors = []
         self.traversal_errors = None
 
     def check_spec_version(self, spec_version, default=DEFAULT_SPEC_VERSION):
@@ -142,38 +167,50 @@ class StorageRoot():
     def check_root_structure(self):
         """Check the OCFL storage root structure.
 
-        Assumed that self.root_fs filesystem is available. Raises
-        StorageRootException if there is an error.
+        Returns:
+            bool: True on success
+
+        Raises:
+            StorageRootException: with validator error codes if there is an error
+
+        Side effects:
+            self.spec_version - set to declared specification version
+            self.layout - initialized with layout handler if specified
+
+        Assumes that self.root_fs filesystem is available to read from.
         """
         # Storage root declaration
         namastes = find_namastes(0, pyfs=self.root_fs)
         if len(namastes) == 0:
-            raise StorageRootException("E069a Storage root %s lacks required 0= declaration file" % (self.root))
+            raise StorageRootException("E069a", root=self.root)
         if len(namastes) > 1:
-            raise StorageRootException("E069b Storage root %s has more than one 0= style declaration file" % (self.root))
+            raise StorageRootException("E069b", root=self.root)
         spec_version = None
         for version in SPEC_VERSIONS_SUPPORTED:
             if namastes[0].filename == "0=ocfl_" + version:
                 spec_version = version
                 break
         else:
-            raise StorageRootException("E069c Storage root %s has unrecognized 0= declaration file %s" % (self.root, namastes[0].filename))
+            raise StorageRootException("E069c", root=self.root,
+                                       namaste_file=namastes[0].filename)
         if self.spec_version is not None and self.spec_version != spec_version:
-            raise StorageRootException("E069d Storage root %s 0= declaration is for spec version %s, not %s as expected" % (self.root, spec_version, self.spec_version))
+            raise StorageRootException("E069c", root=self.root,
+                                       declared_spec_version=spec_version,
+                                       expected_spec_version=self.spec_version)
+        else:
+            self.spec_verion = spec_version
         if not namastes[0].content_ok(pyfs=self.root_fs):
-            raise StorageRootException("E069e Storage root %s required declaration file %s has invalid content" % (self.root, namastes[0].filename))
+            raise StorageRootException("E069e", root=self.root,
+                                       namaste_file=namastes[0].filename)
         # Layout file (if present)
         if self.root_fs.exists(self.layout_file):
             self.layout_name, self.layout_description = self.parse_layout_file()
             if not layout_is_supported(self.layout_name):
-                raise StorageRootException("Storage root %s includes ocfl_layout.json with unknown layout %s" % (self.root, self.layout_name))
-            try:
-                if self.layout.NAME == self.layout_name:
-                    logging.info("Storage root layout is %s", self.layout_name)
-                else:
-                    logging.warning("Non-canonical layout name %s, should be %s", self.layout_name, self.layout.NAME)
-            except StorageRootException as e:
-                raise StorageRootException("Storage root %s includes ocfl_layout.json with unknown layout %s (%s)" % (self.root, self.layout_name, str(e)))
+                raise StorageRootException("E071", root=self.root, layout_name=self.layout_name)
+            if self.layout.NAME == self.layout_name:
+                logging.info("Storage root layout is %s", self.layout_name)
+            else:
+                logging.warning("Non-canonical layout name %s, should be %s", self.layout_name, self.layout.NAME)
             # Is there a corresponding extensions dir with params in config.json?
             self.layout.read_layout_params(root_fs=self.root_fs)
         # Other files are allowed...
@@ -183,19 +220,24 @@ class StorageRoot():
         """Read and parse layout file in OCFL storage root.
 
         Returns:
-          - (extension, description) strings on success,
-          - otherwise raises a StorageRootException.
+          tuple: of (extension, description) strings from the
+            layout file. The values of these strings are not
+            checked
+
+        Raises:
+          StorageRootException: with validator error codes if these is
+            and error in the layout configuration
         """
         try:
             with self.root_fs.open(self.layout_file) as fh:
                 layout = json.load(fh)
         except Exception as e:
-            raise StorageRootException("OCFL storage root %s has layout file that cant be read/parsed (%s)" % (self.root, str(e)))
+            raise StorageRootException("E070a", root=self.root, message=str(e))
         if not isinstance(layout, dict):
-            raise StorageRootException("Storage root %s has layout file that isn't a JSON object" % (self.root))
+            raise StorageRootException("E070b", root=self.root)
         if ("extension" not in layout or not isinstance(layout["extension"], str)
                 or "description" not in layout or not isinstance(layout["description"], str)):
-            raise StorageRootException("Storage root %s has layout file doesn't have required extension and description string entries" % (self.root))
+            raise StorageRootException("E070c", root=self.root)
         return layout["extension"], layout["description"]
 
     def object_paths(self):
@@ -307,36 +349,35 @@ class StorageRoot():
         """Validate OCFL storage root, structure, and optionally all objects.
 
         Arguments:
-           validate_objects (bool): True (default) to validate each object on
-               the storage root, otherwise will not validate the objects
-           check_digests (bool): True (default) to check the digests of each
-               file while validating objects
-           log_warnings (bool): True if warnings should be logged, default False
-           log_errors (bool): True (default) if errors should be logged
-           max_errors (int): Number of errors and warnings to log, default
-               is 100
-           lang (str): Language of error and warning descriptions to look for,
-               default is "en"
+            validate_objects (bool): True (default) to validate each object on
+                the storage root, otherwise will not validate the objects
+            check_digests (bool): True (default) to check the digests of each
+                file while validating objects
+            log_warnings (bool): True if warnings should be logged, default False
+            log_errors (bool): True (default) if errors should be logged
+            max_errors (int): Number of errors and warnings to log, default
+                is 100
+            lang (str): Language of error and warning descriptions to look for,
+                default is "en"
 
-        Returns True if everything checked is valid, False otherwise.
+        Returns:
+            bool: True if everything checked is valid, False otherwise
 
         Side effects:
             self.num_objects - number of objects examined
             self.good_objects - number of valid objects
             self.errors - list of [dirpath, message] pairs for up to max_errors errors
-            self.structure_error - Error in storage root structure
             self.log - ValidationLogger object with any traversal errors
         """
         valid = True
-        self.structure_error = None
         self.log = ValidationLogger(log_warnings=log_warnings, log_errors=log_errors, lang=lang)
         self.open_root_fs()
         try:
             self.check_root_structure()
         except StorageRootException as e:
-            valid = False
-            self.structure_error = str(e)
-            logging.debug("Storage root structure is INVALID (%s)", str(e))
+            logging.debug("Storage root structure is INVALID (%s)", str(e.code))
+            self.log.error(e.code, **e.kwargs)
+            return False
         self.log.spec_version = self.spec_version
         self.num_objects, self.good_objects, self.errors = self.validate_hierarchy(validate_objects=validate_objects, check_digests=check_digests, log_warnings=log_warnings, max_errors=max_errors)
         if self.num_traversal_errors > 0:
@@ -349,8 +390,10 @@ class StorageRoot():
         The identifier is extracted from the object and the path is determined
         by the storage layouts
 
-        Return the (identifier, path) on success, raises a StorageException on
-        failure.
+        Return the (identifier, path) on success
+
+        Raises:
+            StorageException: with message string on failure.
         """
         self.open_root_fs()
         self.check_root_structure()
