@@ -37,6 +37,19 @@ class TestAll(unittest.TestCase):
         s = StorageRoot(root="a", layout_name="b")
         self.assertEqual(s.root, "a")
         self.assertEqual(s.layout_name, "b")
+        # Bad
+        self.assertRaises(StorageRootException, StorageRoot, spec_version="0.0")
+
+    def test_check_spec_version(self):
+        """Test check_spec_version."""
+        s = StorageRoot()
+        # Good
+        s.check_spec_version(spec_version="1.0")
+        self.assertEqual(s.spec_version, "1.0")
+        s.check_spec_version(spec_version="1.1")
+        self.assertEqual(s.spec_version, "1.1")
+        # Bad
+        self.assertRaises(StorageRootException, s.check_spec_version, spec_version="0.9")
 
     def test_open_root_fs(self):
         """Test open_root_fs method."""
@@ -133,7 +146,7 @@ class TestAll(unittest.TestCase):
 
     def test_object_paths(self):
         """Test object_paths generator."""
-        s = StorageRoot(root="extra_fixtures/good-storage-roots/fedora-root")
+        s = StorageRoot(root="extra_fixtures/1.0/good-storage-roots/fedora-root")
         s.open_root_fs()
         paths = list(s.object_paths())
         self.assertEqual(len(paths), 176)
@@ -142,7 +155,7 @@ class TestAll(unittest.TestCase):
         log_io = io.StringIO()
         logger = logging.getLogger()
         logger.addHandler(logging.StreamHandler(log_io))
-        s = StorageRoot(root="zip://extra_fixtures/bad-storage-roots/simple-bad-root.zip")  # Using ZipFS
+        s = StorageRoot(root="zip://extra_fixtures/1.0/bad-storage-roots/simple-bad-root.zip")  # Using ZipFS
         s.open_root_fs()
         paths = list(s.object_paths())
         self.assertEqual(len(paths), 2)
@@ -154,14 +167,14 @@ class TestAll(unittest.TestCase):
         self.assertIn("E004b - path='/object_unrecognized_declaration', declaration='0=special_object_yeah'", log_out)
         self.assertIn("E072 - path='/dir_with_file_but_no_declaration'", log_out)
         # Specific error cases
-        s = StorageRoot(root="extra_fixtures/bad-storage-roots/E072_root_with_file_not_in_object")
+        s = StorageRoot(root="extra_fixtures/1.0/bad-storage-roots/E072_root_with_file_not_in_object")
         s.open_root_fs()
         s.log = ValidationLogger()
         self.assertEqual(list(s.object_paths()), ["dir2/minimal_no_content"])
         self.assertEqual(s.num_traversal_errors, 1)
         self.assertIn("E072", s.log.codes)
         #
-        s = StorageRoot(root="zip://extra_fixtures/bad-storage-roots/E073_root_with_empty_dir.zip")
+        s = StorageRoot(root="zip://extra_fixtures/1.0/bad-storage-roots/E073_root_with_empty_dir.zip")
         s.open_root_fs()
         s.log = ValidationLogger()
         self.assertEqual(list(s.object_paths()), [])
@@ -170,24 +183,28 @@ class TestAll(unittest.TestCase):
 
     def test_validate(self):
         """Test validate method."""
-        s = StorageRoot(root="extra_fixtures/good-storage-roots/fedora-root")
+        s = StorageRoot(root="extra_fixtures/1.0/good-storage-roots/fedora-root")
         self.assertTrue(s.validate())
         self.assertEqual(s.num_objects, 176)
         self.assertEqual(s.good_objects, 176)
         # Simple case of three objects
-        s = StorageRoot(root="extra_fixtures/good-storage-roots/simple-root")
+        s = StorageRoot(root="extra_fixtures/1.0/good-storage-roots/simple-root")
         self.assertTrue(s.validate())
         self.assertEqual(s.num_objects, 3)
         self.assertEqual(s.good_objects, 3)
         # Reg extension will not give warning
-        s = StorageRoot(root="extra_fixtures/good-storage-roots/reg-extension-dir-root")
+        s = StorageRoot(root="extra_fixtures/1.0/good-storage-roots/reg-extension-dir-root")
         self.assertTrue(s.validate())
         self.assertEqual(s.num_objects, 1)
         self.assertEqual(s.good_objects, 1)
         self.assertNotIn("W901", s.log.codes)
         # Unreg extension will give warning
-        s = StorageRoot(root="extra_fixtures/good-storage-roots/unreg-extension-dir-root")
+        s = StorageRoot(root="extra_fixtures/1.0/good-storage-roots/unreg-extension-dir-root")
         self.assertTrue(s.validate())
         self.assertEqual(s.num_objects, 1)
         self.assertEqual(s.good_objects, 1)
         self.assertIn("W901", s.log.codes)
+        #
+        s = StorageRoot(root="zip://extra_fixtures/1.0/bad-storage-roots/E069_no_declaration_file.zip")
+        self.assertFalse(s.validate())
+        self.assertIn("E069a", s.log.codes)

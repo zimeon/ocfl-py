@@ -112,8 +112,6 @@ def validate(store, args):
                            validate_objects=args.validate_objects,
                            check_digests=args.check_digests,
                            max_errors=args.max_errors)
-    if store.structure_error is not None:
-        print(store.structure_error)
     for (dirpath, messages) in store.errors:
         print(dirpath)
         print(messages)

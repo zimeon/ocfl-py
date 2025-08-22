@@ -133,6 +133,53 @@ INFO:root:Created OCFL object http://example.org/obj_dedupe in tmp/obj_dedupe
 
 Object tree shows v1 with content:
 
+```
+> find -s tmp/obj_dedupe -print
+tmp/obj_dedupe
+tmp/obj_dedupe/0=ocfl_object_1.1
+tmp/obj_dedupe/inventory.json
+tmp/obj_dedupe/inventory.json.sha512
+tmp/obj_dedupe/v1
+tmp/obj_dedupe/v1/content
+tmp/obj_dedupe/v1/content/file1.txt
+tmp/obj_dedupe/v1/inventory.json
+tmp/obj_dedupe/v1/inventory.json.sha512
+```
+
+File `tmp/obj_dedupe/v1/content/file1.txt` exists with size 10
+
+File `tmp/obj_dedupe/v1/content/file1_dupe.txt` does not exist
+
+
+### 3.3 New object with two identical files not deduped
+
+The identical file are not deduped because the --no-dedupe flag is given
+
+```
+> python ocfl-object.py create --id http://example.org/obj_no_dedupe --src extra_fixtures/content/dupe-files --objdir tmp/obj_no_dedupe --created 2025-04-08T14:00:02Z --no-dedupe -v
+INFO:root:Created OCFL object http://example.org/obj_no_dedupe in tmp/obj_no_dedupe
+```
+
+Object tree shows v1 with content:
+
+```
+> find -s tmp/obj_no_dedupe -print
+tmp/obj_no_dedupe
+tmp/obj_no_dedupe/0=ocfl_object_1.1
+tmp/obj_no_dedupe/inventory.json
+tmp/obj_no_dedupe/inventory.json.sha512
+tmp/obj_no_dedupe/v1
+tmp/obj_no_dedupe/v1/content
+tmp/obj_no_dedupe/v1/content/file1.txt
+tmp/obj_no_dedupe/v1/content/file1_dupe.txt
+tmp/obj_no_dedupe/v1/inventory.json
+tmp/obj_no_dedupe/v1/inventory.json.sha512
+```
+
+File `tmp/obj_no_dedupe/v1/content/file1.txt` exists with size 10
+
+File `tmp/obj_no_dedupe/v1/content/file1_dupe.txt` exists with size 10
+
 
 ## 4. Test object build with three versions.
 
@@ -160,10 +207,12 @@ and the extracted files are:
 
 ```
 > find -s tmp/v1 -print
-find: unknown predicate `-s'
+tmp/v1
+tmp/v1/empty.txt
+tmp/v1/foo
+tmp/v1/foo/bar.xml
+tmp/v1/image.tiff
 ```
-
-(last command exited with return code 1)
 
 
 ### 5.2 Extract v2 of content in an OCFL v1.1 object
@@ -178,10 +227,12 @@ and the extracted files are:
 
 ```
 > find -s tmp/v2 -print
-find: unknown predicate `-s'
+tmp/v2
+tmp/v2/empty.txt
+tmp/v2/empty2.txt
+tmp/v2/foo
+tmp/v2/foo/bar.xml
 ```
-
-(last command exited with return code 1)
 
 
 ### 5.3 Extract head version (v3) of content in the same OCFL v1.1 object
@@ -196,7 +247,7 @@ and the extracted files are:
 
 ```
 > find -s tmp/v3 -print
-find: unknown predicate `-s'
+find: tmp/v3: No such file or directory
 ```
 
 (last command exited with return code 1)
@@ -213,10 +264,9 @@ and the extracted file is:
 
 ```
 > find -s tmp/files -print
-find: unknown predicate `-s'
+tmp/files
+tmp/files/bar.xml
 ```
-
-(last command exited with return code 1)
 
 
 ### 5.5 Extract image.tiff of v3 (default) into the same directory
@@ -230,10 +280,10 @@ and the directory now contains two extracted files:
 
 ```
 > find -s tmp/files -print
-find: unknown predicate `-s'
+tmp/files
+tmp/files/bar.xml
+tmp/files/image.tiff
 ```
-
-(last command exited with return code 1)
 
 
 ## 6. Test error conditions.

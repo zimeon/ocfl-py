@@ -34,7 +34,7 @@ class Validator():
                  force_spec_version=None,
                  default_spec_version=DEFAULT_SPEC_VERSION,
                  log=None, lang="en"):
-        """Initialize OCFL Object validator object.
+        """Initialize OCFL Object Validator object.
 
         Arguments:
             log_warnings: True to record warnings during validation
@@ -112,10 +112,11 @@ class Validator():
         Arguments:
             path: either a filepath or else an open fs filesystem
 
+        Returns:
+            bool: True if valid (warnings permitted), False otherwise
+
         Designed to be called multiple times if used to validate many objects
         when validating a storage root, for example.
-
-        Returns True if valid (warnings permitted), False otherwise.
         """
         self.initialize()
         try:
@@ -183,9 +184,6 @@ class Validator():
     def validate_inventory(self, inv_file, where="root", force_spec_version=None):
         """Validate a given inventory file, record errors with self.log.error().
 
-        Returns inventory object for use in later validation
-        of object content. Does not look at anything else in the
-        object itself.
 
         Arguments:
             inv_file: file name of inventory within self.obj_fs
@@ -195,6 +193,12 @@ class Validator():
             force_spec_version: if None (default) will attempt to take
                 spec_version from the inventory itself instead of using the
                 spec version provided
+
+        Returns:
+            ocfl.Inventory: inventory object for use in later validation
+                of object content.
+
+        This method does not look at anything else in the object itself.
         """
         try:
             with self.obj_fs.openbin(inv_file, "r") as fh:
@@ -495,7 +499,12 @@ class Validator():
     def read_inventory_digest(self, inv_digest_file):
         """Read inventory digest from sidecar file.
 
-        Raise exception if there is an error, else return digest.
+        Returns:
+            str: the inventory digest string
+
+        Raises:
+            Exception: if there is an error reading the digest or it has
+                the wrong format
         """
         with self.obj_fs.open(inv_digest_file, "r") as fh:
             line = fh.readline()
