@@ -197,8 +197,7 @@ class StorageRoot():
             raise StorageRootException("E069c", root=self.root,
                                        declared_spec_version=spec_version,
                                        expected_spec_version=self.spec_version)
-        else:
-            self.spec_verion = spec_version
+        self.spec_version = spec_version
         if not namastes[0].content_ok(pyfs=self.root_fs):
             raise StorageRootException("E069e", root=self.root,
                                        namaste_file=namastes[0].filename)
