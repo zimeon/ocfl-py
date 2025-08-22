@@ -58,11 +58,11 @@ ERROR:root:Add object failed because path ark%3A123%2Fabc exists
 ### 3.1 List objects
 
 ```
-> python ocfl-root.py list --root=extra_fixtures/good-storage-roots/simple-root
+> python ocfl-root.py list --root=extra_fixtures/1.0/good-storage-roots/simple-root
 ark%3A%2F12345%2Fbcd987 -- id=ark:/12345/bcd987
 http%3A%2F%2Fexample.org%2Fminimal_mixed_digests -- id=http://example.org/minimal_mixed_digests
 ark%3A123%2Fabc -- id=ark:123/abc
-Found 3 OCFL Objects under root extra_fixtures/good-storage-roots/simple-root
+Found 3 OCFL Objects under root extra_fixtures/1.0/good-storage-roots/simple-root
 ```
 
 
