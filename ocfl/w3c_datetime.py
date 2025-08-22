@@ -1,10 +1,8 @@
-"""Write and parse W3C datetime.
+"""Write and parse W3C datetime values.
 
-Each web resource is identified by a URI and may optionally have
-other metadata such as timestamp, size, md5. The lastmod property
-provides ISO8601 format string access to the timestamp.
-
-The timestamp is assumed to be stored in UTC.
+W3C datetime is a subset of ISO8601 and is described in
+<https://www.rfc-editor.org/rfc/rfc3339>. This format is used
+for the `created` property in OCFL Object version metadata.
 """
 
 import re

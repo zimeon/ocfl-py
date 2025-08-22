@@ -37,6 +37,19 @@ class TestAll(unittest.TestCase):
         s = StorageRoot(root="a", layout_name="b")
         self.assertEqual(s.root, "a")
         self.assertEqual(s.layout_name, "b")
+        # Bad
+        self.assertRaises(StorageRootException, StorageRoot, spec_version="0.0")
+
+    def test_check_spec_version(self):
+        """Test check_spec_version."""
+        s = StorageRoot()
+        # Good
+        s.check_spec_version(spec_version="1.0")
+        self.assertEqual(s.spec_version, "1.0")
+        s.check_spec_version(spec_version="1.1")
+        self.assertEqual(s.spec_version, "1.1")
+        # Bad
+        self.assertRaises(StorageRootException, s.check_spec_version, spec_version="0.9")
 
     def test_open_root_fs(self):
         """Test open_root_fs method."""
