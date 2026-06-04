@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """Utility functions to support the OCFL Object library."""
+import os.path
 import re
 
-import fs
-import fs.path
+import fsspec
 
 from ._version import __version__
 from .namaste import find_namastes
@@ -82,11 +82,11 @@ def remove_first_directory(path):
     # split and rejoins, excluding the first directory
     rpath = ""
     while True:
-        (head, tail) = fs.path.split(path)
+        (head, tail) = os.path.split(path)
         if path in (head, tail):
             break
         path = head
-        rpath = tail if rpath == "" else fs.path.join(tail, rpath)
+        rpath = tail if rpath == "" else os.path.join(tail, rpath)
     return rpath
 
 
@@ -129,18 +129,18 @@ def find_path_type(path):
     """
     try:
         pyfs = pyfs_openfs(path, create=False)
-    except (fs.opener.errors.OpenerError, fs.errors.CreateFailed):
+    except (fsspec.opener.errors.OpenerError, fsspec.errors.CreateFailed):
         # Failed to open path as a filesystem, try enclosing directory
         # in case path is a file
-        (parent, filename) = fs.path.split(path)
+        (parent, filename) = os.path.split(path)
         try:
             pyfs = pyfs_openfs(parent, create=False)
-        except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
+        except (fsspec.opener.errors.OpenerError, fsspec.errors.CreateFailed) as e:
             return "path cannot be opened, and nor can parent (" + str(e) + ")"
         # Can open parent, is filename a file there?
         try:
             info = pyfs.getinfo(filename)
-        except fs.errors.ResourceNotFound:
+        except fsspec.errors.ResourceNotFound:
             return "path does not exist"
         if info.is_dir:
             return "directory that could not be opened as a filesystem, this should not happen"  # pragma: no cover

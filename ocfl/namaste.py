@@ -7,7 +7,8 @@ See also command line tool: http://github.com/mjgiarlo/namaste
 import os
 import os.path
 import re
-import fs
+
+import fsspec
 
 
 def content_to_tvalue(content):
@@ -96,20 +97,20 @@ class Namaste():
             Namaste(0, "ocfl_1.0").write(dir)
         """
         if pyfs is not None:
-            pyfs.writetext(fs.path.join(dir, self.filename), self.content + "\n")
+            pyfs.writetext(os.path.join(dir, self.filename), self.content + "\n")
         else:
             with open(os.path.join(dir, self.filename), "w", encoding="utf-8") as fh:
                 fh.write(self.content + "\n")
 
     def check_content(self, dir="", pyfs=None):
         """Check that the file content is compatible with the tvalue based on tr_func, else raise NamasteException."""
-        filepath = fs.path.join(dir, self.filename)
+        filepath = os.path.join(dir, self.filename)
         if self.tvalue == "":
             raise NamasteException("Cannot check Namaste file %s without tvalue being set!" % (filepath))
         if pyfs is not None:
             try:
                 content = pyfs.readtext(filepath)
-            except fs.errors.ResourceNotFound:
+            except fsspec.errors.ResourceNotFound:
                 raise NamasteException("Namaste file %s cannot be read!" % (filepath))
         else:
             if not os.path.isfile(filepath):

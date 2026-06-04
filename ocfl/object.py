@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """OCFL Object Implementation.
 
-This code uses PyFilesystem2 (import fs) exclusively for access to files,
-with some convenience functions in ocfl.pyfs. This enables application
-beyond the operating system filesystem to include ``mem://``, ``zip://`` and
-``s3://`` filesystems.
+This code uses the local ocfl.pyfs convenience methods and wrapper around a
+filesystem abstraction layer exclusively for access to files. This enables
+application beyond the operating system filesystem to include ``mem://``,
+``zip://`` and ``s3://`` filesystems.
 """
 import copy
 import json
@@ -12,17 +12,13 @@ import os.path
 import re
 import logging
 
-import fs
-import fs.path
-import fs.copy
-
 from .constants import INVENTORY_FILENAME, DEFAULT_SPEC_VERSION, DEFAULT_CONTENT_DIRECTORY
 from .digest import file_digest
 from .inventory import Inventory
 from .inventory_validator import InventoryValidator
 from .new_version import NewVersion
 from .object_utils import parse_version_directory, ObjectException
-from .pyfs import pyfs_openfs
+from .pyfs import pyfs_openfs, pyfs_copyfile
 from .namaste import Namaste
 from .validator import Validator, ValidatorAbortException
 from .version_metadata import VersionMetadata
@@ -147,10 +143,10 @@ class Object():  # pylint: disable=too-many-public-methods
 
     def copy_into_object(self, src_fs, srcfile, filepath, create_dirs=False):
         """Copy from srcfile to filepath in object."""
-        dstpath = fs.path.dirname(filepath)
+        dstpath = os.path.dirname(filepath)
         if create_dirs and not self.obj_fs.exists(dstpath):
             self.obj_fs.makedirs(dstpath)
-        fs.copy.copy_file(src_fs, srcfile, self.obj_fs, filepath)
+        pyfs_copyfile(src_fs, srcfile, self.obj_fs, filepath)
 
     def start_inventory(self):
         """Create inventory start with metadata from self.
@@ -249,13 +245,13 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         if not self.obj_fs.exists(vdir):
             self.obj_fs.makedir(vdir)
-        invfile = fs.path.join(vdir, INVENTORY_FILENAME)
+        invfile = os.path.join(vdir, INVENTORY_FILENAME)
         if inventory is not None:
-            with self.obj_fs.open(invfile, "w") as fh:
+            with pyfs_openfile(self.obj_fs, invfile, "w") as fh:
                 inventory.write_json(fh)
         digest = file_digest(invfile, self.digest_algorithm, pyfs=self.obj_fs)
-        sidecar = fs.path.join(vdir, INVENTORY_FILENAME + "." + self.digest_algorithm)
-        with self.obj_fs.open(sidecar, "w") as fh:
+        sidecar = os.path.join(vdir, INVENTORY_FILENAME + "." + self.digest_algorithm)
+        with pyfs_openfile(self.obj_fs, sidecar, "w") as fh:
             fh.write(digest + " " + INVENTORY_FILENAME + "\n")
         return sidecar
 
@@ -596,7 +592,7 @@ class Object():  # pylint: disable=too-many-public-methods
                             seen_v_sidecar = True
                     elif v_entry == self.content_directory:
                         num_files = 0
-                        for (v_dirpath, v_dirs, v_files) in self.obj_fs.walk(fs.path.join(entry, v_entry)):  # pylint: disable=unused-variable
+                        for (v_dirpath, v_dirs, v_files) in self.obj_fs.walk(os.path.join(entry, v_entry)):  # pylint: disable=unused-variable
                             num_files += len(v_files)
                         v_note += "(%d files)" % num_files
                     else:
@@ -668,7 +664,7 @@ class Object():  # pylint: disable=too-many-public-methods
                               log_errors=log_errors,
                               lax_digests=self.lax_digests)
         try:
-            (inv_dir, inv_file) = fs.path.split(path)
+            (inv_dir, inv_file) = os.path.split(path)
             validator.obj_fs = pyfs_openfs(inv_dir, create=False)
             validator.validate_inventory(inv_file, where="standalone", force_spec_version=force_spec_version)
         except fs.errors.ResourceNotFound:
@@ -738,8 +734,8 @@ class Object():  # pylint: disable=too-many-public-methods
             existing_file = manifest[digest][0]  # First entry with the digest, there could be > 1
             for logical_file in logical_files:
                 logging.debug("Copying %s -> %s", digest, logical_file)
-                dst_fs.makedirs(fs.path.dirname(logical_file), recreate=True)
-                fs.copy.copy_file(self.obj_fs, existing_file, dst_fs, logical_file)
+                dst_fs.makedirs(os.path.dirname(logical_file), recreate=True)
+                pyfs_copyfile(self.obj_fs, existing_file, dst_fs, logical_file)
         logging.info("Extracted %s into %s", version, dstdir)
         return VersionMetadata(inventory=inv.data, version=version)
 
@@ -789,7 +785,7 @@ class Object():  # pylint: disable=too-many-public-methods
             for logical_file in logical_files:
                 if logical_file == logical_path:
                     logging.debug("Copying %s -> %s", digest, basename)
-                    fs.copy.copy_file(self.obj_fs, existing_file, dst_fs, basename)
+                    pyfs_copyfile(self.obj_fs, existing_file, dst_fs, basename)
                     copied = True
                     break
             if copied:
@@ -808,7 +804,7 @@ class Object():  # pylint: disable=too-many-public-methods
         Returns:
             ocfl.Inventory: new Inventory object for the parsed inventory.
         """
-        with self.obj_fs.open(INVENTORY_FILENAME) as fh:
+        with pyfs_open(self.obj_fs, INVENTORY_FILENAME, "r") as fh:
             inventory = Inventory(json.load(fh))
         # Validate
         iv = InventoryValidator()

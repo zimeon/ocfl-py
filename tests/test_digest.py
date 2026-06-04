@@ -2,7 +2,9 @@
 import unittest
 import sys
 
-import fs
+import fsspec
+from fsspec.implementations.local import LocalFileSystem
+from fsspec.implementations.dirfs import DirFileSystem
 
 from ocfl.digest import file_digest, string_digest, digest_regex, normalized_digest
 
@@ -44,7 +46,7 @@ class TestAll(unittest.TestCase):
 
     def test_file_digest__pyfs(self):
         """Test file_digest method with content."""
-        td_fs = fs.open_fs("tests/testdata")
+        td_fs = DirFileSystem("tests/testdata", LocalFileSystem())
         self.assertEqual(file_digest("files/hello_out_there.txt", "md5", pyfs=td_fs),
                          "9c7ec1389a61f1e15185bd976672bc63")
 

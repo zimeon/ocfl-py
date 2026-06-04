@@ -4,8 +4,8 @@ import os
 import tempfile
 import unittest
 
-import fs
-import fs.tempfs
+import fsspec
+from fsspec.implementations.memory import MemoryFileSystem
 
 from ocfl.inventory import Inventory
 from ocfl.object import Object, ObjectException
@@ -76,14 +76,14 @@ class TestAll(unittest.TestCase):
 
     def test07_write_object_declaration(self):
         """Test write_object_declaration."""
-        tmpfs = fs.tempfs.TempFS(identifier='test_write_object_declaration')
+        tmpfs = MemoryFileSyetem()
         oo = Object(obj_fs=tmpfs, spec_version='1.0')
         oo.write_object_declaration()
         self.assertEqual(tmpfs.listdir('/'), ['0=ocfl_object_1.0'])
 
     def test08_write_inventory_and_sidecar(self):
         """Test write_object_and_sidecar."""
-        tmpfs = fs.tempfs.TempFS(identifier='test_write_inventory_and_sidecar')
+        tmpfs = MemoryFileSyetem()
         oo = Object(obj_fs=tmpfs)
         oo.write_inventory_and_sidecar(Inventory({'abc': 'def'}))
         self.assertEqual(set(tmpfs.listdir('')),
@@ -99,7 +99,7 @@ class TestAll(unittest.TestCase):
         oo.write_inventory_and_sidecar(Inventory({'gh': 'ik'}), invdir)
         self.assertEqual(set(tmpfs.listdir(invdir)),
                          set(['inventory.json', 'inventory.json.sha512']))
-        with tmpfs.open(fs.path.join(invdir, 'inventory.json')) as fh:
+        with tmpfs.open(os.path.join(invdir, 'inventory.json')) as fh:
             j = json.load(fh)
         self.assertEqual(j, {'gh': 'ik'})
 

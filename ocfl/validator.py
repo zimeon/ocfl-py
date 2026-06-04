@@ -11,14 +11,13 @@ should enable application beyond the operating system filesystem.
 """
 import json
 import re
-import fs
 
 from .constants import INVENTORY_FILENAME, SPEC_VERSIONS_SUPPORTED, \
     DEFAULT_SPEC_VERSION, DEFAULT_CONTENT_DIRECTORY
 from .digest import file_digest, normalized_digest
 from .inventory_validator import InventoryValidator
 from .namaste import find_namastes
-from .pyfs import pyfs_openfs, pyfs_walk, pyfs_files_identical
+from .pyfs import pyfs_openfs, pyfs_walk, pyfs_openfile, pyfs_files_identical
 from .validation_logger import ValidationLogger
 
 
@@ -124,7 +123,7 @@ class Validator():
                 self.obj_fs = pyfs_openfs(path)
             else:
                 self.obj_fs = path
-                path = self.obj_fs.desc("")
+                path = self.obj_xdesc("")
         except fs.errors.CreateFailed:
             self.log.error("E003e", path=path)
             return False
@@ -308,7 +307,7 @@ class Validator():
         prev_version_dir = "NONE"  # will be set for first directory with inventory
         prev_spec_version = "1.0"  # lowest version
         for version_dir in version_dirs:
-            inv_file = fs.path.join(version_dir, INVENTORY_FILENAME)
+            inv_file = os.path.join(version_dir, INVENTORY_FILENAME)
             if not self.obj_fs.exists(inv_file):
                 self.log.warning("W010", where=version_dir)
                 continue
@@ -416,17 +415,17 @@ class Validator():
                         pass
                     elif entry == self.content_directory:
                         # Check content_directory
-                        content_path = fs.path.join(version_dir, self.content_directory)
+                        content_path = os.path.join(version_dir, self.content_directory)
                         num_content_files_in_version = 0
                         for dirpath, dirs, files in pyfs_walk(self.obj_fs, content_path):
                             if dirpath != "/" + content_path and (len(dirs) + len(files)) == 0:
                                 self.log.error("E024", where=version_dir, path=dirpath)
                             for file in files:
-                                files_seen.add(fs.path.join(dirpath, file).lstrip("/"))
+                                files_seen.add(os.path.join(dirpath, file).lstrip("/"))
                                 num_content_files_in_version += 1
                         if num_content_files_in_version == 0:
                             self.log.warning("W003", where=version_dir)
-                    elif self.obj_fs.isdir(fs.path.join(version_dir, entry)):
+                    elif self.obj_fs.isdir(os.path.join(version_dir, entry)):
                         self.log.warning("W002", where=version_dir, entry=entry)
                     else:
                         self.log.error("E015", where=version_dir, entry=entry)
@@ -506,7 +505,7 @@ class Validator():
             Exception: if there is an error reading the digest or it has
                 the wrong format
         """
-        with self.obj_fs.open(inv_digest_file, "r") as fh:
+        with pyfs_openfile(self.obj_fs, inv_digest_file, "r") as fh:
             line = fh.readline()
             # we ignore any following lines, could raise exception
         m = re.match(r"""(\w+)\s+(\S+)\s*$""", line)

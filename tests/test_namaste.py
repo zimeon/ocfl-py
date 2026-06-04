@@ -3,8 +3,8 @@ import os.path
 import tempfile
 import unittest
 
-import fs
-import fs.tempfs
+import fsspec
+from fsspec.implementations.memory import MemoryFileSystem
 
 from ocfl.namaste import content_to_tvalue, find_namastes, get_namaste, Namaste, NamasteException
 
@@ -81,7 +81,7 @@ class TestAll(unittest.TestCase):
         with open(filepath, "r", encoding="utf-8") as fh:
             self.assertEqual(fh.read(), "balloon\n")
         # With fs filesystem
-        tmpfs = fs.tempfs.TempFS()
+        tmpfs = MemoryFileSystem()
         n = Namaste(1, "jelly")
         n.write(pyfs=tmpfs)
         self.assertTrue(tmpfs.isfile("1=jelly"))
@@ -94,7 +94,7 @@ class TestAll(unittest.TestCase):
         self.assertRaises(NamasteException, Namaste(0, "a").check_content, "tests/testdata/namaste/does_not_exist")
         self.assertRaises(NamasteException, Namaste(0, "bison").check_content, "tests/testdata/namaste")
         # Using pyfs...
-        tmpfs = fs.tempfs.TempFS()
+        tmpfs = MemoryFileSystem()
         tmpfs.writetext("9=niner", "niner\n")
         tmpfs.writetext("8=smiley", "FROWNY\n")
         Namaste(9, "niner").check_content(pyfs=tmpfs)

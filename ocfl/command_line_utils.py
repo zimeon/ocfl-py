@@ -3,7 +3,7 @@
 import logging
 import sys
 
-import fs.path
+import os.path
 
 from ._version import __version__
 
@@ -33,7 +33,7 @@ def check_version_arg(args):
              the argument version is checked.
     """
     if args.version:
-        print("%s is part of ocfl-py version %s" % (fs.path.basename(sys.argv[0]), __version__))
+        print("%s is part of ocfl-py version %s" % (os.path.basename(sys.argv[0]), __version__))
         sys.exit(0)
 
 

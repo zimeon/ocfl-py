@@ -10,7 +10,7 @@ import logging
 import os.path
 from urllib.parse import quote as urlquote
 
-import fs.path
+import os.path
 
 from .constants import DEFAULT_DIGEST_ALGORITHM, DEFAULT_CONTENT_DIRECTORY, DEFAULT_SPEC_VERSION
 from .digest import file_digest
@@ -277,7 +277,7 @@ class NewVersion():
         elif self.content_path_normalization is not None:
             raise NewVersionException("Unknown filepath normalization '%s' requested"
                                       % (self.content_path_normalization))
-        vfilepath = fs.path.join(self.inventory.head, self.content_directory, filepath)  # path relative to root, inc v#/content
+        vfilepath = os.path.join(self.inventory.head, self.content_directory, filepath)  # path relative to root, inc v#/content
         # Check we don't already have this vfilepath from many to one
         # normalization, add suffix to distinguish if necessary
         used = self.inventory.content_paths

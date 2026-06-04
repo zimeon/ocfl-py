@@ -7,13 +7,10 @@ import json
 import logging
 import re
 
-import fs
-from fs.copy import copy_dir
-
 from .constants import DEFAULT_SPEC_VERSION, SPEC_VERSIONS_SUPPORTED
 from .namaste import find_namastes, Namaste
 from .object import Object
-from .pyfs import pyfs_openfs, pyfs_walk, pyfs_opendir
+from .pyfs import pyfs_openfs, pyfs_walk, pyfs_opendir, pyfs_copydir, PyfsException
 from .validator import Validator
 from .validation_logger import ValidationLogger
 
@@ -121,7 +118,7 @@ class StorageRoot():
         """
         try:
             self.root_fs = pyfs_openfs(self.root, create=create)
-        except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
+        except PyfsException as e:
             raise StorageRootException("Failed to open OCFL storage root filesystem '%s' (%s)" % (self.root, str(e)))
 
 
@@ -202,7 +199,7 @@ class StorageRoot():
             self.layout.check_and_set_layout_params(config=config, require_extension_name=False)
         self.check_spec_version(spec_version=spec_version)
         # Now create the storage root
-        (parent, root_dir) = fs.path.split(self.root)
+        (parent, root_dir) = os.path.split(self.root)
         parent_fs = pyfs_openfs(parent)
         if parent_fs.exists(root_dir):
             raise StorageRootException("OCFL storage root %s already exists, aborting!" % (self.root))
@@ -474,9 +471,10 @@ class StorageRoot():
         path = self.object_path(identifier)
         if self.root_fs.exists(path):
             raise StorageRootException("Add object failed because path %s exists" % (path))
-        logging.debug("Copying from %s to %s", object_path, fs.path.join(self.root, path))
+        logging.debug("Copying from %s to %s", object_path, os.path.join(self.root, path))
         try:
-            copy_dir(o.obj_fs, "/", self.root_fs, path)
+            # Recusive copy of object to path in self.root_fs
+            pyfs_copydir(o.obj_fs, "/", self.root_fs, path)
         except Exception as e:
             raise StorageRootException("Add object at path %s failed! (%s)" % (path, str(e)))
         return (identifier, path)
