@@ -18,7 +18,7 @@ from .inventory import Inventory
 from .inventory_validator import InventoryValidator
 from .new_version import NewVersion
 from .object_utils import parse_version_directory, ObjectException
-from .pyfs import pyfs_openfs, pyfs_copyfile
+from .pyfs import pyfs_openfs, pyfs_copyfile, PyfsException
 from .namaste import Namaste
 from .validator import Validator, ValidatorAbortException
 from .version_metadata import VersionMetadata
@@ -138,7 +138,7 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         try:
             self.obj_fs = pyfs_openfs(fs_url=objdir, create=create)
-        except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
+        except PyfsException as e:
             raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, e))
 
     def copy_into_object(self, src_fs, srcfile, filepath, create_dirs=False):
@@ -667,7 +667,7 @@ class Object():  # pylint: disable=too-many-public-methods
             (inv_dir, inv_file) = os.path.split(path)
             validator.obj_fs = pyfs_openfs(inv_dir, create=False)
             validator.validate_inventory(inv_file, where="standalone", force_spec_version=force_spec_version)
-        except fs.errors.ResourceNotFound:
+        except PyfsException:
             validator.log.error("E033", where="standalone", explanation="failed to open directory")
         except ValidatorAbortException:
             pass
@@ -718,7 +718,7 @@ class Object():  # pylint: disable=too-many-public-methods
         (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
         try:
             parent_fs = pyfs_openfs(parentdir)
-        except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
+        except PyfsException as e:
             raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
         if parent_fs.isdir(dir):
             if not parent_fs.isempty(dir):
@@ -761,14 +761,14 @@ class Object():  # pylint: disable=too-many-public-methods
         # Check the destination
         try:
             dst_fs = pyfs_openfs(dstdir)
-        except (fs.opener.errors.OpenerError, fs.errors.CreateFailed):
-            # Doesn"t exist, can we create it?
+        except PyfsException:
+            # Doesn't exist, can we create it?
             (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
             if parentdir == "":
                 parentdir = "."
             try:
                 parent_fs = pyfs_openfs(parentdir)
-            except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
+            except PyfsException as e:
                 raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
             dst_fs = parent_fs.makedir(dir)
         # Does the destination file already exist?
@@ -804,7 +804,7 @@ class Object():  # pylint: disable=too-many-public-methods
         Returns:
             ocfl.Inventory: new Inventory object for the parsed inventory.
         """
-        with pyfs_open(self.obj_fs, INVENTORY_FILENAME, "r") as fh:
+        with pyfs_openfile(self.obj_fs, INVENTORY_FILENAME, "r") as fh:
             inventory = Inventory(json.load(fh))
         # Validate
         iv = InventoryValidator()

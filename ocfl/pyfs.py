@@ -16,6 +16,8 @@ It seems to be the case the using `strict=False` avoids checks for these empty
 directories. There is no way to pass the `strict` parameter via the open_fs()
 function so we need to call the S3FS creator method directly.
 """
+import os.path
+
 import fsspec
 from fsspec.spec import AbstractFileSystem
 from fsspec.implementations.dirfs import DirFileSystem
@@ -124,18 +126,12 @@ def pyfs_walk(pyfs, dir="/", is_storage_root=False):
     stack = [dir]
     while len(stack) > 0:
         dirpath = stack.pop()
-        entries = pyfs.listdir(dirpath)
         files = []
         dirs = []
-        for entry in entries:
-            entry_path = os.path.join(dirpath, entry)
+        for info in pyfs.listdir(dirpath):
+            entry = os.path.relpath(info["name"], dirpath)
             is_dir = True
-            try:
-                info = pyfs.getinfo(entry_path)
-                is_dir = info.is_dir
-            except fs.errors.ResourceNotFound:
-                pass  # Assume to be a directory
-            if is_dir:
+            if info["type"] == "directory":
                 dirs.append(entry)
             else:
                 files.append(entry)
@@ -196,19 +192,6 @@ def pyfs_openfile(filepath, mode, pyfs=None, **kwargs):
     return pyfs.open(filepath, mode, **kwargs)
 
 
-def pyfs_openbin(filepath, mode, pyfs=None):
-    """Open binary file on either local filesystem or fs filesystem.
-
-    Arguments:
-        filepath: string of file path
-        mode: file mode
-        pyfs: fs filesystem to use, else None (default) will use the
-            local file
-    """
-    pyfs = _pyfs_or_local(pyfs)
-    return pyfs.openbin(filepath, mode)
-
-
 def pyfs_copyfile(src_fs, src_path, dst_fs, dst_path):
     """Copy a file from one filesystem to another.
 
@@ -218,8 +201,8 @@ def pyfs_copyfile(src_fs, src_path, dst_fs, dst_path):
         dst_fs (FS): Destination filesystem.
         dst_path (str): Path to destination file on the destination filesystem.
     """
-    with src_fs.openbin(src_path, "r") as src:
-        with dst_fs.openbin(dst_path, "w") as dst:
+    with src_fs.open(src_path, "rb") as src:
+        with dst_fs.open(dst_path, "wb") as dst:
             dst.write(src.read())  # FIXME - chunk this
 
 
@@ -237,6 +220,7 @@ def pyfs_copydir(src_fs, src_path, dst_fs, dst_path):
     # https://pyfilesystem2.readthedocs.io/en/latest/_modules/fs/copy.html#copy_dir
     """
     raise Exception
+
 
 def pyfs_files_identical(pyfs, file1, file2):
     """Compare files on one filesystem pyfs.

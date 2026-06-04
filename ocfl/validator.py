@@ -10,6 +10,7 @@ This code uses PyFilesystem (import fs) exclusively for access to files. This
 should enable application beyond the operating system filesystem.
 """
 import json
+import os.path
 import re
 
 from .constants import INVENTORY_FILENAME, SPEC_VERSIONS_SUPPORTED, \
@@ -200,7 +201,7 @@ class Validator():
         This method does not look at anything else in the object itself.
         """
         try:
-            with self.obj_fs.openbin(inv_file, "r") as fh:
+            with self.obj_fs.open(inv_file, "r") as fh:
                 inventory = json.load(fh)
         except json.decoder.JSONDecodeError as e:
             self.log.error("E033", where=where, explanation=str(e))
@@ -248,29 +249,30 @@ class Validator():
         """
         expected_files = ["0=ocfl_object_" + self.spec_version, INVENTORY_FILENAME,
                           "inventory.json." + self.digest_algorithm]
-        for entry in self.obj_fs.scandir(""):
-            if entry.is_file:
-                if entry.name not in expected_files and entry.name not in already_checked:
-                    self.log.error("E001a", file=entry.name)
-            elif entry.is_dir:
-                if entry.name in version_dirs:
+        for entry in self.obj_fs.listdir(""):
+            name = entry["name"]
+            if entry["type"] == "file":
+                if name not in expected_files and name not in already_checked:
+                    self.log.error("E001a", file=name)
+            elif entry["type"] == "directory":
+                if name in version_dirs:
                     pass
-                elif entry.name == "logs":
+                elif name == "logs":
                     # We simply ignore any logs directory from a validation point
                     # of view. The directory MAY be present but its contents are
                     # locally defined and it MAY also be empty. See:
                     # https://ocfl.io/1.1/spec/#logs-directory
                     pass
-                elif entry.name == "extensions":
+                elif name == "extensions":
                     self.validate_extensions_dir()
-                elif re.match(r"""v\d+$""", entry.name):
+                elif re.match(r"""v\d+$""", name):
                     # Looks like a version directory so give more specific error
-                    self.log.error("E046b", dir=entry.name)
+                    self.log.error("E046b", dir=name)
                 else:
                     # Simply an unexpected directory
-                    self.log.error("E001b", dir=entry.name)
-            else:
-                self.log.error("E001c", entry=entry.name)
+                    self.log.error("E001b", dir=name)
+            else:  # not a file nor directory
+                self.log.error("E001c", entry=name)
 
     def validate_extensions_dir(self):
         """Validate content of extensions directory inside object root.
@@ -409,7 +411,8 @@ class Validator():
         for version_dir in version_dirs:
             try:
                 # Check contents of version directory except content_directory
-                for entry in self.obj_fs.listdir(version_dir):
+                for entrypath in self.obj_fs.listdir(version_dir, detail=False):
+                    entry = os.path.relpath(entrypath, version_dir)
                     if ((entry == INVENTORY_FILENAME)
                             or (version_dir in self.inventory_digest_files and entry == self.inventory_digest_files[version_dir])):
                         pass
@@ -425,11 +428,11 @@ class Validator():
                                 num_content_files_in_version += 1
                         if num_content_files_in_version == 0:
                             self.log.warning("W003", where=version_dir)
-                    elif self.obj_fs.isdir(os.path.join(version_dir, entry)):
+                    elif self.obj_fs.isdir(entrypath):
                         self.log.warning("W002", where=version_dir, entry=entry)
                     else:
                         self.log.error("E015", where=version_dir, entry=entry)
-            except (fs.errors.ResourceNotFound, fs.errors.DirectoryExpected):
+            except (FileNotFoundError):
                 self.log.error("E046a", version_dir=version_dir)
         # Extract any digests in fixity and organize by filepath
         fixity_digests = {}

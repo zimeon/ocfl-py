@@ -340,9 +340,9 @@ class StorageRoot():
         this code relies up the registered_extensions property to list known
         storage root extensions.
         """
-        for entry in self.root_fs.scandir("extensions"):
-            if entry.is_dir:
-                if entry.name not in self.registered_extensions:
+        for entry in self.root_fs.listdir("extensions", detail=True):
+            if entry["type"] == "directory":
+                if os.path.relpath(entry.name, "extensions") not in self.registered_extensions:
                     self.log.warning("W901", entry=entry.name)  # FIXME - No good warning code in spec
             else:
                 self.traversal_error("E086", entry=entry.name)

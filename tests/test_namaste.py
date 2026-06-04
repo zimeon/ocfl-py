@@ -4,6 +4,8 @@ import tempfile
 import unittest
 
 import fsspec
+from fsspec.implementations.dirfs import DirFileSystem
+from fsspec.implementations.local import LocalFileSystem
 from fsspec.implementations.memory import MemoryFileSystem
 
 from ocfl.namaste import content_to_tvalue, find_namastes, get_namaste, Namaste, NamasteException
@@ -29,7 +31,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual({x.tvalue for x in namastes1}, {"frog", "bison", "snake"})
         self.assertRaises(NamasteException, find_namastes, 0, "tests/testdata/namaste", limit=2)
         # With pyfs filesystem
-        tdfs = fs.open_fs("tests/testdata")
+        tdfs = DirFileSystem("tests/testdata", LocalFileSystem())
         namastes2 = find_namastes(0, "namaste", pyfs=tdfs)
         self.assertEqual({x.tvalue for x in namastes2}, {"frog", "bison", "snake"})
         self.assertRaises(NamasteException, find_namastes, 0, "namaste", pyfs=tdfs, limit=1)
@@ -85,7 +87,7 @@ class TestAll(unittest.TestCase):
         n = Namaste(1, "jelly")
         n.write(pyfs=tmpfs)
         self.assertTrue(tmpfs.isfile("1=jelly"))
-        self.assertEqual(tmpfs.readtext("1=jelly"), "jelly\n")
+        self.assertEqual(tmpfs.read_text("1=jelly"), "jelly\n")
 
     def test15_check_content(self):
         """Test check_content method."""
@@ -95,8 +97,8 @@ class TestAll(unittest.TestCase):
         self.assertRaises(NamasteException, Namaste(0, "bison").check_content, "tests/testdata/namaste")
         # Using pyfs...
         tmpfs = MemoryFileSystem()
-        tmpfs.writetext("9=niner", "niner\n")
-        tmpfs.writetext("8=smiley", "FROWNY\n")
+        tmpfs.write_text("9=niner", "niner\n")
+        tmpfs.write_text("8=smiley", "FROWNY\n")
         Namaste(9, "niner").check_content(pyfs=tmpfs)
         Namaste(9, "niner").check_content(dir="", pyfs=tmpfs)
         self.assertRaises(NamasteException, Namaste(8, "smiley").check_content, pyfs=tmpfs)

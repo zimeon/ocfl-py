@@ -8,8 +8,6 @@ import os
 import os.path
 import re
 
-import fsspec
-
 
 def content_to_tvalue(content):
     """Safe and limited length tvalue from content.
@@ -32,9 +30,11 @@ def find_namastes(d, dir="", pyfs=None, limit=10):
     """
     prefix = str(d) + "="
     if pyfs is not None:
-        filenames = [f for f in pyfs.listdir(dir) if f.startswith(prefix)]
+        # pyfs.listdir include dir path in results
+        filenames = [os.path.relpath(f, dir) for f in pyfs.listdir(dir, detail=False)]
     else:
-        filenames = [f for f in os.listdir(dir) if f.startswith(prefix)]
+        filenames = os.listdir(dir)
+    filenames = [f for f in filenames if f.startswith(prefix)]
     if len(filenames) > limit:
         raise NamasteException("Found too many Namaste files with tag %s in %s" % (d, dir))
     return [Namaste(d, tvalue=filename[len(prefix):]) for filename in sorted(filenames)]
@@ -97,7 +97,7 @@ class Namaste():
             Namaste(0, "ocfl_1.0").write(dir)
         """
         if pyfs is not None:
-            pyfs.writetext(os.path.join(dir, self.filename), self.content + "\n")
+            pyfs.write_text(os.path.join(dir, self.filename), self.content + "\n")
         else:
             with open(os.path.join(dir, self.filename), "w", encoding="utf-8") as fh:
                 fh.write(self.content + "\n")
@@ -109,8 +109,8 @@ class Namaste():
             raise NamasteException("Cannot check Namaste file %s without tvalue being set!" % (filepath))
         if pyfs is not None:
             try:
-                content = pyfs.readtext(filepath)
-            except fsspec.errors.ResourceNotFound:
+                content = pyfs.read_text(filepath)
+            except FileNotFoundError:
                 raise NamasteException("Namaste file %s cannot be read!" % (filepath))
         else:
             if not os.path.isfile(filepath):
