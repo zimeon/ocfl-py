@@ -125,7 +125,7 @@ class Validator():
             else:
                 self.obj_fs = path
                 path = self.obj_xdesc("")
-        except fs.errors.CreateFailed:
+        except FileNotFoundError:
             self.log.error("E003e", path=path)
             return False
         # Object declaration, set spec version number. If there are multiple declarations,
@@ -203,6 +203,9 @@ class Validator():
         try:
             with self.obj_fs.open(inv_file, "r") as fh:
                 inventory = json.load(fh)
+        except FileNotFoundError:
+            self.log.error("E033", where=where, explanation="Inventory not present")
+            raise ValidatorAbortException
         except json.decoder.JSONDecodeError as e:
             self.log.error("E033", where=where, explanation=str(e))
             raise ValidatorAbortException

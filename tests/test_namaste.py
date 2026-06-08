@@ -35,6 +35,10 @@ class TestAll(unittest.TestCase):
         namastes2 = find_namastes(0, "namaste", pyfs=tdfs)
         self.assertEqual({x.tvalue for x in namastes2}, {"frog", "bison", "snake"})
         self.assertRaises(NamasteException, find_namastes, 0, "namaste", pyfs=tdfs, limit=1)
+        # With plain and pyfs that doesn't exist
+        self.assertRaises(FileNotFoundError, find_namastes, 0, "this_dir_does_not_exist")
+        tdfs = DirFileSystem("tests/testdata", LocalFileSystem())
+        self.assertRaises(FileNotFoundError, find_namastes, 0, "this_dir_does_not_exist", pyfs=tdfs)
 
     def test03_get_namaste(self):
         """Test get_namaste."""

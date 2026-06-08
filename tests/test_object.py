@@ -8,8 +8,10 @@ import fsspec
 from fsspec.implementations.memory import MemoryFileSystem
 
 from ocfl.inventory import Inventory
+from ocfl.pyfs import pyfs_listdir_names
 from ocfl.object import Object, ObjectException
 from ocfl.version_metadata import VersionMetadata
+
 
 
 class TestAll(unittest.TestCase):
@@ -76,17 +78,17 @@ class TestAll(unittest.TestCase):
 
     def test07_write_object_declaration(self):
         """Test write_object_declaration."""
-        tmpfs = MemoryFileSyetem()
+        tmpfs = MemoryFileSystem()
         oo = Object(obj_fs=tmpfs, spec_version='1.0')
         oo.write_object_declaration()
-        self.assertEqual(tmpfs.listdir('/'), ['0=ocfl_object_1.0'])
+        self.assertEqual(pyfs_listdir_names(tmpfs, '/'), ['0=ocfl_object_1.0'])
 
     def test08_write_inventory_and_sidecar(self):
         """Test write_object_and_sidecar."""
-        tmpfs = MemoryFileSyetem()
+        tmpfs = MemoryFileSystem()
         oo = Object(obj_fs=tmpfs)
         oo.write_inventory_and_sidecar(Inventory({'abc': 'def'}))
-        self.assertEqual(set(tmpfs.listdir('')),
+        self.assertEqual(set(pyfs_listdir_names(tmpfs,'')),
                          set(['inventory.json', 'inventory.json.sha512']))
         with tmpfs.open('inventory.json') as fh:
             j = json.load(fh)
@@ -97,7 +99,7 @@ class TestAll(unittest.TestCase):
         oo = Object(obj_fs=tmpfs)
         invdir = 'xxx'
         oo.write_inventory_and_sidecar(Inventory({'gh': 'ik'}), invdir)
-        self.assertEqual(set(tmpfs.listdir(invdir)),
+        self.assertEqual(set(pyfs_listdir_names(tmpfs, invdir)),
                          set(['inventory.json', 'inventory.json.sha512']))
         with tmpfs.open(os.path.join(invdir, 'inventory.json')) as fh:
             j = json.load(fh)

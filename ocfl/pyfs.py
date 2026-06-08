@@ -22,6 +22,7 @@ import fsspec
 from fsspec.spec import AbstractFileSystem
 from fsspec.implementations.dirfs import DirFileSystem
 from fsspec.implementations.local import LocalFileSystem
+from fsspec.implementations.zip import ZipFileSystem
 from s3fs import S3FileSystem
 
 
@@ -48,6 +49,12 @@ def pyfs_openfs(fs_url, **kwargs):
         fs_url: filesystem url to open, use "." for local filesystem rooted
             in current working directory
 
+    Returns:
+        AbstractFileSystem: file system instance
+
+    Raises:
+        FileNotFoundError: if the path or filesystem cannot be opened
+
     Like fs.open_fs will simply return FS if an instance is given as
     the fs_url parameter. Otherwise will attempt to open the fs_url
     as either a local filesystem path (no `://` in string) or else
@@ -57,21 +64,27 @@ def pyfs_openfs(fs_url, **kwargs):
     if isinstance(fs_url, AbstractFileSystem):
         return fs_url
 
+    print("DEBUG fs_url = " + fs_url)
+    parts = fs_url.split("://", 1)
+
     # Now assume a string that may be a path (no ://) or else a filesystem URL
-    if "://" not in fs_url:
+    if len(parts) == 1:   # does not contain "://"
         # A path, assume this is not URI escaped and simply open a directory
         # filesystem on the local filesystem
+        if not os.path.isdir(fs_url):
+            raise FileNotFoundError()
         return DirFileSystem(fs_url, LocalFileSystem())
 
-    # We have a URL, parse it
-    parse_result = fs.opener.parse(fs_url)
-    if parse_result.protocol == "s3":
+    # We have a URL
+    method = parts[0]
+    path = parts[1]
+    if method == "s3":
         # And S3 URL, mostly repeat
         # https://github.com/PyFilesystem/s3fs/blob/master/fs_s3fs/opener.py
         # but adjust the handling of strict to default to strict=False
-        bucket_name, _, dir_path = parse_result.resource.partition("/")
+        bucket_name, _, dir_path = path.partition("/")
         if not bucket_name:
-            raise fs.opener.errors.OpenerError("invalid bucket name in '{}'".format(fs_url))
+            raise FileNotFoundError("invalid bucket name in '{}'".format(fs_url))
         # Instead of the default opener behavior where strict is True unless
         # explicitly set !=1 in the URL query paremeter, we set False unless
         # explicity set via strict=1 in the URL query params
@@ -92,8 +105,17 @@ def pyfs_openfs(fs_url, **kwargs):
         # Patch in version of getinfo method that doesn't check parent directory
         s3fs.getinfo = s3fs._getinfo  # pylint: disable=protected-access
         return s3fs
-    # Non-S3 URL
-    return fs.open_fs(fs_url, **kwargs)
+    elif method == "zip":
+        return ZipFileSystem(fo=path)
+    # Not local, S3 or zip...
+    pyfs = fsspec.filesystem(method)
+    if path != "":
+        pyfs = DirFileSystem(path=path, fs=pyfs)
+    return pyfs
+
+
+def pyfs_opendir_as_fs(pyfs, path):
+    return DirFileSystem(path=path, fs=pyfs)
 
 
 def pyfs_walk(pyfs, dir="/", is_storage_root=False):
@@ -176,6 +198,20 @@ def pyfs_opendir(*, pyfs=None, dir="/", **kwargs):
     return pyfs.opendir(dir, **kwargs)
 
 
+def pyfs_listdir_names(pyfs, path):
+    """List directory path on pyfs returning relative file names.
+
+    Arguments:
+        pyfs: fs filesystem to use
+        path: path on pyfs
+
+    Returns:
+        list: of filenames local to path
+    """
+    pyfs = _pyfs_or_local(pyfs)
+    return [os.path.relpath(f, path) for f in pyfs.listdir(path, detail=False)]
+
+
 def pyfs_openfile(filepath, mode, pyfs=None, **kwargs):
     """Open file on either local filesystem or fs filesystem.
 
@@ -230,13 +266,29 @@ def pyfs_files_identical(pyfs, file1, file2):
         file1: string filepath for first file
         file2: string filepath for second file
 
-    Returns True if the files are identical, False otherwise.
+    Returns:
+        bool: True if the files are identical, False otherwise.
 
-    FIXME - Make this more efficient by comparing stat info first, then only
-    comparing content in chunks if necessary.
+    Raises:
+        FileNotFoundError: if either file does not exist
     """
-    with pyfs.open(file1, "r") as fh1:
-        c1 = fh1.read()
-    with pyfs.open(file2, "r") as fh2:
-        c2 = fh2.read()
-    return c1 == c2
+    # Compare stat info first
+    info1 = pyfs.info(file1)
+    info2 = pyfs.info(file2)
+    if info1["size"] != info2["size"] or info1["type"] != info2["type"]:
+        return False
+    # Short circuit if file names are the same, having checked existance
+    # with the info() test above
+    if file1 == file2:
+        return True
+    # Compare contents
+    with pyfs.open(file1, "rb") as fh1:
+        with pyfs.open(file2, "rb") as fh2:
+            while True:
+                c1 = fh1.read(16777216)  # 16MB chunks
+                c2 = fh2.read(16777216)
+                if c1 != c2:
+                    return False
+                if len(c1) == 0:
+                    break
+    return True

@@ -119,30 +119,31 @@ def find_path_type(path):
     Arguments:
         path: filesystem path string
 
-    Return values:
-        "root" - looks like an OCFL Storage Root
-        "object" - looks like an OCFL Object
-        "file" - a file, might be an inventory
-        other string explains error description
+    Returns:
+        str: with values:
+            "root" - looks like an OCFL Storage Root
+            "object" - looks like an OCFL Object
+            "file" - a file, might be an inventory
+            other string explains error description
 
     Looks only at "0=*" Namaste files to determine the directory type.
     """
     try:
         pyfs = pyfs_openfs(path, create=False)
-    except (fsspec.opener.errors.OpenerError, fsspec.errors.CreateFailed):
+    except FileNotFoundError:
         # Failed to open path as a filesystem, try enclosing directory
         # in case path is a file
         (parent, filename) = os.path.split(path)
+        if parent == "":
+            parent = "."
         try:
             pyfs = pyfs_openfs(parent, create=False)
-        except (fsspec.opener.errors.OpenerError, fsspec.errors.CreateFailed) as e:
+        except FileNotFoundError as e:
             return "path cannot be opened, and nor can parent (" + str(e) + ")"
         # Can open parent, is filename a file there?
-        try:
-            info = pyfs.getinfo(filename)
-        except fsspec.errors.ResourceNotFound:
+        if not pyfs.exists(filename):
             return "path does not exist"
-        if info.is_dir:
+        elif pyfs.isdir(filename):
             return "directory that could not be opened as a filesystem, this should not happen"  # pragma: no cover
         return "file"
     namastes = find_namastes(0, pyfs=pyfs)

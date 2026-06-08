@@ -18,7 +18,7 @@ from .inventory import Inventory
 from .inventory_validator import InventoryValidator
 from .new_version import NewVersion
 from .object_utils import parse_version_directory, ObjectException
-from .pyfs import pyfs_openfs, pyfs_copyfile, PyfsException
+from .pyfs import pyfs_openfs, pyfs_copyfile, pyfs_listdir_names, pyfs_opendir_as_fs, PyfsException
 from .namaste import Namaste
 from .validator import Validator, ValidatorAbortException
 from .version_metadata import VersionMetadata
@@ -192,10 +192,11 @@ class Object():  # pylint: disable=too-many-public-methods
             versions_metadata = {}
         # Find the versions
         versions = {}
-        for vdir in src_fs.listdir("/"):
-            if not src_fs.isdir(vdir):
+        for entry in src_fs.listdir("/"):
+            if not entry["type"] == "directory":
                 continue
             try:
+                vdir = entry["name"]
                 vn = parse_version_directory(vdir)
                 versions[vn] = vdir
             except ObjectException:
@@ -247,11 +248,11 @@ class Object():  # pylint: disable=too-many-public-methods
             self.obj_fs.makedir(vdir)
         invfile = os.path.join(vdir, INVENTORY_FILENAME)
         if inventory is not None:
-            with pyfs_openfile(self.obj_fs, invfile, "w") as fh:
+            with self.obj_fs.open(invfile, "w") as fh:
                 inventory.write_json(fh)
         digest = file_digest(invfile, self.digest_algorithm, pyfs=self.obj_fs)
         sidecar = os.path.join(vdir, INVENTORY_FILENAME + "." + self.digest_algorithm)
-        with pyfs_openfile(self.obj_fs, sidecar, "w") as fh:
+        with self.obj_fs.open(sidecar, "w") as fh:
             fh.write(digest + " " + INVENTORY_FILENAME + "\n")
         return sidecar
 
@@ -572,7 +573,7 @@ class Object():  # pylint: disable=too-many-public-methods
                             validator.spec_version, objdir)
         tree = "[" + objdir + "]\n"
         self.open_obj_fs(objdir)
-        entries = sorted(self.obj_fs.listdir(""))
+        entries = sorted(pyfs_listdir_names(self.obj_fs, ""))
         n = 0
         seen_sidecar = False
         object_declaration_filename = self.object_declaration_object().filename
@@ -582,7 +583,7 @@ class Object():  # pylint: disable=too-many-public-methods
             v_notes = []
             if re.match(r"""v\d+$""", entry):
                 seen_v_sidecar = False
-                for v_entry in sorted(self.obj_fs.listdir(entry)):
+                for v_entry in sorted(pyfs_listdir_names(self.obj_fs, entry)):
                     v_note = v_entry + " "
                     if v_entry == INVENTORY_FILENAME:
                         pass
@@ -725,7 +726,7 @@ class Object():  # pylint: disable=too-many-public-methods
                 raise ObjectException("Target directory %s already exists and is not empty, aborting!" % (dstdir))
         else:  # Make dstdir
             parent_fs.makedir(dir)
-        dst_fs = parent_fs.opendir(dir)  # Open a sub-filesystem as our destination
+        dst_fs = pyfs_opendir_as_fs(parent_fs, dir)  # Open a sub-filesystem as our destination
         # Now extract...
         manifest = inv.manifest
         state = inv.version(version).state
@@ -804,7 +805,7 @@ class Object():  # pylint: disable=too-many-public-methods
         Returns:
             ocfl.Inventory: new Inventory object for the parsed inventory.
         """
-        with pyfs_openfile(self.obj_fs, INVENTORY_FILENAME, "r") as fh:
+        with self.obj_fs.open(INVENTORY_FILENAME, "r") as fh:
             inventory = Inventory(json.load(fh))
         # Validate
         iv = InventoryValidator()

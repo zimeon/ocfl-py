@@ -8,6 +8,8 @@ import os
 import os.path
 import re
 
+from .pyfs import pyfs_listdir_names
+
 
 def content_to_tvalue(content):
     """Safe and limited length tvalue from content.
@@ -23,15 +25,25 @@ def content_to_tvalue(content):
 def find_namastes(d, dir="", pyfs=None, limit=10):
     """Find NAMASTE files with tag d in dir, return list of Namaste objects.
 
-    limit sets a limit on the number of Namaste objects returned, a NamasteException
-    will be raised if more than limit files with tag d are found. Returns the values
-    sorter by filename to ensure consistent behaviour when multiple match files are
-    present.
+    Arguments:
+        d (int): tag name, D in NAMASTE specification
+        dir (str): directory to look in
+        pyfs (None or AbstractFileSystem): filesystem to use if not None
+        limit (int): limit sets a limit on the number of Namaste objects returned
+
+    Returns:
+        list: of Namaste object values sorted by filename to ensure consistent behaviour when
+            multiple match files are present.
+
+    Raises:
+        NamasteException: if more than limit files with tag d are found.
+
+
     """
     prefix = str(d) + "="
     if pyfs is not None:
         # pyfs.listdir include dir path in results
-        filenames = [os.path.relpath(f, dir) for f in pyfs.listdir(dir, detail=False)]
+        filenames = pyfs_listdir_names(pyfs, dir)
     else:
         filenames = os.listdir(dir)
     filenames = [f for f in filenames if f.startswith(prefix)]
@@ -62,7 +74,7 @@ class Namaste():
         """Initialize Namaste object.
 
         Arguments:
-            d - tag name, D in NAMASTE specification
+            d (int): tag name, D in NAMASTE specification
             content - metadata content of NAMASTE file from which tvalue is derived
             tvalue - explicity set tvalue instead of deriving
             tr_func - function reference used to derive a tvalue from content,

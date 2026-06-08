@@ -132,15 +132,15 @@ class TestAll(unittest.TestCase):
 
     def test_parse_layout_file(self):
         """Test parse_layout_file method."""
-        s = StorageRoot(root="mem://")
+        s = StorageRoot(root="memory://")
         s.open_root_fs(create=True)
-        s.root_fs.writetext("ocfl_layout.json", '{"extension": "aa", "description": "bb"}')
+        s.root_fs.write_text("ocfl_layout.json", '{"extension": "aa", "description": "bb"}')
         self.assertEqual(s.parse_layout_file(), ("aa", "bb"))
-        s.root_fs.writetext("ocfl_layout.json", '["aa", "bb"]')
+        s.root_fs.write_text("ocfl_layout.json", '["aa", "bb"]')
         self.assertRaises(StorageRootException, s.parse_layout_file)
-        s.root_fs.writetext("ocfl_layout.json", '{"extension": "yy", "description": ["zz"]}')
+        s.root_fs.write_text("ocfl_layout.json", '{"extension": "yy", "description": ["zz"]}')
         self.assertRaises(StorageRootException, s.parse_layout_file)
-        s.root_fs.remove("ocfl_layout.json")
+        s.root_fs.rm("ocfl_layout.json")
         s.root_fs.makedir("ocfl_layout.json")
         self.assertRaises(StorageRootException, s.parse_layout_file)
 

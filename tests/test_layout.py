@@ -92,7 +92,7 @@ class TestAll(unittest.TestCase):
 
     def test_write_layout_params(self):
         """Test write_layout_params."""
-        root_fs = pyfs_openfs("mem://")
+        root_fs = pyfs_openfs("memory://")
         layout = Layout()
         # No config_file will return none, so simply exits
         self.assertEqual(layout.write_layout_params(root_fs=root_fs), None)
