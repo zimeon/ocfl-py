@@ -115,70 +115,19 @@ def pyfs_openfs(fs_url, **kwargs):
 
 
 def pyfs_opendir_as_fs(pyfs, path):
-    return DirFileSystem(path=path, fs=pyfs)
-
-
-def pyfs_walk(pyfs, dir="/", is_storage_root=False):
-    """Walk that works on pyfs filesystems including S3 without the need for directory objects.
+    """Open directory as filesystem handling special case of S3.
 
     Arguments:
-        pyfs: fs filesytem to use
-        dir: string of directory to start from (default "/" which is the root
-            of the filesystem)
-        is_storage_root: boolean that affects behaviour according to whether
-            this is a storage root, default False
+        pyfs (AbstractFileSystem): fs filesytem to use, else None for local
+        path (str): string of directory to open
 
-    Assumes that f.getinfo() will work for a file/resource that exists and
-    that fs.errors.ResourceNotFound might be raised if called on a filesystem
-    without directories (and no directory objects).
-
-    For walking storage roots (is_storage_root=True) then the condition to
-    descend is:
-        1) this is the root (dirpath == "/"), or
-        2) there are no files in this directory (see
-           https://ocfl.io/1.0/spec/#root-structure)
-
-    For each directory will yield (dirpath, dirs, files) as does os.walk. The
-    value of dirs my be pruned to avoid descending into particular directories.
-
-    FIXME - QUICK AND DIRTY HACK, CAN DO BETTER!
-    """
-    if not dir.startswith("/"):
-        dir = "/" + dir
-    stack = [dir]
-    while len(stack) > 0:
-        dirpath = stack.pop()
-        files = []
-        dirs = []
-        for info in pyfs.listdir(dirpath):
-            entry = os.path.relpath(info["name"], dirpath)
-            is_dir = True
-            if info["type"] == "directory":
-                dirs.append(entry)
-            else:
-                files.append(entry)
-        yield (dirpath, dirs, files)
-        # dirs may have been modified to prune
-        if not is_storage_root or dirpath == "/" or len(files) == 0:
-            # If this is not the storage root itself and there are files
-            # present then we should not descend further
-            for entry in dirs:
-                stack.append(os.path.join(dirpath, entry))
-
-
-def pyfs_opendir(*, pyfs=None, dir="/", **kwargs):
-    """Open directory while handling the case of S3 without directory objects.
-
-    Arguments:
-        pyfs: fs filesytem to use, else None for local
-        dir: string of directory to open
-        **kwargs: additional arguments to pass to fs.opendir
-
-    Returns an fs filesystem for the new directory within pyfs. Has special
-    handling to deal with S3 filesystems which don't have directory objects.
+    Returns:
+        AbstractFileSystem: a filesystem for the new directory within pyfs.
+            Has special handling to deal with S3 filesystems which don't have
+            directory objects.
     """
     pyfs = _pyfs_or_local(pyfs)
-    if isinstance(pyfs, S3FS):
+    if isinstance(pyfs, S3FileSystem):
         # Hack for S3 because the standard opendir(..) fails when there
         # isn't a directory object (even with strict=False)
         new_dir_path = os.path.join(pyfs.dir_path, dir)
@@ -194,8 +143,72 @@ def pyfs_opendir(*, pyfs=None, dir="/", **kwargs):
         # Patch in version of getinfo method that doesn't check parent directory
         s3fs.getinfo = s3fs._getinfo  # pylint: disable=protected-access
         return s3fs
-    # Not S3, just use regular opendir(..)
-    return pyfs.opendir(dir, **kwargs)
+    # Else just use DirFileSystem
+    return DirFileSystem(path=path, fs=pyfs)
+
+
+def pyfs_walk(pyfs, dir="/", is_storage_root=False):
+    """Walk that works on pyfs filesystems including S3 without the need for directory objects.
+
+    Arguments:
+        pyfs: fs filesytem to use
+        dir: string of directory to start from (default "/" which is the root
+            of the filesystem)
+        is_storage_root: boolean that affects behaviour according to whether
+            this is a storage root, default False
+
+    Yields:
+        tuple (dirpath, dirs, files) - as does os.walk. The names of the
+        directories (in dirs) and files (in files) are relative to the current
+        dirpath, The value of dirs my be pruned to avoid descending into
+        particular directories.
+
+    Assumes that f.getinfo() will work for a file/resource that exists and
+    that fs.errors.ResourceNotFound might be raised if called on a filesystem
+    without directories (and no directory objects).
+
+    For walking storage roots (is_storage_root=True) then the condition to
+    descend is:
+        1) this is the root (dirpath == "/"), or
+        2) there are no files in this directory (see
+           https://ocfl.io/1.0/spec/#root-structure)
+
+    FIXME - QUICK AND DIRTY HACK, CAN DO BETTER!
+    """
+    if not dir.startswith("/"):
+        dir = "/" + dir
+    stack = [dir]
+    while len(stack) > 0:
+        dirpath = stack.pop()
+        files = []
+        dirs = []
+        print("dirpath = " + dirpath)
+        for info in pyfs.listdir(dirpath):
+            name = info["name"]
+            # FIXME - listdir seems inconsistent in that if dirpath is /
+            # then names come back without the preceding /, but if dirpath
+            # is a subdirectory then the leading slash is present. Add on
+            # if missing
+            if name == "." or name == "":
+                continue
+            if not name.startswith("/"):
+                name = "/" + name
+            name = os.path.relpath(name, dirpath)
+            #print(name + "  ##  " + dirpath)
+            if info["type"] == "directory":
+                # With zip filesystem we seem to get "." back that causes
+                # infinite recursion if not removed!
+                if name != ".":
+                    dirs.append(name)
+            else:
+                files.append(name)
+        yield (dirpath, dirs, files)
+        # dirs may have been modified to prune
+        if not is_storage_root or dirpath == "/" or len(files) == 0:
+            # If this is not the storage root itself and there are files
+            # present then we should not descend further
+            for entry in dirs:
+                stack.append(os.path.join(dirpath, entry))
 
 
 def pyfs_listdir_names(pyfs, path):

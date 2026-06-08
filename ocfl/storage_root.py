@@ -5,12 +5,13 @@ should enable application beyond the operating system filesystem.
 """
 import json
 import logging
+import os.path
 import re
 
 from .constants import DEFAULT_SPEC_VERSION, SPEC_VERSIONS_SUPPORTED
 from .namaste import find_namastes, Namaste
 from .object import Object
-from .pyfs import pyfs_openfs, pyfs_walk, pyfs_opendir, pyfs_copydir, PyfsException
+from .pyfs import pyfs_openfs, pyfs_walk, pyfs_opendir_as_fs, pyfs_copydir, PyfsException
 from .validator import Validator
 from .validation_logger import ValidationLogger
 
@@ -104,11 +105,8 @@ class StorageRoot():
             raise StorageRootException("Unsupported OCFL specification version %s requested" % (spec_version))
         self.spec_version = spec_version
 
-    def open_root_fs(self, create=False):
-        """Open pyfs filesystem for this OCFL storage root.
-
-        Arguments:
-            create (bool): attempt to create the a new storage root if true
+    def open_root_fs(self):
+        """Open existing pyfs filesystem for this OCFL storage root.
 
         Raises:
             StorageRootException: on failure to open root
@@ -117,8 +115,8 @@ class StorageRoot():
         self.root_fs on success with the open filesystem.
         """
         try:
-            self.root_fs = pyfs_openfs(self.root, create=create)
-        except PyfsException as e:
+            self.root_fs = pyfs_openfs(self.root)
+        except FileNotFoundError as e:
             raise StorageRootException("Failed to open OCFL storage root filesystem '%s' (%s)" % (self.root, str(e)))
 
 
@@ -203,7 +201,8 @@ class StorageRoot():
         parent_fs = pyfs_openfs(parent)
         if parent_fs.exists(root_dir):
             raise StorageRootException("OCFL storage root %s already exists, aborting!" % (self.root))
-        self.root_fs = parent_fs.makedir(root_dir)
+        parent_fs.makedir(root_dir)
+        self.root_fs = pyfs_openfs(self.root)
         logging.debug("Created OCFL storage root directory at %s", self.root)
         # Create root declaration
         self.write_root_declaration(self.root_fs)
@@ -361,7 +360,7 @@ class StorageRoot():
         self.check_root_structure()
         self.num_objects = 0
         for dirpath in self.object_paths():
-            with pyfs_opendir(pyfs=self.root_fs, dir=dirpath) as obj_fs:
+            with pyfs_opendir_as_fs(pyfs=self.root_fs, path=dirpath) as obj_fs:
                 # Parse inventory to extract id
                 identifier = Object(obj_fs=obj_fs).id_from_inventory()
                 self.num_objects += 1
@@ -396,7 +395,7 @@ class StorageRoot():
                                       log_warnings=log_warnings)
                 # FIXME - Should check that all objest are not higher spec
                 # version that storage root https://ocfl.io/1.1/spec/#E081
-                if validator.validate_object(pyfs_opendir(pyfs=self.root_fs, dir=dirpath)):
+                if validator.validate_object(pyfs_opendir_as_fs(pyfs=self.root_fs, path=dirpath)):
                     good_objects += 1
                 else:
                     logging.debug("Object at %s in INVALID", dirpath)

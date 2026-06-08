@@ -60,13 +60,11 @@ class TestAll(unittest.TestCase):
         s.root = tempdir
         s.open_root_fs()
         self.assertIsNot(s.root_fs, None)
-        # Error - open without create, then succeed with create
+        # Error if doesn't exist
         rootdir = os.path.join(tempdir, "xyz")
         s = StorageRoot()
         s.root = rootdir
         self.assertRaises(StorageRootException, s.open_root_fs)
-        s.open_root_fs(create=True)
-        self.assertIsNot(s.root_fs, None)
 
     def test_layout(self):
         """Test layout property."""
@@ -133,7 +131,7 @@ class TestAll(unittest.TestCase):
     def test_parse_layout_file(self):
         """Test parse_layout_file method."""
         s = StorageRoot(root="memory://")
-        s.open_root_fs(create=True)
+        s.open_root_fs()
         s.root_fs.write_text("ocfl_layout.json", '{"extension": "aa", "description": "bb"}')
         self.assertEqual(s.parse_layout_file(), ("aa", "bb"))
         s.root_fs.write_text("ocfl_layout.json", '["aa", "bb"]')
