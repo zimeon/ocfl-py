@@ -138,7 +138,7 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         try:
             self.obj_fs = pyfs_openfs(fs_url=objdir, create=create)
-        except PyfsException as e:
+        except FileNotFoundError as e:
             raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, e))
 
     def copy_into_object(self, src_fs, srcfile, filepath, create_dirs=False):
@@ -719,10 +719,10 @@ class Object():  # pylint: disable=too-many-public-methods
         (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
         try:
             parent_fs = pyfs_openfs(parentdir)
-        except PyfsException as e:
+        except FileNotFoundError as e:
             raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
         if parent_fs.isdir(dir):
-            if not parent_fs.isempty(dir):
+            if len(parent_fs.listdir(dir, detail=False)) > 0:
                 raise ObjectException("Target directory %s already exists and is not empty, aborting!" % (dstdir))
         else:  # Make dstdir
             parent_fs.makedir(dir)
@@ -735,7 +735,7 @@ class Object():  # pylint: disable=too-many-public-methods
             existing_file = manifest[digest][0]  # First entry with the digest, there could be > 1
             for logical_file in logical_files:
                 logging.debug("Copying %s -> %s", digest, logical_file)
-                dst_fs.makedirs(os.path.dirname(logical_file), recreate=True)
+                dst_fs.makedirs(os.path.dirname(logical_file), exist_ok=True)
                 pyfs_copyfile(self.obj_fs, existing_file, dst_fs, logical_file)
         logging.info("Extracted %s into %s", version, dstdir)
         return VersionMetadata(inventory=inv.data, version=version)

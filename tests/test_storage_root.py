@@ -10,6 +10,7 @@ from ocfl.storage_root import StorageRoot, StorageRootException
 from ocfl.layout_registry import get_layout
 from ocfl.layout_0002_flat_direct import Layout_0002_Flat_Direct
 from ocfl.validation_logger import ValidationLogger
+from ocfl.pyfs import pyfs_listdir_names
 
 
 class TestAll(unittest.TestCase):
@@ -130,7 +131,7 @@ class TestAll(unittest.TestCase):
 
     def test_parse_layout_file(self):
         """Test parse_layout_file method."""
-        s = StorageRoot(root="memory://")
+        s = StorageRoot(root="temp://")
         s.open_root_fs()
         s.root_fs.write_text("ocfl_layout.json", '{"extension": "aa", "description": "bb"}')
         self.assertEqual(s.parse_layout_file(), ("aa", "bb"))
@@ -155,6 +156,7 @@ class TestAll(unittest.TestCase):
         logger.addHandler(logging.StreamHandler(log_io))
         s = StorageRoot(root="zip://extra_fixtures/1.0/bad-storage-roots/simple-bad-root.zip")  # Using ZipFS
         s.open_root_fs()
+        #self.assertEqual(pyfs_listdir_names(s.root_fs, "/"), [])
         paths = list(s.object_paths())
         self.assertEqual(len(paths), 2)
         self.assertEqual(s.num_traversal_errors, 5)

@@ -16,7 +16,7 @@ from .constants import DEFAULT_DIGEST_ALGORITHM, DEFAULT_CONTENT_DIRECTORY, DEFA
 from .digest import file_digest
 from .inventory import Inventory, InventoryException
 from .object_utils import make_unused_filepath
-from .pyfs import pyfs_openfs
+from .pyfs import pyfs_openfs, pyfs_walk_files
 
 
 class NewVersionException(Exception):
@@ -392,7 +392,7 @@ class NewVersion():
 
     def add_from_srcdir(self):
         """Add all content from srcdir."""
-        for src_path in sorted(self.src_fs.walk.files()):
+        for src_path in sorted(pyfs_walk_files(self.src_fs)):
             src_path = os.path.relpath(src_path, "/")
             self.add(src_path, src_path, src_path_has_prefix=False)
 

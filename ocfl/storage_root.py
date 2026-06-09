@@ -303,13 +303,16 @@ class StorageRoot():
         Will log any errors seen while traversing the directory tree under the
         storage root.
         """
-        for (dirpath, dirs, files) in pyfs_walk(self.root_fs, is_storage_root=True):
+        for (dirpath, dirs, files) in pyfs_walk(self.root_fs):
+            print("object_paths: dirpath=" + dirpath + "  dirs=" + str(dirs) + "  files=" + str(files))
             if dirpath == "/":
                 if "extensions" in dirs:
                     self.validate_extensions_dir()
                     dirs.remove("extensions")
-                # Ignore any other files in storage root
+                # Ignore any other files in storage root but otherwise continue
+                # to descend
             elif (len(dirs) + len(files)) == 0:
+                # Empty directory
                 self.traversal_error("E073", path=dirpath)
             elif len(files) == 0:
                 pass  # Just an intermediate directory
@@ -329,6 +332,13 @@ class StorageRoot():
                         self.traversal_error("E004b", path=dirpath, declaration=declaration)
                 else:
                     self.traversal_error("E072", path=dirpath)
+            # If we are below the root, do not descend further if there
+            # are files present because these indicate that we are in
+            # an object already.
+            # (see https://ocfl.io/1.0/spec/#root-structure)
+            if dirpath != "/" and len(files) > 0:
+                while len(dirs) > 0:
+                    dirs.pop()
 
     def validate_extensions_dir(self):
         """Validate content of extensions directory inside storage root.
@@ -340,11 +350,12 @@ class StorageRoot():
         storage root extensions.
         """
         for entry in self.root_fs.listdir("extensions", detail=True):
+            name = entry["name"]
             if entry["type"] == "directory":
-                if os.path.relpath(entry.name, "extensions") not in self.registered_extensions:
-                    self.log.warning("W901", entry=entry.name)  # FIXME - No good warning code in spec
+                if os.path.relpath(name, "extensions") not in self.registered_extensions:
+                    self.log.warning("W901", entry=name)  # FIXME - No good warning code in spec
             else:
-                self.traversal_error("E086", entry=entry.name)
+                self.traversal_error("E086", entry=name)
 
     def list_objects(self):
         """List contents of this OCFL Storage Root.

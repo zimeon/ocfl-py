@@ -124,7 +124,7 @@ class Validator():
                 self.obj_fs = pyfs_openfs(path)
             else:
                 self.obj_fs = path
-                path = self.obj_xdesc("")
+                path = self.obj_fs.to_json()  # FIXME - Better info?
         except FileNotFoundError:
             self.log.error("E003e", path=path)
             return False
@@ -239,7 +239,7 @@ class Validator():
                 digest_actual = file_digest(inv_file, digest_algorithm, pyfs=self.obj_fs)
                 if digest_actual != digest_recorded:
                     self.log.error("E060", inv_file=inv_file, actual=digest_actual, recorded=digest_recorded, inv_digest_file=inv_digest_file)
-            except Exception as e:  # pylint: disable=broad-except
+            except ValueError as e:  # pylint: disable=broad-except
                 self.log.error("E061", description=str(e))
         else:
             self.log.error("E058b", inv_digest_file=inv_digest_file)
@@ -286,12 +286,13 @@ class Validator():
         this code relies up the registered_extensions property to list known
         extensions.
         """
-        for entry in self.obj_fs.scandir("extensions"):
-            if entry.is_dir:
-                if entry.name not in self.registered_extensions:
-                    self.log.warning("W013", entry=entry.name)
+        for entry in self.obj_fs.listdir("extensions", detail=True):
+            name = entry["name"]
+            if entry["type"] == "directory":
+                if name not in self.registered_extensions:
+                    self.log.warning("W013", entry=name)
             else:
-                self.log.error("E067", entry=entry.name)
+                self.log.error("E067", entry=name)
 
     def validate_version_inventories(self, version_dirs):
         """Each version SHOULD have an inventory up to that point.
@@ -511,7 +512,7 @@ class Validator():
             Exception: if there is an error reading the digest or it has
                 the wrong format
         """
-        with pyfs_openfile(self.obj_fs, inv_digest_file, "r") as fh:
+        with pyfs_openfile(inv_digest_file, "r", pyfs=self.obj_fs) as fh:
             line = fh.readline()
             # we ignore any following lines, could raise exception
         m = re.match(r"""(\w+)\s+(\S+)\s*$""", line)

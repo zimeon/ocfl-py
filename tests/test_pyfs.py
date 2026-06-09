@@ -2,7 +2,7 @@
 import os.path
 import unittest
 
-from ocfl.pyfs import pyfs_openfs, pyfs_opendir_as_fs, pyfs_walk, pyfs_files_identical
+from ocfl.pyfs import PyfsException, pyfs_openfs, pyfs_opendir_as_fs, pyfs_walk, pyfs_walk_files, pyfs_listdir_names, pyfs_files_identical
 
 
 class TestAll(unittest.TestCase):
@@ -20,6 +20,10 @@ class TestAll(unittest.TestCase):
         # memory filesystem
         fs = pyfs_openfs("memory://")
         self.assertEqual(len(fs.ls("")), 0)
+        # dir doesn't exists
+        self.assertRaises(FileNotFoundError, pyfs_openfs, "temp://new_dir")
+        # test of create
+        fs = pyfs_openfs("temp://new_dir", create=True)
 
     def test02_pyfs_opendir_as_fs(self):
         """Test pyfs_opendir_as_fs."""
@@ -50,6 +54,29 @@ class TestAll(unittest.TestCase):
             efiles[dir] = sorted(files)
         self.assertEqual(edirs["/"], ['ark%3A%2F12345%2Fbcd987', 'ark%3A123%2Fabc', 'dir_with_file_but_no_declaration', 'empty_dir', 'object_multiple_declarations', 'object_unknown_version', 'object_unrecognized_declaration'])
         self.assertEqual(efiles["/"], ["0=ocfl_1.0"])
+
+    def test04_pyfs_walk_file(self):
+        """Test pyfs_walk_file."""
+        fs = pyfs_openfs("fixtures/1.0/content/spec-ex-full")
+        self.assertEqual(sorted(pyfs_walk_files(fs, "/v3")),
+                         ['empty2.txt', 'foo/bar.xml', 'image.tiff'])
+        files = pyfs_walk_files(fs, "/")
+        self.assertIn("v3_inventory.json", files)
+        self.assertIn("v1/foo/bar.xml", files)
+        # Check zip
+        fs = pyfs_openfs("zip://extra_fixtures/1.0/warn-objects/W003_empty_content_dir.zip")
+        files = sorted(pyfs_walk_files(fs, "/"))
+        self.assertEqual(files, ['0=ocfl_object_1.0', 'inventory.json', 'inventory.json.sha512'])
+
+    def test05_pyfs_listdir_names(self):
+        """Test pyfs_listdir_names."""
+        fs = pyfs_openfs("fixtures/1.0/content/spec-ex-full")
+        files = sorted(pyfs_listdir_names(fs, path="v3"))
+        self.assertEqual(files, ['empty2.txt', 'foo', 'image.tiff'])
+        # zip
+        fs = pyfs_openfs("zip://extra_fixtures/1.0/warn-objects/W003_empty_content_dir.zip")
+        files = sorted(pyfs_listdir_names(fs, "v1"))
+        self.assertEqual(files, ['content', 'inventory.json', 'inventory.json.sha512'])
 
     def testXX_pyfs_files_identical(self):
         """Test pyfs_files_identical."""

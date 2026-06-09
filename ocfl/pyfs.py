@@ -16,7 +16,9 @@ It seems to be the case the using `strict=False` avoids checks for these empty
 directories. There is no way to pass the `strict` parameter via the open_fs()
 function so we need to call the S3FS creator method directly.
 """
+import logging
 import os.path
+import tempfile
 
 import fsspec
 from fsspec.spec import AbstractFileSystem
@@ -39,15 +41,21 @@ def _pyfs_or_local(pyfs):
     Simply returns pyfs if set, else if pyfs is None then we open a local
     filesystem and return that.
     """
+    logging.debug("pyfs -- %s", str(pyfs))
     return LocalFileSystem(".") if pyfs is None else pyfs
 
 
-def pyfs_openfs(fs_url, **kwargs):
+def pyfs_openfs(fs_url, create=False):
     """Open a pyfs filesystem.
 
     Arguments:
         fs_url: filesystem url to open, use "." for local filesystem rooted
             in current working directory
+        create (bool): if False then will throw a FileNotFoundError if the
+            directory does not exist or the filesystem otherwise cannot be
+            opened. If True then will attempt to open the parent directory
+            and create the specified path, will throw a PyfsException if
+            it already exists.
 
     Returns:
         AbstractFileSystem: file system instance
@@ -61,56 +69,82 @@ def pyfs_openfs(fs_url, **kwargs):
     as a FS filesystem with special handling for the case of an S3
     filesystem which has
     """
-    if isinstance(fs_url, AbstractFileSystem):
+    if isinstance(fs_url, AbstractFileSystem) and not create:
         return fs_url
 
-    print("DEBUG fs_url = " + fs_url)
+    print("pysf_openfs(%s, create=%s)", fs_url, str(create))
     parts = fs_url.split("://", 1)
 
     # Now assume a string that may be a path (no ://) or else a filesystem URL
-    if len(parts) == 1:   # does not contain "://"
-        # A path, assume this is not URI escaped and simply open a directory
-        # filesystem on the local filesystem
-        if not os.path.isdir(fs_url):
-            raise FileNotFoundError()
-        return DirFileSystem(fs_url, LocalFileSystem())
+    if len(parts) == 1:
+        # does not contain "://"
+        method = "file"
+        path = fs_url
+    else:
+        # we have a URL
+        method = parts[0]
+        path = parts[1]
 
-    # We have a URL
-    method = parts[0]
-    path = parts[1]
-    if method == "s3":
+    if create:
+        # Split path into the head that we open, and the tail that we
+        # create
+        (path, create_dir) = os.path.split(path)
+
+    if method == "file":
+        # We just have a local file path, assume this is not URI escaped
+        # and simply open a directory filesystem on the local filesystem
+        if not os.path.isdir(path):
+            raise FileNotFoundError("No directory %s to open as LocalFileSystem" % (fs_url))
+        pyfs = DirFileSystem(path, LocalFileSystem())
+    if method == "temp":
+        if path != "":
+            raise FileNotFoundError("Attempt to open temp filesystem with a path %s" % (path))
+        tempdir = tempfile.mkdtemp(prefix="pyfs")
+        pyfs = DirFileSystem(tempdir, LocalFileSystem())
+    elif method == "s3":
+        raise PyfsException("S3FileSystem not yet re-implemented! See ocfl/pyfs.py")
         # And S3 URL, mostly repeat
         # https://github.com/PyFilesystem/s3fs/blob/master/fs_s3fs/opener.py
         # but adjust the handling of strict to default to strict=False
-        bucket_name, _, dir_path = path.partition("/")
-        if not bucket_name:
-            raise FileNotFoundError("invalid bucket name in '{}'".format(fs_url))
+        # bucket_name, _, dir_path = path.partition("/")
+        # if not bucket_name:
+        #    raise FileNotFoundError("invalid bucket name in '{}'".format(fs_url))
         # Instead of the default opener behavior where strict is True unless
         # explicitly set !=1 in the URL query paremeter, we set False unless
         # explicity set via strict=1 in the URL query params
-        strict = (
-            parse_result.params["strict"] == "1"
-            if "strict" in parse_result.params
-            else False
-        )
-        s3fs = S3FS(
-            bucket_name,
-            dir_path=dir_path or "/",
-            aws_access_key_id=parse_result.username or None,
-            aws_secret_access_key=parse_result.password or None,
-            endpoint_url=parse_result.params.get("endpoint_url", None),
-            acl=parse_result.params.get("acl", None),
-            cache_control=parse_result.params.get("cache_control", None),
-            strict=strict)
+        # strict = (
+        #    parse_result.params["strict"] == "1"
+        #    if "strict" in parse_result.params
+        #    else False
+        # )
+        # pyfs = S3FS(
+        #    bucket_name,
+        #    dir_path=dir_path or "/",
+        #    aws_access_key_id=parse_result.username or None,
+        #    aws_secret_access_key=parse_result.password or None,
+        #    endpoint_url=parse_result.params.get("endpoint_url", None),
+        #    acl=parse_result.params.get("acl", None),
+        #    cache_control=parse_result.params.get("cache_control", None),
+        #    strict=strict)
         # Patch in version of getinfo method that doesn't check parent directory
-        s3fs.getinfo = s3fs._getinfo  # pylint: disable=protected-access
-        return s3fs
+        # pyfs.getinfo = pyfs._getinfo  # pylint: disable=protected-access
+        # return s3fs
     elif method == "zip":
-        return ZipFileSystem(fo=path)
-    # Not local, S3 or zip...
-    pyfs = fsspec.filesystem(method)
-    if path != "":
-        pyfs = DirFileSystem(path=path, fs=pyfs)
+        pyfs = ZipFileSystem(fo=path)
+    else:
+        # Not local, S3 or zip...
+        pyfs = fsspec.filesystem(method)
+        if path != "":
+            print("Changing to path = " + path)
+            pyfs = DirFileSystem(path=path, fs=pyfs)
+
+    # Do we need to create a new directory and change to that as the root?
+    if create:
+        if pyfs.exists(create_dir):
+            raise PyfsException("path %s already exists, cannot create" % (fs_url))
+        pyfs.makedir(create_dir)
+        pyfs = DirFileSystem(path=create_dir, fs=pyfs)
+
     return pyfs
 
 
@@ -128,52 +162,39 @@ def pyfs_opendir_as_fs(pyfs, path):
     """
     pyfs = _pyfs_or_local(pyfs)
     if isinstance(pyfs, S3FileSystem):
+        raise PyfsException("S3FileSystem not yet re-implemented! See ocfl/pyfs.py")
         # Hack for S3 because the standard opendir(..) fails when there
         # isn't a directory object (even with strict=False)
-        new_dir_path = os.path.join(pyfs.dir_path, dir)
-        s3fs = S3FS(
-            pyfs._bucket_name,  # pylint: disable=protected-access
-            dir_path=new_dir_path,
-            aws_access_key_id=pyfs.aws_access_key_id,
-            aws_secret_access_key=pyfs.aws_secret_access_key,
-            endpoint_url=pyfs.endpoint_url,
-            # acl=pyfs.acl,
-            # cache_control=pyfs.cache_control),
-            strict=pyfs.strict)
+        # new_dir_path = os.path.join(pyfs.dir_path, dir)
+        # s3fs = S3FS(
+        #    pyfs._bucket_name,  # pylint: disable=protected-access
+        #    dir_path=new_dir_path,
+        #    aws_access_key_id=pyfs.aws_access_key_id,
+        #    aws_secret_access_key=pyfs.aws_secret_access_key,
+        #    endpoint_url=pyfs.endpoint_url,
+        #    # acl=pyfs.acl,
+        #    # cache_control=pyfs.cache_control),
+        #    strict=pyfs.strict)
         # Patch in version of getinfo method that doesn't check parent directory
-        s3fs.getinfo = s3fs._getinfo  # pylint: disable=protected-access
-        return s3fs
+        # s3fs.getinfo = s3fs._getinfo  # pylint: disable=protected-access
+        # return s3fs
     # Else just use DirFileSystem
     return DirFileSystem(path=path, fs=pyfs)
 
 
-def pyfs_walk(pyfs, dir="/", is_storage_root=False):
+def pyfs_walk(pyfs, dir="/"):
     """Walk that works on pyfs filesystems including S3 without the need for directory objects.
 
     Arguments:
         pyfs: fs filesytem to use
         dir: string of directory to start from (default "/" which is the root
             of the filesystem)
-        is_storage_root: boolean that affects behaviour according to whether
-            this is a storage root, default False
 
     Yields:
         tuple (dirpath, dirs, files) - as does os.walk. The names of the
         directories (in dirs) and files (in files) are relative to the current
-        dirpath, The value of dirs my be pruned to avoid descending into
+        dirpath. The value of dirs my be pruned to avoid descending into
         particular directories.
-
-    Assumes that f.getinfo() will work for a file/resource that exists and
-    that fs.errors.ResourceNotFound might be raised if called on a filesystem
-    without directories (and no directory objects).
-
-    For walking storage roots (is_storage_root=True) then the condition to
-    descend is:
-        1) this is the root (dirpath == "/"), or
-        2) there are no files in this directory (see
-           https://ocfl.io/1.0/spec/#root-structure)
-
-    FIXME - QUICK AND DIRTY HACK, CAN DO BETTER!
     """
     if not dir.startswith("/"):
         dir = "/" + dir
@@ -182,19 +203,20 @@ def pyfs_walk(pyfs, dir="/", is_storage_root=False):
         dirpath = stack.pop()
         files = []
         dirs = []
-        print("dirpath = " + dirpath)
-        for info in pyfs.listdir(dirpath):
+        # print("dirpath = " + dirpath)
+        for info in pyfs.listdir(dirpath, detail=True):
             name = info["name"]
+            print("name = " + name)
             # FIXME - listdir seems inconsistent in that if dirpath is /
             # then names come back without the preceding /, but if dirpath
             # is a subdirectory then the leading slash is present. Add on
             # if missing
-            if name == "." or name == "":
+            if name in ("..", ".", ""):
                 continue
             if not name.startswith("/"):
                 name = "/" + name
             name = os.path.relpath(name, dirpath)
-            #print(name + "  ##  " + dirpath)
+            # print(name + "  ##  " + dirpath)
             if info["type"] == "directory":
                 # With zip filesystem we seem to get "." back that causes
                 # infinite recursion if not removed!
@@ -204,11 +226,25 @@ def pyfs_walk(pyfs, dir="/", is_storage_root=False):
                 files.append(name)
         yield (dirpath, dirs, files)
         # dirs may have been modified to prune
-        if not is_storage_root or dirpath == "/" or len(files) == 0:
-            # If this is not the storage root itself and there are files
-            # present then we should not descend further
-            for entry in dirs:
-                stack.append(os.path.join(dirpath, entry))
+        for dirname in dirs:
+            stack.append(os.path.join(dirpath, dirname))
+
+
+def pyfs_walk_files(pyfs, dir="/"):
+    """Files obtained by walkinf a pyfs filesystems.
+
+    Arguments:
+        pyfs: fs filesytem to use
+        dir: string of directory to start from (default "/" which is the root
+            of the filesystem)
+    """
+    allfiles = []
+    for dirpath, _, files in pyfs_walk(pyfs, dir):
+        reldir = os.path.relpath(dirpath, dir)
+        if reldir == ".":
+            reldir = ""
+        allfiles += [os.path.join(reldir, file) for file in files]
+    return allfiles
 
 
 def pyfs_listdir_names(pyfs, path):
@@ -222,10 +258,10 @@ def pyfs_listdir_names(pyfs, path):
         list: of filenames local to path
     """
     pyfs = _pyfs_or_local(pyfs)
-    return [os.path.relpath(f, path) for f in pyfs.listdir(path, detail=False)]
+    return [os.path.relpath(name, path) for name in pyfs.listdir(path, detail=False)]
 
 
-def pyfs_openfile(filepath, mode, pyfs=None, **kwargs):
+def pyfs_openfile(filepath, mode="rb", pyfs=None, **kwargs):
     """Open file on either local filesystem or fs filesystem.
 
     Arguments:
@@ -239,36 +275,6 @@ def pyfs_openfile(filepath, mode, pyfs=None, **kwargs):
     """
     pyfs = _pyfs_or_local(pyfs)
     return pyfs.open(filepath, mode, **kwargs)
-
-
-def pyfs_copyfile(src_fs, src_path, dst_fs, dst_path):
-    """Copy a file from one filesystem to another.
-
-    Arguments:
-        src_fs (FS): Source filesystem.
-        src_path (str): Path to source file on the source filesystem.
-        dst_fs (FS): Destination filesystem.
-        dst_path (str): Path to destination file on the destination filesystem.
-    """
-    with src_fs.open(src_path, "rb") as src:
-        with dst_fs.open(dst_path, "wb") as dst:
-            dst.write(src.read())  # FIXME - chunk this
-
-
-def pyfs_copydir(src_fs, src_path, dst_fs, dst_path):
-    """Recursive copy from one filesystem to another
-
-    Arguments:
-        src_fs (FS): Source filesystem.
-        src_path (str): Path to source directory file on the source filesystem.
-        dst_fs (FS): Destination filesystem.
-        dst_path (str): Path to destination directory on the destination filesystem.
-
-    # Recusive copy of object to path in self.root_fs
-    # fs.copydir(o.obj_fs, "/", self.root_fs, path)
-    # https://pyfilesystem2.readthedocs.io/en/latest/_modules/fs/copy.html#copy_dir
-    """
-    raise Exception
 
 
 def pyfs_files_identical(pyfs, file1, file2):
@@ -305,3 +311,33 @@ def pyfs_files_identical(pyfs, file1, file2):
                 if len(c1) == 0:
                     break
     return True
+
+
+def pyfs_copyfile(src_fs, src_path, dst_fs, dst_path):
+    """Copy a file from one filesystem to another.
+
+    Arguments:
+        src_fs (FS): Source filesystem.
+        src_path (str): Path to source file on the source filesystem.
+        dst_fs (FS): Destination filesystem.
+        dst_path (str): Path to destination file on the destination filesystem.
+    """
+    with src_fs.open(src_path, "rb") as src:
+        with dst_fs.open(dst_path, "wb") as dst:
+            dst.write(src.read())  # FIXME - chunk this
+
+
+def pyfs_copydir(src_fs, src_path, dst_fs, dst_path):
+    """Recursive copy from one filesystem to another.
+
+    Arguments:
+        src_fs (FS): Source filesystem.
+        src_path (str): Path to source directory file on the source filesystem.
+        dst_fs (FS): Destination filesystem.
+        dst_path (str): Path to destination directory on the destination filesystem.
+
+    # Recusive copy of object to path in self.root_fs
+    # fs.copydir(o.obj_fs, "/", self.root_fs, path)
+    # https://pyfilesystem2.readthedocs.io/en/latest/_modules/fs/copy.html#copy_dir
+    """
+    raise Exception
