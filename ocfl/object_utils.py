@@ -3,11 +3,9 @@
 import os.path
 import re
 
-import fsspec
-
 from ._version import __version__
 from .namaste import find_namastes
-from .pyfs import pyfs_openfs
+from .fsw import fsw_openfs
 
 
 NORMALIZATIONS = ["uri", "md5"]  # Must match possibilities in map_filepaths()
@@ -129,7 +127,7 @@ def find_path_type(path):
     Looks only at "0=*" Namaste files to determine the directory type.
     """
     try:
-        pyfs = pyfs_openfs(path, create=False)
+        fsw = fsw_openfs(path, create=False)
     except FileNotFoundError:
         # Failed to open path as a filesystem, try enclosing directory
         # in case path is a file
@@ -137,16 +135,16 @@ def find_path_type(path):
         if parent == "":
             parent = "."
         try:
-            pyfs = pyfs_openfs(parent, create=False)
+            fsw = fsw_openfs(parent, create=False)
         except FileNotFoundError as e:
             return "path cannot be opened, and nor can parent (" + str(e) + ")"
         # Can open parent, is filename a file there?
-        if not pyfs.exists(filename):
+        if not fsw.exists(filename):
             return "path does not exist"
-        elif pyfs.isdir(filename):
+        elif fsw.isdir(filename):
             return "directory that could not be opened as a filesystem, this should not happen"  # pragma: no cover
         return "file"
-    namastes = find_namastes(0, pyfs=pyfs)
+    namastes = find_namastes(0, fsw=fsw)
     if len(namastes) == 0:
         return "no 0= declaration file"
     # Look at the first 0= Namaste file that is of OCFL form to determine type, if there are

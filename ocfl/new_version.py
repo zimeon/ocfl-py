@@ -16,7 +16,7 @@ from .constants import DEFAULT_DIGEST_ALGORITHM, DEFAULT_CONTENT_DIRECTORY, DEFA
 from .digest import file_digest
 from .inventory import Inventory, InventoryException
 from .object_utils import make_unused_filepath
-from .pyfs import pyfs_openfs, pyfs_walk_files
+from .fsw import fsw_openfs, fsw_walk_files
 
 
 class NewVersionException(Exception):
@@ -31,7 +31,7 @@ class NewVersion():
 
         Arguments:
             srcdir (str): source directory name for files that will be added
-                to this new version. May be a pyfs filesystem specification.
+                to this new version. May be a fsw filesystem specification.
                 Default is "."
 
         The default constructor is not expected to be used directly, see
@@ -48,7 +48,7 @@ class NewVersion():
         # Additional state needed for final commit
         self.old_digest_algorithm = None
         self.files_to_copy = {}  # dict: src_path -> content_path
-        self.src_fs = pyfs_openfs(self.srcdir)
+        self.src_fs = fsw_openfs(self.srcdir)
 
     @classmethod
     def first_version(cls, *,
@@ -65,7 +65,7 @@ class NewVersion():
 
         Arguments:
             srcdir (str): source directory name for files that will be added
-                to this new version. May be a pyfs filesystem specification
+                to this new version. May be a fsw filesystem specification
             identifier (str): identifier of the object to be created
             spec_version (str): the specification version that the new version
                 should be created in accord with. Defaults to
@@ -180,7 +180,7 @@ class NewVersion():
             inventory (ocfl.Inventory): inventory that we will modify to build
                 the new version
             srcdir (str): source directory name for files that will be added
-                to this new version. May be a pyfs filesystem specification
+                to this new version. May be a fsw filesystem specification
             metadata (ocfl.VersionMetadata or None): Either a VersionMetadata
                 object to set the metadata for the new version, None to not set
                 metadata
@@ -322,7 +322,7 @@ class NewVersion():
         if logical_path in inventory.current_version.logical_paths:
             raise NewVersionException("Logical path %s already exists in new version %s" % (logical_path, inventory.head))
         # Work out digest, add to state
-        digest = file_digest(src_path, inventory.digest_algorithm, pyfs=self.src_fs)
+        digest = file_digest(src_path, inventory.digest_algorithm, fsw=self.src_fs)
         if digest in inventory.current_version.state_add_if_not_present():
             inventory.current_version.state[digest].append(logical_path)
         else:
@@ -392,7 +392,7 @@ class NewVersion():
 
     def add_from_srcdir(self):
         """Add all content from srcdir."""
-        for src_path in sorted(pyfs_walk_files(self.src_fs)):
+        for src_path in sorted(fsw_walk_files(self.src_fs)):
             src_path = os.path.relpath(src_path, "/")
             self.add(src_path, src_path, src_path_has_prefix=False)
 

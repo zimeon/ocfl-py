@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """OCFL Object Implementation.
 
-This code uses the local ocfl.pyfs convenience methods and wrapper around a
+This code uses the local ocfl.fsw convenience methods and wrapper around a
 filesystem abstraction layer exclusively for access to files. This enables
 application beyond the operating system filesystem to include ``mem://``,
 ``zip://`` and ``s3://`` filesystems.
@@ -18,7 +18,7 @@ from .inventory import Inventory
 from .inventory_validator import InventoryValidator
 from .new_version import NewVersion
 from .object_utils import parse_version_directory, ObjectException
-from .pyfs import pyfs_openfs, pyfs_copyfile, pyfs_listdir_names, pyfs_opendir_as_fs, PyfsException
+from .fsw import fsw_openfs, fsw_copyfile, fsw_listdir_names, fsw_opendir_as_fs, PyfsException
 from .namaste import Namaste
 from .validator import Validator, ValidatorAbortException
 from .version_metadata import VersionMetadata
@@ -70,7 +70,7 @@ class Object():  # pylint: disable=too-many-public-methods
             for content references in the object will be allowed. Defaults to
             False
         fixity (list): list of fixity types to add as fixity section
-        obj_fs (io.IOBase): a pyfs filesystem reference for the root of this object
+        obj_fs (io.IOBase): a fsw filesystem reference for the root of this object
     """
 
     def __init__(self, *, identifier=None,
@@ -101,8 +101,8 @@ class Object():  # pylint: disable=too-many-public-methods
                 in the  specification for fixity and to allow non-preferred digest
                 algorithms for content references in the object
             fixity (list of str): list of fixity types to add as fixity section
-            obj_fs (str): a pyfs filesystem for the root of this object
-            path (str): if set then open a pyfs filesystem at path (alternative
+            obj_fs (str): a fsw filesystem for the root of this object
+            path (str): if set then open a fsw filesystem at path (alternative
                 to obj_fs)
             create (bool): set True to allow opening filesystem at path to create
                 a directory
@@ -137,7 +137,7 @@ class Object():  # pylint: disable=too-many-public-methods
         Sets obj_fs attribute with the filesystem instance
         """
         try:
-            self.obj_fs = pyfs_openfs(fs_url=objdir, create=create)
+            self.obj_fs = fsw_openfs(fs_url=objdir, create=create)
         except FileNotFoundError as e:
             raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, e))
 
@@ -146,7 +146,7 @@ class Object():  # pylint: disable=too-many-public-methods
         dstpath = os.path.dirname(filepath)
         if create_dirs and not self.obj_fs.exists(dstpath):
             self.obj_fs.makedirs(dstpath)
-        pyfs_copyfile(src_fs, srcfile, self.obj_fs, filepath)
+        fsw_copyfile(src_fs, srcfile, self.obj_fs, filepath)
 
     def start_inventory(self):
         """Create inventory start with metadata from self.
@@ -176,7 +176,7 @@ class Object():  # pylint: disable=too-many-public-methods
         """Generate an OCFL inventory from a set of source files.
 
         Arguments:
-            src_fc (str): pyfs filesystem of source files.
+            src_fc (str): fsw filesystem of source files.
             versions_metadata (dict): dict of VersionMetadata objects for each
                 version, key is the integer version number. Default is None
                 in which case no metadata is added.
@@ -226,7 +226,7 @@ class Object():  # pylint: disable=too-many-public-methods
         Assumes self.obj_fs is open for this object and writes into the
         root directory of that filesystem.
         """
-        self.object_declaration_object().write(pyfs=self.obj_fs)
+        self.object_declaration_object().write(fsw=self.obj_fs)
 
     def write_inventory_and_sidecar(self, inventory=None, vdir=""):
         """Write inventory and sidecar to vdir in the current object.
@@ -250,7 +250,7 @@ class Object():  # pylint: disable=too-many-public-methods
         if inventory is not None:
             with self.obj_fs.open(invfile, "w") as fh:
                 inventory.write_json(fh)
-        digest = file_digest(invfile, self.digest_algorithm, pyfs=self.obj_fs)
+        digest = file_digest(invfile, self.digest_algorithm, fsw=self.obj_fs)
         sidecar = os.path.join(vdir, INVENTORY_FILENAME + "." + self.digest_algorithm)
         with self.obj_fs.open(sidecar, "w") as fh:
             fh.write(digest + " " + INVENTORY_FILENAME + "\n")
@@ -288,7 +288,7 @@ class Object():  # pylint: disable=too-many-public-methods
         if objdir is not None:
             self.open_obj_fs(objdir, create=True)
         num_versions = 0
-        src_fs = pyfs_openfs(srcdir)
+        src_fs = fsw_openfs(srcdir)
         inventory = None
         # Create each version of the object
         for (vdir, metadata) in self.version_dirs_and_metadata(src_fs, versions_metadata):
@@ -486,11 +486,11 @@ class Object():  # pylint: disable=too-many-public-methods
             old_to_new_digest = {}
             new_manifest = {}
             for old_digest, files in manifest.items():
-                digest = file_digest(files[0], digest_algorithm, pyfs=self.obj_fs)
+                digest = file_digest(files[0], digest_algorithm, fsw=self.obj_fs)
                 old_to_new_digest[old_digest] = digest
                 for file in files[1:]:
                     # Sanity check that any dupe files also match
-                    d = file_digest(file, digest_algorithm, pyfs=self.obj_fs)
+                    d = file_digest(file, digest_algorithm, fsw=self.obj_fs)
                     if d != digest:
                         raise ObjectException("Failed sanity check - files %s and %s should have same %s digest but calculated %s and %s respectively" %
                                               files[0], file, digest_algorithm, digest, d)
@@ -573,7 +573,7 @@ class Object():  # pylint: disable=too-many-public-methods
                             validator.spec_version, objdir)
         tree = "[" + objdir + "]\n"
         self.open_obj_fs(objdir)
-        entries = sorted(pyfs_listdir_names(self.obj_fs, ""))
+        entries = sorted(fsw_listdir_names(self.obj_fs, ""))
         n = 0
         seen_sidecar = False
         object_declaration_filename = self.object_declaration_object().filename
@@ -583,7 +583,7 @@ class Object():  # pylint: disable=too-many-public-methods
             v_notes = []
             if re.match(r"""v\d+$""", entry):
                 seen_v_sidecar = False
-                for v_entry in sorted(pyfs_listdir_names(self.obj_fs, entry)):
+                for v_entry in sorted(fsw_listdir_names(self.obj_fs, entry)):
                     v_note = v_entry + " "
                     if v_entry == INVENTORY_FILENAME:
                         pass
@@ -666,7 +666,7 @@ class Object():  # pylint: disable=too-many-public-methods
                               lax_digests=self.lax_digests)
         try:
             (inv_dir, inv_file) = os.path.split(path)
-            validator.obj_fs = pyfs_openfs(inv_dir, create=False)
+            validator.obj_fs = fsw_openfs(inv_dir, create=False)
             validator.validate_inventory(inv_file, where="standalone", force_spec_version=force_spec_version)
         except PyfsException:
             validator.log.error("E033", where="standalone", explanation="failed to open directory")
@@ -718,7 +718,7 @@ class Object():  # pylint: disable=too-many-public-methods
         # Check the destination
         (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
         try:
-            parent_fs = pyfs_openfs(parentdir)
+            parent_fs = fsw_openfs(parentdir)
         except FileNotFoundError as e:
             raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
         if parent_fs.isdir(dir):
@@ -726,7 +726,7 @@ class Object():  # pylint: disable=too-many-public-methods
                 raise ObjectException("Target directory %s already exists and is not empty, aborting!" % (dstdir))
         else:  # Make dstdir
             parent_fs.makedir(dir)
-        dst_fs = pyfs_opendir_as_fs(parent_fs, dir)  # Open a sub-filesystem as our destination
+        dst_fs = fsw_opendir_as_fs(parent_fs, dir)  # Open a sub-filesystem as our destination
         # Now extract...
         manifest = inv.manifest
         state = inv.version(version).state
@@ -736,7 +736,7 @@ class Object():  # pylint: disable=too-many-public-methods
             for logical_file in logical_files:
                 logging.debug("Copying %s -> %s", digest, logical_file)
                 dst_fs.makedirs(os.path.dirname(logical_file), exist_ok=True)
-                pyfs_copyfile(self.obj_fs, existing_file, dst_fs, logical_file)
+                fsw_copyfile(self.obj_fs, existing_file, dst_fs, logical_file)
         logging.info("Extracted %s into %s", version, dstdir)
         return VersionMetadata(inventory=inv.data, version=version)
 
@@ -761,14 +761,14 @@ class Object():  # pylint: disable=too-many-public-methods
         inv, version = self._extract_setup(objdir, version)
         # Check the destination
         try:
-            dst_fs = pyfs_openfs(dstdir)
+            dst_fs = fsw_openfs(dstdir)
         except PyfsException:
             # Doesn't exist, can we create it?
             (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
             if parentdir == "":
                 parentdir = "."
             try:
-                parent_fs = pyfs_openfs(parentdir)
+                parent_fs = fsw_openfs(parentdir)
             except PyfsException as e:
                 raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
             dst_fs = parent_fs.makedir(dir)
@@ -786,7 +786,7 @@ class Object():  # pylint: disable=too-many-public-methods
             for logical_file in logical_files:
                 if logical_file == logical_path:
                     logging.debug("Copying %s -> %s", digest, basename)
-                    pyfs_copyfile(self.obj_fs, existing_file, dst_fs, basename)
+                    fsw_copyfile(self.obj_fs, existing_file, dst_fs, basename)
                     copied = True
                     break
             if copied:

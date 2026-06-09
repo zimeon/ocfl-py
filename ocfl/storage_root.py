@@ -11,7 +11,7 @@ import re
 from .constants import DEFAULT_SPEC_VERSION, SPEC_VERSIONS_SUPPORTED
 from .namaste import find_namastes, Namaste
 from .object import Object
-from .pyfs import pyfs_openfs, pyfs_walk, pyfs_opendir_as_fs, pyfs_copydir, PyfsException
+from .fsw import fsw_openfs, fsw_walk, fsw_opendir_as_fs, fsw_copydir, PyfsException
 from .validator import Validator
 from .validation_logger import ValidationLogger
 
@@ -57,7 +57,7 @@ class StorageRoot():
         """Initialize OCFL Storage Root.
 
         Arguments:
-            root (str): file path or pyfs filesystem descriptor for the OCFL
+            root (str): file path or fsw filesystem descriptor for the OCFL
                 Storage Root
             layout_name (str): name of the file layout to use
             lax_digests (bool):
@@ -106,7 +106,7 @@ class StorageRoot():
         self.spec_version = spec_version
 
     def open_root_fs(self):
-        """Open existing pyfs filesystem for this OCFL storage root.
+        """Open existing fsw filesystem for this OCFL storage root.
 
         Raises:
             StorageRootException: on failure to open root
@@ -115,7 +115,7 @@ class StorageRoot():
         self.root_fs on success with the open filesystem.
         """
         try:
-            self.root_fs = pyfs_openfs(self.root)
+            self.root_fs = fsw_openfs(self.root)
         except FileNotFoundError as e:
             raise StorageRootException("Failed to open OCFL storage root filesystem '%s' (%s)" % (self.root, str(e)))
 
@@ -126,7 +126,7 @@ class StorageRoot():
         Uses self.spec_version to determing the Storage Root version and
         assumes self.obj_fs is open for this object.
         """
-        Namaste(0, "ocfl_" + self.spec_version).write(pyfs=root_fs)
+        Namaste(0, "ocfl_" + self.spec_version).write(fsw=root_fs)
 
     @property
     def layout(self):
@@ -198,11 +198,11 @@ class StorageRoot():
         self.check_spec_version(spec_version=spec_version)
         # Now create the storage root
         (parent, root_dir) = os.path.split(self.root)
-        parent_fs = pyfs_openfs(parent)
+        parent_fs = fsw_openfs(parent)
         if parent_fs.exists(root_dir):
             raise StorageRootException("OCFL storage root %s already exists, aborting!" % (self.root))
         parent_fs.makedir(root_dir)
-        self.root_fs = pyfs_openfs(self.root)
+        self.root_fs = fsw_openfs(self.root)
         logging.debug("Created OCFL storage root directory at %s", self.root)
         # Create root declaration
         self.write_root_declaration(self.root_fs)
@@ -234,7 +234,7 @@ class StorageRoot():
         Assumes that self.root_fs filesystem is available to read from.
         """
         # Storage root declaration
-        namastes = find_namastes(0, pyfs=self.root_fs)
+        namastes = find_namastes(0, fsw=self.root_fs)
         if len(namastes) == 0:
             raise StorageRootException("E069a", root=self.root)
         if len(namastes) > 1:
@@ -252,7 +252,7 @@ class StorageRoot():
                                        declared_spec_version=spec_version,
                                        expected_spec_version=self.spec_version)
         self.spec_version = spec_version
-        if not namastes[0].content_ok(pyfs=self.root_fs):
+        if not namastes[0].content_ok(fsw=self.root_fs):
             raise StorageRootException("E069e", root=self.root,
                                        namaste_file=namastes[0].filename)
         # Layout file (if present)
@@ -303,7 +303,7 @@ class StorageRoot():
         Will log any errors seen while traversing the directory tree under the
         storage root.
         """
-        for (dirpath, dirs, files) in pyfs_walk(self.root_fs):
+        for (dirpath, dirs, files) in fsw_walk(self.root_fs):
             print("object_paths: dirpath=" + dirpath + "  dirs=" + str(dirs) + "  files=" + str(files))
             if dirpath == "/":
                 if "extensions" in dirs:
@@ -371,7 +371,7 @@ class StorageRoot():
         self.check_root_structure()
         self.num_objects = 0
         for dirpath in self.object_paths():
-            with pyfs_opendir_as_fs(pyfs=self.root_fs, path=dirpath) as obj_fs:
+            with fsw_opendir_as_fs(fsw=self.root_fs, path=dirpath) as obj_fs:
                 # Parse inventory to extract id
                 identifier = Object(obj_fs=obj_fs).id_from_inventory()
                 self.num_objects += 1
@@ -406,7 +406,7 @@ class StorageRoot():
                                       log_warnings=log_warnings)
                 # FIXME - Should check that all objest are not higher spec
                 # version that storage root https://ocfl.io/1.1/spec/#E081
-                if validator.validate_object(pyfs_opendir_as_fs(pyfs=self.root_fs, path=dirpath)):
+                if validator.validate_object(fsw_opendir_as_fs(fsw=self.root_fs, path=dirpath)):
                     good_objects += 1
                 else:
                     logging.debug("Object at %s in INVALID", dirpath)
@@ -484,7 +484,7 @@ class StorageRoot():
         logging.debug("Copying from %s to %s", object_path, os.path.join(self.root, path))
         try:
             # Recusive copy of object to path in self.root_fs
-            pyfs_copydir(o.obj_fs, "/", self.root_fs, path)
+            fsw_copydir(o.obj_fs, "/", self.root_fs, path)
         except Exception as e:
             raise StorageRootException("Add object at path %s failed! (%s)" % (path, str(e)))
         return (identifier, path)
