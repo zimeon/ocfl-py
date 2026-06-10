@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 from ocfl.inventory import Inventory
-from ocfl.fsw import fsw_openfs, fsw_listdir_names
+from ocfl.fsw import fsw_openfs, fsw_listdir_names, fsw_readtext
 from ocfl.object import Object, ObjectException
 from ocfl.version_metadata import VersionMetadata
 
@@ -90,7 +90,7 @@ class TestAll(unittest.TestCase):
         with tmpfs.open('inventory.json') as fh:
             j = json.load(fh)
         self.assertEqual(j, {'abc': 'def'})
-        digest = tmpfs.readtext('inventory.json.sha512')
+        digest = fsw_readtext('inventory.json.sha512', tmpfs)
         self.assertRegex(digest, r'''[0-9a-f]{128} inventory.json\n''')
         # and now making directory
         oo = Object(obj_fs=tmpfs)

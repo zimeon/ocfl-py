@@ -42,10 +42,10 @@ def _fsw_or_local(fs):
     filesystem and return that.
     """
     logging.debug("fsw -- %s", str(fs))
-    return LocalFileSystem(".") if fs is None else fs
+    return DirFileSystem(os.getcwd(), LocalFileSystem()) if fs is None else fs
 
 
-def fsw_openfs(fs_url, create=False):
+def fsw_openfs(fs_url, create=False, exists_ok=True):
     """Open a fsw filesystem.
 
     Arguments:
@@ -55,7 +55,9 @@ def fsw_openfs(fs_url, create=False):
             directory does not exist or the filesystem otherwise cannot be
             opened. If True then will attempt to open the parent directory
             and create the specified path, will throw a PyfsException if
-            it already exists.
+            it already exists and exists_ok is not True.
+        exists_ok (bool): if False then will throw PyfsException if directory
+            to be created already exists
 
     Returns:
         AbstractFileSystem: file system instance
@@ -72,7 +74,7 @@ def fsw_openfs(fs_url, create=False):
     if isinstance(fs_url, AbstractFileSystem) and not create:
         return fs_url
 
-    print("fsw_openfs(%s, create=%s)", fs_url, str(create))
+    print("fsw_openfs(%s, create=%s, exists_ok=%s)" % (fs_url, str(create), str(exists_ok)))
     parts = fs_url.split("://", 1)
 
     # Now assume a string that may be a path (no ://) or else a filesystem URL
@@ -93,15 +95,17 @@ def fsw_openfs(fs_url, create=False):
     if method == "file":
         # We just have a local file path, assume this is not URI escaped
         # and simply open a directory filesystem on the local filesystem
+        if not path.startswith("/"):  # Make absolute
+            path = os.path.join(os.getcwd(), path)
         if not os.path.isdir(path):
             raise FileNotFoundError("No directory %s to open as LocalFileSystem" % (fs_url))
-        fsw = DirFileSystem(path, LocalFileSystem())
+        fs = DirFileSystem(path, LocalFileSystem())
     if method == "temp":
         if path != "":
             raise FileNotFoundError("Attempt to open temp filesystem with a path %s" % (path))
         tempdir = tempfile.mkdtemp(prefix="fsw")
         print("tempdir = " + tempdir)
-        fsw = DirFileSystem(tempdir, LocalFileSystem())
+        fs = DirFileSystem(tempdir, LocalFileSystem())
     elif method == "s3":
         raise PyfsException("S3FileSystem not yet re-implemented! See ocfl/fsw.py")
         # And S3 URL, mostly repeat
@@ -132,21 +136,23 @@ def fsw_openfs(fs_url, create=False):
         # return s3fs
     elif method == "zip":
         raise PyfsException("ZipFileSystem not yet re-implemented for file %s! See ocfl/fsw.py" % (path))
-        fsw = ZipFileSystem(fo=path)
+        fs = ZipFileSystem(fo=path)
     else:
         # Not local, S3 or zip...
-        fsw = fsspec.filesystem(method)
+        fs = fsspec.filesystem(method)
         if path != "":
-            fsw = DirFileSystem(path=path, fs=fsw)
+            fs = DirFileSystem(path=path, fs=fs)
 
     # Do we need to create a new directory and change to that as the root?
     if create:
-        if fsw.exists(create_dir):
-            raise PyfsException("path %s already exists, cannot create" % (fs_url))
-        fsw.makedir(create_dir)
-        fsw = DirFileSystem(path=create_dir, fs=fsw)
+        if fs.exists(create_dir):
+            if not exists_ok:
+                raise PyfsException("path %s already exists, cannot create" % (fs_url))
+        else:
+            fs.makedir(create_dir)
+        fs = DirFileSystem(path=create_dir, fs=fs)
 
-    return fsw
+    return fs
 
 
 def fsw_opendir_as_fs(fsw, path):
@@ -248,35 +254,54 @@ def fsw_walk_files(fsw, dir="/"):
     return allfiles
 
 
-def fsw_listdir_names(fsw, path):
+def fsw_listdir_names(fsw, path="/"):
     """List directory path on fsw returning relative file names.
 
     Arguments:
         fsw: fs filesystem to use
-        path: path on fsw
+        path: directory path on fsw, defaults to the root
 
     Returns:
         list: of filenames local to path
     """
     fsw = _fsw_or_local(fsw)
+    if path == "/":
+        path = ""
     return [os.path.relpath(name, path) for name in fsw.listdir(path, detail=False)]
 
 
-def fsw_openfile(filepath, mode="rb", fsw=None, **kwargs):
+def fsw_openfile(filepath, mode="rb", fs=None, **kwargs):
     """Open file on either local filesystem or fs filesystem.
 
     Arguments:
         filepath: string of file path
         mode: file mode
-        fsw: fs filesystem to use, else None (default) will use the
+        fs: fs filesystem to use, else None (default) will use the
             local file
         **kwargs: additional arguments to pass to fs.open
 
     Returns open fs filehandle.
     """
-    fsw = _fsw_or_local(fsw)
-    return fsw.open(filepath, mode, **kwargs)
+    fs = _fsw_or_local(fs)
+    #print("fsw_openfile(%s, %s)" % (filepath, mode))
+    return fs.open(filepath, mode, **kwargs)
 
+
+def fsw_readtext(filepath, fs=None):
+    """Read file on either local filesystem or fs filesystem.
+
+    Arguments:
+        filepath: string of file path
+        fs: filesystem to use, else None (default) will use the
+            local filesytem
+
+    Returns:
+        str: the text contents of the file.
+    """
+    fs = _fsw_or_local(fs)
+    with fs.open(filepath, "r") as fh:
+        text = fh.read()
+    return text
 
 def fsw_files_identical(fsw, file1, file2):
     """Compare files on one filesystem fsw.
@@ -341,4 +366,4 @@ def fsw_copydir(src_fs, src_path, dst_fs, dst_path):
     # fs.copydir(o.obj_fs, "/", self.root_fs, path)
     # https://pyfilesystem2.readthedocs.io/en/latest/_modules/fs/copy.html#copy_dir
     """
-    raise Exception
+    raise Exception("FIXME - Need to implement recusive copy fsw_copydir!")

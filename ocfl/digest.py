@@ -6,19 +6,19 @@ from .fsw import fsw_openfile
 BUFSIZE = 64 * 1024  # 64kB for want of better info...
 
 
-def _file_digest(fsw, filename, digester):
+def _file_digest(fs, filename, digester):
     """Generate a digest for filename using the supplied digester object.
 
     Like haslib.sha256 and hashlib.sha512, the digester object must
     support the .update() and .hexdigest() methods.
     """
-    with fsw_openfile(filename, "rb", fsw=fsw) as fh:
+    with fsw_openfile(filename, "rb", fs=fs) as fh:
         for b in iter(lambda: fh.read(BUFSIZE), b""):
             digester.update(b)
     return digester.hexdigest()
 
 
-def file_digest(filename, digest_type="sha512", fsw=None):
+def file_digest(filename, digest_type="sha512", fs=None):
     """Digest of digest_type for file filename in normalized form.
 
     Supports digest_type values from OCFL spec:
@@ -31,7 +31,7 @@ def file_digest(filename, digest_type="sha512", fsw=None):
     Arguments:
         filename: string with name of file to calculate digest for
         digest_type: string of digest type
-        fsw: None for local file, else a PyFilesystem2() object within
+        fs: None for local file, else a filesystem object within
             which filename exists
 
     Returns digest string.
@@ -40,30 +40,30 @@ def file_digest(filename, digest_type="sha512", fsw=None):
     """
     # From spec
     if digest_type == "sha512":
-        return _file_digest(fsw, filename, hashlib.sha512())
+        return _file_digest(fs, filename, hashlib.sha512())
     if digest_type == "sha256":
-        return _file_digest(fsw, filename, hashlib.sha256())
+        return _file_digest(fs, filename, hashlib.sha256())
     if digest_type == "sha1":
-        return _file_digest(fsw, filename, hashlib.sha1())
+        return _file_digest(fs, filename, hashlib.sha1())
     if digest_type == "md5":
-        return _file_digest(fsw, filename, hashlib.md5())
+        return _file_digest(fs, filename, hashlib.md5())
     if digest_type == "blake2b-512":
-        return _file_digest(fsw, filename, hashlib.blake2b())
+        return _file_digest(fs, filename, hashlib.blake2b())
     # From extensions
     if digest_type == "blake2b-160":
-        return _file_digest(fsw, filename, hashlib.blake2b(digest_size=20))
+        return _file_digest(fs, filename, hashlib.blake2b(digest_size=20))
     if digest_type == "blake2b-256":
-        return _file_digest(fsw, filename, hashlib.blake2b(digest_size=32))
+        return _file_digest(fs, filename, hashlib.blake2b(digest_size=32))
     if digest_type == "blake2b-384":
-        return _file_digest(fsw, filename, hashlib.blake2b(digest_size=48))
+        return _file_digest(fs, filename, hashlib.blake2b(digest_size=48))
     # Specification examples: 15/6 chars ... 3 chars. The truncated
     # sha512 is twice as many chars as the truncated sha256 to give
     # a appropriate impression in examples
     if digest_type == "sha512-spec-ex":
-        d = _file_digest(fsw, filename, hashlib.sha512())
+        d = _file_digest(fs, filename, hashlib.sha512())
         return d[:15] + "..." + d[-3:]
     if digest_type == "sha256-spec-ex":
-        d = _file_digest(fsw, filename, hashlib.sha256())
+        d = _file_digest(fs, filename, hashlib.sha256())
         return d[:6] + "..." + d[-3:]
     raise ValueError("Unsupport digest type %s" % (digest_type))
 

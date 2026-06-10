@@ -322,7 +322,7 @@ class NewVersion():
         if logical_path in inventory.current_version.logical_paths:
             raise NewVersionException("Logical path %s already exists in new version %s" % (logical_path, inventory.head))
         # Work out digest, add to state
-        digest = file_digest(src_path, inventory.digest_algorithm, fsw=self.src_fs)
+        digest = file_digest(src_path, inventory.digest_algorithm, fs=self.src_fs)
         if digest in inventory.current_version.state_add_if_not_present():
             inventory.current_version.state[digest].append(logical_path)
         else:
@@ -393,7 +393,6 @@ class NewVersion():
     def add_from_srcdir(self):
         """Add all content from srcdir."""
         for src_path in sorted(fsw_walk_files(self.src_fs)):
-            src_path = os.path.relpath(src_path, "/")
             self.add(src_path, src_path, src_path_has_prefix=False)
 
     @property

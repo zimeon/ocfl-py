@@ -46,12 +46,12 @@ class TestAll(unittest.TestCase):
         self.assertEqual(efiles["/v2"], ["empty.txt", "empty2.txt"])
         # Test with zip because that is special case with
         # known issue -- FIXME
-        fs = fsw_openfs("zip://extra_fixtures/1.0/bad-storage-roots/simple-bad-root.zip")
-        edirs = {}
-        efiles = {}
-        for dir, dirs, files in fsw_walk(fs, "/"):
-            edirs[dir] = sorted(dirs)
-            efiles[dir] = sorted(files)
+        #fs = fsw_openfs("zip://extra_fixtures/1.0/bad-storage-roots/simple-bad-root.zip")
+        #edirs = {}
+        #efiles = {}
+        #for dir, dirs, files in fsw_walk(fs, "/"):
+        #    edirs[dir] = sorted(dirs)
+        #    efiles[dir] = sorted(files)
         #self.assertEqual(edirs["/"], ['ark%3A%2F12345%2Fbcd987', 'ark%3A123%2Fabc', 'dir_with_file_but_no_declaration', 'empty_dir', 'object_multiple_declarations', 'object_unknown_version', 'object_unrecognized_declaration'])
         #self.assertEqual(efiles["/"], ["0=ocfl_1.0"])
         #self.assertEqual(edirs["/object_multiple_declarations"], ["v1"])

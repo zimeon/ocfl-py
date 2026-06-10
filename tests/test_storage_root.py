@@ -57,7 +57,6 @@ class TestAll(unittest.TestCase):
         s = StorageRoot()
         self.assertIs(s.root_fs, None)
         tempdir = tempfile.mkdtemp(prefix="test_open_root_fs")
-        print(tempdir)
         s.root = tempdir
         s.open_root_fs()
         self.assertIsNot(s.root_fs, None)

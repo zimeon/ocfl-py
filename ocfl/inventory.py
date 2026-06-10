@@ -127,7 +127,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
             if filepath is None:
                 self.data = {}
             else:
-                with fsw_openfile(filepath, "r", fsw=fsw, encoding="utf-8") as fh:
+                with fsw_openfile(filepath, "r", fs=fsw, encoding="utf-8") as fh:
                     self.data = json.load(fh)
         elif isinstance(data, Inventory):
             self.data = copy.deepcopy(data.data)

@@ -236,7 +236,7 @@ class Validator():
             digest_algorithm = m.group(1)
             try:
                 digest_recorded = self.read_inventory_digest(inv_digest_file)
-                digest_actual = file_digest(inv_file, digest_algorithm, fsw=self.obj_fs)
+                digest_actual = file_digest(inv_file, digest_algorithm, fs=self.obj_fs)
                 if digest_actual != digest_recorded:
                     self.log.error("E060", inv_file=inv_file, actual=digest_actual, recorded=digest_recorded, inv_digest_file=inv_digest_file)
             except ValueError as e:  # pylint: disable=broad-except
@@ -461,7 +461,7 @@ class Validator():
                         self.log.error("E092b", where="root", content_path=filepath)
                     else:
                         if self.check_digests:
-                            content_digest = file_digest(filepath, digest_type=self.digest_algorithm, fsw=self.obj_fs)
+                            content_digest = file_digest(filepath, digest_type=self.digest_algorithm, fs=self.obj_fs)
                             if content_digest != normalized_digest(digest, digest_type=self.digest_algorithm):
                                 self.log.error("E092a", where="root", digest_algorithm=self.digest_algorithm, digest=digest, content_path=filepath, content_digest=content_digest)
                             known_digests = {self.digest_algorithm: content_digest}
@@ -495,7 +495,7 @@ class Validator():
                     # Don't recompute anything, just use it if we've seen it before
                     content_digest = known_digests[digest_algorithm]
                 else:
-                    content_digest = file_digest(filepath, digest_type=digest_algorithm, fsw=self.obj_fs)
+                    content_digest = file_digest(filepath, digest_type=digest_algorithm, fs=self.obj_fs)
                     known_digests[digest_algorithm] = content_digest
                 for digest in additional_digests[filepath][digest_algorithm]:
                     if content_digest != normalized_digest(digest, digest_type=digest_algorithm):
@@ -512,7 +512,7 @@ class Validator():
             Exception: if there is an error reading the digest or it has
                 the wrong format
         """
-        with fsw_openfile(inv_digest_file, "r", fsw=self.obj_fs) as fh:
+        with fsw_openfile(inv_digest_file, "r", fs=self.obj_fs) as fh:
             line = fh.readline()
             # we ignore any following lines, could raise exception
         m = re.match(r"""(\w+)\s+(\S+)\s*$""", line)

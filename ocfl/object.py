@@ -250,7 +250,7 @@ class Object():  # pylint: disable=too-many-public-methods
         if inventory is not None:
             with self.obj_fs.open(invfile, "w") as fh:
                 inventory.write_json(fh)
-        digest = file_digest(invfile, self.digest_algorithm, fsw=self.obj_fs)
+        digest = file_digest(invfile, self.digest_algorithm, fs=self.obj_fs)
         sidecar = os.path.join(vdir, INVENTORY_FILENAME + "." + self.digest_algorithm)
         with self.obj_fs.open(sidecar, "w") as fh:
             fh.write(digest + " " + INVENTORY_FILENAME + "\n")
@@ -486,11 +486,11 @@ class Object():  # pylint: disable=too-many-public-methods
             old_to_new_digest = {}
             new_manifest = {}
             for old_digest, files in manifest.items():
-                digest = file_digest(files[0], digest_algorithm, fsw=self.obj_fs)
+                digest = file_digest(files[0], digest_algorithm, fs=self.obj_fs)
                 old_to_new_digest[old_digest] = digest
                 for file in files[1:]:
                     # Sanity check that any dupe files also match
-                    d = file_digest(file, digest_algorithm, fsw=self.obj_fs)
+                    d = file_digest(file, digest_algorithm, fs=self.obj_fs)
                     if d != digest:
                         raise ObjectException("Failed sanity check - files %s and %s should have same %s digest but calculated %s and %s respectively" %
                                               files[0], file, digest_algorithm, digest, d)
@@ -527,7 +527,7 @@ class Object():  # pylint: disable=too-many-public-methods
         # Delete old root inventory sidecar if we changed digest algorithm
         if (new_version.old_digest_algorithm is not None
                 and inventory.digest_algorithm != new_version.old_digest_algorithm):
-            self.obj_fs.remove(INVENTORY_FILENAME + "." + new_version.old_digest_algorithm)
+            self.obj_fs.rm(INVENTORY_FILENAME + "." + new_version.old_digest_algorithm)
         # Make new version directory
         self.obj_fs.makedir(inventory.head)
         # Copy files into this version
@@ -761,22 +761,11 @@ class Object():  # pylint: disable=too-many-public-methods
         inv, version = self._extract_setup(objdir, version)
         # Check the destination
         try:
-            dst_fs = fsw_openfs(dstdir)
-        except PyfsException:
-            # Doesn't exist, can we create it?
-            (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
-            if parentdir == "":
-                parentdir = "."
-            try:
-                parent_fs = fsw_openfs(parentdir)
-            except PyfsException as e:
-                raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
-            dst_fs = parent_fs.makedir(dir)
-        # Does the destination file already exist?
-        basename = os.path.basename(logical_path)
-        if dst_fs.exists(basename):
-            raise ObjectException("Destination file %s in %s already exists" % (basename, dstdir))
+            dst_fs = fsw_openfs(dstdir, create=True)
+        except FileNotFoundError as e:
+            raise ObjectException("Destination parent directory does not exist or could not be opened (%s)" % (e))
         # Now extract...
+        basename = os.path.basename(logical_path)
         manifest = inv.manifest
         state = inv.version(version).state
         # Extract the specified file
