@@ -141,7 +141,7 @@ def find_path_type(path):
         # Can open parent, is filename a file there?
         if not fsw.exists(filename):
             return "path does not exist"
-        elif fsw.isdir(filename):
+        if fsw.isdir(filename):
             return "directory that could not be opened as a filesystem, this should not happen"  # pragma: no cover
         return "file"
     namastes = find_namastes(0, fsw=fsw)

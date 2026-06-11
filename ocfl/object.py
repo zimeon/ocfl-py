@@ -18,7 +18,7 @@ from .inventory import Inventory
 from .inventory_validator import InventoryValidator
 from .new_version import NewVersion
 from .object_utils import parse_version_directory, ObjectException
-from .fsw import fsw_openfs, fsw_copyfile, fsw_listdir_names, fsw_opendir_as_fs, PyfsException
+from .fsw import fsw_openfs, fsw_copyfile, fsw_listdir_names, fsw_opendir_as_fs, FswException
 from .namaste import Namaste
 from .validator import Validator, ValidatorAbortException
 from .version_metadata import VersionMetadata
@@ -668,7 +668,7 @@ class Object():  # pylint: disable=too-many-public-methods
             (inv_dir, inv_file) = os.path.split(path)
             validator.obj_fs = fsw_openfs(inv_dir, create=False)
             validator.validate_inventory(inv_file, where="standalone", force_spec_version=force_spec_version)
-        except PyfsException:
+        except FswException:
             validator.log.error("E033", where="standalone", explanation="failed to open directory")
         except ValidatorAbortException:
             pass

@@ -184,7 +184,6 @@ class Validator():
     def validate_inventory(self, inv_file, where="root", force_spec_version=None):
         """Validate a given inventory file, record errors with self.log.error().
 
-
         Arguments:
             inv_file: file name of inventory within self.obj_fs
             where: string (default "root") used for reporting messages of

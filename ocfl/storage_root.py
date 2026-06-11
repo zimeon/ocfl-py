@@ -11,7 +11,7 @@ import re
 from .constants import DEFAULT_SPEC_VERSION, SPEC_VERSIONS_SUPPORTED
 from .namaste import find_namastes, Namaste
 from .object import Object
-from .fsw import fsw_openfs, fsw_walk, fsw_opendir_as_fs, fsw_copydir, PyfsException
+from .fsw import fsw_openfs, fsw_walk, fsw_opendir_as_fs, fsw_copydir
 from .validator import Validator
 from .validation_logger import ValidationLogger
 
@@ -118,7 +118,6 @@ class StorageRoot():
             self.root_fs = fsw_openfs(self.root)
         except FileNotFoundError as e:
             raise StorageRootException("Failed to open OCFL storage root filesystem '%s' (%s)" % (self.root, str(e)))
-
 
     def write_root_declaration(self, root_fs):
         """Write Namaste root declaration file for this Storage Root.
@@ -371,12 +370,12 @@ class StorageRoot():
         self.check_root_structure()
         self.num_objects = 0
         for dirpath in self.object_paths():
-            with fsw_opendir_as_fs(fsw=self.root_fs, path=dirpath) as obj_fs:
-                # Parse inventory to extract id
-                identifier = Object(obj_fs=obj_fs).id_from_inventory()
-                self.num_objects += 1
-                yield (dirpath, identifier)
-                # FIXME - maybe do some more stuff in here
+            obj_fs = fsw_opendir_as_fs(fsw=self.root_fs, path=dirpath)
+            # Parse inventory to extract id
+            identifier = Object(obj_fs=obj_fs).id_from_inventory()
+            self.num_objects += 1
+            yield (dirpath, identifier)
+            # FIXME - maybe do some more stuff in here
 
     def validate_hierarchy(self, validate_objects=True, check_digests=True,
                            log_warnings=False, max_errors=100):
@@ -480,7 +479,7 @@ class StorageRoot():
         # Now copy
         path = self.object_path(identifier)
         if self.root_fs.exists(path):
-            raise StorageRootException("Add object failed because path %s exists" % (path))
+            raise StorageRootException("Add object failed because destination path %s already exists" % (path))
         logging.debug("Copying from %s to %s", object_path, os.path.join(self.root, path))
         try:
             # Recusive copy of object to path in self.root_fs

@@ -39,7 +39,7 @@ class TestAll(DemoTestCase):
                                "--root=TMPDIR/root",
                                "--src", "fixtures/1.0/good-objects/minimal_one_version_one_file",
                                "-v"])
-        self.assertIn("Add object failed because path ark%3A123%2Fabc exists", out)
+        self.assertIn("Add object failed because destination path ark%3A123%2Fabc already exists", out)
 
     def test02_explore_simple_root(self):
         """Test exploration of a simple OCFL object root."""

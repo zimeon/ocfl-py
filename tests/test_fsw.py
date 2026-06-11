@@ -1,8 +1,8 @@
-"""Pyfs tests."""
+"""Fsw tests."""
 import os.path
 import unittest
 
-from ocfl.fsw import PyfsException, fsw_openfs, fsw_opendir_as_fs, fsw_walk, fsw_walk_files, fsw_listdir_names, fsw_files_identical
+from ocfl.fsw import FswException, fsw_openfs, fsw_opendir_as_fs, fsw_walk, fsw_walk_files, fsw_listdir_names, fsw_files_identical
 
 
 class TestAll(unittest.TestCase):

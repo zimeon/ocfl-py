@@ -121,10 +121,10 @@ def main():
             logging.error("Bad entry for code+suffix '%s' in strings file", code_suffix)
 
     # 3. Get validation codes from ocfl-py Python codes
-    for root, dirs, files in os.walk('ocfl'):
+    for root, _, files in os.walk('ocfl'):
         for file in files:
             if file.endswith(".py"):
-                with open(os.path.join(root, file), "r") as fh:
+                with open(os.path.join(root, file), "r", encoding="UTF-8") as fh:
                     n = 0
                     for line in fh:
                         n += 1

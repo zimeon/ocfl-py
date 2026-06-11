@@ -10,8 +10,6 @@ import logging
 import os.path
 from urllib.parse import quote as urlquote
 
-import os.path
-
 from .constants import DEFAULT_DIGEST_ALGORITHM, DEFAULT_CONTENT_DIRECTORY, DEFAULT_SPEC_VERSION
 from .digest import file_digest
 from .inventory import Inventory, InventoryException
