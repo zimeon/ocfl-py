@@ -73,8 +73,7 @@ def fsw_openfs(fs_url, create=False, exists_ok=True):
     """
     if isinstance(fs_url, AbstractFileSystem) and not create:
         return fs_url
-
-    print("fsw_openfs(%s, create=%s, exists_ok=%s)" % (fs_url, str(create), str(exists_ok)))
+    # print("fsw_openfs(%s, create=%s, exists_ok=%s)" % (fs_url, str(create), str(exists_ok)))
     parts = fs_url.split("://", 1)
 
     # Now assume a string that may be a path (no ://) or else a filesystem URL
@@ -104,7 +103,6 @@ def fsw_openfs(fs_url, create=False, exists_ok=True):
         if path != "":
             raise FileNotFoundError("Attempt to open temp filesystem with a path %s" % (path))
         tempdir = tempfile.mkdtemp(prefix="fsw")
-        print("tempdir = " + tempdir)
         fs = DirFileSystem(tempdir, LocalFileSystem())
     elif method == "s3":
         raise FswException("S3FileSystem not yet re-implemented! See ocfl/fsw.py")

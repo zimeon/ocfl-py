@@ -303,7 +303,6 @@ class StorageRoot():
         storage root.
         """
         for (dirpath, dirs, files) in fsw_walk(self.root_fs):
-            print("object_paths: dirpath=" + dirpath + "  dirs=" + str(dirs) + "  files=" + str(files))
             if dirpath == "/":
                 if "extensions" in dirs:
                     self.validate_extensions_dir()
