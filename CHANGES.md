@@ -1,17 +1,20 @@
 # ocfl-py changelog
 
-## 2025-XX-XX v2.0.3
+## 2026-XX-XX v2.1.0
 
-  * Change from pyfilesystem2 (unmaintained) to fsspec. Have also made change from the module
-    name ocfl.pyfs to ocfl.fsw (file system wrapper). Localize all inclusion of fsspec in the
-    ocfl.fsw module.
-  * FIXME - Things to resolve
+  * Change from `pyfilesystem2` (unmaintained) to `fsspec`. Have also made change from the module
+    name `ocfl.pyfs` to `ocfl.fsw` (file system wrapper). Localize all inclusion of `fsspec` in the
+    `ocfl.fsw` module.
+  * FIXME - Things to resolve:
     * ZipFileSystem seems not to be working properly, have disable its use in tests in:
-      * tests/test_storage_root.py
-      * tests/test_validator.py - Disabled tests relying on zip:
+      * `tests/test_fsw.py`
+      * `tests/test_inventory.py`
+      * `tests/test_storage_root.py`
+      * `tests/test_validator.py` - Disabled tests relying on zip:
       	* W003_empty_content_dir
         * E024_empty_dir_in_content
-	* E024_empty_dir_in_content
+    * S3 usages is disabled and needs testing
+    * Should add more tests for `ocfl/fsw.py`
 
 ## 2025-08-15 v2.0.2
 

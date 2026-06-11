@@ -8,7 +8,7 @@ for the `created` property in OCFL Object version metadata.
 import re
 import time
 from calendar import timegm
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from dateutil import parser as dateutil_parser
 
 
@@ -33,7 +33,7 @@ def datetime_to_str(dt="now", no_fractions=False):
         dt = int(dt)
     else:
         dt += 0.0000001  # improve rounding to microseconds
-    return datetime.fromtimestamp(dt, UTC).replace(tzinfo=None).isoformat() + "Z"
+    return datetime.fromtimestamp(dt, timezone.utc).replace(tzinfo=None).isoformat() + "Z"
 
 
 def str_to_datetime(s, context="datetime"):

@@ -36,9 +36,9 @@ class TestAll(unittest.TestCase):
         fs = fsw_openfs("fixtures/1.0/content/spec-ex-full")
         edirs = {}
         efiles = {}
-        for dir, dirs, files in fsw_walk(fs, "/"):
-            edirs[dir] = sorted(dirs)
-            efiles[dir] = sorted(files)
+        for dirpath, dirs, files in fsw_walk(fs, "/"):
+            edirs[dirpath] = sorted(dirs)
+            efiles[dirpath] = sorted(files)
         self.assertEqual(edirs["/"], ["v1", "v2", "v3"])
         self.assertEqual(efiles["/"], ["v1_inventory.json", "v2_inventory.json", "v3_inventory.json"])
         self.assertEqual(edirs["/v2"], ["foo"])
