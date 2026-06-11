@@ -10,7 +10,6 @@ from ocfl.object import Object, ObjectException
 from ocfl.version_metadata import VersionMetadata
 
 
-
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
@@ -85,7 +84,7 @@ class TestAll(unittest.TestCase):
         tmpfs = fsw_openfs("temp://")
         oo = Object(obj_fs=tmpfs)
         oo.write_inventory_and_sidecar(Inventory({'abc': 'def'}))
-        self.assertEqual(set(fsw_listdir_names(tmpfs,"/")),
+        self.assertEqual(set(fsw_listdir_names(tmpfs, "/")),
                          set(['inventory.json', 'inventory.json.sha512']))
         with tmpfs.open('inventory.json') as fh:
             j = json.load(fh)

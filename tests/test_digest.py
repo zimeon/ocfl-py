@@ -2,7 +2,6 @@
 import unittest
 import sys
 
-import fsspec
 from fsspec.implementations.local import LocalFileSystem
 from fsspec.implementations.dirfs import DirFileSystem
 

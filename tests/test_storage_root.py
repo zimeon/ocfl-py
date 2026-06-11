@@ -10,7 +10,7 @@ from ocfl.storage_root import StorageRoot, StorageRootException
 from ocfl.layout_registry import get_layout
 from ocfl.layout_0002_flat_direct import Layout_0002_Flat_Direct
 from ocfl.validation_logger import ValidationLogger
-from ocfl.fsw import fsw_listdir_names
+# from ocfl.fsw import fsw_listdir_names
 
 
 class TestAll(unittest.TestCase):
@@ -154,18 +154,18 @@ class TestAll(unittest.TestCase):
         logger = logging.getLogger()
         logger.addHandler(logging.StreamHandler(log_io))
         # FIXME - Zip not working
-        #s = StorageRoot(root="zip://extra_fixtures/1.0/bad-storage-roots/simple-bad-root.zip")  # Using ZipFS
-        #s.open_root_fs()
-        ##self.assertEqual(fsw_listdir_names(s.root_fs, "/"), [])
-        #paths = list(s.object_paths())
-        #self.assertEqual(len(paths), 2)
-        #self.assertEqual(s.num_traversal_errors, 5)
-        #log_out = log_io.getvalue()
-        #self.assertIn("E073 - path='/empty_dir'", log_out)
-        #self.assertIn("E003d - path='/object_multiple_declarations'", log_out)
-        #self.assertIn("E004a - path='/object_unknown_version', version='0.9'", log_out)
-        #self.assertIn("E004b - path='/object_unrecognized_declaration', declaration='0=special_object_yeah'", log_out)
-        #self.assertIn("E072 - path='/dir_with_file_but_no_declaration'", log_out)
+        # s = StorageRoot(root="zip://extra_fixtures/1.0/bad-storage-roots/simple-bad-root.zip")  # Using ZipFS
+        # s.open_root_fs()
+        # #self.assertEqual(fsw_listdir_names(s.root_fs, "/"), [])
+        # paths = list(s.object_paths())
+        # self.assertEqual(len(paths), 2)
+        # self.assertEqual(s.num_traversal_errors, 5)
+        # log_out = log_io.getvalue()
+        # self.assertIn("E073 - path='/empty_dir'", log_out)
+        # self.assertIn("E003d - path='/object_multiple_declarations'", log_out)
+        # self.assertIn("E004a - path='/object_unknown_version', version='0.9'", log_out)
+        # self.assertIn("E004b - path='/object_unrecognized_declaration', declaration='0=special_object_yeah'", log_out)
+        # self.assertIn("E072 - path='/dir_with_file_but_no_declaration'", log_out)
         # Specific error cases
         s = StorageRoot(root="extra_fixtures/1.0/bad-storage-roots/E072_root_with_file_not_in_object")
         s.open_root_fs()
@@ -173,13 +173,13 @@ class TestAll(unittest.TestCase):
         self.assertEqual(list(s.object_paths()), ["dir2/minimal_no_content"])
         self.assertEqual(s.num_traversal_errors, 1)
         self.assertIn("E072", s.log.codes)
-        #
-        #s = StorageRoot(root="zip://extra_fixtures/1.0/bad-storage-roots/E073_root_with_empty_dir.zip")
-        #s.open_root_fs()
-        #s.log = ValidationLogger()
-        #self.assertEqual(list(s.object_paths()), [])
-        #self.assertEqual(s.num_traversal_errors, 1)
-        #self.assertIn("E073", s.log.codes)
+        # Zip - FIXME
+        # s = StorageRoot(root="zip://extra_fixtures/1.0/bad-storage-roots/E073_root_with_empty_dir.zip")
+        # s.open_root_fs()
+        # s.log = ValidationLogger()
+        # self.assertEqual(list(s.object_paths()), [])
+        # self.assertEqual(s.num_traversal_errors, 1)
+        # self.assertIn("E073", s.log.codes)
 
     def test_validate(self):
         """Test validate method."""
@@ -204,7 +204,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(s.num_objects, 1)
         self.assertEqual(s.good_objects, 1)
         self.assertIn("W901", s.log.codes)
-        #
-        #s = StorageRoot(root="zip://extra_fixtures/1.0/bad-storage-roots/E069_no_declaration_file.zip")
-        #self.assertFalse(s.validate())
-        #self.assertIn("E069a", s.log.codes)
+        # Zip - FIXME
+        # s = StorageRoot(root="zip://extra_fixtures/1.0/bad-storage-roots/E069_no_declaration_file.zip")
+        # self.assertFalse(s.validate())
+        # self.assertIn("E069a", s.log.codes)

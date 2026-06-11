@@ -1,8 +1,7 @@
 """Fsw tests."""
-import os.path
 import unittest
 
-from ocfl.fsw import FswException, fsw_openfs, fsw_opendir_as_fs, fsw_walk, fsw_walk_files, fsw_listdir_names, fsw_files_identical
+from ocfl.fsw import fsw_openfs, fsw_opendir_as_fs, fsw_walk, fsw_walk_files, fsw_listdir_names, fsw_files_identical
 
 
 class TestAll(unittest.TestCase):
@@ -46,16 +45,16 @@ class TestAll(unittest.TestCase):
         self.assertEqual(efiles["/v2"], ["empty.txt", "empty2.txt"])
         # Test with zip because that is special case with
         # known issue -- FIXME
-        #fs = fsw_openfs("zip://extra_fixtures/1.0/bad-storage-roots/simple-bad-root.zip")
-        #edirs = {}
-        #efiles = {}
-        #for dir, dirs, files in fsw_walk(fs, "/"):
+        # fs = fsw_openfs("zip://extra_fixtures/1.0/bad-storage-roots/simple-bad-root.zip")
+        # edirs = {}
+        # efiles = {}
+        # for dir, dirs, files in fsw_walk(fs, "/"):
         #    edirs[dir] = sorted(dirs)
         #    efiles[dir] = sorted(files)
-        #self.assertEqual(edirs["/"], ['ark%3A%2F12345%2Fbcd987', 'ark%3A123%2Fabc', 'dir_with_file_but_no_declaration', 'empty_dir', 'object_multiple_declarations', 'object_unknown_version', 'object_unrecognized_declaration'])
-        #self.assertEqual(efiles["/"], ["0=ocfl_1.0"])
-        #self.assertEqual(edirs["/object_multiple_declarations"], ["v1"])
-        #self.assertEqual(efiles["/object_multiple_declarations"], [])
+        # self.assertEqual(edirs["/"], ['ark%3A%2F12345%2Fbcd987', 'ark%3A123%2Fabc', 'dir_with_file_but_no_declaration', 'empty_dir', 'object_multiple_declarations', 'object_unknown_version', 'object_unrecognized_declaration'])
+        # self.assertEqual(efiles["/"], ["0=ocfl_1.0"])
+        # self.assertEqual(edirs["/object_multiple_declarations"], ["v1"])
+        # self.assertEqual(efiles["/object_multiple_declarations"], [])
 
     def test04_fsw_walk_file(self):
         """Test fsw_walk_file."""
@@ -66,11 +65,11 @@ class TestAll(unittest.TestCase):
         self.assertIn("v3_inventory.json", files)
         self.assertIn("v1/foo/bar.xml", files)
         # Check zip - FIXME
-        #fs = fsw_openfs("zip://extra_fixtures/1.0/warn-objects/W003_empty_content_dir.zip")
-        #files = fsw_walk_files(fs, "/")
-        #self.assertIn("0=ocfl_object_1.0", files)
-        #self.assertIn("inventory.json", files)
-        #self.assertIn("v1/content/my_content/poe.txt", files)
+        # fs = fsw_openfs("zip://extra_fixtures/1.0/warn-objects/W003_empty_content_dir.zip")
+        # files = fsw_walk_files(fs, "/")
+        # self.assertIn("0=ocfl_object_1.0", files)
+        # self.assertIn("inventory.json", files)
+        # self.assertIn("v1/content/my_content/poe.txt", files)
 
     def test05_fsw_listdir_names(self):
         """Test fsw_listdir_names."""
@@ -78,16 +77,16 @@ class TestAll(unittest.TestCase):
         files = sorted(fsw_listdir_names(fs, path="v3"))
         self.assertEqual(files, ['empty2.txt', 'foo', 'image.tiff'])
         # zip - FIXME
-        #fs = fsw_openfs("zip://extra_fixtures/1.0/warn-objects/W003_empty_content_dir.zip")
-        #files = sorted(fsw_listdir_names(fs, "v1"))
-        #self.assertEqual(files, ['content', 'inventory.json', 'inventory.json.sha512'])
+        # fs = fsw_openfs("zip://extra_fixtures/1.0/warn-objects/W003_empty_content_dir.zip")
+        # files = sorted(fsw_listdir_names(fs, "v1"))
+        # self.assertEqual(files, ['content', 'inventory.json', 'inventory.json.sha512'])
 
     def test06_fsw_files_identical(self):
         """Test fsw_files_identical."""
         def _write_file(fs, name, kbs, extra=""):
             with fs.open(name, "wb") as fh:
-                for a in range(0, kbs):  # write 1kb at a time
-                    fh.write(b"0123456789abcdef"*64)
+                for _ in range(0, kbs):  # write 1kb at a time
+                    fh.write(b"0123456789abcdef" * 64)
                 fh.write(extra)
                 fh.close()
         fs = fsw_openfs("memory://")
