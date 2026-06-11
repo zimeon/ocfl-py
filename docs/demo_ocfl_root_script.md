@@ -20,8 +20,6 @@ ocfl-root.py is part of ocfl-py version 2.0.3
 
 ```
 > python ocfl-root.py create --root=tmp/root --layout=nnnn-flat-quoted-storage-layout -v
-fsw_openfs(tmp, create=False, exists_ok=True)
-fsw_openfs(tmp/root, create=False, exists_ok=True)
 Created OCFL storage root tmp/root
 ```
 
@@ -31,8 +29,6 @@ Created OCFL storage root tmp/root
 ```
 > python ocfl-root.py list --root=tmp/root -v
 INFO:root:Storage root layout is nnnn-flat-quoted-storage-layout
-fsw_openfs(tmp/root, create=False, exists_ok=True)
-object_paths: dirpath=/  dirs=[]  files=['ocfl_layout.json', '0=ocfl_1.1']
 Found 0 OCFL Objects under root tmp/root
 ```
 
@@ -42,8 +38,6 @@ Found 0 OCFL Objects under root tmp/root
 ```
 > python ocfl-root.py add --root=tmp/root --src fixtures/1.0/good-objects/minimal_one_version_one_file -v
 INFO:root:Storage root layout is nnnn-flat-quoted-storage-layout
-fsw_openfs(tmp/root, create=False, exists_ok=True)
-fsw_openfs(fixtures/1.0/good-objects/minimal_one_version_one_file, create=False, exists_ok=True)
 Added object ark:123/abc at path ark%3A123%2Fabc
 ```
 
@@ -54,8 +48,6 @@ Added object ark:123/abc at path ark%3A123%2Fabc
 > python ocfl-root.py add --root=tmp/root --src fixtures/1.0/good-objects/minimal_one_version_one_file -v
 INFO:root:Storage root layout is nnnn-flat-quoted-storage-layout
 ERROR:root:Add object failed because destination path ark%3A123%2Fabc already exists
-fsw_openfs(tmp/root, create=False, exists_ok=True)
-fsw_openfs(fixtures/1.0/good-objects/minimal_one_version_one_file, create=False, exists_ok=True)
 ```
 
 (last command exited with return code 1)
@@ -67,13 +59,8 @@ fsw_openfs(fixtures/1.0/good-objects/minimal_one_version_one_file, create=False,
 
 ```
 > python ocfl-root.py list --root=extra_fixtures/1.0/good-storage-roots/simple-root
-fsw_openfs(extra_fixtures/1.0/good-storage-roots/simple-root, create=False, exists_ok=True)
-object_paths: dirpath=/  dirs=['http%3A%2F%2Fexample.org%2Fminimal_mixed_digests', 'ark%3A%2F12345%2Fbcd987', 'ark%3A123%2Fabc']  files=['0=ocfl_1.0']
-object_paths: dirpath=/ark%3A123%2Fabc  dirs=['v1']  files=['inventory.json.sha512', '0=ocfl_object_1.0', 'inventory.json']
 ark%3A123%2Fabc -- id=ark:123/abc
-object_paths: dirpath=/ark%3A%2F12345%2Fbcd987  dirs=['v1', 'v2', 'v3']  files=['inventory.json.sha512', '0=ocfl_object_1.0', 'inventory.json']
 ark%3A%2F12345%2Fbcd987 -- id=ark:/12345/bcd987
-object_paths: dirpath=/http%3A%2F%2Fexample.org%2Fminimal_mixed_digests  dirs=['v1']  files=['inventory.json.sha512', '0=ocfl_object_1.0', 'inventory.json']
 http%3A%2F%2Fexample.org%2Fminimal_mixed_digests -- id=http://example.org/minimal_mixed_digests
 Found 3 OCFL Objects under root extra_fixtures/1.0/good-storage-roots/simple-root
 ```
@@ -85,8 +72,6 @@ Found 3 OCFL Objects under root extra_fixtures/1.0/good-storage-roots/simple-roo
 
 ```
 > python ocfl-root.py create --root=tmp/root --layout=0002-flat-direct-storage-layout -v
-fsw_openfs(tmp, create=False, exists_ok=True)
-fsw_openfs(tmp/root, create=False, exists_ok=True)
 Created OCFL storage root tmp/root
 ```
 
@@ -107,8 +92,6 @@ ERROR:root:Must specify object path with --src
 
 ```
 > python ocfl-root.py create --root=tmp/ex2 --spec-version=1.0 --layout=0003-hash-and-id-n-tuple-storage-layout --layout-params={"digestAlgorithm":"md5", "tupleSize":2, "numberOfTuples":15} -v
-fsw_openfs(tmp, create=False, exists_ok=True)
-fsw_openfs(tmp/ex2, create=False, exists_ok=True)
 Created OCFL storage root tmp/ex2
 ```
 
@@ -118,8 +101,6 @@ Created OCFL storage root tmp/ex2
 ```
 > python ocfl-root.py add --root=tmp/ex2 --src=extra_fixtures/1.0/good-objects/root_ext0003_object-01
 INFO:root:Storage root layout is 0003-hash-and-id-n-tuple-storage-layout
-fsw_openfs(tmp/ex2, create=False, exists_ok=True)
-fsw_openfs(extra_fixtures/1.0/good-objects/root_ext0003_object-01, create=False, exists_ok=True)
 Added object object-01 at path ff/75/53/44/92/48/5e/ab/b3/9f/86/35/67/28/88/object-01
 ```
 
@@ -129,8 +110,6 @@ Added object object-01 at path ff/75/53/44/92/48/5e/ab/b3/9f/86/35/67/28/88/obje
 ```
 > python ocfl-root.py add --root=tmp/ex2 --src=extra_fixtures/1.0/good-objects/root_ext0003_horrible-obj
 INFO:root:Storage root layout is 0003-hash-and-id-n-tuple-storage-layout
-fsw_openfs(tmp/ex2, create=False, exists_ok=True)
-fsw_openfs(extra_fixtures/1.0/good-objects/root_ext0003_horrible-obj, create=False, exists_ok=True)
 Added object ..hor/rib:le-$id at path 08/31/97/66/fb/6c/29/35/dd/17/5b/94/26/77/17/%2e%2ehor%2frib%3ale-%24id
 ```
 

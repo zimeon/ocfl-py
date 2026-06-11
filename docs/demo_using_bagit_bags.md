@@ -11,8 +11,6 @@ Imagine that we have a Bagit bag [`tests/testdata/bags/uaa_v1`](https://github.c
 ```
 > python ocfl-object.py create --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v1 -v
 INFO:root:Created OCFL object info:bb123cd4567 in tmp/obj
-fsw_openfs(tests/testdata/bags/uaa_v1/data, create=False, exists_ok=True)
-fsw_openfs(tmp/obj, create=True, exists_ok=True)
 ```
 
 
@@ -22,8 +20,6 @@ Now that we have the object it is of course valid.
 
 ```
 > python ocfl-validate.py tmp/obj
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
 OCFL v1.1 Object at tmp/obj is VALID
 ```
 
@@ -35,8 +31,6 @@ Looking inside the object we see `v1` with the expected 2 content files.
 ```
 > python ocfl-object.py show --objdir tmp/obj
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
 Object tree for None
 [tmp/obj]
 ├── 0=ocfl_object_1.1 
@@ -57,9 +51,6 @@ If we have a bag [`tests/testdata/bags/uaa_v2`](https://github.com/zimeon/ocfl-p
 ```
 > python ocfl-object.py update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v2 -v
 INFO:root:Updated OCFL object info:bb123cd4567 by adding v2
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
-fsw_openfs(tests/testdata/bags/uaa_v2/data, create=False, exists_ok=True)
 Updated object info:bb123cd4567 to v2
 ```
 
@@ -71,8 +62,6 @@ Looking inside the object we now see `v1` and `v2`. There are no content files i
 ```
 > python ocfl-object.py show --objdir tmp/obj
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
 Object tree for None
 [tmp/obj]
 ├── 0=ocfl_object_1.1 
@@ -96,9 +85,6 @@ Similarly we can `--update` with [`tests/testdata/bags/uaa_v3`](https://github.c
 ```
 > python ocfl-object.py update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v3 -v
 INFO:root:Updated OCFL object info:bb123cd4567 by adding v3
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
-fsw_openfs(tests/testdata/bags/uaa_v3/data, create=False, exists_ok=True)
 Updated object info:bb123cd4567 to v3
 ```
 
@@ -110,8 +96,6 @@ Looking inside again we see that `v3` does add another content file.
 ```
 > python ocfl-object.py show --objdir tmp/obj
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
 Object tree for None
 [tmp/obj]
 ├── 0=ocfl_object_1.1 
@@ -139,9 +123,6 @@ Finally, we can `--update` again with [`tests/testdata/bags/uaa_v4`](https://git
 ```
 > python ocfl-object.py update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v4 -v
 INFO:root:Updated OCFL object info:bb123cd4567 by adding v4
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
-fsw_openfs(tests/testdata/bags/uaa_v4/data, create=False, exists_ok=True)
 Updated object info:bb123cd4567 to v4
 ```
 
@@ -153,8 +134,6 @@ Taking the newly created OCFL object `/tmp/obj` we can `--extract` the `v4` cont
 ```
 > python ocfl-object.py extract --objver v4 --objdir tmp/obj --dstbag tmp/extracted_v4 --set-bagging-date -v
 INFO:root:Extracted v4 into tmp/extracted_v4
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
-fsw_openfs(tmp, create=False, exists_ok=True)
 Extracted content for v4 saved as Bagit bag in tmp/extracted_v4
 ```
 

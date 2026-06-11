@@ -20,8 +20,6 @@ ocfl-validate.py is part of ocfl-py version 2.0.3
 
 ```
 > python ocfl-validate.py fixtures/1.0/good-objects/minimal_uppercase_digests
-fsw_openfs(fixtures/1.0/good-objects/minimal_uppercase_digests, create=False, exists_ok=True)
-fsw_openfs(fixtures/1.0/good-objects/minimal_uppercase_digests, create=False, exists_ok=True)
 OCFL v1.0 Object at fixtures/1.0/good-objects/minimal_uppercase_digests is VALID
 ```
 
@@ -34,8 +32,6 @@ The test shows warning W004 with a link to the v1.0 specification
 
 ```
 > python ocfl-validate.py fixtures/1.0/warn-objects/W004_uses_sha256
-fsw_openfs(fixtures/1.0/warn-objects/W004_uses_sha256, create=False, exists_ok=True)
-fsw_openfs(fixtures/1.0/warn-objects/W004_uses_sha256, create=False, exists_ok=True)
 [W004] OCFL Object root inventory SHOULD use sha512 but uses sha256 as the DigestAlgorithm (see https://ocfl.io/1.0/spec/#W004)
 OCFL v1.0 Object at fixtures/1.0/warn-objects/W004_uses_sha256 is VALID
 ```
@@ -47,8 +43,6 @@ The -q or --quiet flag will silence any warning messages
 
 ```
 > python ocfl-validate.py -q fixtures/1.0/warn-objects/W004_uses_sha256
-fsw_openfs(fixtures/1.0/warn-objects/W004_uses_sha256, create=False, exists_ok=True)
-fsw_openfs(fixtures/1.0/warn-objects/W004_uses_sha256, create=False, exists_ok=True)
 OCFL v1.0 Object at fixtures/1.0/warn-objects/W004_uses_sha256 is VALID
 ```
 
@@ -59,8 +53,6 @@ The test shows warning W004 with a link to the v1.0 specification
 
 ```
 > python ocfl-validate.py fixtures/1.1/warn-objects/W001_W004_W005_zero_padded_versions
-fsw_openfs(fixtures/1.1/warn-objects/W001_W004_W005_zero_padded_versions, create=False, exists_ok=True)
-fsw_openfs(fixtures/1.1/warn-objects/W001_W004_W005_zero_padded_versions, create=False, exists_ok=True)
 [W001] OCFL Object root inventory version numbers SHOULD NOT be zero-padded (see https://ocfl.io/1.1/spec/#W001)
 [W001] OCFL Object v0001 inventory version numbers SHOULD NOT be zero-padded (see https://ocfl.io/1.1/spec/#W001)
 [W001] OCFL Object v0002 inventory version numbers SHOULD NOT be zero-padded (see https://ocfl.io/1.1/spec/#W001)

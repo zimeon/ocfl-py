@@ -22,7 +22,6 @@ Without an `--objdir` argument the script just writes out the inventory for the 
 
 ```
 > python ocfl-object.py create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1 --created 2024-10-24T18:30:01Z
-fsw_openfs(fixtures/1.0/content/cf1/v1, create=False, exists_ok=True)
 ### Inventory for v1
 {
   "digestAlgorithm": "sha512",
@@ -54,10 +53,6 @@ Without an `--objdir` argument the script just writes out the inventory for each
 
 ```
 > python ocfl-object.py build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 --metadata extra_fixtures/1.0/content/spec-ex-full-metadata.json
-fsw_openfs(fixtures/1.0/content/cf3, create=False, exists_ok=True)
-fsw_openfs(fixtures/1.0/content/cf3/v1, create=False, exists_ok=True)
-fsw_openfs(fixtures/1.0/content/cf3/v2, create=False, exists_ok=True)
-fsw_openfs(fixtures/1.0/content/cf3/v3, create=False, exists_ok=True)
 ### Inventory for v3
 {
   "digestAlgorithm": "sha512",
@@ -124,8 +119,6 @@ fsw_openfs(fixtures/1.0/content/cf3/v3, create=False, exists_ok=True)
 ```
 > python ocfl-object.py create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1 --objdir tmp/obj1 --created 2024-10-24T18:30:03Z -v
 INFO:root:Created OCFL object http://example.org/obj1 in tmp/obj1
-fsw_openfs(fixtures/1.0/content/cf1/v1, create=False, exists_ok=True)
-fsw_openfs(tmp/obj1, create=True, exists_ok=True)
 ```
 
 
@@ -136,8 +129,6 @@ The two identical files are deduped, only one copy being stored and using the fi
 ```
 > python ocfl-object.py create --id http://example.org/obj_dedupe --src extra_fixtures/content/dupe-files --objdir tmp/obj_dedupe --created 2025-04-08T14:00:01Z -v
 INFO:root:Created OCFL object http://example.org/obj_dedupe in tmp/obj_dedupe
-fsw_openfs(extra_fixtures/content/dupe-files, create=False, exists_ok=True)
-fsw_openfs(tmp/obj_dedupe, create=True, exists_ok=True)
 ```
 
 Object tree shows v1 with content:
@@ -150,11 +141,6 @@ Object tree shows v1 with content:
 ```
 > python ocfl-object.py build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 --objdir tmp/obj2 -v
 INFO:root:Built object http://example.org/obj2 at tmp/obj2 with 3 versions
-fsw_openfs(tmp/obj2, create=True, exists_ok=True)
-fsw_openfs(fixtures/1.0/content/cf3, create=False, exists_ok=True)
-fsw_openfs(fixtures/1.0/content/cf3/v1, create=False, exists_ok=True)
-fsw_openfs(fixtures/1.0/content/cf3/v2, create=False, exists_ok=True)
-fsw_openfs(fixtures/1.0/content/cf3/v3, create=False, exists_ok=True)
 ```
 
 
@@ -167,8 +153,6 @@ Version 1 object with location specified in `--objdir` and the first version spe
 ```
 > python ocfl-object.py extract --objdir fixtures/1.0/good-objects/spec-ex-full --objver v1 --dstdir tmp/v1 -v
 INFO:root:Extracted v1 into tmp/v1
-fsw_openfs(fixtures/1.0/good-objects/spec-ex-full, create=False, exists_ok=True)
-fsw_openfs(tmp, create=False, exists_ok=True)
 Extracted content for v1 in tmp/v1
 ```
 
@@ -187,8 +171,6 @@ find: unknown predicate `-s'
 ```
 > python ocfl-object.py extract --objver v2 --objdir fixtures/1.1/good-objects/spec-ex-full --dstdir tmp/v2 -v
 INFO:root:Extracted v2 into tmp/v2
-fsw_openfs(fixtures/1.1/good-objects/spec-ex-full, create=False, exists_ok=True)
-fsw_openfs(tmp, create=False, exists_ok=True)
 Extracted content for v2 in tmp/v2
 ```
 
@@ -207,8 +189,6 @@ find: unknown predicate `-s'
 ```
 > python ocfl-object.py extract --objver head --objdir fixtures/1.1/good-objects/spec-ex-full --dstdir tmp/head -v
 INFO:root:Extracted v3 into tmp/head
-fsw_openfs(fixtures/1.1/good-objects/spec-ex-full, create=False, exists_ok=True)
-fsw_openfs(tmp, create=False, exists_ok=True)
 Extracted content for v3 in tmp/head
 ```
 
@@ -226,8 +206,6 @@ find: unknown predicate `-s'
 
 ```
 > python ocfl-object.py extract --objver v3 --objdir fixtures/1.1/good-objects/spec-ex-full --logical-path foo/bar.xml --dstdir tmp/files -v
-fsw_openfs(fixtures/1.1/good-objects/spec-ex-full, create=False, exists_ok=True)
-fsw_openfs(tmp/files, create=True, exists_ok=True)
 Extracted foo/bar.xml in v3 to tmp/files
 ```
 
@@ -245,8 +223,6 @@ find: unknown predicate `-s'
 
 ```
 > python ocfl-object.py extract --objdir fixtures/1.1/good-objects/spec-ex-full --logical-path image.tiff --dstdir tmp/files -v
-fsw_openfs(fixtures/1.1/good-objects/spec-ex-full, create=False, exists_ok=True)
-fsw_openfs(tmp/files, create=True, exists_ok=True)
 Extracted image.tiff in v3 to tmp/files
 ```
 
