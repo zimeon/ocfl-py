@@ -20,7 +20,7 @@ ocfl-sidecar.py is part of ocfl-py version 2.0.3
 
 ```
 > mkdir -v tmp/obj
-tmp/obj
+mkdir: created directory 'tmp/obj'
 ```
 
 
@@ -28,7 +28,7 @@ tmp/obj
 
 ```
 > cp -v fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json tmp/obj
-fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json -> tmp/obj/inventory.json
+'fixtures/1.0/good-objects/minimal_one_version_one_file/inventory.json' -> 'tmp/obj/inventory.json'
 ```
 
 
@@ -38,6 +38,7 @@ The digest type will be set by reading the inventory (in this case, sha512)
 
 ```
 > python ocfl-sidecar.py tmp/obj
+fsw_openfs(tmp/obj, create=False, exists_ok=True)
 Written sidecar file tmp/obj/inventory.json.sha512
 ```
 
@@ -48,6 +49,7 @@ The digest type will be set by reading the inventory (in this case, sha512)
 
 ```
 > python ocfl-sidecar.py tmp/obj/inventory.json
+fsw_openfs(tmp/obj, create=False, exists_ok=True)
 Written sidecar file tmp/obj/inventory.json.sha512
 ```
 
@@ -58,6 +60,7 @@ The digest type is set with the --digest parameter
 
 ```
 > python ocfl-sidecar.py --digest sha256 tmp/obj
+fsw_openfs(tmp/obj, create=False, exists_ok=True)
 Written sidecar file tmp/obj/inventory.json.sha256
 ```
 
@@ -68,7 +71,7 @@ Written sidecar file tmp/obj/inventory.json.sha256
 
 ```
 > mkdir -v tmp/obj1
-tmp/obj1
+mkdir: created directory 'tmp/obj1'
 ```
 
 
@@ -76,7 +79,7 @@ tmp/obj1
 
 ```
 > mkdir -v tmp/obj2
-tmp/obj2
+mkdir: created directory 'tmp/obj2'
 ```
 
 
@@ -84,7 +87,7 @@ tmp/obj2
 
 ```
 > mkdir -v tmp/obj3
-tmp/obj3
+mkdir: created directory 'tmp/obj3'
 ```
 
 
@@ -92,7 +95,7 @@ tmp/obj3
 
 ```
 > cp -v fixtures/1.1/good-objects/minimal_uppercase_digests/inventory.json tmp/obj1
-fixtures/1.1/good-objects/minimal_uppercase_digests/inventory.json -> tmp/obj1/inventory.json
+'fixtures/1.1/good-objects/minimal_uppercase_digests/inventory.json' -> 'tmp/obj1/inventory.json'
 ```
 
 
@@ -100,7 +103,7 @@ fixtures/1.1/good-objects/minimal_uppercase_digests/inventory.json -> tmp/obj1/i
 
 ```
 > cp -v fixtures/1.1/good-objects/minimal_mixed_digests/inventory.json tmp/obj2
-fixtures/1.1/good-objects/minimal_mixed_digests/inventory.json -> tmp/obj2/inventory.json
+'fixtures/1.1/good-objects/minimal_mixed_digests/inventory.json' -> 'tmp/obj2/inventory.json'
 ```
 
 
@@ -108,7 +111,7 @@ fixtures/1.1/good-objects/minimal_mixed_digests/inventory.json -> tmp/obj2/inven
 
 ```
 > cp -v fixtures/1.1/good-objects/minimal_no_content/inventory.json tmp/obj3
-fixtures/1.1/good-objects/minimal_no_content/inventory.json -> tmp/obj3/inventory.json
+'fixtures/1.1/good-objects/minimal_no_content/inventory.json' -> 'tmp/obj3/inventory.json'
 ```
 
 
@@ -116,8 +119,11 @@ fixtures/1.1/good-objects/minimal_no_content/inventory.json -> tmp/obj3/inventor
 
 ```
 > python ocfl-sidecar.py tmp/obj1 tmp/obj2 tmp/obj3
+fsw_openfs(tmp/obj1, create=False, exists_ok=True)
 Written sidecar file tmp/obj1/inventory.json.sha512
+fsw_openfs(tmp/obj2, create=False, exists_ok=True)
 Written sidecar file tmp/obj2/inventory.json.sha512
+fsw_openfs(tmp/obj3, create=False, exists_ok=True)
 Written sidecar file tmp/obj3/inventory.json.sha512
 ```
 
