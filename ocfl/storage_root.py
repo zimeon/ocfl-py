@@ -370,7 +370,7 @@ class StorageRoot():
         self.check_root_structure()
         self.num_objects = 0
         for dirpath in self.object_paths():
-            obj_fs = fsw_opendir_as_fs(fsw=self.root_fs, path=dirpath)
+            obj_fs = fsw_opendir_as_fs(fs=self.root_fs, path=dirpath)
             # Parse inventory to extract id
             identifier = Object(obj_fs=obj_fs).id_from_inventory()
             self.num_objects += 1
@@ -405,7 +405,7 @@ class StorageRoot():
                                       log_warnings=log_warnings)
                 # FIXME - Should check that all objest are not higher spec
                 # version that storage root https://ocfl.io/1.1/spec/#E081
-                if validator.validate_object(fsw_opendir_as_fs(fsw=self.root_fs, path=dirpath)):
+                if validator.validate_object(fsw_opendir_as_fs(fs=self.root_fs, path=dirpath)):
                     good_objects += 1
                 else:
                     logging.debug("Object at %s in INVALID", dirpath)

@@ -155,11 +155,11 @@ def fsw_openfs(fs_url, create=False, exists_ok=True):
     return fs
 
 
-def fsw_opendir_as_fs(fsw, path):
+def fsw_opendir_as_fs(fs, path):
     """Open directory as filesystem handling special case of S3.
 
     Arguments:
-        fsw (AbstractFileSystem): fs filesytem to use, else None for local
+        fs (AbstractFileSystem): filesytem to use, else None for local
         path (str): string of directory to open
 
     Returns:
@@ -167,33 +167,33 @@ def fsw_opendir_as_fs(fsw, path):
             Has special handling to deal with S3 filesystems which don't have
             directory objects.
     """
-    fsw = _fsw_or_local(fsw)
-    if isinstance(fsw, S3FileSystem):
+    fs = _fsw_or_local(fs)
+    if isinstance(fs, S3FileSystem):
         raise FswException("S3FileSystem not yet re-implemented! See ocfl/fsw.py")
         # Hack for S3 because the standard opendir(..) fails when there
         # isn't a directory object (even with strict=False)
         # new_dir_path = os.path.join(fsw.dir_path, dir)
         # s3fs = S3FS(
-        #    fsw._bucket_name,  # pylint: disable=protected-access
+        #    fs._bucket_name,  # pylint: disable=protected-access
         #    dir_path=new_dir_path,
-        #    aws_access_key_id=fsw.aws_access_key_id,
-        #    aws_secret_access_key=fsw.aws_secret_access_key,
-        #    endpoint_url=fsw.endpoint_url,
-        #    # acl=fsw.acl,
-        #    # cache_control=fsw.cache_control),
-        #    strict=fsw.strict)
+        #    aws_access_key_id=fs.aws_access_key_id,
+        #    aws_secret_access_key=fs.aws_secret_access_key,
+        #    endpoint_url=fs.endpoint_url,
+        #    # acl=fs.acl,
+        #    # cache_control=fs.cache_control),
+        #    strict=fs.strict)
         # Patch in version of getinfo method that doesn't check parent directory
         # s3fs.getinfo = s3fs._getinfo  # pylint: disable=protected-access
         # return s3fs
     # Else just use DirFileSystem
-    return DirFileSystem(path=path, fs=fsw)
+    return DirFileSystem(path=path, fs=fs)
 
 
-def fsw_walk(fsw, dir="/"):
-    """Walk that works on fsw filesystems including S3 without the need for directory objects.
+def fsw_walk(fs, dir="/"):
+    """Walk that works a filesystem including S3 without the need for directory objects.
 
     Arguments:
-        fsw: fs filesytem to use
+        fs: fs filesytem to use
         dir: string of directory to start from (default "/" which is the root
             of the filesystem)
 
@@ -211,7 +211,7 @@ def fsw_walk(fsw, dir="/"):
         files = []
         dirs = []
         # print("dirpath = " + dirpath)
-        for info in fsw.listdir(dirpath, detail=True):
+        for info in fs.listdir(dirpath, detail=True):
             name = info["name"]
             # FIXME - listdir seems inconsistent in that if dirpath is /
             # then names come back without the preceding /, but if dirpath
@@ -256,20 +256,20 @@ def fsw_walk_files(fs, dir="/"):
     return allfiles
 
 
-def fsw_listdir_names(fsw, path="/"):
+def fsw_listdir_names(fs, path="/"):
     """List directory path on fsw returning relative file names.
 
     Arguments:
-        fsw: fs filesystem to use
+        fs: filesystem to use
         path: directory path on fsw, defaults to the root
 
     Returns:
         list: of filenames local to path
     """
-    fsw = _fsw_or_local(fsw)
+    fs = _fsw_or_local(fs)
     if path == "/":
         path = ""
-    return [os.path.relpath(name, path) for name in fsw.listdir(path, detail=False)]
+    return [os.path.relpath(name, path) for name in fs.listdir(path, detail=False)]
 
 
 def fsw_openfile(filepath, mode="rb", fs=None, **kwargs):
@@ -305,11 +305,11 @@ def fsw_readtext(filepath, fs=None):
     return text
 
 
-def fsw_files_identical(fsw, file1, file2):
+def fsw_files_identical(fs, file1, file2):
     """Compare files on one filesystem fsw.
 
     Arguments:
-        fsw: fs filesytem to use
+        fs: fs filesytem to use
         file1: string filepath for first file
         file2: string filepath for second file
 
@@ -320,8 +320,8 @@ def fsw_files_identical(fsw, file1, file2):
         FileNotFoundError: if either file does not exist
     """
     # Compare stat info first
-    info1 = fsw.info(file1)
-    info2 = fsw.info(file2)
+    info1 = fs.info(file1)
+    info2 = fs.info(file2)
     if info1["size"] != info2["size"] or info1["type"] != info2["type"]:
         return False
     # Short circuit if file names are the same, having checked existance
@@ -329,8 +329,8 @@ def fsw_files_identical(fsw, file1, file2):
     if file1 == file2:
         return True
     # Compare contents
-    with fsw.open(file1, "rb") as fh1:
-        with fsw.open(file2, "rb") as fh2:
+    with fs.open(file1, "rb") as fh1:
+        with fs.open(file2, "rb") as fh2:
             while True:
                 c1 = fh1.read(16777216)  # 16MB chunks
                 c2 = fh2.read(16777216)
