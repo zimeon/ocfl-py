@@ -38,7 +38,6 @@ The digest type will be set by reading the inventory (in this case, sha512)
 
 ```
 > python ocfl-sidecar.py tmp/obj
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
 Written sidecar file tmp/obj/inventory.json.sha512
 ```
 
@@ -49,7 +48,6 @@ The digest type will be set by reading the inventory (in this case, sha512)
 
 ```
 > python ocfl-sidecar.py tmp/obj/inventory.json
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
 Written sidecar file tmp/obj/inventory.json.sha512
 ```
 
@@ -60,7 +58,6 @@ The digest type is set with the --digest parameter
 
 ```
 > python ocfl-sidecar.py --digest sha256 tmp/obj
-fsw_openfs(tmp/obj, create=False, exists_ok=True)
 Written sidecar file tmp/obj/inventory.json.sha256
 ```
 
@@ -119,11 +116,8 @@ mkdir: created directory 'tmp/obj3'
 
 ```
 > python ocfl-sidecar.py tmp/obj1 tmp/obj2 tmp/obj3
-fsw_openfs(tmp/obj1, create=False, exists_ok=True)
 Written sidecar file tmp/obj1/inventory.json.sha512
-fsw_openfs(tmp/obj2, create=False, exists_ok=True)
 Written sidecar file tmp/obj2/inventory.json.sha512
-fsw_openfs(tmp/obj3, create=False, exists_ok=True)
 Written sidecar file tmp/obj3/inventory.json.sha512
 ```
 
