@@ -24,7 +24,7 @@ import fsspec
 from fsspec.spec import AbstractFileSystem
 from fsspec.implementations.dirfs import DirFileSystem
 from fsspec.implementations.local import LocalFileSystem
-# from fsspec.implementations.zip import ZipFileSystem
+from fsspec.implementations.zip import ZipFileSystem
 from s3fs import S3FileSystem
 
 
@@ -43,6 +43,41 @@ def _fsw_or_local(fs):
     """
     logging.debug("fsw -- %s", str(fs))
     return DirFileSystem(os.getcwd(), LocalFileSystem()) if fs is None else fs
+
+
+def _fsw_relpath(path, start=""):
+    """Safe version of os.path.relpath that does now use local filesystem cwd.
+
+    Arguments:
+        path (str): the path to make relative to start
+        start (str): a parent path
+
+    Returns:
+        str: relative path that will not have an initial "/"
+
+    Raises:
+        ValueError: if path cannot be expressed relative to start without
+            the use of parent directory operations
+
+    This function implement a restricted notion of relative path that will not
+    use ".." elements to work back up the directory hierarchy. Is also avoids
+    the unsafe os.path.relpath(..) which will reference the local filesystem
+    current working directory, which obviously has no role in other sorts of
+    filesystem.
+    """
+    path = path.lstrip("/")
+    start = start.lstrip("/")
+    if start == "":
+        return path
+    path_parts = path.split("/")
+    start_parts = start.split("/")
+    n = len(start_parts)
+    if len(path_parts) < n:
+        raise ValueError("_fsw_relpath: path (%s) is shorter than start (%s) to remove" % (path, start))
+    for i in range(0, n):
+        if start_parts[i] != path_parts[i]:
+            raise ValueError("_fsw_relpath: path (%s) does not have prefix start (%s)" % (path, start))
+    return "/".join(path_parts[n:])
 
 
 def fsw_openfs(fs_url, create=False, exists_ok=True):
@@ -133,8 +168,7 @@ def fsw_openfs(fs_url, create=False, exists_ok=True):
         # fsw.getinfo = fsw._getinfo  # pylint: disable=protected-access
         # return s3fs
     elif method == "zip":
-        raise FswException("ZipFileSystem not yet re-implemented for file %s! See ocfl/fsw.py" % (path))
-        # fs = ZipFileSystem(fo=path)
+        fs = ZipFileSystem(fo=path)
     else:
         # Not local, S3 or zip...
         fs = fsspec.filesystem(method)
@@ -208,19 +242,19 @@ def fsw_walk(fs, dir="/"):
         dirpath = stack.pop()
         files = []
         dirs = []
-        # print("dirpath = " + dirpath)
-        for info in fs.listdir(dirpath, detail=True):
+        print("dirpath = " + dirpath)
+        for info in fs.listdir(dirpath.lstrip("/"), detail=True):
             name = info["name"]
             # FIXME - listdir seems inconsistent in that if dirpath is /
             # then names come back without the preceding /, but if dirpath
             # is a subdirectory then the leading slash is present. Add on
             # if missing
+            print("fsw_walk: %s %s  type=%s" % (dirpath, name, info["type"]))
             if name in ("..", ".", ""):
                 continue
             if not name.startswith("/"):
                 name = "/" + name
-            name = os.path.relpath(name, dirpath)
-            # print(name + "  ##  " + dirpath)
+            name = _fsw_relpath(name, dirpath)
             if info["type"] == "directory":
                 # With zip filesystem we seem to get "." back that causes
                 # infinite recursion if not removed!
@@ -229,8 +263,9 @@ def fsw_walk(fs, dir="/"):
             else:
                 files.append(name)
         yield (dirpath, dirs, files)
-        # dirs may have been modified to prune
-        for dirname in dirs:
+        # dirs may have been modified to prune and control descent.
+        # Reverse lst so we descend in first item from listdir first order
+        for dirname in reversed(dirs):
             stack.append(os.path.join(dirpath, dirname))
 
 
@@ -247,14 +282,14 @@ def fsw_walk_files(fs, dir="/"):
     """
     allfiles = []
     for dirpath, _, files in fsw_walk(fs, dir):
-        reldir = os.path.relpath(dirpath, dir)
+        reldir = _fsw_relpath(dirpath, dir)
         if reldir == ".":
             reldir = ""
         allfiles += [os.path.join(reldir, file) for file in files]
     return allfiles
 
 
-def fsw_listdir_names(fs, path="/"):
+def fsw_listdir_names(fs, path=""):
     """List directory path on fsw returning relative file names.
 
     Arguments:
@@ -265,9 +300,8 @@ def fsw_listdir_names(fs, path="/"):
         list: of filenames local to path
     """
     fs = _fsw_or_local(fs)
-    if path == "/":
-        path = ""
-    return [os.path.relpath(name, path) for name in fs.listdir(path, detail=False)]
+    path = path.lstrip("/")
+    return [_fsw_relpath(name, path) for name in fs.listdir(path, detail=False)]
 
 
 def fsw_openfile(filepath, mode="rb", fs=None, **kwargs):
