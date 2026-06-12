@@ -11,6 +11,11 @@ Imagine that we have a Bagit bag [`tests/testdata/bags/uaa_v1`](https://github.c
 ```
 > python ocfl-object.py create --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v1 -v
 INFO:root:Created OCFL object info:bb123cd4567 in tmp/obj
+dirpath = /
+fsw_walk: / my_content  type=directory
+dirpath = /my_content
+fsw_walk: /my_content my_content/poe.txt  type=file
+fsw_walk: /my_content my_content/dracula.txt  type=file
 ```
 
 
@@ -20,6 +25,11 @@ Now that we have the object it is of course valid.
 
 ```
 > python ocfl-validate.py tmp/obj
+dirpath = /v1/content
+fsw_walk: /v1/content v1/content/my_content  type=directory
+dirpath = /v1/content/my_content
+fsw_walk: /v1/content/my_content v1/content/my_content/poe.txt  type=file
+fsw_walk: /v1/content/my_content v1/content/my_content/dracula.txt  type=file
 OCFL v1.1 Object at tmp/obj is VALID
 ```
 
@@ -31,6 +41,11 @@ Looking inside the object we see `v1` with the expected 2 content files.
 ```
 > python ocfl-object.py show --objdir tmp/obj
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
+dirpath = /v1/content
+fsw_walk: /v1/content v1/content/my_content  type=directory
+dirpath = /v1/content/my_content
+fsw_walk: /v1/content/my_content v1/content/my_content/poe.txt  type=file
+fsw_walk: /v1/content/my_content v1/content/my_content/dracula.txt  type=file
 Object tree for None
 [tmp/obj]
 ├── 0=ocfl_object_1.1 
@@ -51,6 +66,20 @@ If we have a bag [`tests/testdata/bags/uaa_v2`](https://github.com/zimeon/ocfl-p
 ```
 > python ocfl-object.py update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v2 -v
 INFO:root:Updated OCFL object info:bb123cd4567 by adding v2
+dirpath = /v1/content
+fsw_walk: /v1/content v1/content/my_content  type=directory
+dirpath = /v1/content/my_content
+fsw_walk: /v1/content/my_content v1/content/my_content/poe.txt  type=file
+fsw_walk: /v1/content/my_content v1/content/my_content/dracula.txt  type=file
+dirpath = /
+fsw_walk: / my_content  type=directory
+dirpath = /my_content
+fsw_walk: /my_content my_content/a_second_copy_of_dracula.txt  type=file
+fsw_walk: /my_content my_content/another_directory  type=directory
+fsw_walk: /my_content my_content/dracula.txt  type=file
+fsw_walk: /my_content my_content/poe-nevermore.txt  type=file
+dirpath = /my_content/another_directory
+fsw_walk: /my_content/another_directory my_content/another_directory/a_third_copy_of_dracula.txt  type=file
 Updated object info:bb123cd4567 to v2
 ```
 
@@ -62,6 +91,11 @@ Looking inside the object we now see `v1` and `v2`. There are no content files i
 ```
 > python ocfl-object.py show --objdir tmp/obj
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
+dirpath = /v1/content
+fsw_walk: /v1/content v1/content/my_content  type=directory
+dirpath = /v1/content/my_content
+fsw_walk: /v1/content/my_content v1/content/my_content/poe.txt  type=file
+fsw_walk: /v1/content/my_content v1/content/my_content/dracula.txt  type=file
 Object tree for None
 [tmp/obj]
 ├── 0=ocfl_object_1.1 
@@ -85,6 +119,19 @@ Similarly we can `--update` with [`tests/testdata/bags/uaa_v3`](https://github.c
 ```
 > python ocfl-object.py update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v3 -v
 INFO:root:Updated OCFL object info:bb123cd4567 by adding v3
+dirpath = /v1/content
+fsw_walk: /v1/content v1/content/my_content  type=directory
+dirpath = /v1/content/my_content
+fsw_walk: /v1/content/my_content v1/content/my_content/poe.txt  type=file
+fsw_walk: /v1/content/my_content v1/content/my_content/dracula.txt  type=file
+dirpath = /
+fsw_walk: / my_content  type=directory
+dirpath = /my_content
+fsw_walk: /my_content my_content/another_directory  type=directory
+fsw_walk: /my_content my_content/dracula.txt  type=file
+fsw_walk: /my_content my_content/poe-nevermore.txt  type=file
+dirpath = /my_content/another_directory
+fsw_walk: /my_content/another_directory my_content/another_directory/a_third_copy_of_dracula.txt  type=file
 Updated object info:bb123cd4567 to v3
 ```
 
@@ -96,6 +143,15 @@ Looking inside again we see that `v3` does add another content file.
 ```
 > python ocfl-object.py show --objdir tmp/obj
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
+dirpath = /v1/content
+fsw_walk: /v1/content v1/content/my_content  type=directory
+dirpath = /v1/content/my_content
+fsw_walk: /v1/content/my_content v1/content/my_content/poe.txt  type=file
+fsw_walk: /v1/content/my_content v1/content/my_content/dracula.txt  type=file
+dirpath = /v3/content
+fsw_walk: /v3/content v3/content/my_content  type=directory
+dirpath = /v3/content/my_content
+fsw_walk: /v3/content/my_content v3/content/my_content/poe-nevermore.txt  type=file
 Object tree for None
 [tmp/obj]
 ├── 0=ocfl_object_1.1 
@@ -123,6 +179,24 @@ Finally, we can `--update` again with [`tests/testdata/bags/uaa_v4`](https://git
 ```
 > python ocfl-object.py update --objdir tmp/obj --srcbag tests/testdata/bags/uaa_v4 -v
 INFO:root:Updated OCFL object info:bb123cd4567 by adding v4
+dirpath = /v1/content
+fsw_walk: /v1/content v1/content/my_content  type=directory
+dirpath = /v1/content/my_content
+fsw_walk: /v1/content/my_content v1/content/my_content/poe.txt  type=file
+fsw_walk: /v1/content/my_content v1/content/my_content/dracula.txt  type=file
+dirpath = /v3/content
+fsw_walk: /v3/content v3/content/my_content  type=directory
+dirpath = /v3/content/my_content
+fsw_walk: /v3/content/my_content v3/content/my_content/poe-nevermore.txt  type=file
+dirpath = /
+fsw_walk: / my_content  type=directory
+dirpath = /my_content
+fsw_walk: /my_content my_content/dunwich.txt  type=file
+fsw_walk: /my_content my_content/another_directory  type=directory
+fsw_walk: /my_content my_content/dracula.txt  type=file
+fsw_walk: /my_content my_content/poe-nevermore.txt  type=file
+dirpath = /my_content/another_directory
+fsw_walk: /my_content/another_directory my_content/another_directory/a_third_copy_of_dracula.txt  type=file
 Updated object info:bb123cd4567 to v4
 ```
 

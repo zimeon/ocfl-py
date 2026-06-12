@@ -29,6 +29,9 @@ Created OCFL storage root tmp/root
 ```
 > python ocfl-root.py list --root=tmp/root -v
 INFO:root:Storage root layout is nnnn-flat-quoted-storage-layout
+dirpath = /
+fsw_walk: / ocfl_layout.json  type=file
+fsw_walk: / 0=ocfl_1.1  type=file
 Found 0 OCFL Objects under root tmp/root
 ```
 
@@ -38,6 +41,17 @@ Found 0 OCFL Objects under root tmp/root
 ```
 > python ocfl-root.py add --root=tmp/root --src fixtures/1.0/good-objects/minimal_one_version_one_file -v
 INFO:root:Storage root layout is nnnn-flat-quoted-storage-layout
+dirpath = /
+fsw_walk: / v1  type=directory
+fsw_walk: / inventory.json.sha512  type=file
+fsw_walk: / 0=ocfl_object_1.0  type=file
+fsw_walk: / inventory.json  type=file
+dirpath = /v1
+fsw_walk: /v1 v1/content  type=directory
+fsw_walk: /v1 v1/inventory.json.sha512  type=file
+fsw_walk: /v1 v1/inventory.json  type=file
+dirpath = /v1/content
+fsw_walk: /v1/content v1/content/a_file.txt  type=file
 Added object ark:123/abc at path ark%3A123%2Fabc
 ```
 
@@ -59,9 +73,31 @@ ERROR:root:Add object failed because destination path ark%3A123%2Fabc already ex
 
 ```
 > python ocfl-root.py list --root=extra_fixtures/1.0/good-storage-roots/simple-root
-ark%3A123%2Fabc -- id=ark:123/abc
-ark%3A%2F12345%2Fbcd987 -- id=ark:/12345/bcd987
+dirpath = /
+fsw_walk: / http%3A%2F%2Fexample.org%2Fminimal_mixed_digests  type=directory
+fsw_walk: / ark%3A%2F12345%2Fbcd987  type=directory
+fsw_walk: / ark%3A123%2Fabc  type=directory
+fsw_walk: / 0=ocfl_1.0  type=file
+dirpath = /http%3A%2F%2Fexample.org%2Fminimal_mixed_digests
+fsw_walk: /http%3A%2F%2Fexample.org%2Fminimal_mixed_digests http%3A%2F%2Fexample.org%2Fminimal_mixed_digests/v1  type=directory
+fsw_walk: /http%3A%2F%2Fexample.org%2Fminimal_mixed_digests http%3A%2F%2Fexample.org%2Fminimal_mixed_digests/inventory.json.sha512  type=file
+fsw_walk: /http%3A%2F%2Fexample.org%2Fminimal_mixed_digests http%3A%2F%2Fexample.org%2Fminimal_mixed_digests/0=ocfl_object_1.0  type=file
+fsw_walk: /http%3A%2F%2Fexample.org%2Fminimal_mixed_digests http%3A%2F%2Fexample.org%2Fminimal_mixed_digests/inventory.json  type=file
 http%3A%2F%2Fexample.org%2Fminimal_mixed_digests -- id=http://example.org/minimal_mixed_digests
+dirpath = /ark%3A%2F12345%2Fbcd987
+fsw_walk: /ark%3A%2F12345%2Fbcd987 ark%3A%2F12345%2Fbcd987/v1  type=directory
+fsw_walk: /ark%3A%2F12345%2Fbcd987 ark%3A%2F12345%2Fbcd987/inventory.json.sha512  type=file
+fsw_walk: /ark%3A%2F12345%2Fbcd987 ark%3A%2F12345%2Fbcd987/0=ocfl_object_1.0  type=file
+fsw_walk: /ark%3A%2F12345%2Fbcd987 ark%3A%2F12345%2Fbcd987/inventory.json  type=file
+fsw_walk: /ark%3A%2F12345%2Fbcd987 ark%3A%2F12345%2Fbcd987/v2  type=directory
+fsw_walk: /ark%3A%2F12345%2Fbcd987 ark%3A%2F12345%2Fbcd987/v3  type=directory
+ark%3A%2F12345%2Fbcd987 -- id=ark:/12345/bcd987
+dirpath = /ark%3A123%2Fabc
+fsw_walk: /ark%3A123%2Fabc ark%3A123%2Fabc/v1  type=directory
+fsw_walk: /ark%3A123%2Fabc ark%3A123%2Fabc/inventory.json.sha512  type=file
+fsw_walk: /ark%3A123%2Fabc ark%3A123%2Fabc/0=ocfl_object_1.0  type=file
+fsw_walk: /ark%3A123%2Fabc ark%3A123%2Fabc/inventory.json  type=file
+ark%3A123%2Fabc -- id=ark:123/abc
 Found 3 OCFL Objects under root extra_fixtures/1.0/good-storage-roots/simple-root
 ```
 
@@ -101,6 +137,17 @@ Created OCFL storage root tmp/ex2
 ```
 > python ocfl-root.py add --root=tmp/ex2 --src=extra_fixtures/1.0/good-objects/root_ext0003_object-01
 INFO:root:Storage root layout is 0003-hash-and-id-n-tuple-storage-layout
+dirpath = /
+fsw_walk: / v1  type=directory
+fsw_walk: / inventory.json.sha512  type=file
+fsw_walk: / 0=ocfl_object_1.0  type=file
+fsw_walk: / inventory.json  type=file
+dirpath = /v1
+fsw_walk: /v1 v1/content  type=directory
+fsw_walk: /v1 v1/inventory.json.sha512  type=file
+fsw_walk: /v1 v1/inventory.json  type=file
+dirpath = /v1/content
+fsw_walk: /v1/content v1/content/file.txt  type=file
 Added object object-01 at path ff/75/53/44/92/48/5e/ab/b3/9f/86/35/67/28/88/object-01
 ```
 
@@ -110,6 +157,17 @@ Added object object-01 at path ff/75/53/44/92/48/5e/ab/b3/9f/86/35/67/28/88/obje
 ```
 > python ocfl-root.py add --root=tmp/ex2 --src=extra_fixtures/1.0/good-objects/root_ext0003_horrible-obj
 INFO:root:Storage root layout is 0003-hash-and-id-n-tuple-storage-layout
+dirpath = /
+fsw_walk: / v1  type=directory
+fsw_walk: / inventory.json.sha512  type=file
+fsw_walk: / 0=ocfl_object_1.0  type=file
+fsw_walk: / inventory.json  type=file
+dirpath = /v1
+fsw_walk: /v1 v1/content  type=directory
+fsw_walk: /v1 v1/inventory.json.sha512  type=file
+fsw_walk: /v1 v1/inventory.json  type=file
+dirpath = /v1/content
+fsw_walk: /v1/content v1/content/file.txt  type=file
 Added object ..hor/rib:le-$id at path 08/31/97/66/fb/6c/29/35/dd/17/5b/94/26/77/17/%2e%2ehor%2frib%3ale-%24id
 ```
 
