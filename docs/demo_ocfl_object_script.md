@@ -22,6 +22,8 @@ Without an `--objdir` argument the script just writes out the inventory for the 
 
 ```
 > python ocfl-object.py create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1 --created 2024-10-24T18:30:01Z
+dirpath = /
+fsw_walk: / a_file.txt  type=file
 ### Inventory for v1
 {
   "digestAlgorithm": "sha512",
@@ -53,6 +55,12 @@ Without an `--objdir` argument the script just writes out the inventory for each
 
 ```
 > python ocfl-object.py build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 --metadata extra_fixtures/1.0/content/spec-ex-full-metadata.json
+dirpath = /
+fsw_walk: / a_file.txt  type=file
+dirpath = /
+fsw_walk: / a_file.txt  type=file
+dirpath = /
+fsw_walk: / a_file.txt  type=file
 ### Inventory for v3
 {
   "digestAlgorithm": "sha512",
@@ -119,6 +127,8 @@ Without an `--objdir` argument the script just writes out the inventory for each
 ```
 > python ocfl-object.py create --id http://example.org/obj1 --src fixtures/1.0/content/cf1/v1 --objdir tmp/obj1 --created 2024-10-24T18:30:03Z -v
 INFO:root:Created OCFL object http://example.org/obj1 in tmp/obj1
+dirpath = /
+fsw_walk: / a_file.txt  type=file
 ```
 
 
@@ -129,6 +139,9 @@ The two identical files are deduped, only one copy being stored and using the fi
 ```
 > python ocfl-object.py create --id http://example.org/obj_dedupe --src extra_fixtures/content/dupe-files --objdir tmp/obj_dedupe --created 2025-04-08T14:00:01Z -v
 INFO:root:Created OCFL object http://example.org/obj_dedupe in tmp/obj_dedupe
+dirpath = /
+fsw_walk: / file1_dupe.txt  type=file
+fsw_walk: / file1.txt  type=file
 ```
 
 Object tree shows v1 with content:
@@ -141,6 +154,12 @@ Object tree shows v1 with content:
 ```
 > python ocfl-object.py build --id http://example.org/obj2 --src fixtures/1.0/content/cf3 --objdir tmp/obj2 -v
 INFO:root:Built object http://example.org/obj2 at tmp/obj2 with 3 versions
+dirpath = /
+fsw_walk: / a_file.txt  type=file
+dirpath = /
+fsw_walk: / a_file.txt  type=file
+dirpath = /
+fsw_walk: / a_file.txt  type=file
 ```
 
 
