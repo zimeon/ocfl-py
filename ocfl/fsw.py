@@ -242,24 +242,15 @@ def fsw_walk(fs, dir="/"):
         dirpath = stack.pop()
         files = []
         dirs = []
-        print("dirpath = " + dirpath)
         for info in fs.listdir(dirpath.lstrip("/"), detail=True):
-            name = info["name"]
-            # FIXME - listdir seems inconsistent in that if dirpath is /
-            # then names come back without the preceding /, but if dirpath
-            # is a subdirectory then the leading slash is present. Add on
-            # if missing
-            print("fsw_walk: %s %s  type=%s" % (dirpath, name, info["type"]))
+            name = _fsw_relpath(info["name"], dirpath)
             if name in ("..", ".", ""):
+                # Exactly what comes back seems to depend on the filesystem
+                # implementation. E.g. zip gives ".". Ignore ones we will never
+                # want
                 continue
-            if not name.startswith("/"):
-                name = "/" + name
-            name = _fsw_relpath(name, dirpath)
             if info["type"] == "directory":
-                # With zip filesystem we seem to get "." back that causes
-                # infinite recursion if not removed!
-                if name != ".":
-                    dirs.append(name)
+                dirs.append(name)
             else:
                 files.append(name)
         yield (dirpath, dirs, files)
