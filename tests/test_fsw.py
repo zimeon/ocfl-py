@@ -48,8 +48,8 @@ class TestAll(unittest.TestCase):
         edirs = {}
         efiles = {}
         for dirpath, dirs, files in fsw_walk(fs, "/"):
-           edirs[dirpath] = sorted(dirs)
-           efiles[dirpath] = sorted(files)
+            edirs[dirpath] = sorted(dirs)
+            efiles[dirpath] = sorted(files)
         self.assertEqual(edirs["/"], ["ark%3A%2F12345%2Fbcd987", "ark%3A123%2Fabc", "dir_with_file_but_no_declaration", "empty_dir", "object_multiple_declarations", "object_unknown_version", "object_unrecognized_declaration"])
         self.assertEqual(efiles["/"], ["0=ocfl_1.0"])
         self.assertEqual(edirs["/object_multiple_declarations"], ["v1"])

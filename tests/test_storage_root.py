@@ -10,7 +10,6 @@ from ocfl.storage_root import StorageRoot, StorageRootException
 from ocfl.layout_registry import get_layout
 from ocfl.layout_0002_flat_direct import Layout_0002_Flat_Direct
 from ocfl.validation_logger import ValidationLogger
-from ocfl.fsw import fsw_listdir_names
 
 
 class TestAll(unittest.TestCase):
