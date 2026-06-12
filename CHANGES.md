@@ -6,13 +6,6 @@
     name `ocfl.pyfs` to `ocfl.fsw` (file system wrapper). Localize all inclusion of `fsspec` in the
     `ocfl.fsw` module.
   * FIXME - Things to resolve:
-    * ZipFileSystem seems not to be working properly, have disable its use in tests in:
-      * `tests/test_fsw.py`
-      * `tests/test_inventory.py`
-      * `tests/test_storage_root.py`
-      * `tests/test_validator.py` - Disabled tests relying on zip:
-      	* W003_empty_content_dir
-        * E024_empty_dir_in_content
     * S3 usages is disabled and needs testing
     * Should add more tests for `ocfl/fsw.py`
 
