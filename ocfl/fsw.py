@@ -140,33 +140,18 @@ def fsw_openfs(fs_url, create=False, exists_ok=True):
         tempdir = tempfile.mkdtemp(prefix="fsw")
         fs = DirFileSystem(tempdir, LocalFileSystem())
     elif method == "s3":
-        raise FswException("S3FileSystem not yet re-implemented! See ocfl/fsw.py")
-        # And S3 URL, mostly repeat
-        # https://github.com/PyFilesystem/s3fs/blob/master/fs_s3fs/opener.py
-        # but adjust the handling of strict to default to strict=False
-        # bucket_name, _, dir_path = path.partition("/")
-        # if not bucket_name:
-        #    raise FileNotFoundError("invalid bucket name in '{}'".format(fs_url))
-        # Instead of the default opener behavior where strict is True unless
-        # explicitly set !=1 in the URL query paremeter, we set False unless
-        # explicity set via strict=1 in the URL query params
-        # strict = (
-        #    parse_result.params["strict"] == "1"
-        #    if "strict" in parse_result.params
-        #    else False
-        # )
-        # fsw = S3FS(
-        #    bucket_name,
-        #    dir_path=dir_path or "/",
-        #    aws_access_key_id=parse_result.username or None,
-        #    aws_secret_access_key=parse_result.password or None,
-        #    endpoint_url=parse_result.params.get("endpoint_url", None),
-        #    acl=parse_result.params.get("acl", None),
-        #    cache_control=parse_result.params.get("cache_control", None),
-        #    strict=strict)
-        # Patch in version of getinfo method that doesn't check parent directory
-        # fsw.getinfo = fsw._getinfo  # pylint: disable=protected-access
-        # return s3fs
+        # Note that we assume credentials are set up such that botocore can pick them
+        # up from the environment (e.g. in ~/.aws/credentials or other places per
+        # https://github.com/boto/botocore)
+        fs = S3FileSystem(anon=False)
+        # Check that we can access the specified bucket/path and give a helpful error on
+        # faulire. Otherwise error will only be thrown from some later attempt to access
+        # S3 in the OCFL code.
+        try:
+            fs.ls(path, detail=False)
+        except FileNotFoundError as e:
+            raise FileNotFoundError("Failed to access S3 bucket/path (%s) (%s)" % (path, str(e)))
+        fs = DirFileSystem(path, fs)
     elif method == "zip":
         fs = ZipFileSystem(fo=path)
     else:
