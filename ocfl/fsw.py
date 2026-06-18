@@ -19,6 +19,7 @@ function so we need to call the S3FS creator method directly.
 import logging
 import os.path
 import tempfile
+from urllib.parse import parse_qs
 
 import fsspec
 from fsspec.spec import AbstractFileSystem
@@ -43,6 +44,25 @@ def _fsw_or_local(fs):
     """
     logging.debug("fsw -- %s", str(fs))
     return DirFileSystem(os.getcwd(), LocalFileSystem()) if fs is None else fs
+
+
+def _fsw_s3_urlparse(url_path):
+    """S3 specific parsing of URL style parameters.
+
+    Arguments:
+        url_path (str): path with optional URL style query parameters
+
+    Returns:
+        str: the path
+        dict: a dictionary of any parameters extracted
+    """
+    parts = url_path.split("?", 1)
+    if len(parts) == 1:
+        return url_path, {}
+    # Parse query component, take only first value of any param name
+    path = parts[0]
+    params = {k: v[0] for k, v in parse_qs(parts[1]).items()}
+    return path, params
 
 
 def _fsw_relpath(path, start=""):
@@ -143,7 +163,8 @@ def fsw_openfs(fs_url, create=False, exists_ok=True):
         # Note that we assume credentials are set up such that botocore can pick them
         # up from the environment (e.g. in ~/.aws/credentials or other places per
         # https://github.com/boto/botocore)
-        fs = S3FileSystem(anon=False)
+        path, params = _fsw_s3_urlparse(path)
+        fs = S3FileSystem(**params)
         # Check that we can access the specified bucket/path and give a helpful error on
         # faulire. Otherwise error will only be thrown from some later attempt to access
         # S3 in the OCFL code.
@@ -273,11 +294,19 @@ def fsw_listdir_names(fs, path=""):
         path: directory path on fsw, defaults to the root
 
     Returns:
-        list: of filenames local to path
+        list: of filenames relative to path
     """
     fs = _fsw_or_local(fs)
     path = path.lstrip("/")
-    return [_fsw_relpath(name, path) for name in fs.listdir(path, detail=False)]
+    names = []
+    for lsname in fs.listdir(path, detail=False):
+        name = _fsw_relpath(lsname, path)
+        if name != "":
+            # The Filebase implementation of S3 returns the directory path
+            # resulting in an empy name, drop that. This is not an issue
+            # with AWS S3
+            names.append(name)
+    return names
 
 
 def fsw_openfile(filepath, mode="rb", fs=None, **kwargs):
