@@ -149,7 +149,7 @@ def fsw_openfs(fs_url, create=False, exists_ok=True):
         # S3 in the OCFL code.
         try:
             fs.ls(path, detail=False)
-        except FileNotFoundError as e:
+        except (FileNotFoundError, PermissionError) as e:
             raise FileNotFoundError("Failed to access S3 bucket/path (%s) (%s)" % (path, str(e)))
         fs = DirFileSystem(path, fs)
     elif method == "zip":
