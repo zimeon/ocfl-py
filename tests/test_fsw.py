@@ -1,13 +1,46 @@
 """Fsw tests."""
 import unittest
 
-from ocfl.fsw import fsw_openfs, fsw_opendir_as_fs, fsw_walk, fsw_walk_files, fsw_listdir_names, fsw_files_identical
+from ocfl.fsw import FswException, _fsw_s3_urlparse, _fsw_relpath, fsw_openfs, fsw_opendir_as_fs, fsw_walk, fsw_walk_files, fsw_listdir_names, fsw_files_identical
 
 
 class TestAll(unittest.TestCase):
     """TestAll class to run tests."""
 
-    def test01_fsw_openfs(self):
+    def test01_fsw_s3_urlparse(self):
+        """Test _fsw_s3_urlparse."""
+        self.assertEqual(_fsw_s3_urlparse(""), ("", {}))
+        self.assertEqual(_fsw_s3_urlparse("a"), ("a", {}))
+        self.assertEqual(_fsw_s3_urlparse("a/b"), ("a/b", {}))
+        self.assertEqual(_fsw_s3_urlparse("/a"), ("/a", {}))
+        self.assertEqual(_fsw_s3_urlparse("/a/b#c"), ("/a/b#c", {}))
+        self.assertEqual(_fsw_s3_urlparse("a?d"), ("a", {}))
+        self.assertEqual(_fsw_s3_urlparse("a?d=e"), ("a", {"d": "e"}))
+        self.assertEqual(_fsw_s3_urlparse("a?d=e&extra"), ("a", {"d": "e"}))
+        self.assertEqual(_fsw_s3_urlparse("a?d=e&extra=1234"), ("a", {"d": "e", "extra": "1234"}))
+        self.assertEqual(_fsw_s3_urlparse("a?d=e&extra=1234&d=f"), ("a", {"d": "e", "extra": "1234"}))
+
+    def test02_fsw_relpath(self):
+        """Test _fsw_relpath."""
+        # One path
+        self.assertEqual(_fsw_relpath("a"), "a")
+        self.assertEqual(_fsw_relpath("a/b/c/d"), "a/b/c/d")
+        self.assertEqual(_fsw_relpath("a/"), "a/")
+        self.assertEqual(_fsw_relpath("/a"), "a")  # strips leading /
+        # Same as if "" is start
+        self.assertEqual(_fsw_relpath(path="a", start=""), "a")
+        # Start paths that work (leading /'s don't matter)
+        self.assertEqual(_fsw_relpath("a/b/c/d", "a/b"), "c/d")
+        self.assertEqual(_fsw_relpath("/a/b/c/d", "a/b"), "c/d")
+        self.assertEqual(_fsw_relpath("a/b/c/d", "/a/b"), "c/d")
+        self.assertEqual(_fsw_relpath("/a/b/c/d", "/a/b/c"), "d")
+        self.assertEqual(_fsw_relpath("/a/b/c/d", "/a/b/c/d"), "")
+        # Exceptions
+        self.assertRaises(ValueError, _fsw_relpath, "a/b/c", "b")
+        self.assertRaises(ValueError, _fsw_relpath, "a/b/c", "a/c")
+        self.assertRaises(ValueError, _fsw_relpath, "a/b/c", "a/b/c/d")
+
+    def test03_fsw_openfs(self):
         """Test fsw_openfs."""
         # local path
         fs = fsw_openfs("tests/testdata/files")
@@ -16,22 +49,29 @@ class TestAll(unittest.TestCase):
         self.assertRaises(FileNotFoundError, fs.ls, "does_not_exist")
         # path does not exists
         self.assertRaises(FileNotFoundError, fsw_openfs, "path_does_not_exist")
-        # memory filesystem
+        # memory filesystem (persistent between calls - not sure ideal but we should know of that changes)
         fs = fsw_openfs("memory://")
         self.assertEqual(len(fs.ls("")), 0)
-        # dir doesn"t exists
+        # test of create
+        fs = fsw_openfs("memory://new_dir", create=True)
+        # insist on create
+        self.assertRaises(FswException, fsw_openfs, "memory://new_dir", create=True, exists_ok=False)
+        # dir doesn't exist
         self.assertRaises(FileNotFoundError, fsw_openfs, "temp://new_dir")
         # test of create
         fs = fsw_openfs("temp://new_dir", create=True)
+        # open with fs passed in
+        fs2 = fsw_openfs(fs)
+        self.assertEqual(fs2, fs)
 
-    def test02_fsw_opendir_as_fs(self):
+    def test04_fsw_opendir_as_fs(self):
         """Test fsw_opendir_as_fs."""
         # local path
         fs = fsw_openfs("tests")
         dfs = fsw_opendir_as_fs(fs, "testdata/files")
         self.assertTrue(dfs.exists("empty"))
 
-    def test03_fsw_walk(self):
+    def test05_fsw_walk(self):
         """Test fsw_walk."""
         fs = fsw_openfs("fixtures/1.0/content/spec-ex-full")
         edirs = {}
@@ -55,7 +95,7 @@ class TestAll(unittest.TestCase):
         self.assertEqual(edirs["/object_multiple_declarations"], ["v1"])
         self.assertEqual(efiles["/object_multiple_declarations"], ["0=ocfl_object_1.0", "0=ocfl_object_1.1", "inventory.json", "inventory.json.sha512"])
 
-    def test04_fsw_walk_file(self):
+    def test06_fsw_walk_file(self):
         """Test fsw_walk_file."""
         fs = fsw_openfs("fixtures/1.0/content/spec-ex-full")
         self.assertEqual(sorted(fsw_walk_files(fs, "/v3")),
@@ -70,7 +110,7 @@ class TestAll(unittest.TestCase):
         self.assertIn("inventory.json", files)
         self.assertIn("v1/content/my_content/poe.txt", files)
 
-    def test05_fsw_listdir_names(self):
+    def test07_fsw_listdir_names(self):
         """Test fsw_listdir_names."""
         fs = fsw_openfs("fixtures/1.0/content/spec-ex-full")
         files = sorted(fsw_listdir_names(fs, path="v3"))
@@ -86,7 +126,7 @@ class TestAll(unittest.TestCase):
         files = sorted(fsw_listdir_names(fs, "/v1"))
         self.assertEqual(files, ["content", "inventory.json", "inventory.json.sha512"])
 
-    def test06_fsw_files_identical(self):
+    def test08_fsw_files_identical(self):
         """Test fsw_files_identical."""
         def _write_file(fs, name, kbs, extra=""):
             with fs.open(name, "wb") as fh:
