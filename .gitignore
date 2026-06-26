@@ -5,8 +5,6 @@ __pycache__
 *.pyc
 *~
 .DS_store
-minimal.txt
-full.txt
 build/
 dist/
 htmlcov/
@@ -15,5 +13,6 @@ ocfl_py.egg-info/
 .tox/
 extra_fixtures/warn-objects/W003_empty_content_dir
 extra_fixtures/bad-objects/E024_empty_dir_in_content
+docs/_bu
 docs/_build
 docs/generated

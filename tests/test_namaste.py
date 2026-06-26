@@ -3,8 +3,9 @@ import os.path
 import tempfile
 import unittest
 
-import fs
-import fs.tempfs
+from fsspec.implementations.dirfs import DirFileSystem
+from fsspec.implementations.local import LocalFileSystem
+from fsspec.implementations.memory import MemoryFileSystem
 
 from ocfl.namaste import content_to_tvalue, find_namastes, get_namaste, Namaste, NamasteException
 
@@ -28,11 +29,15 @@ class TestAll(unittest.TestCase):
         namastes1 = find_namastes(0, "tests/testdata/namaste")
         self.assertEqual({x.tvalue for x in namastes1}, {"frog", "bison", "snake"})
         self.assertRaises(NamasteException, find_namastes, 0, "tests/testdata/namaste", limit=2)
-        # With pyfs filesystem
-        tdfs = fs.open_fs("tests/testdata")
-        namastes2 = find_namastes(0, "namaste", pyfs=tdfs)
+        # With fsw filesystem
+        tdfs = DirFileSystem("tests/testdata", LocalFileSystem())
+        namastes2 = find_namastes(0, "namaste", fsw=tdfs)
         self.assertEqual({x.tvalue for x in namastes2}, {"frog", "bison", "snake"})
-        self.assertRaises(NamasteException, find_namastes, 0, "namaste", pyfs=tdfs, limit=1)
+        self.assertRaises(NamasteException, find_namastes, 0, "namaste", fsw=tdfs, limit=1)
+        # With plain and fsw that doesn't exist
+        self.assertRaises(FileNotFoundError, find_namastes, 0, "this_dir_does_not_exist")
+        tdfs = DirFileSystem("tests/testdata", LocalFileSystem())
+        self.assertRaises(FileNotFoundError, find_namastes, 0, "this_dir_does_not_exist", fsw=tdfs)
 
     def test03_get_namaste(self):
         """Test get_namaste."""
@@ -81,11 +86,11 @@ class TestAll(unittest.TestCase):
         with open(filepath, "r", encoding="utf-8") as fh:
             self.assertEqual(fh.read(), "balloon\n")
         # With fs filesystem
-        tmpfs = fs.tempfs.TempFS()
+        tmpfs = MemoryFileSystem()
         n = Namaste(1, "jelly")
-        n.write(pyfs=tmpfs)
+        n.write(fsw=tmpfs)
         self.assertTrue(tmpfs.isfile("1=jelly"))
-        self.assertEqual(tmpfs.readtext("1=jelly"), "jelly\n")
+        self.assertEqual(tmpfs.read_text("1=jelly"), "jelly\n")
 
     def test15_check_content(self):
         """Test check_content method."""
@@ -93,14 +98,14 @@ class TestAll(unittest.TestCase):
         self.assertRaises(NamasteException, Namaste().check_content, "tests/testdata/namaste")
         self.assertRaises(NamasteException, Namaste(0, "a").check_content, "tests/testdata/namaste/does_not_exist")
         self.assertRaises(NamasteException, Namaste(0, "bison").check_content, "tests/testdata/namaste")
-        # Using pyfs...
-        tmpfs = fs.tempfs.TempFS()
-        tmpfs.writetext("9=niner", "niner\n")
-        tmpfs.writetext("8=smiley", "FROWNY\n")
-        Namaste(9, "niner").check_content(pyfs=tmpfs)
-        Namaste(9, "niner").check_content(dir="", pyfs=tmpfs)
-        self.assertRaises(NamasteException, Namaste(8, "smiley").check_content, pyfs=tmpfs)
-        self.assertRaises(NamasteException, Namaste(7, "not-there").check_content, pyfs=tmpfs)
+        # Using fsw...
+        tmpfs = MemoryFileSystem()
+        tmpfs.write_text("9=niner", "niner\n")
+        tmpfs.write_text("8=smiley", "FROWNY\n")
+        Namaste(9, "niner").check_content(fsw=tmpfs)
+        Namaste(9, "niner").check_content(dir="", fsw=tmpfs)
+        self.assertRaises(NamasteException, Namaste(8, "smiley").check_content, fsw=tmpfs)
+        self.assertRaises(NamasteException, Namaste(7, "not-there").check_content, fsw=tmpfs)
 
     def test16_content_ok(self):
         """Test content_ok method."""

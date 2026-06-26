@@ -2,7 +2,7 @@
 import unittest
 
 from ocfl.inventory import InventoryException, Inventory, Version
-from ocfl.pyfs import pyfs_openfs
+from ocfl.fsw import fsw_openfs
 
 
 class TestInventory(unittest.TestCase):
@@ -23,8 +23,9 @@ class TestInventory(unittest.TestCase):
         inv = Inventory(filepath="fixtures/1.0/good-objects/spec-ex-full/inventory.json")
         self.assertEqual(inv.id, "ark:/12345/bcd987")
         self.assertEqual(inv.spec_version, "1.0")
-        pyfs = pyfs_openfs("zip://extra_fixtures/1.0/good-objects/ten_level_deep_directories.zip")
-        inv = Inventory(pyfs=pyfs, filepath="v1/inventory.json")
+        # Zip
+        fsw = fsw_openfs("zip://extra_fixtures/1.0/good-objects/ten_level_deep_directories.zip")
+        inv = Inventory(fsw=fsw, filepath="v1/inventory.json")
         self.assertEqual(inv.id, "http://example.org/ten_level_deep_directories")
         # Check deep copy of inventory
         inv1 = Inventory(filepath="fixtures/1.0/good-objects/spec-ex-full/inventory.json")

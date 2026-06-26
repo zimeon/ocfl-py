@@ -458,13 +458,13 @@ class TestAll(unittest.TestCase):
         self.assertEqual(lp, set(("almost anything goes", "including/this/long/path")))
         self.assertEqual(ld, set(("", "including/this/long")))
 
-    def test_bad_inventory_files(self):
+    def test_1_0_bad_inventory_files(self):
         """Test bad inventory files."""
         for bad, codes in {"inventory_E042a_bad_content_paths": ["E042a"],
                            "inventory_E042c_bad_content_paths": ["E042c"],
                            "inventory_E042b_unknown_version": ["E042b"],
                            "inventory_E042b_zero_padding_mismatch": ["E042b"]}.items():
-            filepath = "extra_fixtures/bad-inventories/" + bad + ".json"
+            filepath = "extra_fixtures/1.0/bad-inventories/" + bad + ".json"
             with open(filepath, "r", encoding="utf-8") as fh:
                 inventory = json.load(fh)
             log = TLogger()

@@ -10,7 +10,7 @@ The `--version` argument will show version number and exit (but we still tave to
 
 ```
 > python ocfl-root.py --version
-ocfl-root.py is part of ocfl-py version 2.0.3
+ocfl-root.py is part of ocfl-py version 2.1.0
 ```
 
 
@@ -47,7 +47,7 @@ Added object ark:123/abc at path ark%3A123%2Fabc
 ```
 > python ocfl-root.py add --root=tmp/root --src fixtures/1.0/good-objects/minimal_one_version_one_file -v
 INFO:root:Storage root layout is nnnn-flat-quoted-storage-layout
-ERROR:root:Add object failed because path ark%3A123%2Fabc exists
+ERROR:root:Add object failed because destination path ark%3A123%2Fabc already exists
 ```
 
 (last command exited with return code 1)
@@ -58,11 +58,11 @@ ERROR:root:Add object failed because path ark%3A123%2Fabc exists
 ### 3.1 List objects
 
 ```
-> python ocfl-root.py list --root=extra_fixtures/good-storage-roots/simple-root
-ark%3A%2F12345%2Fbcd987 -- id=ark:/12345/bcd987
+> python ocfl-root.py list --root=extra_fixtures/1.0/good-storage-roots/simple-root
 http%3A%2F%2Fexample.org%2Fminimal_mixed_digests -- id=http://example.org/minimal_mixed_digests
+ark%3A%2F12345%2Fbcd987 -- id=ark:/12345/bcd987
 ark%3A123%2Fabc -- id=ark:123/abc
-Found 3 OCFL Objects under root extra_fixtures/good-storage-roots/simple-root
+Found 3 OCFL Objects under root extra_fixtures/1.0/good-storage-roots/simple-root
 ```
 
 

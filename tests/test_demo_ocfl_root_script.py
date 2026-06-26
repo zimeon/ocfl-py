@@ -39,17 +39,17 @@ class TestAll(DemoTestCase):
                                "--root=TMPDIR/root",
                                "--src", "fixtures/1.0/good-objects/minimal_one_version_one_file",
                                "-v"])
-        self.assertIn("Add object failed because path ark%3A123%2Fabc exists", out)
+        self.assertIn("Add object failed because destination path ark%3A123%2Fabc already exists", out)
 
     def test02_explore_simple_root(self):
         """Test exploration of a simple OCFL object root."""
         out = self.run_script("List objects",
                               ["python", "ocfl-root.py", "list",
-                               "--root=extra_fixtures/good-storage-roots/simple-root"])
+                               "--root=extra_fixtures/1.0/good-storage-roots/simple-root"])
         self.assertIn("ark%3A%2F12345%2Fbcd987 -- id=ark:/12345/bcd987", out)
         self.assertIn("ark%3A123%2Fabc -- id=ark:123/abc", out)
         self.assertIn("http%3A%2F%2Fexample.org%2Fminimal_mixed_digests -- id=http://example.org/minimal_mixed_digests", out)
-        self.assertIn("Found 3 OCFL Objects under root extra_fixtures/good-storage-roots/simple-root", out)
+        self.assertIn("Found 3 OCFL Objects under root extra_fixtures/1.0/good-storage-roots/simple-root", out)
 
     def test03_errors(self):
         """Test error cases."""

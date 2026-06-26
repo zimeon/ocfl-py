@@ -4,10 +4,8 @@ import os
 import tempfile
 import unittest
 
-import fs
-import fs.tempfs
-
 from ocfl.inventory import Inventory
+from ocfl.fsw import fsw_openfs, fsw_listdir_names, fsw_readtext
 from ocfl.object import Object, ObjectException
 from ocfl.version_metadata import VersionMetadata
 
@@ -60,7 +58,7 @@ class TestAll(unittest.TestCase):
     def test06_version_dirs_and_metadata(self):
         """Test version_dirs_and_metadata."""
         oo = Object(digest_algorithm="md5", spec_version='1.0')
-        src_fs = fs.open_fs('fixtures/1.0/content/spec-ex-full')
+        src_fs = fsw_openfs('fixtures/1.0/content/spec-ex-full')
         vdirs = []
         metadatas = []
         for (vdir, metadata) in oo.version_dirs_and_metadata(src_fs):
@@ -76,30 +74,30 @@ class TestAll(unittest.TestCase):
 
     def test07_write_object_declaration(self):
         """Test write_object_declaration."""
-        tmpfs = fs.tempfs.TempFS(identifier='test_write_object_declaration')
+        tmpfs = fsw_openfs("temp://")
         oo = Object(obj_fs=tmpfs, spec_version='1.0')
         oo.write_object_declaration()
-        self.assertEqual(tmpfs.listdir('/'), ['0=ocfl_object_1.0'])
+        self.assertEqual(fsw_listdir_names(tmpfs, '/'), ['0=ocfl_object_1.0'])
 
     def test08_write_inventory_and_sidecar(self):
         """Test write_object_and_sidecar."""
-        tmpfs = fs.tempfs.TempFS(identifier='test_write_inventory_and_sidecar')
+        tmpfs = fsw_openfs("temp://")
         oo = Object(obj_fs=tmpfs)
         oo.write_inventory_and_sidecar(Inventory({'abc': 'def'}))
-        self.assertEqual(set(tmpfs.listdir('')),
+        self.assertEqual(set(fsw_listdir_names(tmpfs, "/")),
                          set(['inventory.json', 'inventory.json.sha512']))
         with tmpfs.open('inventory.json') as fh:
             j = json.load(fh)
         self.assertEqual(j, {'abc': 'def'})
-        digest = tmpfs.readtext('inventory.json.sha512')
+        digest = fsw_readtext('inventory.json.sha512', tmpfs)
         self.assertRegex(digest, r'''[0-9a-f]{128} inventory.json\n''')
         # and now making directory
         oo = Object(obj_fs=tmpfs)
         invdir = 'xxx'
         oo.write_inventory_and_sidecar(Inventory({'gh': 'ik'}), invdir)
-        self.assertEqual(set(tmpfs.listdir(invdir)),
+        self.assertEqual(set(fsw_listdir_names(tmpfs, invdir)),
                          set(['inventory.json', 'inventory.json.sha512']))
-        with tmpfs.open(fs.path.join(invdir, 'inventory.json')) as fh:
+        with tmpfs.open(os.path.join(invdir, 'inventory.json')) as fh:
             j = json.load(fh)
         self.assertEqual(j, {'gh': 'ik'})
 

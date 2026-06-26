@@ -1,4 +1,4 @@
-"""Metadata for a specific version of OCFL Object's content."""
+"""Metadata for a specific version of an OCFL Object's content."""
 from .inventory import Inventory, InventoryException
 from .w3c_datetime import datetime_to_str
 
@@ -6,12 +6,12 @@ from .w3c_datetime import datetime_to_str
 class VersionMetadata():
     """Class for metadata for a specific version of an OCFL Object.
 
-    Instance variables:
-        id: identifier of object
-        created: string of creation time
-        message: string explaining version creation
-        name: name string for author or agent creating version
-        address: URI for author or agent creating version
+    Attributes:
+        id (str): identifier of object
+        created (str): string of creation time
+        message (str): string explaining version creation
+        name (str): name string for author or agent creating version
+        address (str): URI for author or agent creating version
     """
 
     def __init__(self, *,
@@ -20,12 +20,13 @@ class VersionMetadata():
         """Initialize with direct arguments or via an inventory.
 
         Arguments:
-            created: string of creation time
-            message: string explaining version creation
-            name: name string for author or agent creating version
-            address: URI for author or agent creating version
-            inventory: an Inventory object to initialize from, default None
-            version: the version directory name from which to extract the
+            created (str): string of creation time
+            message (str): string explaining version creation
+            name (str): name string for author or agent creating version
+            address (str): URI for author or agent creating version
+            inventory (ocfl.Inventory): an Inventory object to initialize from,
+                default None
+            version (str): the version directory name from which to extract the
                 appropropriate version metadata from the inventory, else None.
                 If not specified then the latest/head version metadata will
                 be take from the inventory
@@ -42,8 +43,8 @@ class VersionMetadata():
         """Initialize from an inventory dict or Inventory object.
 
         Arguments:
-            inventory: Inventory object or data dict
-            version: explicit version name to extract metadata from, else
+            inventory (ocfl.Inventory or dict): Inventory object or data dict
+            version (str): explicit version name to extract metadata from, else
                 extract from the inventory head version
 
         Look for specific version directory version if specified, else
@@ -79,9 +80,10 @@ class VersionMetadata():
     def as_dict(self):
         """Return dictionary object with version metedata.
 
-        Returns dict() created according to the inventory structure for
-        information about a single version. If created is not set then will
-        add the current datatime string.
+        Returns:
+            dict: created according to the inventory structure for information
+                about a single version. If created is not set then will add the
+                current datatime string.
         """
         m = {}
         m["created"] = self.created if self.created else datetime_to_str()

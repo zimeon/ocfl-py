@@ -31,7 +31,7 @@ Looking inside the object we see `v1` with the expected 2 content files.
 ```
 > python ocfl-object.py show --objdir tmp/obj
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
-Object tree for None
+Object tree
 [tmp/obj]
 ├── 0=ocfl_object_1.1 
 ├── inventory.json 
@@ -62,7 +62,7 @@ Looking inside the object we now see `v1` and `v2`. There are no content files i
 ```
 > python ocfl-object.py show --objdir tmp/obj
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
-Object tree for None
+Object tree
 [tmp/obj]
 ├── 0=ocfl_object_1.1 
 ├── inventory.json 
@@ -96,7 +96,7 @@ Looking inside again we see that `v3` does add another content file.
 ```
 > python ocfl-object.py show --objdir tmp/obj
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
-Object tree for None
+Object tree
 [tmp/obj]
 ├── 0=ocfl_object_1.1 
 ├── inventory.json 
@@ -147,14 +147,6 @@ We note that the OCFL object had only one `content` file in `v4` but the extract
 diff --ignore-matching-lines ' bag-info.txt' -r tmp/extracted_v4/bag-info.txt tests/testdata/bags/uaa_v4/bag-info.txt
 1d0
 < Bag-Software-Agent: bagit.py v1.9.0 <https://github.com/LibraryOfCongress/bagit-python>
-diff --ignore-matching-lines ' bag-info.txt' -r tmp/extracted_v4/tagmanifest-sha512.txt tests/testdata/bags/uaa_v4/tagmanifest-sha512.txt
-1d0
-< 5c2e2b9cacc93cb315d57f09fac6d199c3378313b6cf918bb0a70e1839c4e4c0c2e5a7f9ae869cf7755e09a196a835be1af7c510d3d5faa5d0c0b3f6be9f816a manifest-sha512.txt
-3c2,3
-< 1270e5f8a1250c4e5b205101786689a8d8d56488b39ade6e2b78bf4d0b93214eb381f5b5b7f03a6bdde86e35648a4be592535b5bc600cdb92ee8c33e95f06b82 bag-info.txt
----
-> 10624e6d45462def7af66d1a0d977606c7b073b01809c1d42258cfab5c34a275480943cbe78044416aee1f23822cc3762f92247b8f39b5c6ddc5ae32a8f94ce5 bag-info.txt
-> 5c2e2b9cacc93cb315d57f09fac6d199c3378313b6cf918bb0a70e1839c4e4c0c2e5a7f9ae869cf7755e09a196a835be1af7c510d3d5faa5d0c0b3f6be9f816a manifest-sha512.txt
 ```
 
 (last command exited with return code 1)
