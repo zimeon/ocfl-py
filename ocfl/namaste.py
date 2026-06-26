@@ -7,7 +7,8 @@ See also command line tool: http://github.com/mjgiarlo/namaste
 import os
 import os.path
 import re
-import fs
+
+from .fsw import fsw_listdir_names
 
 
 def content_to_tvalue(content):
@@ -21,19 +22,31 @@ def content_to_tvalue(content):
     return re.sub(r"""[^\w\.\-:]""", "_", content[:40])
 
 
-def find_namastes(d, dir="", pyfs=None, limit=10):
+def find_namastes(d, dir="", fsw=None, limit=10):
     """Find NAMASTE files with tag d in dir, return list of Namaste objects.
 
-    limit sets a limit on the number of Namaste objects returned, a NamasteException
-    will be raised if more than limit files with tag d are found. Returns the values
-    sorter by filename to ensure consistent behaviour when multiple match files are
-    present.
+    Arguments:
+        d (int): tag name, D in NAMASTE specification
+        dir (str): directory to look in
+        fsw (None or AbstractFileSystem): filesystem to use if not None
+        limit (int): limit sets a limit on the number of Namaste objects returned
+
+    Returns:
+        list: of Namaste object values sorted by filename to ensure consistent behaviour when
+            multiple match files are present.
+
+    Raises:
+        NamasteException: if more than limit files with tag d are found.
+
+
     """
     prefix = str(d) + "="
-    if pyfs is not None:
-        filenames = [f for f in pyfs.listdir(dir) if f.startswith(prefix)]
+    if fsw is not None:
+        # fsw.listdir include dir path in results
+        filenames = fsw_listdir_names(fsw, dir)
     else:
-        filenames = [f for f in os.listdir(dir) if f.startswith(prefix)]
+        filenames = os.listdir(dir)
+    filenames = [f for f in filenames if f.startswith(prefix)]
     if len(filenames) > limit:
         raise NamasteException("Found too many Namaste files with tag %s in %s" % (d, dir))
     return [Namaste(d, tvalue=filename[len(prefix):]) for filename in sorted(filenames)]
@@ -61,7 +74,7 @@ class Namaste():
         """Initialize Namaste object.
 
         Arguments:
-            d - tag name, D in NAMASTE specification
+            d (int): tag name, D in NAMASTE specification
             content - metadata content of NAMASTE file from which tvalue is derived
             tvalue - explicity set tvalue instead of deriving
             tr_func - function reference used to derive a tvalue from content,
@@ -84,32 +97,32 @@ class Namaste():
             return self._tvalue
         return self._tr_func(self.content)
 
-    def write(self, dir="", pyfs=None):
+    def write(self, dir="", fsw=None):
         """Write NAMASTE file to dir, optionally in fs.
 
-        Handle both a dirctory with in a pyfs filesystem (if pyfs is set) or
+        Handle both a dirctory with in a fsw filesystem (if fsw is set) or
         else just a directory with plain os file support.
 
         e.g.
-            Namaste(0, "ocfl_1.0").write(pyfs=obj_fs)
+            Namaste(0, "ocfl_1.0").write(fsw=obj_fs)
         or
             Namaste(0, "ocfl_1.0").write(dir)
         """
-        if pyfs is not None:
-            pyfs.writetext(fs.path.join(dir, self.filename), self.content + "\n")
+        if fsw is not None:
+            fsw.write_text(os.path.join(dir, self.filename), self.content + "\n")
         else:
             with open(os.path.join(dir, self.filename), "w", encoding="utf-8") as fh:
                 fh.write(self.content + "\n")
 
-    def check_content(self, dir="", pyfs=None):
+    def check_content(self, dir="", fsw=None):
         """Check that the file content is compatible with the tvalue based on tr_func, else raise NamasteException."""
-        filepath = fs.path.join(dir, self.filename)
+        filepath = os.path.join(dir, self.filename)
         if self.tvalue == "":
             raise NamasteException("Cannot check Namaste file %s without tvalue being set!" % (filepath))
-        if pyfs is not None:
+        if fsw is not None:
             try:
-                content = pyfs.readtext(filepath)
-            except fs.errors.ResourceNotFound:
+                content = fsw.read_text(filepath)
+            except FileNotFoundError:
                 raise NamasteException("Namaste file %s cannot be read!" % (filepath))
         else:
             if not os.path.isfile(filepath):
@@ -119,10 +132,10 @@ class Namaste():
         if self.tvalue != self._tr_func(content):
             raise NamasteException("Content of Namaste file %s doesn't match tvalue %s" % (filepath, self.tvalue))
 
-    def content_ok(self, dir="", pyfs=None):
+    def content_ok(self, dir="", fsw=None):
         """Return True if check_content() does not raise a NamasteException exception."""
         try:
-            self.check_content(dir, pyfs)
+            self.check_content(dir, fsw)
         except NamasteException:
             return False
         return True

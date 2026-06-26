@@ -12,5 +12,5 @@ from .object_utils import find_path_type, ObjectException
 from .storage_root import StorageRoot, StorageRootException
 from .version_metadata import VersionMetadata
 
-if sys.version_info < (3, 6):  # pragma: no cover
-    raise Exception("Must use python 3.6 or greater!")  # pragma: no cover
+if sys.version_info < (3, 8):  # pragma: no cover
+    raise Exception("Must use python 3.8 or greater!")  # pragma: no cover

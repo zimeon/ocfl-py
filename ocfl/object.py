@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """OCFL Object Implementation.
 
-This code uses PyFilesystem2 (import fs) exclusively for access to files,
-with some convenience functions in ocfl.pyfs. This enables application
-beyond the operating system filesystem to include ``mem://``, ``zip://`` and
-``s3://`` filesystems.
+This code uses the local ocfl.fsw convenience methods and wrapper around a
+filesystem abstraction layer exclusively for access to files. This enables
+application beyond the operating system filesystem to include ``mem://``,
+``zip://`` and ``s3://`` filesystems.
 """
 import copy
 import json
@@ -12,17 +12,13 @@ import os.path
 import re
 import logging
 
-import fs
-import fs.path
-import fs.copy
-
 from .constants import INVENTORY_FILENAME, DEFAULT_SPEC_VERSION, DEFAULT_CONTENT_DIRECTORY
 from .digest import file_digest
 from .inventory import Inventory
 from .inventory_validator import InventoryValidator
 from .new_version import NewVersion
 from .object_utils import parse_version_directory, ObjectException
-from .pyfs import pyfs_openfs
+from .fsw import fsw_openfs, fsw_copyfile, fsw_listdir_names, fsw_opendir_as_fs, FswException
 from .namaste import Namaste
 from .validator import Validator, ValidatorAbortException
 from .version_metadata import VersionMetadata
@@ -74,7 +70,7 @@ class Object():  # pylint: disable=too-many-public-methods
             for content references in the object will be allowed. Defaults to
             False
         fixity (list): list of fixity types to add as fixity section
-        obj_fs (io.IOBase): a pyfs filesystem reference for the root of this object
+        obj_fs (io.IOBase): a fsw filesystem reference for the root of this object
     """
 
     def __init__(self, *, identifier=None,
@@ -105,8 +101,8 @@ class Object():  # pylint: disable=too-many-public-methods
                 in the  specification for fixity and to allow non-preferred digest
                 algorithms for content references in the object
             fixity (list of str): list of fixity types to add as fixity section
-            obj_fs (str): a pyfs filesystem for the root of this object
-            path (str): if set then open a pyfs filesystem at path (alternative
+            obj_fs (str): a fsw filesystem for the root of this object
+            path (str): if set then open a fsw filesystem at path (alternative
                 to obj_fs)
             create (bool): set True to allow opening filesystem at path to create
                 a directory
@@ -141,16 +137,16 @@ class Object():  # pylint: disable=too-many-public-methods
         Sets obj_fs attribute with the filesystem instance
         """
         try:
-            self.obj_fs = pyfs_openfs(fs_url=objdir, create=create)
-        except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
+            self.obj_fs = fsw_openfs(fs_url=objdir, create=create)
+        except FileNotFoundError as e:
             raise ObjectException("Failed to open object filesystem '%s' (%s)" % (objdir, e))
 
     def copy_into_object(self, src_fs, srcfile, filepath, create_dirs=False):
         """Copy from srcfile to filepath in object."""
-        dstpath = fs.path.dirname(filepath)
+        dstpath = os.path.dirname(filepath)
         if create_dirs and not self.obj_fs.exists(dstpath):
             self.obj_fs.makedirs(dstpath)
-        fs.copy.copy_file(src_fs, srcfile, self.obj_fs, filepath)
+        fsw_copyfile(src_fs, srcfile, self.obj_fs, filepath)
 
     def start_inventory(self):
         """Create inventory start with metadata from self.
@@ -180,7 +176,7 @@ class Object():  # pylint: disable=too-many-public-methods
         """Generate an OCFL inventory from a set of source files.
 
         Arguments:
-            src_fc (str): pyfs filesystem of source files.
+            src_fc (str): fsw filesystem of source files.
             versions_metadata (dict): dict of VersionMetadata objects for each
                 version, key is the integer version number. Default is None
                 in which case no metadata is added.
@@ -196,10 +192,11 @@ class Object():  # pylint: disable=too-many-public-methods
             versions_metadata = {}
         # Find the versions
         versions = {}
-        for vdir in src_fs.listdir("/"):
-            if not src_fs.isdir(vdir):
+        for entry in src_fs.listdir("/"):
+            if not entry["type"] == "directory":
                 continue
             try:
+                vdir = entry["name"]
                 vn = parse_version_directory(vdir)
                 versions[vn] = vdir
             except ObjectException:
@@ -229,7 +226,7 @@ class Object():  # pylint: disable=too-many-public-methods
         Assumes self.obj_fs is open for this object and writes into the
         root directory of that filesystem.
         """
-        self.object_declaration_object().write(pyfs=self.obj_fs)
+        self.object_declaration_object().write(fsw=self.obj_fs)
 
     def write_inventory_and_sidecar(self, inventory=None, vdir=""):
         """Write inventory and sidecar to vdir in the current object.
@@ -249,12 +246,12 @@ class Object():  # pylint: disable=too-many-public-methods
         """
         if not self.obj_fs.exists(vdir):
             self.obj_fs.makedir(vdir)
-        invfile = fs.path.join(vdir, INVENTORY_FILENAME)
+        invfile = os.path.join(vdir, INVENTORY_FILENAME)
         if inventory is not None:
             with self.obj_fs.open(invfile, "w") as fh:
                 inventory.write_json(fh)
-        digest = file_digest(invfile, self.digest_algorithm, pyfs=self.obj_fs)
-        sidecar = fs.path.join(vdir, INVENTORY_FILENAME + "." + self.digest_algorithm)
+        digest = file_digest(invfile, self.digest_algorithm, fs=self.obj_fs)
+        sidecar = os.path.join(vdir, INVENTORY_FILENAME + "." + self.digest_algorithm)
         with self.obj_fs.open(sidecar, "w") as fh:
             fh.write(digest + " " + INVENTORY_FILENAME + "\n")
         return sidecar
@@ -291,7 +288,7 @@ class Object():  # pylint: disable=too-many-public-methods
         if objdir is not None:
             self.open_obj_fs(objdir, create=True)
         num_versions = 0
-        src_fs = pyfs_openfs(srcdir)
+        src_fs = fsw_openfs(srcdir)
         inventory = None
         # Create each version of the object
         for (vdir, metadata) in self.version_dirs_and_metadata(src_fs, versions_metadata):
@@ -489,11 +486,11 @@ class Object():  # pylint: disable=too-many-public-methods
             old_to_new_digest = {}
             new_manifest = {}
             for old_digest, files in manifest.items():
-                digest = file_digest(files[0], digest_algorithm, pyfs=self.obj_fs)
+                digest = file_digest(files[0], digest_algorithm, fs=self.obj_fs)
                 old_to_new_digest[old_digest] = digest
                 for file in files[1:]:
                     # Sanity check that any dupe files also match
-                    d = file_digest(file, digest_algorithm, pyfs=self.obj_fs)
+                    d = file_digest(file, digest_algorithm, fs=self.obj_fs)
                     if d != digest:
                         raise ObjectException("Failed sanity check - files %s and %s should have same %s digest but calculated %s and %s respectively" %
                                               files[0], file, digest_algorithm, digest, d)
@@ -530,7 +527,7 @@ class Object():  # pylint: disable=too-many-public-methods
         # Delete old root inventory sidecar if we changed digest algorithm
         if (new_version.old_digest_algorithm is not None
                 and inventory.digest_algorithm != new_version.old_digest_algorithm):
-            self.obj_fs.remove(INVENTORY_FILENAME + "." + new_version.old_digest_algorithm)
+            self.obj_fs.rm(INVENTORY_FILENAME + "." + new_version.old_digest_algorithm)
         # Make new version directory
         self.obj_fs.makedir(inventory.head)
         # Copy files into this version
@@ -576,7 +573,7 @@ class Object():  # pylint: disable=too-many-public-methods
                             validator.spec_version, objdir)
         tree = "[" + objdir + "]\n"
         self.open_obj_fs(objdir)
-        entries = sorted(self.obj_fs.listdir(""))
+        entries = sorted(fsw_listdir_names(self.obj_fs, ""))
         n = 0
         seen_sidecar = False
         object_declaration_filename = self.object_declaration_object().filename
@@ -586,7 +583,7 @@ class Object():  # pylint: disable=too-many-public-methods
             v_notes = []
             if re.match(r"""v\d+$""", entry):
                 seen_v_sidecar = False
-                for v_entry in sorted(self.obj_fs.listdir(entry)):
+                for v_entry in sorted(fsw_listdir_names(self.obj_fs, entry)):
                     v_note = v_entry + " "
                     if v_entry == INVENTORY_FILENAME:
                         pass
@@ -596,7 +593,7 @@ class Object():  # pylint: disable=too-many-public-methods
                             seen_v_sidecar = True
                     elif v_entry == self.content_directory:
                         num_files = 0
-                        for (v_dirpath, v_dirs, v_files) in self.obj_fs.walk(fs.path.join(entry, v_entry)):  # pylint: disable=unused-variable
+                        for (v_dirpath, v_dirs, v_files) in self.obj_fs.walk(os.path.join(entry, v_entry)):  # pylint: disable=unused-variable
                             num_files += len(v_files)
                         v_note += "(%d files)" % num_files
                     else:
@@ -668,10 +665,10 @@ class Object():  # pylint: disable=too-many-public-methods
                               log_errors=log_errors,
                               lax_digests=self.lax_digests)
         try:
-            (inv_dir, inv_file) = fs.path.split(path)
-            validator.obj_fs = pyfs_openfs(inv_dir, create=False)
+            (inv_dir, inv_file) = os.path.split(path)
+            validator.obj_fs = fsw_openfs(inv_dir, create=False)
             validator.validate_inventory(inv_file, where="standalone", force_spec_version=force_spec_version)
-        except fs.errors.ResourceNotFound:
+        except FswException:
             validator.log.error("E033", where="standalone", explanation="failed to open directory")
         except ValidatorAbortException:
             pass
@@ -721,15 +718,15 @@ class Object():  # pylint: disable=too-many-public-methods
         # Check the destination
         (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
         try:
-            parent_fs = pyfs_openfs(parentdir)
-        except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
+            parent_fs = fsw_openfs(parentdir)
+        except FileNotFoundError as e:
             raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
         if parent_fs.isdir(dir):
-            if not parent_fs.isempty(dir):
+            if len(parent_fs.listdir(dir, detail=False)) > 0:
                 raise ObjectException("Target directory %s already exists and is not empty, aborting!" % (dstdir))
         else:  # Make dstdir
             parent_fs.makedir(dir)
-        dst_fs = parent_fs.opendir(dir)  # Open a sub-filesystem as our destination
+        dst_fs = fsw_opendir_as_fs(parent_fs, dir)  # Open a sub-filesystem as our destination
         # Now extract...
         manifest = inv.manifest
         state = inv.version(version).state
@@ -738,8 +735,8 @@ class Object():  # pylint: disable=too-many-public-methods
             existing_file = manifest[digest][0]  # First entry with the digest, there could be > 1
             for logical_file in logical_files:
                 logging.debug("Copying %s -> %s", digest, logical_file)
-                dst_fs.makedirs(fs.path.dirname(logical_file), recreate=True)
-                fs.copy.copy_file(self.obj_fs, existing_file, dst_fs, logical_file)
+                dst_fs.makedirs(os.path.dirname(logical_file), exist_ok=True)
+                fsw_copyfile(self.obj_fs, existing_file, dst_fs, logical_file)
         logging.info("Extracted %s into %s", version, dstdir)
         return VersionMetadata(inventory=inv.data, version=version)
 
@@ -764,22 +761,11 @@ class Object():  # pylint: disable=too-many-public-methods
         inv, version = self._extract_setup(objdir, version)
         # Check the destination
         try:
-            dst_fs = pyfs_openfs(dstdir)
-        except (fs.opener.errors.OpenerError, fs.errors.CreateFailed):
-            # Doesn"t exist, can we create it?
-            (parentdir, dir) = os.path.split(os.path.normpath(dstdir))
-            if parentdir == "":
-                parentdir = "."
-            try:
-                parent_fs = pyfs_openfs(parentdir)
-            except (fs.opener.errors.OpenerError, fs.errors.CreateFailed) as e:
-                raise ObjectException("Destination parent %s does not exist or could not be opened (%s)" % (parentdir, e))
-            dst_fs = parent_fs.makedir(dir)
-        # Does the destination file already exist?
-        basename = os.path.basename(logical_path)
-        if dst_fs.exists(basename):
-            raise ObjectException("Destination file %s in %s already exists" % (basename, dstdir))
+            dst_fs = fsw_openfs(dstdir, create=True)
+        except FileNotFoundError as e:
+            raise ObjectException("Destination parent directory does not exist or could not be opened (%s)" % (e))
         # Now extract...
+        basename = os.path.basename(logical_path)
         manifest = inv.manifest
         state = inv.version(version).state
         # Extract the specified file
@@ -789,7 +775,7 @@ class Object():  # pylint: disable=too-many-public-methods
             for logical_file in logical_files:
                 if logical_file == logical_path:
                     logging.debug("Copying %s -> %s", digest, basename)
-                    fs.copy.copy_file(self.obj_fs, existing_file, dst_fs, basename)
+                    fsw_copyfile(self.obj_fs, existing_file, dst_fs, basename)
                     copied = True
                     break
             if copied:
@@ -808,7 +794,7 @@ class Object():  # pylint: disable=too-many-public-methods
         Returns:
             ocfl.Inventory: new Inventory object for the parsed inventory.
         """
-        with self.obj_fs.open(INVENTORY_FILENAME) as fh:
+        with self.obj_fs.open(INVENTORY_FILENAME, "r") as fh:
             inventory = Inventory(json.load(fh))
         # Validate
         iv = InventoryValidator()

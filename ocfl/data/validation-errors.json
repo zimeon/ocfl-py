@@ -494,6 +494,60 @@
        "en": "OCFL Object extensions direct contains an unexpected non-directory entry: %s"
     }
   },
+  "E069a": {
+    "params": ["root"],
+    "description": {
+      "en": "OCFL Storage Root %s lacks required 0= declaration file"
+    }
+  },
+  "E069b": {
+    "params": ["root"],
+    "description": {
+      "en": "OCFL Storage Root %s has more than one 0= declaration file"
+    }
+  },
+  "E069c": {
+    "params": ["root", "namaste_file"],
+    "description": {
+      "en": "OCFL Storage Root %s has unrecognized 0= declaration file %s"
+    }
+  },
+  "E069d": {
+    "params": ["root", "declared_spec_version", "expected_spec_version"],
+    "description": {
+      "en": "OCFL Storage Root %s 0= declaration is for spec version %s, not %s as expected"
+    }
+  },
+  "E069e": {
+    "params": ["root", "namaste_file"],
+    "description": {
+      "en": "OCFL Storage Root %s required declaration file %s has invalid content"
+    }
+  },
+  "E070a": {
+    "params": ["root", "message"],
+    "description": {
+      "en": "OCFL Storage Root %s includes ocfl_layout.json with unknown layout %s"
+    }
+  },
+  "E070b": {
+    "params": ["root", "message"],
+    "description": {
+      "en": "OCFL Storage Root %s has an ocfl_layout.json file that isn't a JSON object"
+    }
+  },
+  "E070c": {
+    "params": ["root", "message"],
+    "description": {
+      "en": "OCFL Storage Root %s Storage root %s has layout file doesn't have required extension and description string entries"
+    }
+  },
+  "E071": {
+    "params": ["root", "layout_name"],
+    "description": {
+      "en": "OCFL Storage Root %s includes ocfl_layout.json with unknown layout %s"
+    }
+  },
   "E072": {
     "params": ["path"],
     "description": {

@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - name: Set up Python ${{ matrix.python-version }}
@@ -61,19 +61,19 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.is_pr_job.outputs.is_pr == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.12"
           cache: 'pip'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - name: Update error codes
@@ -87,8 +87,15 @@ jobs:
           gh pr comment $PR --body "Tests succeeded. Updating extracted errors codes and demo documentation..."
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
+          set +e  # Prevent the step from failing immediately
           git commit -m "Update error codes and demo docs [actions skip]" docs
-          git push --verbose
+          EXIT_CODE=$?
+          set -e  # Re-enable fail-fast behavior
+          if [ $EXIT_CODE -eq 0 ]; then
+            git push --verbose
+          else
+            echo "No changes to demo documentation"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE: ${{ github.event.pr.html_url }}

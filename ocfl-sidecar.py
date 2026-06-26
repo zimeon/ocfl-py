@@ -66,7 +66,7 @@ def main():
             if filename == ocfl.INVENTORY_FILENAME:
                 create_sidecar(args, directory)
             else:
-                logging.error("Ignoring path %s with filename that is not inventory.json")
+                logging.error("Ignoring path %s with filename that is not inventory.json", filename)
 
 
 if __name__ == "__main__":

@@ -7,7 +7,6 @@ import os.path
 import re
 import subprocess
 import requests
-import fs
 
 from ocfl.validation_logger import ValidationLogger
 
@@ -122,17 +121,18 @@ def main():
             logging.error("Bad entry for code+suffix '%s' in strings file", code_suffix)
 
     # 3. Get validation codes from ocfl-py Python codes
-    code_fs = fs.open_fs('ocfl')
-    for file in code_fs.walk.files(filter=['*.py']):
-        with code_fs.open(file) as fh:
-            n = 0
-            for line in fh:
-                n += 1
-                m = re.search(r'''(["'])([EW]\d\d\d)(\w)?\1''', line)
-                if m:
-                    file_line = 'ocfl%s#L%d' % (file, n)
-                    link = '[' + file_line + '](' + GITHUB_REPO + '/blob/main/' + file_line + ')'
-                    codes.add_impl(m.group(2), m.group(3), link=link)
+    for root, _, files in os.walk('ocfl'):
+        for file in files:
+            if file.endswith(".py"):
+                with open(os.path.join(root, file), "r", encoding="UTF-8") as fh:
+                    n = 0
+                    for line in fh:
+                        n += 1
+                        m = re.search(r'''(["'])([EW]\d\d\d)(\w)?\1''', line)
+                        if m:
+                            file_line = 'ocfl%s#L%d' % (file, n)
+                            link = '[' + file_line + '](' + GITHUB_REPO + '/blob/main/' + file_line + ')'
+                            codes.add_impl(m.group(2), m.group(3), link=link)
 
     # 4. Write table of what is implemented and raise warnings
     logging.info("Writing summary to %s", VALIDATION_STATUS_MD_NEW)

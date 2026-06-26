@@ -83,7 +83,7 @@ from .constants import DEFAULT_CONTENT_DIRECTORY
 from .digest import normalized_digest
 from .object_utils import first_version_directory, next_version_directory, \
     parse_version_directory, make_unused_filepath
-from .pyfs import pyfs_openfile
+from .fsw import fsw_openfile
 
 
 class InventoryException(Exception):
@@ -109,7 +109,7 @@ class Inventory():  # pylint: disable=too-many-public-methods
             that an Inventory instance stores information.
     """
 
-    def __init__(self, data=None, filepath=None, pyfs=None):
+    def __init__(self, data=None, filepath=None, fsw=None):
         """Initialize Inventory object.
 
         Argument:
@@ -119,15 +119,15 @@ class Inventory():  # pylint: disable=too-many-public-methods
                 new object.
             filepath: If not None then the string file path from which to
                 read a JSON inventory file to initialize from.
-            pyfs: pyfs object for the filesystem to use, else None to use the
+            fsw: fsw object for the filesystem to use, else None to use the
                 local filesystem (default). filepath is interpretted within
-                pyfs
+                fsw
         """
         if data is None:
             if filepath is None:
                 self.data = {}
             else:
-                with pyfs_openfile(filepath, "r", pyfs=pyfs, encoding="utf-8") as fh:
+                with fsw_openfile(filepath, "r", fs=fsw, encoding="utf-8") as fh:
                     self.data = json.load(fh)
         elif isinstance(data, Inventory):
             self.data = copy.deepcopy(data.data)
