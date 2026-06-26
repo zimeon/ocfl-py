@@ -1,7 +1,9 @@
 """Fsw tests."""
 import unittest
 
-from ocfl.fsw import FswException, _fsw_s3_urlparse, _fsw_relpath, fsw_openfs, fsw_opendir_as_fs, fsw_walk, fsw_walk_files, fsw_listdir_names, fsw_files_identical
+from ocfl.fsw import (FswException, _fsw_s3_urlparse, _fsw_relpath, fsw_openfs,
+                      fsw_opendir_as_fs, fsw_walk, fsw_walk_files, fsw_listdir_names,
+                      fsw_files_identical, fsw_readtext, fsw_copydir)
 
 
 class TestAll(unittest.TestCase):
@@ -95,8 +97,8 @@ class TestAll(unittest.TestCase):
         self.assertEqual(edirs["/object_multiple_declarations"], ["v1"])
         self.assertEqual(efiles["/object_multiple_declarations"], ["0=ocfl_object_1.0", "0=ocfl_object_1.1", "inventory.json", "inventory.json.sha512"])
 
-    def test06_fsw_walk_file(self):
-        """Test fsw_walk_file."""
+    def test06_fsw_walk_files(self):
+        """Test fsw_walk_files."""
         fs = fsw_openfs("fixtures/1.0/content/spec-ex-full")
         self.assertEqual(sorted(fsw_walk_files(fs, "/v3")),
                          ["empty2.txt", "foo/bar.xml", "image.tiff"])
@@ -147,3 +149,39 @@ class TestAll(unittest.TestCase):
         self.assertFalse(fsw_files_identical(fs, "file1", "file4"))
         # File doesn"t exist
         self.assertRaises(FileNotFoundError, fsw_files_identical, fs, "nope", "file0")
+
+    def test09_fsw_readtext(self):
+        """Test fsw_readtext."""
+        # With local path
+        txt1 = fsw_readtext("fixtures/1.1/good-objects/minimal_no_content/inventory.json")
+        self.assertIn('"http://example.org/minimal_no_content"', txt1)
+        fs = fsw_openfs("file://fixtures/1.1/good-objects")
+        txt2 = fsw_readtext("spec-ex-full/inventory.json", fs=fs)
+        self.assertIn('"ark:/12345/bcd987"', txt2)
+
+    def test10_fsw_copydir(self):
+        """Test fsw_copydir."""
+        # Set up directory
+        src_fs = fsw_openfs("temp://")
+        src_fs.mkdirs("a/b/c")
+        src_fs.write_text("a/b/bb.txt", "I am bb dot txt", encoding='utf-8')
+        src_fs.write_text("a/b/c/cc.txt", "I am see see dot txt", encoding='utf-8')
+        src_fs.write_text("a/b/c/.c.txt", "I am dot see dot txt", encoding='utf-8')
+        src_fs.mkdirs("a/b/d")
+        # Set us destination
+        dst_fs = fsw_openfs("temp://")
+        dst_fs.mkdirs("e/f")
+        dst_fs = fsw_opendir_as_fs(dst_fs, "e")
+        # Errors
+        self.assertRaises(FswException, fsw_copydir, src_fs, "does_not_exit", dst_fs, "g")
+        self.assertRaises(FswException, fsw_copydir, src_fs, "a/b", dst_fs, "f")
+        # Do a copy and check
+        fsw_copydir(src_fs, "a/b", dst_fs, "g")
+        self.assertEqual(fsw_readtext("g/bb.txt", fs=dst_fs), "I am bb dot txt")
+        self.assertTrue(dst_fs.exists("g/c"))
+        self.assertEqual(fsw_readtext("g/c/cc.txt", fs=dst_fs), "I am see see dot txt")
+        self.assertEqual(fsw_readtext("g/c/.c.txt", fs=dst_fs), "I am dot see dot txt")
+        self.assertFalse(dst_fs.exists("g/d"))
+        # and check nothing else
+        self.assertEqual(sorted(fsw_walk_files(dst_fs, "g")),
+                         ['bb.txt', 'c/.c.txt', 'c/cc.txt'])

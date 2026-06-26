@@ -379,7 +379,7 @@ def fsw_copyfile(src_fs, src_path, dst_fs, dst_path):
 
 
 def fsw_copydir(src_fs, src_path, dst_fs, dst_path):
-    """Recursive copy from one filesystem to another.
+    """Recursive copy of files from one filesystem to another.
 
     Arguments:
         src_fs (FS): Source filesystem.
@@ -389,9 +389,13 @@ def fsw_copydir(src_fs, src_path, dst_fs, dst_path):
             filesystem. This path must not exist but will be created (including
             any necessary intermediate directories)
 
-    # Recusive copy of object to path in self.root_fs
-    # fs.copydir(o.obj_fs, "/", self.root_fs, path)
-    # https://pyfilesystem2.readthedocs.io/en/latest/_modules/fs/copy.html#copy_dir
+    Raises:
+        FswException: if source directory does not exist or is not a directory, if
+            the destination directory already exits
+
+    This is a copy of files only. Files are copied with the same path structure
+    but empty directories are not recreated in the destination and thus this function
+    may be used with filesystems that do not support directories.
     """
     if not src_fs.isdir(src_path):
         raise FswException("Source directory (%s) for copydir does not exist or is not a directory!" % (src_path))
