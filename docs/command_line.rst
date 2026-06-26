@@ -11,5 +11,5 @@ Command Line Tools
    ocfl_validate_script
    ocfl_sidecar_script
    demos
-   using_s3_storage
+   s3_storage
    jsonschema_inventory_validation

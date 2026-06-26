@@ -1,8 +1,8 @@
 # ocfl-py changelog
 
-## 2026-06-18 v2.1.0
+## 2026-06-26 v2.1.0
 
-  * Change to `fsspec` in place of the unmaintined ``pyfilesystem2`. Have also change the filesystem wrapper module name `ocfl.pyfs` to `ocfl.fsw (file system wrapper). Localize all inclusion of `fsspec` in the `ocfl.fsw` module (https://github.com/zimeon/ocfl-py/issues/163)
+  * Change to use `fsspec` in place of the unmaintained ``pyfilesystem2`. Have also change the filesystem wrapper module name `ocfl.pyfs` to `ocfl.fsw (file system wrapper). Localize all inclusion of `fsspec` in the `ocfl.fsw` module (https://github.com/zimeon/ocfl-py/issues/163)
   * Reorganize the `extra_fixtures` by specification version (https://github.com/zimeon/ocfl-py/issues/167)
 
 ## 2025-08-15 v2.0.2
