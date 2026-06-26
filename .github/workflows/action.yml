@@ -87,8 +87,15 @@ jobs:
           gh pr comment $PR --body "Tests succeeded. Updating extracted errors codes and demo documentation..."
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
+          set +e  # Prevent the step from failing immediately
           git commit -m "Update error codes and demo docs [actions skip]" docs
-          git push --verbose
+          EXIT_CODE=$?
+          set -e  # Re-enable fail-fast behavior
+          if [ $EXIT_CODE -eq 0 ]; then
+            git push --verbose
+          else
+            echo "No changes to demo documentation"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE: ${{ github.event.pr.html_url }}
