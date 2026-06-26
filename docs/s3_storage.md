@@ -30,7 +30,7 @@ With configuration set, `ocfl-py` command line tools will work with S3 URLs such
 ocfl-py> ./ocfl-object.py show --objdir s3://ocfl-fixtures/1.1/good-objects/diff_files_same_md5
 INFO:aiobotocore.credentials:Credentials found in config file: ~/.aws/config
 INFO:root:OCFL v1.1 Object at s3://ocfl-fixtures/1.1/good-objects/diff_files_same_md5 has VALID STRUCTURE (DIGESTS NOT CHECKED)
-Object tree for None
+Object tree
 [s3://ocfl-fixtures/1.1/good-objects/diff_files_same_md5]
 ├── 0=ocfl_object_1.1
 ├── inventory.json
@@ -64,7 +64,7 @@ ocfl-py> ./ocfl-object.py show --objdir s3://filebase-fixtures/1.1/good-objects/
 INFO:aiobotocore.credentials:Credentials found in config file: ~/.aws/config
 INFO:botocore.configprovider:Found endpoint for s3 via: config_global.
 WARNING:root:OCFL v1.1 Object at s3://filebase-fixtures/1.1/good-objects/minimal_no_content has VALID STRUCTURE (DIGESTS NOT CHECKED)
-Object tree for None
+Object tree
 [s3://filebase-fixtures/1.1/good-objects/minimal_no_content]
 ├── 0=ocfl_object_1.1
 ├── inventory.json
