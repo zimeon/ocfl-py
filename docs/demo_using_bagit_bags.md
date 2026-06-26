@@ -31,7 +31,7 @@ Looking inside the object we see `v1` with the expected 2 content files.
 ```
 > python ocfl-object.py show --objdir tmp/obj
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
-Object tree for None
+Object tree
 [tmp/obj]
 ├── 0=ocfl_object_1.1 
 ├── inventory.json 
@@ -62,7 +62,7 @@ Looking inside the object we now see `v1` and `v2`. There are no content files i
 ```
 > python ocfl-object.py show --objdir tmp/obj
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
-Object tree for None
+Object tree
 [tmp/obj]
 ├── 0=ocfl_object_1.1 
 ├── inventory.json 
@@ -96,7 +96,7 @@ Looking inside again we see that `v3` does add another content file.
 ```
 > python ocfl-object.py show --objdir tmp/obj
 INFO:root:OCFL v1.1 Object at tmp/obj has VALID STRUCTURE (DIGESTS NOT CHECKED)
-Object tree for None
+Object tree
 [tmp/obj]
 ├── 0=ocfl_object_1.1 
 ├── inventory.json 
