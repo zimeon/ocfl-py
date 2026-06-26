@@ -167,6 +167,22 @@ class TestAll(unittest.TestCase):
             for code in codes:
                 self.assertIn(code, v.log.codes, msg="for v1.1 object at " + filepath)
 
+    def test_bad_v2_0(self):
+        """Check bad v2.0 objects fail."""
+        for bad, codes in {"EV201_tombstones_not_dict": ["EV201"],
+                           "EV202_tombstone_bad_digest": ["EV202"],
+                           "EV203_tombstone_bad_path_list": ["EV203"],
+                           "EV204_tombstones_unnormalized_dupe": ["EV204"],
+                           "EV206_tombstones_digest_in_manifest": ["EV206"],
+                           }.items():
+            v = Validator()
+            filepath = "fixtures/2.0/bad-objects/" + bad
+            if not os.path.isdir(filepath):
+                filepath = extra_fixture_maybe_zip("extra_fixtures/2.0/bad-objects/" + bad)
+            self.assertFalse(v.validate_object(filepath), msg=" for v2.0 object at " + filepath)
+            for code in codes:
+                self.assertIn(code, v.log.codes, msg="for v2.0 object at " + filepath)
+
     def test03_warn_1_0(self):
         """Check warn v1.0 objects pass but give expected warnings."""
         for warn, codes in {"W001_zero_padded_versions": ["W001"],
@@ -214,11 +230,12 @@ class TestAll(unittest.TestCase):
             self.assertEqual(set(codes), set(v.log.codes), msg="for v1.1 object at " + filepath)
 
     def test05_good(self):
-        """Check good objects (v1.0, v1.1 and extra) pass."""
+        """Check good objects (v1.0, v1.1, v2.0 and extra) pass."""
         for base_dir in ["fixtures/1.0/good-objects",
                          "fixtures/1.1/good-objects",
                          "extra_fixtures/1.0/good-objects",
-                         "extra_fixtures/1.1/good-objects"]:
+                         "extra_fixtures/1.1/good-objects",
+                         "extra_fixtures/2.0/good-objects"]:
             for name in os.listdir(base_dir):
                 filepath = extra_fixture_maybe_zip(os.path.join(base_dir, name))
                 v = Validator()

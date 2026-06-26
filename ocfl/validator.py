@@ -29,6 +29,8 @@ class ValidatorAbortException(Exception):
 class Validator():
     """Class for OCFL Object Validator."""
 
+    _SPEC_VERSIONS_SUPPORTED = ("2.0", "1.1", "1.0")
+
     def __init__(self, *, log_warnings=False, log_errors=True,
                  check_digests=True, lax_digests=False,
                  force_spec_version=None,

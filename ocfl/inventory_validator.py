@@ -54,6 +54,8 @@ def _get_logical_path_map(inventory, version):
 class InventoryValidator():
     """Class for OCFL Inventory Validator."""
 
+    _SPEC_VERSIONS_SUPPORTED = ("1.0", "1.1", "2.0")
+
     def __init__(self, *, log=None, where="???",
                  lax_digests=False, default_spec_version=DEFAULT_SPEC_VERSION):
         """Initialize OCFL Inventory Validator.
@@ -90,17 +92,25 @@ class InventoryValidator():
         self.digest_algorithm = "sha512"
         self.content_directory = DEFAULT_CONTENT_DIRECTORY
         self.content_directory_set = False
-        self.all_versions = []
-        self.manifest_files = None
-        self.unnormalized_digests = None
         self.head = "UNKNOWN"
+        self.all_versions = []
+        self.manifest_files = {}
+        self.unnormalized_digests = None
+        self.tombstone_files = {}
+        self.unnormalized_tombstones = set()
 
     def validate(self, inventory, force_spec_version=None):
         """Validate a given inventory.
 
+        Arguments:
+            inventory: a dict representation of the inventory
+            force_spec_version: either a specification version string
+                (e.g. "1.1") or None (default) to indicate that the
+                version declared should be trusted
+
         Normally, code will look at the type value to determine the specification
         version against which to validate the inventory. In the case that there
-        is no type value or it isn"t valid, then other tests will be based on the
+        is no type value or it isn't valid, then other tests will be based on the
         specification version given in self.default_spec_version.
 
         If force_spec_version is set then the specified specification version
@@ -170,12 +180,17 @@ class InventoryValidator():
             self._error("E041a")
         else:
             (self.manifest_files, manifest_files_correct_format, self.unnormalized_digests) = self._validate_manifest(inventory["manifest"])
+        if "tombstones" in inventory:
+            if self.spec_version < "2.0":
+                self._error("EV205", spec_version=self.spec_version)  # tombstones not allowed prior to v2.0, ignore them
+            else:
+                (self.tombstone_files, self.unnormalized_tombstones) = self._validate_tombstones(inventory["tombstones"], self.manifest_files)
         digests_used = []
         if "versions" not in inventory:
             self._error("E041b")
         else:
             self.all_versions = self._validate_version_sequence(inventory["versions"])
-            digests_used = self._validate_versions(inventory["versions"], self.all_versions, self.unnormalized_digests)
+            digests_used = self._validate_versions(inventory["versions"], self.all_versions, self.unnormalized_digests, self.unnormalized_tombstones)
         if "head" not in inventory:
             self._error("E036d")
         elif len(self.all_versions) > 0:
@@ -193,9 +208,9 @@ class InventoryValidator():
             return False
         if len(self.all_versions) > 0:
             if manifest_files_correct_format is not None:
-                self.__check_content_paths_map_to_versions(manifest_files_correct_format, self.all_versions)
+                self._check_content_paths_map_to_versions(manifest_files_correct_format, self.all_versions)
             if self.manifest_files is not None:
-                self._check_digests_present_and_used(self.manifest_files, digests_used)
+                self._check_digests_present_and_used(self.manifest_files, digests_used, self.tombstone_files)
         if "fixity" in inventory:
             self._validate_fixity(inventory["fixity"], self.manifest_files)
         # Success (True) if no errors added to logger
@@ -234,7 +249,16 @@ class InventoryValidator():
                 only_in_self = self_map.keys() - prior_map.keys()
                 if only_in_prior or only_in_self:
                     if only_in_prior:
-                        self._error("E066b", version=version, prior_head=prior.head, only_in=prior.head, logical_paths=",".join(only_in_prior))
+                        # Check tombstones
+                        only_in_prior_not_tombstoned = set()
+                        for p in only_in_prior:
+                            # p is logical path, work out digest and check against tombstones
+                            a_content_path = next(iter(prior_map[p]))
+                            digest = prior.manifest_files[a_content_path]
+                            if digest not in self.tombstone_files.values():
+                                only_in_prior_not_tombstoned.add(p)
+                        if only_in_prior_not_tombstoned:
+                            self._error("E066b", version=version, prior_head=prior.head, only_in=prior.head, logical_paths=",".join(only_in_prior_not_tombstoned))
                     if only_in_self:
                         self._error("E066b", version=version, prior_head=prior.head, only_in=self.where, logical_paths=",".join(only_in_self))
                 else:
@@ -298,6 +322,48 @@ class InventoryValidator():
                 if path in content_paths:
                     self._error("E101b", path=path)
         return manifest_files, manifest_files_correct_format, unnormalized_digests
+
+    def _validate_tombstones(self, tombstones, manifest_files):
+        """Validate tombstones block in inventory.
+
+        Arguments:
+            tomstones (dict): dictionary of the tombstones block
+        Returns:
+            tombstone_files: a mapping from file to digest for each file in
+                the manifest
+            unnormalized_tombstones
+        """
+        tombstone_files = {}
+        unnormalized_tombstones = set()
+        tombstone_digests = set()
+        if not isinstance(tombstones, dict):
+            self._error("EV201")
+        else:
+            for digest in tombstones:
+                m = re.match(self._digest_regex(), digest)
+                if not m:
+                    self._error("EV202", digest=digest, algorithm=self.digest_algorithm)  # wrong form of digest
+                elif not isinstance(tombstones[digest], list):
+                    self._error("EV203", digest=digest)  # must have path list value
+                else:
+                    unnormalized_tombstones.add(digest)
+                    norm_digest = normalized_digest(digest, self.digest_algorithm)
+                    if norm_digest in tombstone_digests:
+                        # We have already seen this in different un-normalized form!
+                        self._error("EV204", digest=norm_digest)
+                    else:
+                        tombstone_digests.add(norm_digest)
+                    for file in tombstones[digest]:
+                        tombstone_files[file] = norm_digest
+                        # if self.check_content_path(file, content_paths, content_directories):
+                        #    manifest_files_correct_format.append(file)
+            # Check for content paths that conflict with those in manifest
+            for path in tombstone_files:
+                if path in manifest_files:
+                    self._error("EV206", path=path)
+        if len(tombstone_files):
+            self._warning("WV201", num_tombstones=str(len(tombstone_files)))
+        return tombstone_files, unnormalized_tombstones
 
     def _validate_fixity(self, fixity, manifest_files):
         """Validate fixity block in inventory.
@@ -400,7 +466,7 @@ class InventoryValidator():
             self._error("E011")
         return all_versions
 
-    def _validate_versions(self, versions, all_versions, unnormalized_digests):
+    def _validate_versions(self, versions, all_versions, unnormalized_digests, unnormalized_tombstones):
         """Validate versions blocks in inventory.
 
         Requires as input two things which are assumed to be structurally correct
@@ -432,7 +498,7 @@ class InventoryValidator():
                 except ValueError as e:
                     self._error("E049c", version=v, description=str(e))
             if "state" in version:
-                digests_used += self._validate_state_block(version["state"], version=v, unnormalized_digests=unnormalized_digests)
+                digests_used += self._validate_state_block(version["state"], version=v, unnormalized_digests=unnormalized_digests, unnormalized_tombstones=unnormalized_tombstones)
             else:
                 self._error("E048c", version=v)
             if "message" not in version:
@@ -456,7 +522,7 @@ class InventoryValidator():
                         self._warning("W009", version=v)
         return digests_used
 
-    def _validate_state_block(self, state, version, unnormalized_digests):
+    def _validate_state_block(self, state, version, unnormalized_digests, unnormalized_tombstones):
         """Validate state block in a version in an inventory.
 
         The version is used only for error reporting.
@@ -481,8 +547,11 @@ class InventoryValidator():
                             self._error("E095a", version=version, path=path)
                         else:
                             self._check_logical_path(path, version, logical_paths, logical_directories)
-                    if digest not in unnormalized_digests:
+                    if digest not in unnormalized_digests and digest not in unnormalized_tombstones:
                         # Exact string value must match, not just normalized
+                        #
+                        # FIXME - SHould look at which version tombstone appears in an
+                        # only allow tombstones after that
                         self._error("E050f", version=version, digest=digest)
                     norm_digest = normalized_digest(digest, self.digest_algorithm)
                     digests.append(norm_digest)
@@ -492,7 +561,7 @@ class InventoryValidator():
                     self._error("E095b", version=version, path=path)
         return digests
 
-    def __check_content_paths_map_to_versions(self, manifest_files, all_versions):
+    def _check_content_paths_map_to_versions(self, manifest_files, all_versions):
         """Check that every content path starts with a valid version.
 
         The content directory component has already been checked in
@@ -504,15 +573,23 @@ class InventoryValidator():
             if version_dir not in all_versions:
                 self._error("E042b", path=path)
 
-    def _check_digests_present_and_used(self, manifest_files, digests_used):
-        """Check all digests in manifest that are needed are present and used."""
-        in_manifest = set(manifest_files.values())
+    def _check_digests_present_and_used(self, manifest_files, digests_used, tombstone_files):
+        """Check all digests in manifest that are needed are present and used.
+
+        Arguments:
+            manifest_files: dict of manifest content path -> digest
+            digests_used: set of all digests used in all state blocks
+            tombstone_files: dict of tombstones content path -> digest
+        """
+        in_manifest_or_tombstones = set(manifest_files.values()).union(set(tombstone_files.values()))
         in_state = set(digests_used)
-        not_in_manifest = in_state.difference(in_manifest)
-        if len(not_in_manifest) > 0:
-            self._error("E050a", digests=", ".join(sorted(not_in_manifest)))
-        not_in_state = in_manifest.difference(in_state)
+        not_in_manifest_or_tombstones = in_state.difference(in_manifest_or_tombstones)
+        if len(not_in_manifest_or_tombstones) > 0:
+            # FIXMEv2 - Change error message or maybe split manifest/tombstones
+            self._error("E050a", digests=", ".join(sorted(not_in_manifest_or_tombstones)))
+        not_in_state = in_manifest_or_tombstones.difference(in_state)
         if len(not_in_state) > 0:
+            # FIXMEv2 - Change error message or maybe split manifest/tombstones
             self._error("E107", digests=", ".join(sorted(not_in_state)))
 
     def _digest_regex(self):
